@@ -1,0 +1,47 @@
+   
+   DBus has a coverage-report.txt target in its Makefile.am
+   which calls decode-gcov with the --report option, which
+   generates to stdout a report of the following form:
+   
+   *	summary of stats for all files
+    
+Summary (%s)
+=======
+  %g%% blocks executed (%d of %d)
+     (ignored %d blocks of test-only/debug-only code)
+  %g%% functions executed (%d of %d)
+  %g%% functions completely executed (%d of %d)
+     (ignored %d functions of test-only/debug-only code)
+  %g%% lines executed (%d of %d)
+  %g%% lines completely executed (%d of %d)
+     (ignored %d lines of test-only/debug-only code)
+
+   *	summary of stats per directory
+   *	summary of untested functions
+
+Untested functions in %s
+=======
+  %s
+  ...
+
+   *	summary of poorly tested functions (for each file, list
+    	of functions which have nonsuppressed blocks, have at least
+	some coverage, but are covered less than the global average).
+
+Below average functions in %s
+=======
+  %s (%d%%)
+  ...
+
+   *	N untested blocks by function (for each file, a list of
+    	all functions which have uncovered blocks, sorted in
+	decreasing order of number of uncovered blocks).
+
+Incomplete functions in %s
+=======
+  %s (%d/%d untested blocks)
+  ...
+
+
+   It has a hardcoded hack which calculates separate stats for
+   code inside #if DBUS_BUILD_TESTS by scanning for #if/#endif.
