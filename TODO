@@ -32,6 +32,18 @@ x  Added a Properties window which allows the user to control the
    
 x  Add to the Properties window a list of filename and function name
    patterns to ignore, e.g. ignore functions matching "_GLOBAL_*".
+
+x  Add to the Properties window an option to control display of
+   filenames: full, basename, or minimal (default, dynamically calculated
+   minimal unique trailing subset of path components).
+
+x  Add to the Properties window an option to re-use the same Source
+   window instead of popping up new ones all the time.
+
+x  Extend colour coding to all the places where a percentage, fraction,
+   or count of coverage is shown, especially the appropriate columns in
+   the Calls, Files and Functions windows.  Also the labels in the
+   Summary window.
    
 x  Handle the boundary case of the last block in a function properly.
 
@@ -40,6 +52,9 @@ x  In the Source window, show branches graphically, as drawn arrows
    
 x  Implement the -o option of gcov which specifies a directory in
    which .bb .bbg and .da files are found (also .o for ggcov).
+   
+x  Source files found by all techniques should generate full pathnames,
+   including especially cov_read_directory() and cov_read_source_file().
    
 x  Option to watch mtimes of .da files and reload them when they
    change, so that user can watch coverage stats update in realtime
@@ -77,7 +92,10 @@ x  Colour code red/green the entries in the Function List, Calls List
 x  Add a View menu to the Calls List window, with at least the ability
    to show/hide the various columns in the list and the colour coding.
    Column "Arc" to be hidden by default.
-   
+
+x  Merge the Line column in the Calls window into the Call From column,
+   so it's expressed as "function:line".
+
 x  Make the default widths of the columns in the Call List window wide
    enough to actually show the label.
 
@@ -87,6 +105,9 @@ x  ??? Add a Weighted Sum to the Summary Overall window.
 
 x  Arrows appear in all the sortable column titles...they should appear
    only in the current sort column.
+   
+x  In the Source window, deal with large Filenames and Functions menus
+   by splitting them up, like maketool's targets menu.
 
 --- CLOSED ---
 
