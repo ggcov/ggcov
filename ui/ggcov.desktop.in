@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=ggcov
 Comment=Source code coverage browser
-Icon=@datadir@/ggcov/logo.xpm
+Icon=@datadir@/ggcov/icon-med.xpm
 Exec=ggcov
 Terminal=false
 Type=Application
