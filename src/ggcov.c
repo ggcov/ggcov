@@ -37,7 +37,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.39 2004-03-08 09:54:39 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.40 2004-03-21 13:56:39 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -513,7 +513,7 @@ static void
 log_init(void)
 {
     static const char * const domains[] = 
-	{ "GLib", "GLib-GObject", "Gtk", "libglade", /*application*/0 };
+	{ "GLib", "GLib-GObject", "Gtk", "Gnome", "libglade", /*application*/0 };
     unsigned int i;
     
     for (i = 0 ; i < sizeof(domains)/sizeof(domains[0]) ; i++)
@@ -535,7 +535,14 @@ main(int argc, char **argv)
     /* stash a copy of argv[] in case we want to dump it for debugging */
     stash_argv(argc, argv);
 
-#if GTK2
+#if HAVE_GNOME_PROGRAM_INIT
+    GnomeProgram *prog;
+    
+    prog = gnome_program_init(PACKAGE, VERSION, LIBGNOMEUI_MODULE,
+			      argc, argv,
+			      GNOME_PROGRAM_STANDARD_PROPERTIES,
+			      GNOME_PARAM_NONE);
+#elif GTK2
     gtk_init(&argc, &argv);
     /* As of 2.0 we don't need to explicitly initialise libGlade anymore */
 #else
