@@ -35,6 +35,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 %{_bindir}/ggcov
+%{_bindir}/tggcov
 %{_datadir}/ggcov/
 %{_datadir}/gnome/apps/Development/ggcov.desktop
 %{_datadir}/pixmaps/ggcov64.png
