@@ -30,39 +30,14 @@
 #include "callgraph2win.H"
 #include "functionswin.H"
 #include "fileswin.H"
-#include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.16 2003-01-01 03:15:46 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.17 2003-03-11 21:32:18 gnb Exp $");
+
+#define DEBUG_GTK 1
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
 int screenshot_mode = 0;
-
-static poptContext popt_context;
-static struct poptOption popt_options[] =
-{
-    {
-    	"glade-path",	    	    	    	/* longname */
-	0,  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&ui_glade_path,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"where to locate ggcov.glade",	    	/* descrip */
-	"colon-seperated list of directories"	/* argDescrip */
-    },
-    {
-    	"screenshot-mode",  	    	    	/* longname */
-	0,  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&screenshot_mode,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"behaviour tweaks for screenshots", 	/* descrip */
-	0   	    	    	    		/* argDescrip */
-    },
-    { 0, 0, 0, 0, 0, 0, 0 }
-};
-
-static void summarise(void);
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -181,7 +156,7 @@ annotate(void)
 #endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if DEBUG
+#if DEBUG > 1
 
 static void
 dump_callarcs(GList *arcs)
@@ -193,7 +168,7 @@ dump_callarcs(GList *arcs)
 	fprintf(stderr, "        ARC {\n");
 	fprintf(stderr, "            FROM=%s\n", ca->from->name);
 	fprintf(stderr, "            TO=%s\n", ca->to->name);
-	fprintf(stderr, "            COUNT=%llu\n", ca->count);
+	fprintf(stderr, "            COUNT="GNB_U64_DFMT"\n", ca->count);
 	fprintf(stderr, "        }\n");
     }
 }
@@ -208,7 +183,7 @@ dump_callnode(cov_callnode_t *cn, void *userdata)
     else
 	fprintf(stderr, "    FUNCTION=%s:%s\n", cn->function->file()->name(),
 	    	    	    	    	    	cn->function->name());
-    fprintf(stderr, "    COUNT=%llu\n", cn->count);
+    fprintf(stderr, "    COUNT="GNB_U64_DFMT"\n", cn->count);
     fprintf(stderr, "    OUT_ARCS={\n");
     dump_callarcs(cn->out_arcs);
     fprintf(stderr, "    }\n");
@@ -229,7 +204,7 @@ dump_arc(cov_arc_t *a)
     fprintf(stderr, "                    ARC {\n");
     fprintf(stderr, "                        FROM=%s\n", fromdesc.data());
     fprintf(stderr, "                        TO=%s\n", todesc.data());
-    fprintf(stderr, "                        COUNT=%lld\n", a->count());
+    fprintf(stderr, "                        COUNT="GNB_U64_DFMT"\n", a->count());
     fprintf(stderr, "                        NAME=%s\n", a->name());
     fprintf(stderr, "                        ON_TREE=%s\n", boolstr(a->on_tree_));
     fprintf(stderr, "                        FAKE=%s\n", boolstr(a->fake_));
@@ -246,7 +221,7 @@ dump_block(cov_block_t *b)
     
     fprintf(stderr, "            BLOCK {\n");
     fprintf(stderr, "                IDX=%s\n", desc.data());
-    fprintf(stderr, "                COUNT=%lld\n", b->count());
+    fprintf(stderr, "                COUNT="GNB_U64_DFMT"\n", b->count());
 
     fprintf(stderr, "                OUT_ARCS {\n");
     for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
@@ -308,19 +283,6 @@ summarise(void)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-ui_init(int argc, char **argv)
-{
-    gnome_init_with_popt_table(PACKAGE, VERSION, argc, argv,
-			       popt_options, /*popt flags*/0,
-			       &popt_context);
-
-    /* initialise libGlade */
-    glade_gnome_init();
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static void
 on_windows_new_summarywin_activated(GtkWidget *w, gpointer userdata)
 {
     summarywin_t *sw;
@@ -366,14 +328,17 @@ on_windows_new_callgraphwin_activated(GtkWidget *w, gpointer userdata)
     cgw->show();
 }
 
+#if CALLGRAPH2
 static void
 on_windows_new_callgraph2win_activated(GtkWidget *w, gpointer userdata)
 {
+
     callgraph2win_t *cgw;
     
     cgw = new callgraph2win_t;
     cgw->show();
 }
+#endif
 
 static void
 on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
@@ -402,8 +367,10 @@ ui_create(void)
     			      on_windows_new_callswin_activated, 0);
     ui_register_windows_entry("New Call Butterfly...",
     			      on_windows_new_callgraphwin_activated, 0);
+#if CALLGRAPH2
     ui_register_windows_entry("New Call Graph...",
     			      on_windows_new_callgraph2win_activated, 0);
+#endif
     ui_register_windows_entry("New Source...",
     			      on_windows_new_sourcewin_activated, 0);
 
@@ -420,28 +387,84 @@ ui_create(void)
 static void
 parse_args(int argc, char **argv)
 {
-    int rc;
-    const char *file;
+    int i;
     
     argv0 = argv[0];
     
-    while ((rc = poptGetNextOpt(popt_context)) > 0)
-    	;
-    
-    while ((file = poptGetArg(popt_context)) != 0)
-	files = g_list_append(files, (gpointer)file);
+    for (i = 1 ; i < argc ; i++)
+    	files = g_list_append(files, argv[i]);
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+#if DEBUG_GTK
+
+static const char *
+log_level_to_str(GLogLevelFlags level)
+{
+    static char buf[32];
+
+    switch (level & G_LOG_LEVEL_MASK)
+    {
+    case G_LOG_LEVEL_ERROR: return "ERROR";
+    case G_LOG_LEVEL_CRITICAL: return "CRITICAL";
+    case G_LOG_LEVEL_WARNING: return "WARNING";
+    case G_LOG_LEVEL_MESSAGE: return "MESSAGE";
+    case G_LOG_LEVEL_INFO: return "INFO";
+    case G_LOG_LEVEL_DEBUG: return "DEBUG";
+    default:
+    	snprintf(buf, sizeof(buf), "%d", level);
+	return buf;
+    }
+}
+
+void
+log_func(
+    const char *domain,
+    GLogLevelFlags level,
+    const char *msg,
+    gpointer user_data)
+{
+    fprintf(stderr, "%s:%s:%s\n",
+    	(domain == 0 ? PACKAGE : domain),
+	log_level_to_str(level),
+	msg);
+    if (level & G_LOG_FLAG_FATAL)
+    	exit(1);
+}
+
+#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 int
 main(int argc, char **argv)
 {
-    ui_init(argc, argv);
+#if DEBUG_GTK
+    g_log_set_handler("GLib",
+    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
+    	    	      log_func, /*user_data*/0);
+    g_log_set_handler("Gtk",
+    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
+    	    	      log_func, /*user_data*/0);
+    g_log_set_handler("libglade",
+    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
+    	    	      log_func, /*user_data*/0);
+    g_log_set_handler(0,
+    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
+    	    	      log_func, /*user_data*/0);
+#endif
+
+#if GTK2
+    gtk_init(&argc, &argv);
+    /* As of 2.0 we don't need to explicitly initialise libGlade anymore */
+#else
+    gnome_init(PACKAGE, VERSION, argc, argv);
+    glade_gnome_init();
+#endif
+
     parse_args(argc, argv);
     read_gcov_files();
 
-#if DEBUG
+#if DEBUG > 1
     summarise();
 #endif
 #if 0
