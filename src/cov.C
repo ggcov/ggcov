@@ -26,7 +26,7 @@
 #include "string_var.H"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.14 2003-06-28 10:23:00 gnb Exp $");
+CVSID("$Id: cov.C,v 1.15 2003-06-29 04:10:11 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -398,7 +398,12 @@ dump_callnode(cov_callnode_t *cn, void *userdata)
     
 }
 
-static void
+/*
+ * This function is extern only because it needs to be a friend
+ * of class cov_arc_t, i.e. no good reason. TODO: move the dump
+ * functions into class members.
+ */
+void
 dump_arc(FILE *fp, cov_arc_t *a)
 {
     estring fromdesc = a->from()->describe();
