@@ -50,7 +50,7 @@ done
 
 case "$BUILDHOST" in
 ""|"$LOCALHOST"|localhost)
-    echo "Building on local host"
+    echo "Building on local host ($LOCALHOST)"
     exec 2>&1 | tee build.$LOCALHOST.log
     ;;
 *)
@@ -122,6 +122,7 @@ if [ ! -f $SPECFILE ]; then
     echo "Specfile missing, building"
     (
     	set -x
+	aclocal
 	autoconf
 	autoheader
 	automake -a
