@@ -1,4 +1,16 @@
 Wed Jul  2 22:30:45 2003  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.1.7
+
+	* Fixed bug in detection of gcc 2.96 braindamage which spuriously
+	triggered the error message on gcc 3.3.
+	* Fixed bug where Source window wrap was disabled for the GTK2 build
+	even when it didn't need to be.
+	* Enabled the Source window File->Save As command for gtk2 build, which
+	also removes some runtime warnings when the Source window is opened.
+	* Captured the log output for a new GTK2 log domain.
+	* Simplified log initialisation code.
+
+Wed Jul  2 22:30:45 2003  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.1.6
 
 	* Initial support for new gcc 3.3 bbg and da formats.
