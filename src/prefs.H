@@ -27,6 +27,7 @@ struct prefs_t
 {
     /* General */
     gboolean reuse_srcwin;
+    gboolean reuse_summwin;
     
     /* Colors */
     GdkColor covered_foreground;

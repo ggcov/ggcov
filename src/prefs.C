@@ -20,7 +20,7 @@
 #include "confsection.H"
 #include "prefs.H"
 
-CVSID("$Id: prefs.C,v 1.2 2003-01-01 03:16:24 gnb Exp $");
+CVSID("$Id: prefs.C,v 1.3 2003-03-11 21:33:23 gnb Exp $");
 
 prefs_t prefs;
 
@@ -41,6 +41,7 @@ prefs_t::load()
     cs = confsection_t::get("general");
     
     reuse_srcwin = cs->get_bool("reuse_srcwin", FALSE);
+    reuse_summwin = cs->get_bool("reuse_summwin", FALSE);
 
 
     cs = confsection_t::get("colors");
@@ -111,6 +112,7 @@ prefs_t::save()
     cs = confsection_t::get("general");
     
     cs->set_bool("reuse_srcwin", reuse_srcwin);
+    cs->set_bool("reuse_summwin", reuse_summwin);
 
 
     cs = confsection_t::get("colors");
