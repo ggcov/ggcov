@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.25 2005-03-05 15:16:21 gnb Exp $");
+CVSID("$Id: ui.c,v 1.26 2005-03-05 15:19:49 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -900,6 +900,9 @@ ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endlin
 #ifdef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
     GtkTextIter start, end;
+    
+    if (startline > 1)
+    	startline--;	    /* workaround gtk bug */
     
     gtk_text_buffer_get_iter_at_line(buffer, &start, startline);
     gtk_text_buffer_get_iter_at_line(buffer, &end, endline);
