@@ -1,6 +1,8 @@
 
 --- OPEN ---
 
+x  Support new gcc 3.2 .bbg file format.
+
 x  Get libgnome stuff (config, canvas, color picker) working in
    the gtk2 build.
 
