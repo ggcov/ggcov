@@ -22,7 +22,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.9 2001-11-30 01:07:59 gnb Exp $");
+CVSID("$Id: sourcewin.c,v 1.10 2001-12-02 07:26:08 gnb Exp $");
 
 extern GList *filenames;
 
@@ -90,6 +90,7 @@ sourcewin_new(void)
     ui_register_window(sw->window);
     sw->text = glade_xml_get_widget(xml, "source_text");
     sw->number_check = glade_xml_get_widget(xml, "source_number_check");
+    sw->block_check = glade_xml_get_widget(xml, "source_block_check");
     sw->count_check = glade_xml_get_widget(xml, "source_count_check");
     sw->source_check = glade_xml_get_widget(xml, "source_source_check");
     sw->colors_check = glade_xml_get_widget(xml, "source_colors_check");
@@ -190,7 +191,7 @@ sourcewin_delayed_function_activate(gpointer userdata)
     first = cov_function_get_first_location(fn);
     last = cov_function_get_last_location(fn);
 #if DEBUG
-    fprintf(stderr, "Function %s -> %s:%d to %s:%d\n",
+    fprintf(stderr, "Function %s -> %s:%ld to %s:%ld\n",
     	    	    	fn->name,
 			first->filename, first->lineno,
 			last->filename, last->lineno);
@@ -331,6 +332,27 @@ fgets_tabexpand(char *buf, unsigned int maxlen, FILE *fp)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
+format_blocks(char *buf, unsigned int width, const cov_location_t *loc)
+{
+    const GList *blocks;
+    unsigned int len;
+    
+    for (blocks = cov_blocks_find_by_location(loc) ; 
+    	 blocks != 0 && width > 0 ;
+	 blocks = blocks->next)
+    {
+    	cov_block_t *b = (cov_block_t *)blocks->data;
+    	len = snprintf(buf, width, "%u%s", b->idx, (blocks->next == 0 ? "" : ","));
+	buf += len;
+	width -= len;
+    }
+    
+    for ( ; width > 0 ; width--)
+    	*buf++ = ' ';
+    *buf = '\0';
+}
+
+static void
 sourcewin_update_source(sourcewin_t *sw)
 {
     FILE *fp;
@@ -340,8 +362,9 @@ sourcewin_update_source(sourcewin_t *sw)
     GtkText *text = GTK_TEXT(sw->text);
     int i, nstrs;
     GdkColor *color;
-    const char *strs[4];
+    const char *strs[5];
     char linenobuf[32];
+    char blockbuf[32];
     char countbuf[32];
     char linebuf[1024];
     
@@ -395,6 +418,12 @@ sourcewin_update_source(sourcewin_t *sw)
 	{
 	    snprintf(linenobuf, sizeof(linenobuf), "%7lu ", loc.lineno);
 	    strs[nstrs++] = linenobuf;
+	}
+	
+	if (GTK_CHECK_MENU_ITEM(sw->block_check)->active)
+	{
+	    format_blocks(blockbuf, 16, &loc);
+	    strs[nstrs++] = blockbuf;
 	}
 	
 	if (GTK_CHECK_MENU_ITEM(sw->count_check)->active)
@@ -502,6 +531,14 @@ on_source_count_check_activate(GtkWidget *w, gpointer data)
 
 GLADE_CALLBACK void
 on_source_number_check_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_from_widget(w);
+    
+    sourcewin_update_source(sw);
+}
+
+GLADE_CALLBACK void
+on_source_block_check_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_from_widget(w);
     

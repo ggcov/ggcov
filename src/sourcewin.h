@@ -27,6 +27,7 @@ typedef struct
     GtkWidget *window;
     GtkWidget *text;
     GtkWidget *number_check;
+    GtkWidget *block_check;
     GtkWidget *count_check;
     GtkWidget *source_check;
     GtkWidget *colors_check;
