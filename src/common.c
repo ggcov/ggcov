@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.4 2002-12-15 15:47:44 gnb Exp $");
+CVSID("$Id: common.c,v 1.5 2002-12-22 01:49:09 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -63,6 +63,13 @@ void *
 operator new(size_t sz)
 {
     return gnb_xmalloc(sz);
+}
+
+void
+operator delete(void *p)
+{
+    if (p != 0)     /* delete 0 is explicitly allowed */
+	free(p);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

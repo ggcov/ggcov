@@ -104,9 +104,17 @@ __attribute__ (( format(printf,1,2) ))
 
 extern void *gnb_xmalloc(size_t sz);
 #ifdef __cplusplus
+/*
+ * Operators new and delete operators are matched to avoid
+ * complaints from valgrind and Purify about non-portable
+ * mixing of malloc and operator delete.  Other than that,
+ * the overloaded global operator delete provides no value.
+ */
 void *operator new(size_t sz);
+void operator delete(void *);
 #else
 #define new(ty)     	((ty *)gnb_xmalloc(sizeof(ty)))
+#define delete(p)     	free((p))
 #endif
 
 extern int ulcmp(unsigned long ul1, unsigned long ul2);
