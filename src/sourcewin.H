@@ -23,8 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_source_close_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_exit_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_count_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_number_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_block_check_activate(GtkWidget *w, gpointer data);
@@ -111,8 +109,6 @@ private:
     GArray *offsets_by_line_;
 #endif
 
-    friend void on_source_close_activate(GtkWidget *w, gpointer data);
-    friend void on_source_exit_activate(GtkWidget *w, gpointer data);
     friend void on_source_count_check_activate(GtkWidget *w, gpointer data);
     friend void on_source_number_check_activate(GtkWidget *w, gpointer data);
     friend void on_source_block_check_activate(GtkWidget *w, gpointer data);

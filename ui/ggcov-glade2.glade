@@ -14,7 +14,7 @@
     <property name="allow_grow">yes</property>
     <property name="window-position">GTK_WIN_POS_NONE</property>
 
-    <signal name="delete_event" handler="on_source_close_activate" />
+    <signal name="delete_event" handler="on_window_close_activate" />
 
     <child>
       <widget class="GtkVBox" id="vbox1">
@@ -44,7 +44,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_source_close_activate" />
+                        <signal name="activate" handler="on_window_close_activate" />
                       </widget>
                     </child>
 
@@ -55,7 +55,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_source_exit_activate" />
+                        <signal name="activate" handler="on_window_exit_activate" />
                       </widget>
                     </child>
                   </widget>
@@ -491,7 +491,7 @@
     <property name="allow_grow">yes</property>
     <property name="window-position">GTK_WIN_POS_NONE</property>
 
-    <signal name="delete_event" handler="on_summary_close_activate" />
+    <signal name="delete_event" handler="on_window_close_activate" />
 
     <child>
       <widget class="GtkVBox" id="vbox2">
@@ -521,7 +521,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_summary_close_activate" />
+                        <signal name="activate" handler="on_window_close_activate" />
                       </widget>
                     </child>
 
@@ -532,7 +532,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_summary_exit_activate" />
+                        <signal name="activate" handler="on_window_exit_activate" />
                       </widget>
                     </child>
                   </widget>
@@ -1319,7 +1319,7 @@
     <property name="window-position">GTK_WIN_POS_NONE</property>
     <property name="visible">yes</property>
 
-    <signal name="delete_event" handler="on_functions_close_activate" />
+    <signal name="delete_event" handler="on_window_close_activate" />
 
     <child>
       <widget class="GtkVBox" id="vbox3">
@@ -1349,7 +1349,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_functions_close_activate" />
+                        <signal name="activate" handler="on_window_close_activate" />
                       </widget>
                     </child>
 
@@ -1360,7 +1360,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_functions_exit_activate" />
+                        <signal name="activate" handler="on_window_exit_activate" />
                       </widget>
                     </child>
                   </widget>
@@ -1572,7 +1572,7 @@
                 <child>
                   <widget class="GtkLabel" id="label15">
                     <property name="child_name">CList:title</property>
-                    <property name="label" translatable="yes">Function	</property>
+                    <property name="label" translatable="yes">Function</property>
                     <property name="justify">GTK_JUSTIFY_LEFT</property>
                     <property name="wrap">no</property>
                     <property name="xalign">0</property>
@@ -1619,7 +1619,7 @@
     <property name="window-position">GTK_WIN_POS_NONE</property>
     <property name="visible">yes</property>
 
-    <signal name="delete_event" handler="on_files_close_activate" />
+    <signal name="delete_event" handler="on_window_close_activate" />
 
     <child>
       <widget class="GtkVBox" id="vbox4">
@@ -1649,7 +1649,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_files_close_activate" />
+                        <signal name="activate" handler="on_window_close_activate" />
                       </widget>
                     </child>
 
@@ -1660,7 +1660,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_files_exit_activate" />
+                        <signal name="activate" handler="on_window_exit_activate" />
                       </widget>
                     </child>
                   </widget>
@@ -1917,7 +1917,7 @@
     <property name="allow_grow">yes</property>
     <property name="window-position">GTK_WIN_POS_NONE</property>
 
-    <signal name="delete_event" handler="on_calls_close_activate" />
+    <signal name="delete_event" handler="on_window_close_activate" />
 
     <child>
       <widget class="GtkVBox" id="vbox5">
@@ -1947,7 +1947,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_calls_close_activate" />
+                        <signal name="activate" handler="on_window_close_activate" />
                       </widget>
                     </child>
 
@@ -1958,7 +1958,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_calls_exit_activate" />
+                        <signal name="activate" handler="on_window_exit_activate" />
                       </widget>
                     </child>
                   </widget>
@@ -2454,7 +2454,7 @@
     <property name="allow_grow">yes</property>
     <property name="window-position">GTK_WIN_POS_NONE</property>
 
-    <signal name="delete_event" handler="on_calls_close_activate" />
+    <signal name="delete_event" handler="on_window_close_activate" />
 
     <child>
       <widget class="GtkVBox" id="vbox6">
@@ -2484,7 +2484,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_callgraph_close_activate" />
+                        <signal name="activate" handler="on_window_close_activate" />
                       </widget>
                     </child>
 
@@ -2495,7 +2495,7 @@
                         <property name="use_stock">yes</property>
                         <property name="use_underline">yes</property>
 
-                        <signal name="activate" handler="on_callgraph_exit_activate" />
+                        <signal name="activate" handler="on_window_exit_activate" />
                       </widget>
                     </child>
                   </widget>
@@ -3126,7 +3126,7 @@ C programs built with the GNU C Compiler.
                             <property name="use_stock">yes</property>
                             <property name="use_underline">yes</property>
 
-                            <signal name="activate" handler="on_callgraph2_close_activate" />
+                            <signal name="activate" handler="on_window_close_activate" />
                           </widget>
                         </child>
 
@@ -3137,7 +3137,7 @@ C programs built with the GNU C Compiler.
                             <property name="use_stock">yes</property>
                             <property name="use_underline">yes</property>
 
-                            <signal name="activate" handler="on_callgraph2_exit_activate" />
+                            <signal name="activate" handler="on_window_exit_activate" />
                           </widget>
                         </child>
                       </widget>

@@ -39,7 +39,6 @@ typedef struct
     double x1, y1, x2, y2;
 } dbounds_t;
 
-GLADE_CALLBACK void on_callgraph2_close_activate(GtkWidget*, gpointer);
 GLADE_CALLBACK void on_callgraph2_zoom_in_activate(GtkWidget*, gpointer);
 GLADE_CALLBACK void on_callgraph2_zoom_out_activate(GtkWidget*, gpointer);
 GLADE_CALLBACK void on_callgraph2_show_all_activate(GtkWidget*, gpointer);
@@ -92,7 +91,6 @@ private:
     unsigned long generation_;
     unsigned int max_file_;
 
-    friend void on_callgraph2_close_activate(GtkWidget*, gpointer);
     friend void on_callgraph2_zoom_in_activate(GtkWidget*, gpointer);
     friend void on_callgraph2_zoom_out_activate(GtkWidget*, gpointer);
     friend void on_callgraph2_show_all_activate(GtkWidget*, gpointer);

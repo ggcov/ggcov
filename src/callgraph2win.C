@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: callgraph2win.C,v 1.8 2003-04-01 10:31:34 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.9 2003-04-05 23:53:20 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -412,22 +412,6 @@ callgraph2win_t::populate()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-GLADE_CALLBACK void
-on_callgraph2_close_activate(GtkWidget *w, gpointer data)
-{
-    callgraph2win_t *cw = callgraph2win_t::from_widget(w);
-    
-    assert(cw != 0);
-    delete(cw);
-}
-
-GLADE_CALLBACK void
-on_callgraph2_exit_activate(GtkWidget *w, gpointer data)
-{
-    gtk_main_quit();
-}
-
 
 GLADE_CALLBACK void
 on_callgraph2_zoom_in_activate(GtkWidget *w, gpointer data)

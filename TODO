@@ -84,10 +84,6 @@ x  ??? Minimise filenames only within the context of a program or library?
 
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
-x   The File->Close and File->Exit callbacks in each window can now be
-    made unique, as there is a virtual window_t dtor to enable correct
-    cleaning up.
-
 --- CLOSED ---
 
 x  Add a menu command to the Source window to go to the Summary
@@ -167,4 +163,8 @@ x  Try to correlate the call numbers from blocks with function symbols
 x  Add Help->About, Help->Licence etc menu commands.
 
 x  Add icon.
+
+x   The File->Close and File->Exit callbacks in each window can now be
+    made unique, as there is a virtual window_t dtor to enable correct
+    cleaning up.
 

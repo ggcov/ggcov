@@ -20,7 +20,7 @@
   <visible>False</visible>
   <signal>
     <name>delete_event</name>
-    <handler>on_source_close_activate</handler>
+    <handler>on_window_close_activate</handler>
     <last_modification_time>Fri, 23 Nov 2001 06:01:23 GMT</last_modification_time>
   </signal>
   <title>GGCov: Source @FILE@</title>
@@ -61,7 +61,7 @@
 	    <name>source_close</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_source_close_activate</handler>
+	      <handler>on_window_close_activate</handler>
 	      <last_modification_time>Fri, 23 Nov 2001 06:00:47 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_CLOSE_ITEM</stock_item>
@@ -72,7 +72,7 @@
 	    <name>source_exit</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_source_exit_activate</handler>
+	      <handler>on_window_exit_activate</handler>
 	      <last_modification_time>Sun, 25 Nov 2001 04:33:54 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_EXIT_ITEM</stock_item>
@@ -444,7 +444,7 @@
   <visible>False</visible>
   <signal>
     <name>delete_event</name>
-    <handler>on_summary_close_activate</handler>
+    <handler>on_window_close_activate</handler>
     <last_modification_time>Sun, 25 Nov 2001 02:12:02 GMT</last_modification_time>
   </signal>
   <title>GGCov: Summary @FILE@</title>
@@ -485,7 +485,7 @@
 	    <name>summary_close</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_summary_close_activate</handler>
+	      <handler>on_window_close_activate</handler>
 	      <last_modification_time>Sun, 25 Nov 2001 02:07:56 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_CLOSE_ITEM</stock_item>
@@ -496,7 +496,7 @@
 	    <name>summary_exit</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_summary_exit_activate</handler>
+	      <handler>on_window_exit_activate</handler>
 	      <last_modification_time>Sun, 25 Nov 2001 04:33:32 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_EXIT_ITEM</stock_item>
@@ -1327,7 +1327,7 @@
   <name>functions</name>
   <signal>
     <name>delete_event</name>
-    <handler>on_functions_close_activate</handler>
+    <handler>on_window_close_activate</handler>
     <last_modification_time>Thu, 29 Nov 2001 13:10:21 GMT</last_modification_time>
   </signal>
   <title>GGCov: Function List</title>
@@ -1370,7 +1370,7 @@
 	    <name>functions_close</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_functions_close_activate</handler>
+	      <handler>on_window_close_activate</handler>
 	      <last_modification_time>Sun, 25 Nov 2001 07:54:07 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_CLOSE_ITEM</stock_item>
@@ -1381,7 +1381,7 @@
 	    <name>functions_exit</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_functions_exit_activate</handler>
+	      <handler>on_window_exit_activate</handler>
 	      <last_modification_time>Sun, 25 Nov 2001 07:58:19 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_EXIT_ITEM</stock_item>
@@ -1588,7 +1588,7 @@
 	  <class>GtkLabel</class>
 	  <child_name>CList:title</child_name>
 	  <name>label15</name>
-	  <label>Function	</label>
+	  <label>Function</label>
 	  <justify>GTK_JUSTIFY_LEFT</justify>
 	  <wrap>False</wrap>
 	  <xalign>0</xalign>
@@ -1606,7 +1606,7 @@
   <name>files</name>
   <signal>
     <name>delete_event</name>
-    <handler>on_files_close_activate</handler>
+    <handler>on_window_close_activate</handler>
     <last_modification_time>Thu, 29 Nov 2001 13:10:34 GMT</last_modification_time>
   </signal>
   <title>GGCov: File List</title>
@@ -1649,7 +1649,7 @@
 	    <name>files_close</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_files_close_activate</handler>
+	      <handler>on_window_close_activate</handler>
 	      <last_modification_time>Thu, 29 Nov 2001 12:59:28 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_CLOSE_ITEM</stock_item>
@@ -1660,7 +1660,7 @@
 	    <name>files_exit</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_files_exit_activate</handler>
+	      <handler>on_window_exit_activate</handler>
 	      <last_modification_time>Thu, 29 Nov 2001 12:59:43 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_EXIT_ITEM</stock_item>
@@ -1924,7 +1924,7 @@
   <visible>False</visible>
   <signal>
     <name>delete_event</name>
-    <handler>on_calls_close_activate</handler>
+    <handler>on_window_close_activate</handler>
     <last_modification_time>Sat, 01 Dec 2001 10:45:10 GMT</last_modification_time>
   </signal>
   <title>GGCov: Calls @FILE@</title>
@@ -1965,7 +1965,7 @@
 	    <name>calls_close</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_calls_close_activate</handler>
+	      <handler>on_window_close_activate</handler>
 	      <last_modification_time>Sat, 01 Dec 2001 10:41:53 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_CLOSE_ITEM</stock_item>
@@ -1976,7 +1976,7 @@
 	    <name>calls_exit</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_calls_exit_activate</handler>
+	      <handler>on_window_exit_activate</handler>
 	      <last_modification_time>Sat, 01 Dec 2001 10:42:05 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_EXIT_ITEM</stock_item>
@@ -2432,7 +2432,7 @@
   <visible>False</visible>
   <signal>
     <name>delete_event</name>
-    <handler>on_calls_close_activate</handler>
+    <handler>on_window_close_activate</handler>
     <last_modification_time>Sat, 01 Dec 2001 10:45:10 GMT</last_modification_time>
   </signal>
   <title>GGCov: Call Butterfly @FILE@</title>
@@ -2475,7 +2475,7 @@
 	    <name>callgraph_close</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_callgraph_close_activate</handler>
+	      <handler>on_window_close_activate</handler>
 	      <last_modification_time>Sun, 02 Dec 2001 07:31:21 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_CLOSE_ITEM</stock_item>
@@ -2486,7 +2486,7 @@
 	    <name>callgraph_exit</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_callgraph_exit_activate</handler>
+	      <handler>on_window_exit_activate</handler>
 	      <last_modification_time>Sun, 02 Dec 2001 07:31:32 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_EXIT_ITEM</stock_item>
@@ -3083,7 +3083,7 @@ C programs built with the GNU C Compiler.
 	      <name>close1</name>
 	      <signal>
 		<name>activate</name>
-		<handler>on_callgraph2_close_activate</handler>
+		<handler>on_window_close_activate</handler>
 		<last_modification_time>Sat, 28 Sep 2002 02:01:12 GMT</last_modification_time>
 	      </signal>
 	      <stock_item>GNOMEUIINFO_MENU_CLOSE_ITEM</stock_item>
@@ -3094,7 +3094,7 @@ C programs built with the GNU C Compiler.
 	      <name>exit1</name>
 	      <signal>
 		<name>activate</name>
-		<handler>on_callgraph2_exit_activate</handler>
+		<handler>on_window_exit_activate</handler>
 		<last_modification_time>Sat, 28 Sep 2002 02:01:20 GMT</last_modification_time>
 	      </signal>
 	      <stock_item>GNOMEUIINFO_MENU_EXIT_ITEM</stock_item>

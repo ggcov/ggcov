@@ -23,8 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_files_close_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_files_exit_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_lines_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_calls_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_branches_check_activate(GtkWidget *w, gpointer data);
@@ -63,8 +61,6 @@ private:
     GtkWidget *expand_all_btn_;
     GtkWidget *ctree_;
 
-    friend void on_files_close_activate(GtkWidget *w, gpointer data);
-    friend void on_files_exit_activate(GtkWidget *w, gpointer data);
     friend void on_files_lines_check_activate(GtkWidget *w, gpointer data);
     friend void on_files_calls_check_activate(GtkWidget *w, gpointer data);
     friend void on_files_branches_check_activate(GtkWidget *w, gpointer data);

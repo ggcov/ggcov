@@ -23,8 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_functions_close_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_functions_exit_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_functions_lines_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_functions_calls_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_functions_branches_check_activate(GtkWidget *w, gpointer data);
@@ -54,8 +52,6 @@ private:
     GtkWidget *percent_check_;
     GtkWidget *clist_;
 
-    friend void on_functions_close_activate(GtkWidget *w, gpointer data);
-    friend void on_functions_exit_activate(GtkWidget *w, gpointer data);
     friend void on_functions_lines_check_activate(GtkWidget *w, gpointer data);
     friend void on_functions_calls_check_activate(GtkWidget *w, gpointer data);
     friend void on_functions_branches_check_activate(GtkWidget *w, gpointer data);

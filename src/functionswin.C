@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: functionswin.C,v 1.6 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.7 2003-04-05 23:53:21 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -240,23 +240,6 @@ functionswin_t::update()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-/* TODO: unify all the close and exit callbacks */
-
-GLADE_CALLBACK void
-on_functions_close_activate(GtkWidget *w, gpointer data)
-{
-    functionswin_t *fw = functionswin_t::from_widget(w);
-    
-    assert (fw != 0);
-    delete fw;
-}
-
-GLADE_CALLBACK void
-on_functions_exit_activate(GtkWidget *w, gpointer data)
-{
-    gtk_main_quit();
-}
 
 GLADE_CALLBACK void
 on_functions_lines_check_activate(GtkWidget *w, gpointer data)

@@ -23,8 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_callgraph_close_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_callgraph_exit_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_callgraph_function_entry_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_callgraph_function_view_clicked(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_callgraph_ancestors_clist_button_press_event(
@@ -63,8 +61,6 @@ private:
 
     GtkWidget *hpaned_;
 
-    friend void on_callgraph_close_activate(GtkWidget *w, gpointer data);
-    friend void on_callgraph_exit_activate(GtkWidget *w, gpointer data);
     friend void on_callgraph_function_entry_changed(GtkWidget *w, gpointer data);
     friend void on_callgraph_function_view_clicked(GtkWidget *w, gpointer data);
     friend void on_callgraph_ancestors_clist_button_press_event(

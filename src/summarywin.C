@@ -26,7 +26,7 @@
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.8 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.9 2003-04-05 23:53:21 gnb Exp $");
 
 list_t<summarywin_t> summarywin_t::instances_;
 
@@ -424,21 +424,6 @@ summarywin_t::update()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-GLADE_CALLBACK void
-on_summary_close_activate(GtkWidget *w, gpointer data)
-{
-    summarywin_t *sw = summarywin_t::from_widget(w);
-    
-    assert(sw != 0);
-    delete sw;
-}
-
-GLADE_CALLBACK void
-on_summary_exit_activate(GtkWidget *w, gpointer data)
-{
-    gtk_main_quit();
-}
 
 GLADE_CALLBACK void
 on_summary_overall_radio_toggled(GtkWidget *w, gpointer data)

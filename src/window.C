@@ -20,9 +20,9 @@
 #include "window.H"
 #include "cov.H"
 
-CVSID("$Id: window.C,v 1.6 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: window.C,v 1.7 2003-04-05 23:53:21 gnb Exp $");
 
-static const char window_key[] = "callgraph2win_key";
+static const char window_key[] = "ggcov_window_key";
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -89,6 +89,23 @@ window_t::show()
     if (shown_)
     	gdk_window_raise(window_->window);
     shown_ = TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+GLADE_CALLBACK void
+on_window_close_activate(GtkWidget *w, gpointer data)
+{
+    window_t *win = window_t::from_widget(w);
+    
+    assert(win != 0);
+    delete win;
+}
+
+GLADE_CALLBACK void
+on_window_exit_activate(GtkWidget *w, gpointer data)
+{
+    gtk_main_quit();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

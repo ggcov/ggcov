@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.7 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.8 2003-04-05 23:53:20 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -250,21 +250,6 @@ callswin_t::update()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-GLADE_CALLBACK void
-on_calls_close_activate(GtkWidget *w, gpointer data)
-{
-    callswin_t *cw = callswin_t::from_widget(w);
-    
-    assert(cw != 0);
-    delete cw;
-}
-
-GLADE_CALLBACK void
-on_calls_exit_activate(GtkWidget *w, gpointer data)
-{
-    gtk_main_quit();
-}
 
 GLADE_CALLBACK void
 on_calls_call_from_check_activate(GtkWidget *w, gpointer data)

@@ -23,8 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_summary_close_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_exit_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_overall_radio_toggled(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_filename_radio_toggled(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_filename_entry_changed(GtkWidget *w, gpointer data);
@@ -99,8 +97,6 @@ private:
     GtkWidget *branches_taken_label_;
     GtkWidget *branches_taken_progressbar_;
 
-    friend void on_summary_close_activate(GtkWidget *w, gpointer data);
-    friend void on_summary_exit_activate(GtkWidget *w, gpointer data);
     friend void on_summary_overall_radio_toggled(GtkWidget *w, gpointer data);
     friend void on_summary_filename_radio_toggled(GtkWidget *w, gpointer data);
     friend void on_summary_filename_entry_changed(GtkWidget *w, gpointer data);

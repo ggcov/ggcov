@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.8 2003-03-28 07:41:10 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.9 2003-04-05 23:53:20 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -280,21 +280,6 @@ callgraphwin_t::set_node(cov_callnode_t *cn)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-GLADE_CALLBACK void
-on_callgraph_close_activate(GtkWidget *w, gpointer data)
-{
-    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    
-    assert(cw != 0);
-    delete cw;
-}
-
-GLADE_CALLBACK void
-on_callgraph_exit_activate(GtkWidget *w, gpointer data)
-{
-    gtk_main_quit();
-}
 
 GLADE_CALLBACK void
 on_callgraph_function_entry_changed(GtkWidget *w, gpointer data)

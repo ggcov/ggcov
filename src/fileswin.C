@@ -24,7 +24,7 @@
 #include "list.H"
 #include "prefs.H"
 
-CVSID("$Id: fileswin.C,v 1.9 2003-04-05 11:21:58 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.10 2003-04-05 23:53:21 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -357,21 +357,6 @@ fileswin_t::grey_items()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-GLADE_CALLBACK void
-on_files_close_activate(GtkWidget *w, gpointer data)
-{
-    fileswin_t *fw = fileswin_t::from_widget(w);
-    
-    assert(fw != 0);
-    delete fw;
-}
-
-GLADE_CALLBACK void
-on_files_exit_activate(GtkWidget *w, gpointer data)
-{
-    gtk_main_quit();
-}
 
 GLADE_CALLBACK void
 on_files_lines_check_activate(GtkWidget *w, gpointer data)

@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.9 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.10 2003-04-05 23:53:21 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -737,21 +737,6 @@ sourcewin_t::get_selected_lines(unsigned long *startp, unsigned long *endp)
 #endif
 }
 
-
-GLADE_CALLBACK void
-on_source_close_activate(GtkWidget *w, gpointer data)
-{
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    
-    assert(sw != 0);
-    delete sw;
-}
-
-GLADE_CALLBACK void
-on_source_exit_activate(GtkWidget *w, gpointer data)
-{
-    gtk_main_quit();
-}
 
 GLADE_CALLBACK void
 on_source_count_check_activate(GtkWidget *w, gpointer data)

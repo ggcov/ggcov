@@ -23,8 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_calls_close_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_exit_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_call_from_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_call_to_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_line_check_activate(GtkWidget *w, gpointer data);
@@ -62,8 +60,6 @@ private:
     GtkWidget *clist_;
     GList *functions_;	/* list of cov_function_t */
 
-    friend void on_calls_close_activate(GtkWidget *w, gpointer data);
-    friend void on_calls_exit_activate(GtkWidget *w, gpointer data);
     friend void on_calls_call_from_check_activate(GtkWidget *w, gpointer data);
     friend void on_calls_call_to_check_activate(GtkWidget *w, gpointer data);
     friend void on_calls_line_check_activate(GtkWidget *w, gpointer data);

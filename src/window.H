@@ -22,6 +22,9 @@
 
 #include "ui.h"
 
+GLADE_CALLBACK void on_window_close_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_window_exit_activate(GtkWidget *w, gpointer data);
+
 class window_t
 {
 protected:
@@ -47,6 +50,8 @@ protected:
     gboolean deleting_:1;    /* handle possible GUI recursion crap */
     gboolean shown_:1;	     /* has been shown()n at least once */
 
+    friend void on_window_close_activate(GtkWidget *w, gpointer data);
+    friend void on_window_exit_activate(GtkWidget *w, gpointer data);
 };
 
 #endif /* _ggcov_window_H_ */
