@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.9 2001-12-03 01:05:15 gnb Exp $
+# $Id: Makefile.am,v 1.10 2002-01-17 03:52:47 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
@@ -34,7 +34,7 @@ ggcov_SOURCES=	common.h common.c \
 		callgraphwin.h callgraphwin.c \
 		functionswin.h functionswin.c \
 		fileswin.h fileswin.c \
-		ggcov.c
+		help.c ggcov.c
 INCLUDES=	$(LIBGLADE_CFLAGS)
 ggcov_LDADD=	$(LIBGLADE_LIBS) -lbfd -liberty
 CPPFLAGS=	-DPKGDATADIR="\"$(pkgdatadir)\"" \
@@ -48,3 +48,12 @@ DEBUG=0
 endif
 
 UI_DEBUG=0
+
+# licence.c contains the GPL text in C syntax. This
+# avoids having to install the COPYING file just to
+# provide the Licence window.
+help.o: licence.c
+licence.c: $(top_srcdir)/COPYING
+	sed -e 's///g' -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^\(.*\)$$/"\1\\n"/' <$< >$@
+
+EXTRA_CLEAN=	licence.c

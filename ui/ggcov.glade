@@ -222,6 +222,29 @@
 	  </widget>
 	</widget>
       </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>help7</name>
+	<label>_Help</label>
+	<right_justify>True</right_justify>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>help7_menu</name>
+
+	  <widget>
+	    <class>GtkPixmapMenuItem</class>
+	    <name>about</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_about_activate</handler>
+	      <last_modification_time>Sat, 29 Dec 2001 01:11:18 GMT</last_modification_time>
+	    </signal>
+	    <stock_item>GNOMEUIINFO_MENU_ABOUT_ITEM</stock_item>
+	  </widget>
+	</widget>
+      </widget>
     </widget>
 
     <widget>
@@ -329,6 +352,29 @@
 	    <name>summary_windows_dummy</name>
 	    <label>dummy</label>
 	    <right_justify>False</right_justify>
+	  </widget>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>help8</name>
+	<label>_Help</label>
+	<right_justify>True</right_justify>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>help8_menu</name>
+
+	  <widget>
+	    <class>GtkPixmapMenuItem</class>
+	    <name>about</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_about_activate</handler>
+	      <last_modification_time>Sat, 29 Dec 2001 01:12:24 GMT</last_modification_time>
+	    </signal>
+	    <stock_item>GNOMEUIINFO_MENU_ABOUT_ITEM</stock_item>
 	  </widget>
 	</widget>
       </widget>
@@ -1232,6 +1278,29 @@
 	  </widget>
 	</widget>
       </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>help9</name>
+	<label>_Help</label>
+	<right_justify>True</right_justify>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>help9_menu</name>
+
+	  <widget>
+	    <class>GtkPixmapMenuItem</class>
+	    <name>about</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_about_activate</handler>
+	      <last_modification_time>Sat, 29 Dec 2001 01:12:57 GMT</last_modification_time>
+	    </signal>
+	    <stock_item>GNOMEUIINFO_MENU_ABOUT_ITEM</stock_item>
+	  </widget>
+	</widget>
+      </widget>
     </widget>
 
     <widget>
@@ -1466,6 +1535,29 @@
 	  </widget>
 	</widget>
       </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>help10</name>
+	<label>_Help</label>
+	<right_justify>True</right_justify>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>help10_menu</name>
+
+	  <widget>
+	    <class>GtkPixmapMenuItem</class>
+	    <name>about</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_about_activate</handler>
+	      <last_modification_time>Sat, 29 Dec 2001 01:13:29 GMT</last_modification_time>
+	    </signal>
+	    <stock_item>GNOMEUIINFO_MENU_ABOUT_ITEM</stock_item>
+	  </widget>
+	</widget>
+      </widget>
     </widget>
 
     <widget>
@@ -1633,6 +1725,29 @@
 	    <name>calls_windows_dummy</name>
 	    <label>dummy</label>
 	    <right_justify>False</right_justify>
+	  </widget>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>help11</name>
+	<label>_Help</label>
+	<right_justify>True</right_justify>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>help11_menu</name>
+
+	  <widget>
+	    <class>GtkPixmapMenuItem</class>
+	    <name>about</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_about_activate</handler>
+	      <last_modification_time>Sat, 29 Dec 2001 01:14:22 GMT</last_modification_time>
+	    </signal>
+	    <stock_item>GNOMEUIINFO_MENU_ABOUT_ITEM</stock_item>
 	  </widget>
 	</widget>
       </widget>
@@ -1899,6 +2014,29 @@
 	  </widget>
 	</widget>
       </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>help12</name>
+	<label>_Help</label>
+	<right_justify>True</right_justify>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>help12_menu</name>
+
+	  <widget>
+	    <class>GtkPixmapMenuItem</class>
+	    <name>about</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_about_activate</handler>
+	      <last_modification_time>Sat, 29 Dec 2001 01:15:07 GMT</last_modification_time>
+	    </signal>
+	    <stock_item>GNOMEUIINFO_MENU_ABOUT_ITEM</stock_item>
+	  </widget>
+	</widget>
+      </widget>
     </widget>
 
     <widget>
@@ -2148,6 +2286,226 @@
 	    </widget>
 	  </widget>
 	</widget>
+      </widget>
+    </widget>
+  </widget>
+</widget>
+
+<widget>
+  <class>GtkWindow</class>
+  <name>about</name>
+  <visible>False</visible>
+  <signal>
+    <name>delete_event</name>
+    <handler>on_about_close_clicked</handler>
+    <last_modification_time>Sat, 29 Dec 2001 00:50:27 GMT</last_modification_time>
+  </signal>
+  <title>GGCov: About @VERSION@</title>
+  <type>GTK_WINDOW_DIALOG</type>
+  <position>GTK_WIN_POS_NONE</position>
+  <modal>False</modal>
+  <allow_shrink>False</allow_shrink>
+  <allow_grow>True</allow_grow>
+  <auto_shrink>False</auto_shrink>
+
+  <widget>
+    <class>GtkVBox</class>
+    <name>vbox7</name>
+    <homogeneous>False</homogeneous>
+    <spacing>0</spacing>
+
+    <widget>
+      <class>GtkHBox</class>
+      <name>hbox1</name>
+      <homogeneous>False</homogeneous>
+      <spacing>0</spacing>
+      <child>
+	<padding>0</padding>
+	<expand>True</expand>
+	<fill>True</fill>
+      </child>
+
+      <widget>
+	<class>GtkPixmap</class>
+	<name>pixmap1</name>
+	<filename>logo.xpm</filename>
+	<xalign>0.5</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+	<build_insensitive>True</build_insensitive>
+	<child>
+	  <padding>0</padding>
+	  <expand>True</expand>
+	  <fill>True</fill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkLabel</class>
+	<name>about_label</name>
+	<label>GGCov @VERSION@
+
+@AUTHOR@
+
+A program for browsing
+ test coverage data for C
+programs built with the
+GNU C Compiler.
+
+@WARRANTY@</label>
+	<justify>GTK_JUSTIFY_CENTER</justify>
+	<wrap>False</wrap>
+	<xalign>0.5</xalign>
+	<yalign>0.5</yalign>
+	<xpad>4</xpad>
+	<ypad>4</ypad>
+	<child>
+	  <padding>0</padding>
+	  <expand>False</expand>
+	  <fill>False</fill>
+	</child>
+      </widget>
+    </widget>
+
+    <widget>
+      <class>GtkHSeparator</class>
+      <name>hseparator1</name>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>True</fill>
+      </child>
+    </widget>
+
+    <widget>
+      <class>GtkHButtonBox</class>
+      <name>hbuttonbox1</name>
+      <layout_style>GTK_BUTTONBOX_DEFAULT_STYLE</layout_style>
+      <spacing>30</spacing>
+      <child_min_width>85</child_min_width>
+      <child_min_height>27</child_min_height>
+      <child_ipad_x>7</child_ipad_x>
+      <child_ipad_y>0</child_ipad_y>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>True</fill>
+      </child>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>about_close</name>
+	<can_default>True</can_default>
+	<can_focus>True</can_focus>
+	<signal>
+	  <name>clicked</name>
+	  <handler>on_about_close_clicked</handler>
+	  <last_modification_time>Sat, 29 Dec 2001 00:49:06 GMT</last_modification_time>
+	</signal>
+	<stock_button>GNOME_STOCK_BUTTON_CLOSE</stock_button>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>about_licence</name>
+	<can_default>True</can_default>
+	<can_focus>True</can_focus>
+	<signal>
+	  <name>clicked</name>
+	  <handler>on_about_licence_clicked</handler>
+	  <last_modification_time>Sat, 29 Dec 2001 00:49:41 GMT</last_modification_time>
+	</signal>
+	<label>Licence...</label>
+      </widget>
+    </widget>
+  </widget>
+</widget>
+
+<widget>
+  <class>GtkWindow</class>
+  <name>licence</name>
+  <visible>False</visible>
+  <signal>
+    <name>delete_event</name>
+    <handler>on_licence_close_clicked</handler>
+    <last_modification_time>Sat, 29 Dec 2001 01:46:14 GMT</last_modification_time>
+  </signal>
+  <title>GGCov: Licence</title>
+  <type>GTK_WINDOW_DIALOG</type>
+  <position>GTK_WIN_POS_NONE</position>
+  <modal>False</modal>
+  <default_width>500</default_width>
+  <default_height>300</default_height>
+  <allow_shrink>False</allow_shrink>
+  <allow_grow>True</allow_grow>
+  <auto_shrink>False</auto_shrink>
+
+  <widget>
+    <class>GtkVBox</class>
+    <name>vbox8</name>
+    <homogeneous>False</homogeneous>
+    <spacing>0</spacing>
+
+    <widget>
+      <class>GtkScrolledWindow</class>
+      <name>scrolledwindow7</name>
+      <border_width>3</border_width>
+      <hscrollbar_policy>GTK_POLICY_AUTOMATIC</hscrollbar_policy>
+      <vscrollbar_policy>GTK_POLICY_AUTOMATIC</vscrollbar_policy>
+      <hupdate_policy>GTK_UPDATE_CONTINUOUS</hupdate_policy>
+      <vupdate_policy>GTK_UPDATE_CONTINUOUS</vupdate_policy>
+      <child>
+	<padding>0</padding>
+	<expand>True</expand>
+	<fill>True</fill>
+      </child>
+
+      <widget>
+	<class>GtkText</class>
+	<name>licence_text</name>
+	<can_focus>True</can_focus>
+	<editable>False</editable>
+	<text></text>
+      </widget>
+    </widget>
+
+    <widget>
+      <class>GtkHSeparator</class>
+      <name>hseparator2</name>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>True</fill>
+      </child>
+    </widget>
+
+    <widget>
+      <class>GtkHButtonBox</class>
+      <name>hbuttonbox2</name>
+      <layout_style>GTK_BUTTONBOX_DEFAULT_STYLE</layout_style>
+      <spacing>30</spacing>
+      <child_min_width>85</child_min_width>
+      <child_min_height>27</child_min_height>
+      <child_ipad_x>7</child_ipad_x>
+      <child_ipad_y>0</child_ipad_y>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>True</fill>
+      </child>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>licence_close</name>
+	<can_default>True</can_default>
+	<can_focus>True</can_focus>
+	<signal>
+	  <name>clicked</name>
+	  <handler>on_licence_close_clicked</handler>
+	  <last_modification_time>Sat, 29 Dec 2001 01:45:57 GMT</last_modification_time>
+	</signal>
+	<stock_button>GNOME_STOCK_BUTTON_CLOSE</stock_button>
       </widget>
     </widget>
   </widget>

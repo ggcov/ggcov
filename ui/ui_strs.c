@@ -15,8 +15,10 @@ gchar *s = N_("dummy");
 gchar *s = N_("F_unctions");
 gchar *s = N_("dummy");
 gchar *s = N_("dummy");
+gchar *s = N_("_Help");
 gchar *s = N_("GGCov: Summary @FILE@");
 gchar *s = N_("dummy");
+gchar *s = N_("_Help");
 gchar *s = N_("Filename");
 gchar *s = N_("Function");
 gchar *s = N_("Range");
@@ -35,6 +37,7 @@ gchar *s = N_("_Calls");
 gchar *s = N_("_Branches");
 gchar *s = N_("_Percentages");
 gchar *s = N_("dummy");
+gchar *s = N_("_Help");
 gchar *s = N_("Lines");
 gchar *s = N_("Calls");
 gchar *s = N_("Branches");
@@ -45,12 +48,14 @@ gchar *s = N_("_Calls");
 gchar *s = N_("_Branches");
 gchar *s = N_("_Percentages");
 gchar *s = N_("dummy");
+gchar *s = N_("_Help");
 gchar *s = N_("Lines");
 gchar *s = N_("Calls");
 gchar *s = N_("Branches");
 gchar *s = N_("File");
 gchar *s = N_("GGCov: Calls @FILE@");
 gchar *s = N_("dummy");
+gchar *s = N_("_Help");
 gchar *s = N_("Function:");
 gchar *s = N_("View...");
 gchar *s = N_("Calls");
@@ -58,6 +63,7 @@ gchar *s = N_("Arc");
 gchar *s = N_("Name");
 gchar *s = N_("GGCov: Call Graph @FILE@");
 gchar *s = N_("dummy");
+gchar *s = N_("_Help");
 gchar *s = N_("Function:");
 gchar *s = N_("View...");
 gchar *s = N_("Distribution to Ancestors");
@@ -66,3 +72,16 @@ gchar *s = N_("Function");
 gchar *s = N_("Distribution to Descendants");
 gchar *s = N_("Count");
 gchar *s = N_("Function");
+gchar *s = N_("GGCov: About @VERSION@");
+gchar *s = N_("GGCov @VERSION@\n"
+              "\n"
+              "@AUTHOR@\n"
+              "\n"
+              "A program for browsing\n"
+              " test coverage data for C\n"
+              "programs built with the\n"
+              "GNU C Compiler.\n"
+              "\n"
+              "@WARRANTY@");
+gchar *s = N_("Licence...");
+gchar *s = N_("GGCov: Licence");
