@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.H"
 
-CVSID("$Id: ui.c,v 1.14 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: ui.c,v 1.15 2003-03-28 07:17:07 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -523,6 +523,10 @@ ui_clist_init_column_arrow(GtkCList *clist, int col)
     GArray *sortables;
     
     oldlabel = gtk_clist_get_column_widget(clist, col);
+    if (GTK_IS_BIN(oldlabel))
+    	oldlabel = GTK_BIN(oldlabel)->child;
+    if (!GTK_IS_LABEL(oldlabel))
+    	return;
     gtk_label_get(GTK_LABEL(oldlabel), &oldstr);
     
     hbox = gtk_hbox_new(/*homogeneous*/FALSE, /*spacing*/4);
