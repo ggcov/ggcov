@@ -1,0 +1,38 @@
+
+Description of release procedure for ggcov
+------------------------------------------
+
+1.  Be in the ggcov top_srcdir
+    cd ~/proj/ggcov
+
+2.  Ensure all changes are checked in
+    cvs -n up
+
+3.  Bump revision number in configure.in 
+    nc configure.in
+    
+4.  Check in configure.in.  Log message "Release x.y.z".
+    cvs ci configure.in
+    
+5.  Update ChangeLog
+    ./cvs2changelog
+    
+6.  Edit ChangeLog, modify the log entries in any way
+    necessary for readability, uniqueness etc.  First
+    item should read "Release x.y.z".
+
+7.  Check in ChangeLog
+    cvs ci ChangeLog
+    
+8.  Tag the release
+    cvs tag GGCOV_x_y_z
+    
+9.  Test the release for buildability from CVS:
+    cd ..
+    cvs -d $CVSROOT_HO co -d ggcov-x.y.z -r GGCOV_x_y_z gnb/ggcov
+    cd ggcov-x.y.z
+    ./buildrpm
+    
+10. Gather the release products:
+    cp ggcov-x.y.z.tar.gz ..
+    cp buildrpm.d/RPMS/*/ggcov-x.y.z*.rpm ..

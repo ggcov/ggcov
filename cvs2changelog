@@ -1,0 +1,249 @@
+#!/bin/sh
+#
+# $Id: cvs2changelog,v 1.1 2001-11-30 01:44:16 gnb Exp $
+#
+# Shell script to build a change log for a new release
+# from CVS logs. The change log will still need some
+# manual editing to re-express changes for users, etc.
+#
+
+REV1=
+REV2=
+PACKAGE=`basename $PWD`
+DRYRUN=no
+NREVS=0
+ME="Greg Banks"
+EMAIL="gnb@alphalink.com.au"
+#FILES="Makefile.in Makefile configure.in"
+DATE_FORMAT="%a %b %_d %H:%M:%S %Y"
+CHECKFILE="configure.in"
+IGNOREDIRS="www doc po"
+LOG=ChangeLog
+OLDLOG=ChangeLog.$$
+
+canon_tag ()
+{
+    # Usage: canon_tag rev
+    echo "${PACKAGE}_$1" | tr a-z. A-Z_
+}
+
+get_last_rev_tag ()
+{
+    TAGPREFIX=`canon_tag ""`
+    cvs log -h $CHECKFILE |\
+    	awk '/^	'$TAGPREFIX'[0-9_]*:/{print substr($1,1,length($1)-1); exit}'
+	
+}
+
+get_rev_date ()
+{
+    # Usage: get_rev_data rev
+    local tag
+    local cvsdate
+    
+    tag=`canon_tag $1`
+    cvsdate=`cvs log $CHECKFILE |\
+    	awk '
+/^symbolic names:/ {
+    state = 1;
+}
+/^----------------------------$/ {
+    state = 2;
+}
+/^[ 	]*'$tag':/ {
+    if (state == 1)
+    	frev = $2;
+}
+/^revision / {
+    if ($2 == frev)
+    	state = 4;
+}
+/^date:/ {
+    if (state == 4)
+    {
+    	printf "%s %s GMT\n", gensub("/", "-", "g", $2), gensub(";", "", "g", $3);
+    	exit;
+    }
+}
+'`
+    date +"$DATE_FORMAT" -d "$cvsdate"
+}
+
+usage ()
+{
+    echo "Usage: cvs2changelog [--package pkg] [--dryrun] [rev1 [rev2]]"
+    exit 0
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --package=*) PACKAGE=`echo "$1"|sed -e 's|^[^=]*=||g'` ;;
+    --package) PACKAGE="$2" ; shift ;;
+    --dryrun) DRYRUN=yes ;;
+    --help) usage ;;
+    -*) usage ;;
+    [0-9]*.[0-9]*.[0-9]*)
+    	case "$NREVS" in
+	0) REV1="$1" ;;
+	1) REV2="$1" ;;
+	*) usage ;;
+	esac
+	NREVS=`expr $NREVS + 1`
+	;;
+    *) usage ;;
+    esac
+    shift
+done
+
+test -z "$PACKAGE" && usage
+
+if [ -z "$REV1" ]; then
+    # calculate previous tagged revision by getting
+    # most recent tag of the correct format
+    TAG1=`get_last_rev_tag`
+else
+    TAG1=`canon_tag "$REV1"`
+fi
+
+if [ -z "$REV2" ]; then
+    # Use the magic tag `HEAD' which indicates the
+    # most recent revision on a per-file basis
+    TAG2="HEAD"
+    REV2="latest revision"
+    DATE=`date +"$DATE_FORMAT"`
+    RELEASE=
+else    
+    TAG2=`canon_tag "$REV2"`
+    DATE=`get_rev_date $REV2`
+    RELEASE="$REV2"
+fi
+
+# echo "PACKAGE=$PACKAGE"
+# echo "REV1=$REV1"
+# echo "TAG1=$TAG1"
+# echo "REV2=$REV2"
+# echo "TAG2=$TAG2"
+# echo "DRYRUN=$DRYRUN"
+# exit 1
+
+(
+    echo -n "Compiling changes from $PACKAGE tags $TAG1 to $TAG2"
+    test "$DRYRUN" = no && echo -n " into $LOG"
+    echo ""
+) 1>&2
+
+# state:
+# 0 = reading log header
+# 1 = just read description separator, waiting for 1st line of description
+# 2 = reading 2nd & subsequent lines
+canonicalise ()
+{
+    awk '
+BEGIN {
+    state = 0;
+    inattic = 0;
+    desc = "";
+}
+/^date: / {
+    if (state == 0) {
+    	state = 1;
+	next;
+    }
+}
+/^RCS file: .*\/Attic\// {
+    if (state == 0) {
+    	inattic = 1;
+	next;
+    }
+}
+/^----------------/ {
+    if (desc != "") print desc;
+    state = 0;
+}
+/^================/ {
+    state = 0;
+    inattic = 0;
+    desc = "";
+}
+{
+    if (state == 0 || inattic) {
+    	next;
+    } else if (state == 1) {
+	indent = "x  ";
+	state++;
+    } else if (state == 2) {
+	indent = "   ";
+    }
+    line = $0;
+    if (substr(line, 1, 3) == "x  " || substr(line, 1, 3) == "   ") {
+    	prefix = "";
+    } else if (substr(line, 1, 2) == "x " || substr(line, 1, 2) == "  ") {
+    	line = substr(line, 3, length(line))
+    	prefix = indent;
+    } else {
+    	prefix = indent;
+    }
+    desc = desc"\n"prefix""line;
+}
+'
+}
+
+translate ()
+{
+    sed -e '/^[ 	]*$/d' -e 's|^   |	|' -e 's|^x  |	* |' 
+}
+
+uniquify ()
+{
+    awk '
+BEGIN {
+    alldesc[""] = 0;
+    desc = "";
+}
+/^$/ {
+    next;
+}
+/^x  / {
+    alldesc[desc]++;
+    desc = $0;
+}
+/^   / {
+    desc = desc"\n"$0
+}
+END {
+    alldesc[desc]++;
+    for (i in alldesc) {
+    	if (i != "") print i;
+    }
+}
+'
+}
+
+getDirs ()
+{
+    IGNOREEXP=`echo "$IGNOREDIRS" | sed -e 's:[ 	][  ]*:|:g'`
+    find . -type d -name CVS -print |\
+    	sed -e 's:/CVS$::'  -e 's:^\./::' |\
+	egrep -v '^('$IGNOREEXP')$'
+}
+
+gatherChanges ()
+{
+    echo "$DATE  $ME <$EMAIL>"
+    test -z "$RELEASE" || echo "	* Release $RELEASE"
+    if [ -z "$FILES" ]; then
+    	FILES="-l "`getDirs`
+    fi
+    cvs log -r${TAG1}:${TAG2} $FILES 2>&1 | canonicalise | uniquify | translate
+    echo ""
+}
+
+
+if [ "$DRYRUN" = yes ] ; then
+    gatherChanges
+else
+    mv $LOG $OLDLOG && \
+    gatherChanges > $LOG && \
+    cat $OLDLOG >> $LOG && \
+    rm $OLDLOG
+fi
