@@ -37,7 +37,7 @@
 #include "fakepopt.h"
 #include "report.H"
 
-CVSID("$Id: tggcov.c,v 1.11 2004-04-02 14:27:01 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.12 2004-04-03 01:31:21 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -389,7 +389,7 @@ static struct poptOption popt_options[] =
 	0	    	    	    	    	/* argDescrip */
     },
     {
-    	"object-dir",	    	    	    	/* longname */
+    	"object-directory",    	    	    	/* longname */
 	'o',  	    	    	    	    	/* shortname */
 	POPT_ARG_STRING,  	    	    	/* argInfo */
 	&object_dir,     	    	    	/* arg */

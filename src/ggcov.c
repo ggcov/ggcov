@@ -37,7 +37,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.41 2004-04-02 14:27:01 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.42 2004-04-03 01:31:21 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -400,7 +400,7 @@ static struct poptOption popt_options[] =
 	0	    	    	    	    	/* argDescrip */
     },
     {
-    	"object-dir",	    	    	    	/* longname */
+    	"object-directory",    	    	    	/* longname */
 	'o',  	    	    	    	    	/* shortname */
 	POPT_ARG_STRING,  	    	    	/* argInfo */
 	&object_dir,     	    	    	/* arg */
