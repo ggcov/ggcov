@@ -36,6 +36,23 @@
                     <property name="visible">yes</property>
 
                     <child>
+                      <widget class="GtkImageMenuItem" id="source_save_as">
+                        <property name="visible">yes</property>
+                        <property name="label">gtk-save-as</property>
+                        <property name="use_stock">yes</property>
+                        <property name="use_underline">yes</property>
+
+                        <signal name="activate" handler="on_source_save_as_activate" />
+                      </widget>
+                    </child>
+
+                    <child>
+                      <widget class="GtkMenuItem" id="separator4">
+                        <property name="visible">yes</property>
+                      </widget>
+                    </child>
+
+                    <child>
                       <widget class="GtkImageMenuItem" id="source_close">
                         <property name="visible">yes</property>
                         <property name="label">gtk-close</property>
@@ -3629,6 +3646,41 @@ C programs built with the GNU C Compiler.
             <property name="fill">yes</property>
           </packing>
         </child>
+      </widget>
+    </child>
+  </widget>
+  <widget class="GtkFileSelection" id="source_saveas">
+    <property name="border_width">10</property>
+    <property name="visible">no</property>
+    <property name="title" translatable="yes">GGCov: Save Annotated Source</property>
+    <property name="type">GTK_WINDOW_DIALOG</property>
+    <property name="modal">yes</property>
+    <property name="allow_shrink">no</property>
+    <property name="allow_grow">yes</property>
+    <property name="show-fileops">yes</property>
+    <property name="window-position">GTK_WIN_POS_MOUSE</property>
+
+    <child internal-child="ok_button">
+      <widget class="GtkButton" id="ok_button1">
+        <property name="can_default">yes</property>
+        <property name="can_focus">yes</property>
+        <property name="label" translatable="yes">OK</property>
+        <property name="relief">GTK_RELIEF_NORMAL</property>
+        <property name="visible">yes</property>
+
+        <signal name="clicked" handler="on_source_saveas_ok_button_clicked" />
+      </widget>
+    </child>
+
+    <child internal-child="cancel_button">
+      <widget class="GtkButton" id="cancel_button1">
+        <property name="can_default">yes</property>
+        <property name="can_focus">yes</property>
+        <property name="label" translatable="yes">Cancel</property>
+        <property name="relief">GTK_RELIEF_NORMAL</property>
+        <property name="visible">yes</property>
+
+        <signal name="clicked" handler="on_source_saveas_cancel_button_clicked" />
       </widget>
     </child>
   </widget>
