@@ -1,6 +1,15 @@
 
 --- OPEN ---
 
+x  Provide a menu command and window(s) which allows the user to 
+   lose the current set of coverage data and read a new set, in
+   any of the ways possible from the commandline, i.e. 1) exe
+   2) dir 3) dir+recursion 4) set of source.
+   
+x  Split out the i386 and DWARF specific code into separate source
+   files chosen from configure.in so that multiple targets can be
+   supported.  Use the full autoconf magic to allow for cross-ggcov.
+
 x  This is pretty ambitious: detect branches & lines which constitute
    memory allocation failure handling, and optionally don't count
    them in line coverage stats.  Heuristic would be: call to memory
