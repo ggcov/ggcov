@@ -17,13 +17,13 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "functionswin.h"
+#include "functionswin.H"
 #include <math.h>
-#include "sourcewin.h"
+#include "sourcewin.H"
 #include "cov.h"
 #include "estring.h"
 
-CVSID("$Id: functionswin.c,v 1.1 2001-11-25 15:17:46 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.1 2002-12-15 15:53:24 gnb Exp $");
 
 typedef struct
 {
@@ -31,11 +31,6 @@ typedef struct
     cov_stats_t stats;
 } func_rec_t;
 
-
-static const char functionswin_window_key[] = "functionswin_key";
-
-static void functionswin_populate(functionswin_t*);
-static void functionswin_update(functionswin_t*);
 
 #define COL_LINES   	0
 #define COL_CALLS   	1
@@ -110,119 +105,74 @@ functionswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-functionswin_t *
-functionswin_new(void)
+functionswin_t::functionswin_t()
 {
-    functionswin_t *fw;
     GladeXML *xml;
     
-    fw = new(functionswin_t);
-
     /* load the interface & connect signals */
     xml = ui_load_tree("functions");
     
-    fw->window = glade_xml_get_widget(xml, "functions");
-    ui_register_window(fw->window);
+    set_window(glade_xml_get_widget(xml, "functions"));
     
-    fw->lines_check = glade_xml_get_widget(xml, "functions_lines_check");
-    fw->calls_check = glade_xml_get_widget(xml, "functions_calls_check");
-    fw->branches_check = glade_xml_get_widget(xml, "functions_branches_check");
-    fw->percent_check = glade_xml_get_widget(xml, "functions_percent_check");
-    fw->clist = glade_xml_get_widget(xml, "functions_clist");
+    lines_check_ = glade_xml_get_widget(xml, "functions_lines_check");
+    calls_check_ = glade_xml_get_widget(xml, "functions_calls_check");
+    branches_check_ = glade_xml_get_widget(xml, "functions_branches_check");
+    percent_check_ = glade_xml_get_widget(xml, "functions_percent_check");
+    clist_ = glade_xml_get_widget(xml, "functions_clist");
 
-    gtk_clist_set_column_justification(GTK_CLIST(fw->clist), COL_LINES,
+    gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_LINES,
     	    	    	    	       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(fw->clist), COL_CALLS,
+    gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_CALLS,
     	    	    	    	       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(fw->clist), COL_BRANCHES,
+    gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_BRANCHES,
     	    	    	    	       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(fw->clist), COL_FUNCTION,
+    gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_FUNCTION,
     	    	    	    	       GTK_JUSTIFY_LEFT);
-    gtk_clist_set_compare_func(GTK_CLIST(fw->clist), functionswin_compare);
+    gtk_clist_set_compare_func(GTK_CLIST(clist_), functionswin_compare);
 
-    ui_clist_init_column_arrow(GTK_CLIST(fw->clist), COL_LINES);
-    ui_clist_init_column_arrow(GTK_CLIST(fw->clist), COL_CALLS);
-    ui_clist_init_column_arrow(GTK_CLIST(fw->clist), COL_BRANCHES);
-    ui_clist_init_column_arrow(GTK_CLIST(fw->clist), COL_FUNCTION);
-    ui_clist_set_sort_column(GTK_CLIST(fw->clist), COL_LINES);
-    ui_clist_set_sort_type(GTK_CLIST(fw->clist), GTK_SORT_DESCENDING);
+    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_LINES);
+    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_CALLS);
+    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_BRANCHES);
+    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_FUNCTION);
+    ui_clist_set_sort_column(GTK_CLIST(clist_), COL_LINES);
+    ui_clist_set_sort_type(GTK_CLIST(clist_), GTK_SORT_DESCENDING);
 
     ui_register_windows_menu(ui_get_dummy_menu(xml, "functions_windows_dummy"));
-
-    gtk_object_set_data(GTK_OBJECT(fw->window), functionswin_window_key, fw);
-    
-    functionswin_populate(fw);
-    functionswin_update(fw);
-
-    gtk_widget_show(fw->window);
-    
-    return fw;
 }
+
+functionswin_t::~functionswin_t()
+{
+    listdelete(functions_, func_rec_t, func_rec_delete);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-functionswin_delete(functionswin_t *fw)
-{
-    /* JIC of strange gui stuff */
-    if (fw->deleting)
-    	return;
-    fw->deleting = TRUE;
-    
-    gtk_widget_destroy(fw->window);
-    listdelete(fw->functions, func_rec_t, func_rec_delete);
-    g_free(fw);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static functionswin_t *
-functionswin_from_widget(GtkWidget *w)
-{
-    w = ui_get_window(w);
-    return (w == 0 ? 0 : gtk_object_get_data(GTK_OBJECT(w), functionswin_window_key));
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-#if 0
-
-static int
-compare_functions(const void *a, const void *b)
-{
-    const cov_function_t *fa = (const cov_function_t *)a;
-    const cov_function_t *fb = (const cov_function_t *)b;
-    int ret;
-    
-    ret = strcmp(fa->name, fb->name);
-    if (ret == 0)
-    	ret = strcmp(fa->file->name, fb->file->name);
-    return ret;
-}
-#endif
-
-static void
-add_functions(cov_file_t *f, void *userdata)
+functionswin_t::add_functions(cov_file_t *f, void *userdata)
 {
     functionswin_t *fw = (functionswin_t *)userdata;
     unsigned fnidx;
     
-    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
     {
     	cov_function_t *fn = cov_file_nth_function(f, fnidx);
 	
 	if (!strncmp(fn->name, "_GLOBAL_", 8))
 	    continue;
 	
-	fw->functions = g_list_prepend(fw->functions, func_rec_new(fn));
+	fw->functions_ = g_list_prepend(fw->functions_, func_rec_new(fn));
     }
 }
 
-static void
-functionswin_populate(functionswin_t *fw)
+void
+functionswin_t::populate()
 {
 #if DEBUG
-    fprintf(stderr, "functionswin_populate\n");
+    fprintf(stderr, "functionswin_t::populate\n");
 #endif
 
-    cov_file_foreach(add_functions, fw);
+    cov_file_foreach(add_functions, this);
+    update();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -244,8 +194,8 @@ format_stat(
 }
 
 
-static void
-functionswin_update(functionswin_t *fw)
+void
+functionswin_t::update()
 {
     GList *iter;
     gboolean percent_flag;
@@ -255,15 +205,15 @@ functionswin_update(functionswin_t *fw)
     char branches_pc_buf[16];
     
 #if DEBUG
-    fprintf(stderr, "functionswin_update\n");
+    fprintf(stderr, "functionswin_t::update\n");
 #endif
 
-    percent_flag = GTK_CHECK_MENU_ITEM(fw->percent_check)->active;
+    percent_flag = GTK_CHECK_MENU_ITEM(percent_check_)->active;
 
-    gtk_clist_freeze(GTK_CLIST(fw->clist));
-    gtk_clist_clear(GTK_CLIST(fw->clist));
+    gtk_clist_freeze(GTK_CLIST(clist_));
+    gtk_clist_clear(GTK_CLIST(clist_));
     
-    for (iter = fw->functions ; iter != 0 ; iter = iter->next)
+    for (iter = functions_ ; iter != 0 ; iter = iter->next)
     {
     	func_rec_t *fr = (func_rec_t *)iter->data;
 	int row;
@@ -282,24 +232,26 @@ functionswin_update(functionswin_t *fw)
 	
 	text[COL_FUNCTION] = fr->function->name;
 	
-	row = gtk_clist_prepend(GTK_CLIST(fw->clist), text);
-	gtk_clist_set_row_data(GTK_CLIST(fw->clist), row, fr);
+	row = gtk_clist_prepend(GTK_CLIST(clist_), text);
+	gtk_clist_set_row_data(GTK_CLIST(clist_), row, fr);
     }
     
-    gtk_clist_columns_autosize(GTK_CLIST(fw->clist));
-    gtk_clist_sort(GTK_CLIST(fw->clist));
-    gtk_clist_thaw(GTK_CLIST(fw->clist));
+    gtk_clist_columns_autosize(GTK_CLIST(clist_));
+    gtk_clist_sort(GTK_CLIST(clist_));
+    gtk_clist_thaw(GTK_CLIST(clist_));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+/* TODO: unify all the close and exit callbacks */
+
 GLADE_CALLBACK void
 on_functions_close_activate(GtkWidget *w, gpointer data)
 {
-    functionswin_t *fw = functionswin_from_widget(w);
+    functionswin_t *fw = functionswin_t::from_widget(w);
     
-    if (fw != 0)
-	functionswin_delete(fw);
+    assert (fw != 0);
+    delete fw;
 }
 
 GLADE_CALLBACK void
@@ -311,36 +263,36 @@ on_functions_exit_activate(GtkWidget *w, gpointer data)
 GLADE_CALLBACK void
 on_functions_lines_check_activate(GtkWidget *w, gpointer data)
 {
-    functionswin_t *fw = functionswin_from_widget(w);
+    functionswin_t *fw = functionswin_t::from_widget(w);
 
-    gtk_clist_set_column_visibility(GTK_CLIST(fw->clist), COL_LINES,
-    	    	    GTK_CHECK_MENU_ITEM(fw->lines_check)->active);
+    gtk_clist_set_column_visibility(GTK_CLIST(fw->clist_), COL_LINES,
+    	    	    GTK_CHECK_MENU_ITEM(fw->lines_check_)->active);
 }
 
 GLADE_CALLBACK void
 on_functions_calls_check_activate(GtkWidget *w, gpointer data)
 {
-    functionswin_t *fw = functionswin_from_widget(w);
+    functionswin_t *fw = functionswin_t::from_widget(w);
 
-    gtk_clist_set_column_visibility(GTK_CLIST(fw->clist), COL_CALLS,
-    	    	    GTK_CHECK_MENU_ITEM(fw->calls_check)->active);
+    gtk_clist_set_column_visibility(GTK_CLIST(fw->clist_), COL_CALLS,
+    	    	    GTK_CHECK_MENU_ITEM(fw->calls_check_)->active);
 }
 
 GLADE_CALLBACK void
 on_functions_branches_check_activate(GtkWidget *w, gpointer data)
 {
-    functionswin_t *fw = functionswin_from_widget(w);
+    functionswin_t *fw = functionswin_t::from_widget(w);
 
-    gtk_clist_set_column_visibility(GTK_CLIST(fw->clist), COL_BRANCHES,
-    	    	    GTK_CHECK_MENU_ITEM(fw->branches_check)->active);
+    gtk_clist_set_column_visibility(GTK_CLIST(fw->clist_), COL_BRANCHES,
+    	    	    GTK_CHECK_MENU_ITEM(fw->branches_check_)->active);
 }
 
 GLADE_CALLBACK void
 on_functions_percent_check_activate(GtkWidget *w, gpointer data)
 {
-    functionswin_t *fw = functionswin_from_widget(w);
+    functionswin_t *fw = functionswin_t::from_widget(w);
 
-    functionswin_update(fw);
+    fw->update();
 }
 
 GLADE_CALLBACK void
@@ -351,27 +303,20 @@ on_functions_clist_button_press_event(
 {
     int row, col;
     func_rec_t *fr;
-    sourcewin_t *srcw;
-    const cov_location_t *start, *end;
 
     if (event->type == GDK_2BUTTON_PRESS &&
 	gtk_clist_get_selection_info(GTK_CLIST(w),
-	    	    	    	     event->button.x, event->button.y,
+	    	    	    	     (int)event->button.x,
+				     (int)event->button.y,
 				     &row, &col))
     {
 #if DEBUG
     	fprintf(stderr, "on_functions_clist_button_press_event: row=%d col=%d\n",
 	    	    	row, col);
 #endif
-	fr = gtk_clist_get_row_data(GTK_CLIST(w), row);
+	fr = (func_rec_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
 	
-	start = cov_function_get_first_location(fr->function);
-	end = cov_function_get_last_location(fr->function);
-	
-	srcw = sourcewin_new();
-	sourcewin_set_filename(srcw, start->filename);
-	sourcewin_ensure_visible(srcw, start->lineno);
-	sourcewin_select_region(srcw, start->lineno, end->lineno);
+	sourcewin_t::show_function(fr->function);
     }
 }
 

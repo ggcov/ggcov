@@ -22,16 +22,16 @@
 #include "ui.h"
 #include "filename.h"
 #include "estring.h"
-#include "sourcewin.h"
-#include "summarywin.h"
-#include "callswin.h"
-#include "callgraphwin.h"
-#include "callgraph2win.h"
-#include "functionswin.h"
-#include "fileswin.h"
+#include "sourcewin.H"
+#include "summarywin.H"
+#include "callswin.H"
+#include "callgraphwin.H"
+#include "callgraph2win.H"
+#include "functionswin.H"
+#include "fileswin.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.10 2002-12-12 00:10:27 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.11 2002-12-15 15:53:24 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -299,8 +299,8 @@ dump_file(cov_file_t *f, void *userdata)
     
     fprintf(stderr, "FILE {\n");
     fprintf(stderr, "    NAME=\"%s\"\n", f->name);
-    for (i = 0 ; i < f->functions->len ; i++)
-    	dump_function((cov_function_t *)g_ptr_array_index(f->functions, i));
+    for (i = 0 ; i < cov_file_num_functions(f) ; i++)
+    	dump_function(cov_file_nth_function(f, i));
     fprintf(stderr, "}\n");
 }
 
@@ -330,25 +330,37 @@ ui_init(int argc, char **argv)
 static void
 on_windows_new_summarywin_activated(GtkWidget *w, gpointer userdata)
 {
-    summarywin_new();
+    summarywin_t *sw;
+    
+    sw = new summarywin_t();
+    sw->show();
 }
 
 static void
 on_windows_new_fileswin_activated(GtkWidget *w, gpointer userdata)
 {
-    fileswin_new();
+    fileswin_t *fw;
+    
+    fw = new fileswin_t();
+    fw->show();
 }
 
 static void
 on_windows_new_functionswin_activated(GtkWidget *w, gpointer userdata)
 {
-    functionswin_new();
+    functionswin_t *fw;
+    
+    fw = new functionswin_t();
+    fw->show();
 }
 
 static void
 on_windows_new_callswin_activated(GtkWidget *w, gpointer userdata)
 {
-    callswin_new();
+    callswin_t *cw;
+    
+    cw = new callswin_t();
+    cw->show();
 }
 
 static void
@@ -356,8 +368,9 @@ on_windows_new_callgraphwin_activated(GtkWidget *w, gpointer userdata)
 {
     callgraphwin_t *cgw;
     
-    cgw = callgraphwin_new();
-    callgraphwin_set_node(cgw, cov_callnode_find("main"));
+    cgw = new callgraphwin_t();
+    cgw->set_node(cov_callnode_find("main"));
+    cgw->show();
 }
 
 static void
@@ -365,7 +378,8 @@ on_windows_new_callgraph2win_activated(GtkWidget *w, gpointer userdata)
 {
     callgraph2win_t *cgw;
     
-    cgw = callgraph2win_new();
+    cgw = new callgraph2win_t;
+    cgw->show();
 }
 
 static void
@@ -373,8 +387,9 @@ on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *srcw;
 
-    srcw = sourcewin_new();
-    sourcewin_set_filename(srcw, (const char *)filenames->data);
+    srcw = new sourcewin_t();
+    srcw->set_filename((const char *)filenames->data);
+    srcw->show();
 }
 
 #include "ui/icon.xpm"
@@ -399,7 +414,8 @@ ui_create(void)
 
     ui_set_default_icon(icon_xpm);
 
-    summarywin_new();
+    summarywin_t *sw = new summarywin_t();
+    sw->show();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

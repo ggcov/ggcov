@@ -17,21 +17,16 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "callgraphwin.h"
-#include "sourcewin.h"
+#include "callgraphwin.H"
+#include "sourcewin.H"
 #include "cov.h"
 #include "estring.h"
 
-CVSID("$Id: callgraphwin.c,v 1.1 2001-12-03 01:05:15 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.1 2002-12-15 15:53:23 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
 #define COL_MAX     2
-
-static const char callgraphwin_window_key[] = "callgraphwin_key";
-
-static void callgraphwin_populate(callgraphwin_t*);
-
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -75,8 +70,8 @@ callgraphwin_descendants_compare(GtkCList *clist, const void *ptr1, const void *
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void
-callgraphwin_init_clist(
+void
+callgraphwin_t::init_clist(
     GtkCList *clist,
     int (*sortfn)(GtkCList *, const void*, const void*))
 {
@@ -88,59 +83,31 @@ callgraphwin_init_clist(
     ui_clist_set_sort_type(clist, GTK_SORT_DESCENDING);
 }
 
-callgraphwin_t *
-callgraphwin_new(void)
+callgraphwin_t::callgraphwin_t()
 {
-    callgraphwin_t *cw;
     GladeXML *xml;
     
-    cw = new(callgraphwin_t);
-
     /* load the interface & connect signals */
     xml = ui_load_tree("callgraph");
     
-    cw->window = glade_xml_get_widget(xml, "callgraph");
-    ui_register_window(cw->window);
+    set_window(glade_xml_get_widget(xml, "callgraph"));
     
-    cw->function_combo = glade_xml_get_widget(xml, "callgraph_function_combo");
-    cw->function_view = glade_xml_get_widget(xml, "callgraph_function_view");
+    function_combo_ = glade_xml_get_widget(xml, "callgraph_function_combo");
+    function_view_ = glade_xml_get_widget(xml, "callgraph_function_view");
 
-    cw->ancestors_clist = glade_xml_get_widget(xml, "callgraph_ancestors_clist");
-    callgraphwin_init_clist(GTK_CLIST(cw->ancestors_clist),
+    ancestors_clist_ = glade_xml_get_widget(xml, "callgraph_ancestors_clist");
+    init_clist(GTK_CLIST(ancestors_clist_),
     	    	    	    callgraphwin_ancestors_compare);
 
-    cw->descendants_clist = glade_xml_get_widget(xml, "callgraph_descendants_clist");
-    callgraphwin_init_clist(GTK_CLIST(cw->descendants_clist),
+    descendants_clist_ = glade_xml_get_widget(xml, "callgraph_descendants_clist");
+    init_clist(GTK_CLIST(descendants_clist_),
     	    	    	    callgraphwin_descendants_compare);
     
     ui_register_windows_menu(ui_get_dummy_menu(xml, "callgraph_windows_dummy"));
-
-    gtk_object_set_data(GTK_OBJECT(cw->window), callgraphwin_window_key, cw);
-    
-    callgraphwin_populate(cw);
-    
-    return cw;
 }
 
-void
-callgraphwin_delete(callgraphwin_t *cw)
+callgraphwin_t::~callgraphwin_t()
 {
-    /* JIC of strange gui stuff */
-    if (cw->deleting)
-    	return;
-    cw->deleting = TRUE;
-    
-    gtk_widget_destroy(cw->window);
-    g_free(cw);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static callgraphwin_t *
-callgraphwin_from_widget(GtkWidget *w)
-{
-    w = ui_get_window(w);
-    return (w == 0 ? 0 : gtk_object_get_data(GTK_OBJECT(w), callgraphwin_window_key));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -166,8 +133,8 @@ add_callnode(cov_callnode_t *cn, void *userdata)
     *listp = g_list_prepend(*listp, cn);
 }
 
-static void
-callgraph_populate_function_combo(GtkCombo *combo)
+void
+callgraphwin_t::populate_function_combo(GtkCombo *combo)
 {
     GList *list = 0, *iter;
     estring label;
@@ -205,14 +172,17 @@ callgraph_populate_function_combo(GtkCombo *combo)
 	list = g_list_remove_link(list, list);
 }
 
-static void
-callgraphwin_populate(callgraphwin_t *cw)
+void
+callgraphwin_t::populate()
 {
 #if DEBUG
-    fprintf(stderr, "callgraphwin_populate\n");
+    fprintf(stderr, "callgraphwin_t::populate\n");
 #endif
     
-    callgraph_populate_function_combo(GTK_COMBO(cw->function_combo));
+    populate_function_combo(GTK_COMBO(function_combo_));
+
+    ui_combo_set_current_data(GTK_COMBO(function_combo_), callnode_);
+    update();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -245,8 +215,8 @@ format_stat(
     	snprintf(buf, maxlen, "%llu/%llu", numerator, denominator);
 }
 
-static void
-callgraphwin_update_clist(GtkWidget *clist, GList *arcs, gboolean isin)
+void
+callgraphwin_t::update_clist(GtkWidget *clist, GList *arcs, gboolean isin)
 {
     GList *iter;
     int row;
@@ -278,47 +248,27 @@ callgraphwin_update_clist(GtkWidget *clist, GList *arcs, gboolean isin)
     gtk_clist_thaw(GTK_CLIST(clist));
 }
 
-static void
-callgraphwin_update(callgraphwin_t *cw)
+void
+callgraphwin_t::update()
 {
-    cov_callnode_t *cn = ui_combo_get_current_data(
-	    	    	    	GTK_COMBO(cw->function_combo));
+    cov_callnode_t *cn = callnode_;
     
 #if DEBUG
-    fprintf(stderr, "callgraphwin_update\n");
+    fprintf(stderr, "callgraphwin_t::update\n");
 #endif
-    gtk_widget_set_sensitive(cw->function_view, (cn->function != 0));
-    ui_window_set_title(cw->window, cn->name);
+    gtk_widget_set_sensitive(function_view_, (cn->function != 0));
+    set_title(cn->name);
 
-    callgraphwin_update_clist(cw->ancestors_clist, cn->in_arcs, TRUE);
-    callgraphwin_update_clist(cw->descendants_clist, cn->out_arcs, FALSE);
+    update_clist(ancestors_clist_, cn->in_arcs, TRUE);
+    update_clist(descendants_clist_, cn->out_arcs, FALSE);
 }
 
 void
-callgraphwin_set_node(callgraphwin_t *cw, cov_callnode_t *cn)
+callgraphwin_t::set_node(cov_callnode_t *cn)
 {
-    ui_combo_set_current_data(GTK_COMBO(cw->function_combo), cn);
-    callgraphwin_update(cw);
-    gtk_widget_show(cw->window);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-/* TODO: this needs to be common code too */
-static void
-callgraphwin_show_source(
-    const char *filename,
-    unsigned long startline,
-    unsigned long endline)
-{
-    sourcewin_t *srcw = sourcewin_new();
-    
-    sourcewin_set_filename(srcw, filename);
-    if (startline > 0)
-    {
-	sourcewin_ensure_visible(srcw, startline);
-	sourcewin_select_region(srcw, startline, endline);
-    }
+    callnode_ = cn;
+    if (shown_)
+    	update();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -326,10 +276,10 @@ callgraphwin_show_source(
 GLADE_CALLBACK void
 on_callgraph_close_activate(GtkWidget *w, gpointer data)
 {
-    callgraphwin_t *cw = callgraphwin_from_widget(w);
+    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
     
-    if (cw != 0)
-	callgraphwin_delete(cw);
+    assert(cw != 0);
+    delete cw;
 }
 
 GLADE_CALLBACK void
@@ -341,23 +291,19 @@ on_callgraph_exit_activate(GtkWidget *w, gpointer data)
 GLADE_CALLBACK void
 on_callgraph_function_entry_changed(GtkWidget *w, gpointer data)
 {
-    callgraphwin_t *cw = callgraphwin_from_widget(w);
+    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
 
-    callgraphwin_update(cw);
+    cw->callnode_ = (cov_callnode_t *)ui_combo_get_current_data(
+    	    	    	    	    	GTK_COMBO(cw->function_combo_));
+    cw->update();
 }
 
 GLADE_CALLBACK void
 on_callgraph_function_view_clicked(GtkWidget *w, gpointer data)
 {
-    callgraphwin_t *cw = callgraphwin_from_widget(w);
-    cov_callnode_t *cn = ui_combo_get_current_data(
-	    	    	    	GTK_COMBO(cw->function_combo));
-    const cov_location_t *start, *end;
+    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
 
-    start = cov_function_get_first_location(cn->function);
-    end = cov_function_get_last_location(cn->function);
-
-    callgraphwin_show_source(start->filename, start->lineno, end->lineno);
+    sourcewin_t::show_function(cw->callnode_->function);
 }
 
 GLADE_CALLBACK void
@@ -366,22 +312,22 @@ on_callgraph_ancestors_clist_button_press_event(
     GdkEventButton *event,
     gpointer data)
 {
-    callgraphwin_t *cw = callgraphwin_from_widget(w);
+    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
     int row, col;
     cov_callarc_t *ca;
 
     if (event->type == GDK_2BUTTON_PRESS &&
 	gtk_clist_get_selection_info(GTK_CLIST(w),
-	    	    	    	     event->x, event->y,
+	    	    	    	     (int)event->x, (int)event->y,
 				     &row, &col))
     {
 #if DEBUG
     	fprintf(stderr, "on_callgraph_ancestors_clist_button_press_event: row=%d col=%d\n",
 	    	    	row, col);
 #endif
-	ca = gtk_clist_get_row_data(GTK_CLIST(w), row);
+	ca = (cov_callarc_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
 	
-	callgraphwin_set_node(cw, ca->from);
+	cw->set_node(ca->from);
     }
 }
 
@@ -391,22 +337,22 @@ on_callgraph_descendants_clist_button_press_event(
     GdkEventButton *event,
     gpointer data)
 {
-    callgraphwin_t *cw = callgraphwin_from_widget(w);
+    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
     int row, col;
     cov_callarc_t *ca;
 
     if (event->type == GDK_2BUTTON_PRESS &&
 	gtk_clist_get_selection_info(GTK_CLIST(w),
-	    	    	    	     event->x, event->y,
+	    	    	    	     (int)event->x, (int)event->y,
 				     &row, &col))
     {
 #if DEBUG
     	fprintf(stderr, "on_callgraph_descendants_clist_button_press_event: row=%d col=%d\n",
 	    	    	row, col);
 #endif
-	ca = gtk_clist_get_row_data(GTK_CLIST(w), row);
+	ca = (cov_callarc_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
 	
-	callgraphwin_set_node(cw, ca->to);
+	cw->set_node(ca->to);
     }
 }
 

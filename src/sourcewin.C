@@ -17,50 +17,47 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "sourcewin.h"
+#include "sourcewin.H"
 #include "cov.h"
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.11 2002-01-17 03:51:31 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.1 2002-12-15 15:53:24 gnb Exp $");
 
 extern GList *filenames;
 
-static const char sourcewin_window_key[] = "sourcewin_key";
-static gboolean sourcewin_initted = FALSE;
-static GdkColor sourcewin_color0;	    /* colour for lines with count==0 */
-static GdkColor sourcewin_color1;	    /* colour for lines with count>0 */
-static GdkFont *sourcewin_font;
-static int sourcewin_font_width, sourcewin_font_height;
-
-static void sourcewin_populate_filenames(sourcewin_t *sw);
+gboolean sourcewin_t::initialised_ = FALSE;
+GdkColor sourcewin_t::color0_;	     /* colour for lines with count==0 */
+GdkColor sourcewin_t::color1_;	     /* colour for lines with count>0 */
+GdkFont *sourcewin_t::font_;
+int sourcewin_t::font_width_, sourcewin_t::font_height_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void
-sourcewin_init(GtkWidget *w)
+void
+sourcewin_t::init(GtkWidget *w)
 {
     GdkColormap *cmap;
 
-    if (sourcewin_initted)
+    if (initialised_)
     	return;
-    sourcewin_initted = TRUE;
+    initialised_ = TRUE;
 
     gtk_widget_realize(w);
     
     cmap = gtk_widget_get_colormap(w);
 
-    gdk_color_parse("#c00000", &sourcewin_color0);
-    gdk_colormap_alloc_color(cmap, &sourcewin_color0,
+    gdk_color_parse("#c00000", &color0_);
+    gdk_colormap_alloc_color(cmap, &color0_,
     	    	    	    	    /*writeable*/FALSE, /*best_match*/TRUE);
 
-    gdk_color_parse("#00c000", &sourcewin_color1);
-    gdk_colormap_alloc_color(cmap, &sourcewin_color1,
+    gdk_color_parse("#00c000", &color1_);
+    gdk_colormap_alloc_color(cmap, &color1_,
     	    	    	    	    /*writeable*/FALSE, /*best_match*/TRUE);
 
-    sourcewin_font = uix_fixed_width_font(gtk_widget_get_style(w)->font);
-    sourcewin_font_height = uix_font_height(sourcewin_font);
-    sourcewin_font_width = uix_font_width(sourcewin_font);
+    font_ = uix_fixed_width_font(gtk_widget_get_style(w)->font);
+    font_height_ = uix_font_height(font_);
+    font_width_ = uix_font_width(font_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -73,97 +70,67 @@ sourcewin_init(GtkWidget *w)
 
 extern int screenshot_mode;
 
-sourcewin_t *
-sourcewin_new(void)
+sourcewin_t::sourcewin_t()
 {
-    sourcewin_t *sw;
     GladeXML *xml;
     
-    sw = new(sourcewin_t);
-
-    sw->offsets_by_line = g_array_new(/*zero_terminated*/TRUE,
+    offsets_by_line_ = g_array_new(/*zero_terminated*/TRUE,
 				      /*clear*/TRUE,
 				      sizeof(unsigned int));
     
     /* load the interface & connect signals */
     xml = ui_load_tree("source");
     
-    sw->window = glade_xml_get_widget(xml, "source");
-    ui_register_window(sw->window);
-    sw->text = glade_xml_get_widget(xml, "source_text");
-    sw->number_check = glade_xml_get_widget(xml, "source_number_check");
-    sw->block_check = glade_xml_get_widget(xml, "source_block_check");
-    sw->count_check = glade_xml_get_widget(xml, "source_count_check");
-    sw->source_check = glade_xml_get_widget(xml, "source_source_check");
-    sw->colors_check = glade_xml_get_widget(xml, "source_colors_check");
-    sw->filenames_menu = ui_get_dummy_menu(xml, "source_file_dummy");
-    sw->functions_menu = ui_get_dummy_menu(xml, "source_func_dummy");
+    set_window(glade_xml_get_widget(xml, "source"));
+
+    text_ = glade_xml_get_widget(xml, "source_text");
+    number_check_ = glade_xml_get_widget(xml, "source_number_check");
+    block_check_ = glade_xml_get_widget(xml, "source_block_check");
+    count_check_ = glade_xml_get_widget(xml, "source_count_check");
+    source_check_ = glade_xml_get_widget(xml, "source_source_check");
+    colors_check_ = glade_xml_get_widget(xml, "source_colors_check");
+    filenames_menu_ = ui_get_dummy_menu(xml, "source_file_dummy");
+    functions_menu_ = ui_get_dummy_menu(xml, "source_func_dummy");
     ui_register_windows_menu(ui_get_dummy_menu(xml, "source_windows_dummy"));
-    
-    gtk_object_set_data(GTK_OBJECT(sw->window), sourcewin_window_key, sw);
-    
-    sourcewin_init(sw->window);
+        
+    init(window_);
     
     if (!screenshot_mode)
-	gtk_widget_set_usize(sw->text,
-    	    SOURCE_COLUMNS * sourcewin_font_width + MAGIC_MARGINX,
-    	    SOURCE_ROWS * sourcewin_font_height + MAGIC_MARGINY);
-    
-    gtk_widget_show(sw->window);
-    
-    sourcewin_populate_filenames(sw);
-
-    return sw;
+	gtk_widget_set_usize(text_,
+    	    SOURCE_COLUMNS * font_width_ + MAGIC_MARGINX,
+    	    SOURCE_ROWS * font_height_ + MAGIC_MARGINY);
 }
+
+sourcewin_t::~sourcewin_t()
+{
+    strdelete(filename_);
+    g_array_free(offsets_by_line_, /*free_segment*/TRUE);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-sourcewin_delete(sourcewin_t *sw)
+sourcewin_t::on_source_filename_activate(GtkWidget *w, gpointer userdata)
 {
-    /* JIC of strange gui stuff */
-    if (sw->deleting)
-    	return;
-    sw->deleting = TRUE;
-    
-    gtk_widget_destroy(sw->window);
-    strdelete(sw->filename);
-    g_array_free(sw->offsets_by_line, /*free_segment*/TRUE);
-
-    g_free(sw);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static sourcewin_t *
-sourcewin_from_widget(GtkWidget *w)
-{
-    w = ui_get_window(w);
-    return (w == 0 ? 0 : gtk_object_get_data(GTK_OBJECT(w), sourcewin_window_key));
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static void
-on_source_filename_activate(GtkWidget *w, gpointer userdata)
-{
-    sourcewin_t *sw = sourcewin_from_widget(w);
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
     const char *filename = (const char *)userdata;
     
-    sourcewin_set_filename(sw, filename);
+    sw->set_filename(filename);
 }
 
 
-static void
-sourcewin_populate_filenames(sourcewin_t *sw)
+void
+sourcewin_t::populate_filenames()
 {
     GList *iter;
     
-    ui_delete_menu_items(sw->filenames_menu);
+    ui_delete_menu_items(filenames_menu_);
     
     for (iter = filenames ; iter != 0 ; iter = iter->next)
     {
     	const char *filename = (const char *)iter->data;
 
-	ui_menu_add_simple_item(sw->filenames_menu, filename,
+	ui_menu_add_simple_item(filenames_menu_, filename,
 	    	    on_source_filename_activate, (gpointer)filename);
     }
 }
@@ -182,8 +149,8 @@ typedef struct
     cov_function_t *function;
 } sourcewin_hacky_rec_t;
 
-static int
-sourcewin_delayed_function_activate(gpointer userdata)
+int
+sourcewin_t::delayed_function_activate(gpointer userdata)
 {
     sourcewin_hacky_rec_t *rec = (sourcewin_hacky_rec_t *)userdata;
     sourcewin_t *sw = rec->sourcewin;
@@ -201,40 +168,40 @@ sourcewin_delayed_function_activate(gpointer userdata)
 #endif
     
     /* Check for weirdness like functions spanning files */
-    if (strcmp(first->filename, sw->filename))
+    if (strcmp(first->filename, sw->filename_))
     {
     	fprintf(stderr, "WTF?  Wrong filename for first loc: %s vs %s\n",
-	    	    	first->filename, sw->filename);
+	    	    	first->filename, sw->filename_);
 	g_free(rec);
 	return FALSE;
     }
-    if (strcmp(last->filename, sw->filename))
+    if (strcmp(last->filename, sw->filename_))
     {
     	fprintf(stderr, "WTF?  Wrong filename for last loc: %s vs %s\n",
-	    	    	last->filename, sw->filename);
+	    	    	last->filename, sw->filename_);
 	g_free(rec);
 	return FALSE;
     }
 
-    sourcewin_ensure_visible(sw, first->lineno);
+    sw->ensure_visible(first->lineno);
 
     /* This only selects the span of the lines which contain executable code */		    
-    sourcewin_select_region(sw, first->lineno, last->lineno);
+    sw->select_region(first->lineno, last->lineno);
 
     g_free(rec);
     return FALSE;   /* and don't call me again! */
 }
 
-static void
-on_source_function_activate(GtkWidget *w, gpointer userdata)
+void
+sourcewin_t::on_source_function_activate(GtkWidget *w, gpointer userdata)
 {
     sourcewin_hacky_rec_t *rec;
     
     rec = new(sourcewin_hacky_rec_t);
-    rec->sourcewin = sourcewin_from_widget(w);
+    rec->sourcewin = sourcewin_t::from_widget(w);
     rec->function = (cov_function_t *)userdata;
 
-    gtk_idle_add(sourcewin_delayed_function_activate, rec);
+    gtk_idle_add(delayed_function_activate, rec);
 }
 
 static int
@@ -246,8 +213,8 @@ compare_functions(const void *a, const void *b)
     return strcmp(fa->name, fb->name);
 }
 
-static void
-sourcewin_populate_functions(sourcewin_t *sw)
+void
+sourcewin_t::populate_functions()
 {
     GList *functions = 0;
     unsigned fnidx;
@@ -255,11 +222,11 @@ sourcewin_populate_functions(sourcewin_t *sw)
     cov_function_t *fn;
     
     /* build an alphabetically sorted list of functions */
-    f = cov_file_find(sw->filename);
+    f = cov_file_find(filename_);
     assert(f != 0);
-    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
     {
-    	fn = f->functions->pdata[fnidx];
+    	fn = cov_file_nth_function(f, fnidx);
 	
 	if (!strncmp(fn->name, "_GLOBAL_", 8))
 	    continue;
@@ -270,17 +237,25 @@ sourcewin_populate_functions(sourcewin_t *sw)
     
     /* now build the menu */
 
-    ui_delete_menu_items(sw->functions_menu);
+    ui_delete_menu_items(functions_menu_);
     
     while (functions != 0)
     {
     	fn = (cov_function_t *)functions->data;
 	
-	ui_menu_add_simple_item(sw->functions_menu, fn->name,
+	ui_menu_add_simple_item(functions_menu_, fn->name,
 	    	    on_source_function_activate, fn);
 	
 	functions = g_list_remove_link(functions, functions);
     }
+}
+
+void
+sourcewin_t::populate()
+{
+    populate_filenames();
+    populate_functions();
+    update();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -355,14 +330,14 @@ format_blocks(char *buf, unsigned int width, const cov_location_t *loc)
     *buf = '\0';
 }
 
-static void
-sourcewin_update_source(sourcewin_t *sw)
+void
+sourcewin_t::update()
 {
     FILE *fp;
     cov_location_t loc;
     count_t count;
     gboolean have_count;
-    GtkText *text = GTK_TEXT(sw->text);
+    GtkText *text = GTK_TEXT(text_);
     int i, nstrs;
     GdkColor *color;
     const char *strs[5];
@@ -371,10 +346,10 @@ sourcewin_update_source(sourcewin_t *sw)
     char countbuf[32];
     char linebuf[1024];
     
-    if ((fp = fopen(sw->filename, "r")) == 0)
+    if ((fp = fopen(filename_, "r")) == 0)
     {
     	/* TODO: gui error report */
-    	perror(sw->filename);
+    	perror(filename_);
 	return;
     }
 
@@ -382,9 +357,9 @@ sourcewin_update_source(sourcewin_t *sw)
     gtk_text_freeze(text);
     gtk_editable_delete_text(GTK_EDITABLE(text), 0, -1);
     
-    g_array_set_size(sw->offsets_by_line, 0);
+    g_array_set_size(offsets_by_line_, 0);
 
-    loc.filename = sw->filename;
+    loc.filename = filename_;
     loc.lineno = 0;
     while (fgets_tabexpand(linebuf, sizeof(linebuf), fp) != 0)
     {
@@ -400,7 +375,7 @@ sourcewin_update_source(sourcewin_t *sw)
 	 */
 	{
 	    unsigned int offset = gtk_text_get_length(text);
-	    g_array_append_val(sw->offsets_by_line, offset);
+	    g_array_append_val(offsets_by_line_, offset);
 #if DEBUG > 10
 	    fprintf(stderr, "line=%d offset=%d\n", lineno, offset);
 #endif
@@ -410,26 +385,26 @@ sourcewin_update_source(sourcewin_t *sw)
 
     	/* choose colours */
 	color = 0;
-	if (GTK_CHECK_MENU_ITEM(sw->colors_check)->active && have_count)
-	    color = (count ? &sourcewin_color1 : &sourcewin_color0);
+	if (GTK_CHECK_MENU_ITEM(colors_check_)->active && have_count)
+	    color = (count ? &color1_ : &color0_);
 
     	/* generate strings */
 	
 	nstrs = 0;
 	
-	if (GTK_CHECK_MENU_ITEM(sw->number_check)->active)
+	if (GTK_CHECK_MENU_ITEM(number_check_)->active)
 	{
 	    snprintf(linenobuf, sizeof(linenobuf), "%7lu ", loc.lineno);
 	    strs[nstrs++] = linenobuf;
 	}
 	
-	if (GTK_CHECK_MENU_ITEM(sw->block_check)->active)
+	if (GTK_CHECK_MENU_ITEM(block_check_)->active)
 	{
 	    format_blocks(blockbuf, 16, &loc);
 	    strs[nstrs++] = blockbuf;
 	}
 	
-	if (GTK_CHECK_MENU_ITEM(sw->count_check)->active)
+	if (GTK_CHECK_MENU_ITEM(count_check_)->active)
 	{
 	    if (have_count)
 	    {
@@ -445,21 +420,21 @@ sourcewin_update_source(sourcewin_t *sw)
 		strs[nstrs++] = "        ";
     	}
 
-	if (GTK_CHECK_MENU_ITEM(sw->source_check)->active)
+	if (GTK_CHECK_MENU_ITEM(source_check_)->active)
 	    strs[nstrs++] = linebuf;
 	else
 	    strs[nstrs++] = "\n";
 
     	for (i = 0 ; i < nstrs ; i++)
 	{
-    	    gtk_text_insert(text, sourcewin_font,
+    	    gtk_text_insert(text, font_,
 	    		    color, /*back*/0,
 			    strs[i], strlen(strs[i]));
     	}
     }
     
-    sw->max_lineno = loc.lineno;
-    assert(sw->offsets_by_line->len == sw->max_lineno);
+    max_lineno_ = loc.lineno;
+    assert(offsets_by_line_->len == max_lineno_);
     
     fclose(fp);
     gtk_text_thaw(text);
@@ -468,43 +443,79 @@ sourcewin_update_source(sourcewin_t *sw)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-sourcewin_set_filename(sourcewin_t *sw, const char *filename)
+sourcewin_t::set_filename(const char *filename)
 {
-    ui_window_set_title(sw->window, filename);
-    strassign(sw->filename, filename);
-    sourcewin_update_source(sw);
-    sourcewin_populate_functions(sw);
+    set_title(filename);
+    strassign(filename_, filename);
+
+    if (shown_)
+    {
+	populate_functions();
+    	update();
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-sourcewin_select_region(
-    sourcewin_t *sw,
-    unsigned long startline,
-    unsigned long endline)
+sourcewin_t::select_region(unsigned long startline, unsigned long endline)
 {
-    if (startline > sw->offsets_by_line->len)
-    	startline = sw->offsets_by_line->len;
-    if (endline > sw->offsets_by_line->len)
-    	endline = sw->offsets_by_line->len;
+    if (startline > offsets_by_line_->len)
+    	startline = offsets_by_line_->len;
+    if (endline > offsets_by_line_->len)
+    	endline = offsets_by_line_->len;
     if (startline > endline)
     	return;
 	
-    gtk_editable_select_region(GTK_EDITABLE(sw->text),
-    	    g_array_index(sw->offsets_by_line, unsigned int, startline-1),
-    	    g_array_index(sw->offsets_by_line, unsigned int, endline)-1);
+    gtk_editable_select_region(GTK_EDITABLE(text_),
+    	    g_array_index(offsets_by_line_, unsigned int, startline-1),
+    	    g_array_index(offsets_by_line_, unsigned int, endline)-1);
 }
 
 /* This mostly works.  Not totally predictable but good enough for now */
 void
-sourcewin_ensure_visible(sourcewin_t *sw, unsigned long line)
+sourcewin_t::ensure_visible(unsigned long line)
 {
-    GtkAdjustment *adj = GTK_TEXT(sw->text)->vadj;
+    GtkAdjustment *adj = GTK_TEXT(text_)->vadj;
 
     gtk_adjustment_set_value(adj,
-	    	adj->upper * (double)line / (double)sw->max_lineno
+	    	adj->upper * (double)line / (double)max_lineno_
 		    - adj->page_size/2.0);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+sourcewin_t::show_lines(
+    const char *filename,
+    unsigned long startline,
+    unsigned long endline)
+{
+    sourcewin_t *sw = new sourcewin_t();
+    
+    sw->set_filename(filename);
+    if (startline > 0)
+    {
+	sw->ensure_visible(startline);
+	sw->select_region(startline, endline);
+    }
+}
+
+void
+sourcewin_t::show_function(const cov_function_t *fn)
+{
+    const cov_location_t *start, *end;
+
+    start = cov_function_get_first_location(fn);
+    end = cov_function_get_last_location(fn);
+
+    show_lines(start->filename, start->lineno, end->lineno);
+}
+
+void
+sourcewin_t::show_file(const char *filename)
+{
+    show_lines(filename, 0, 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -512,10 +523,10 @@ sourcewin_ensure_visible(sourcewin_t *sw, unsigned long line)
 GLADE_CALLBACK void
 on_source_close_activate(GtkWidget *w, gpointer data)
 {
-    sourcewin_t *sw = sourcewin_from_widget(w);
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
     
-    if (sw != 0)
-	sourcewin_delete(sw);
+    assert(sw != 0);
+    delete sw;
 }
 
 GLADE_CALLBACK void
@@ -527,41 +538,41 @@ on_source_exit_activate(GtkWidget *w, gpointer data)
 GLADE_CALLBACK void
 on_source_count_check_activate(GtkWidget *w, gpointer data)
 {
-    sourcewin_t *sw = sourcewin_from_widget(w);
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
     
-    sourcewin_update_source(sw);
+    sw->update();
 }
 
 GLADE_CALLBACK void
 on_source_number_check_activate(GtkWidget *w, gpointer data)
 {
-    sourcewin_t *sw = sourcewin_from_widget(w);
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
     
-    sourcewin_update_source(sw);
+    sw->update();
 }
 
 GLADE_CALLBACK void
 on_source_block_check_activate(GtkWidget *w, gpointer data)
 {
-    sourcewin_t *sw = sourcewin_from_widget(w);
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
     
-    sourcewin_update_source(sw);
+    sw->update();
 }
 
 GLADE_CALLBACK void
 on_source_source_check_activate(GtkWidget *w, gpointer data)
 {
-    sourcewin_t *sw = sourcewin_from_widget(w);
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
     
-    sourcewin_update_source(sw);
+    sw->update();
 }
 
 GLADE_CALLBACK void
 on_source_colors_check_activate(GtkWidget *w, gpointer data)
 {
-    sourcewin_t *sw = sourcewin_from_widget(w);
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
     
-    sourcewin_update_source(sw);
+    sw->update();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

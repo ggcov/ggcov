@@ -17,28 +17,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _ggcov_functionswin_h_
-#define _ggcov_functionswin_h_ 1
+#ifndef _ggcov_window_H_
+#define _ggcov_window_H_ 1
 
 #include "ui.h"
 
-typedef struct
+class window_t
 {
-    GtkWidget *window;
-    gboolean deleting:1;    /* handle possible GUI recursion crap */
+protected:
+    window_t();
+public:
+    virtual ~window_t();
 
-    GList *functions;	    /* list of func_rec_t */
-    
-    GtkWidget *lines_check;
-    GtkWidget *calls_check;
-    GtkWidget *branches_check;
-    GtkWidget *percent_check;
-    GtkWidget *clist;
-} functionswin_t;
+    virtual void show();
 
+protected:
+    virtual void populate();
+    static window_t *from_widget(GtkWidget *);
+    virtual void grey_items();
+    void set_window(GtkWidget *);
+    void set_title(const char *);
 
-functionswin_t *functionswin_new(void);
-void functionswin_delete(functionswin_t *fw);
+    GtkWidget *window_;
+    gboolean deleting_:1;    /* handle possible GUI recursion crap */
+    gboolean shown_:1;	     /* has been shown()n at least once */
 
+};
 
-#endif /* _ggcov_functionswin_h_ */
+#endif /* _ggcov_window_H_ */
