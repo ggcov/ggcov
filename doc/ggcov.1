@@ -1,0 +1,90 @@
+.\"
+.\" ggcov - A GTK frontend for exploring gcov coverage data
+.\" Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
+.\" 
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\" 
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\" 
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+.\" 
+.\" $Id: ggcov.1,v 1.1 2003-11-02 04:48:45 gnb Exp $
+.\"
+.TH GGCOV "1" "November 2003" "GGCOV" "Greg Banks"
+.SH NAME
+ggcov \- a GNOME frontend for exploring gcov coverage data
+.SH SYNOPSIS
+\fBggcov\fP [\fIGNOME options\fP] 
+[[\fB\-r\fP] \fIdirectory\fP|\fIfile\fP] ...
+.SH DESCRIPTION
+.PP
+\fBGgcov\fP is a GTK+ GUI for exploring test coverage data produced by
+C and C++ programs compiled with \fIgcc \-fprofile-arcs \-ftest-coverage\fP.
+So it's basically a GUI replacement for the \fBgcov\fP program that comes
+with \fBgcc\fP.
+.PP
+\fBGgcov\fP understands all the standard GTK+ and GNOME options, such
+as \fB\-display\fP and \fB\-disable\-crash\-dialog\fP.  All other arguments
+are used to specify how to find coverage data files.  The arguments can 
+combinations of:
+.IP \fIdirectory\fP
+The directory is scanned for source files, which are handled as if they
+had been specified on the commandline (except that missing coverage
+data files are silently ignored).  If the \fB\-r\fP flag is in effect,
+sub\-directories are scanned recursively.  Multiple directories can
+be specified and are scanned in the order given.
+.IP \fIexecutable\fP
+The executable file is scanned for debugging records which contain
+source file names, and each source file which exists is handled as if
+it had been specified on the command line (except that missing coverage
+data files are silently ignored).  Multiple executables can
+be specified and are scanned in the order given.  This feature is
+only available on some platforms (currently i386-linux).
+.IP \fIsource-file\fP
+Is any regular file ending in one of the file 
+extensions \fI.c\fP, \fI.cc\fP, \fI.cxx\fP, \fI.cpp\fP, or \fI.C\fP.
+Source files are matched to their corresponding coverage data
+files (\fI.bb\fP, \fI.bbg\fP, and \fI.da\fP files) and object files
+by searching for a file of the same basename and the appropriate
+extension first in the same directory as the source file and then
+in all the directories specified on the command line (in the order
+they were specified).
+.PP
+If no arguments are given, \fBggcov\fP shows a file selection
+dialog so you can select one directory, executable, or source file.
+.PP
+Directories, executables, or source files can also be added after
+\fBggcov\fP is started by dragging and dropping them from a GNOME
+Nautilus window onto any \fBggcov\fP window.
+.SH EXAMPLES
+.PP
+View coverage data for all the available source in an executable (on
+some platforms only):
+.IP
+.B ggcov a.out
+.PP
+View coverage data for all the C source in the current directory:
+.IP
+.B ggcov *.c
+.PP
+View coverage data for all the C source in one directory where the
+object files and test coverage data files are in different directories:
+.IP
+.B ggcov /foo/obj/ /foo/cov\-data/ /foo/src/
+.SH AUTHOR
+Written by Greg Banks
+.IR <gnb@alphalink.com.au> .
+.SH COPYRIGHT
+Copyright \(co 2001\-2003 Greg Banks.
+.br
+This is free software; see the COPYING file for copying conditions.  There
+is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
