@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.36 2003-07-22 11:43:30 gnb Exp $
+dnl $Id: configure.in,v 1.36.2.1 2003-08-03 04:28:37 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -64,7 +64,6 @@ dnl AM_GNU_GETTEXT
 dnl Checks for libraries.
 AC_CHECK_LIB(iberty, obstack_free)
 AC_CHECK_LIB(bfd, bfd_init)
-AC_CHECK_LIB(popt, poptGetContext)
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -74,8 +73,6 @@ AC_CHECK_HEADERS(signal.h sys/filio.h stdint.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_PID_T
-
-dnl Check for the libglade, libxml, and GTK libraries
 
 
 dnl A bunch of warning options for gcc
@@ -103,16 +100,26 @@ dnl    fi
 	      AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE),,
 	      [$GGCOV_GUI_LIBS])
     GGCOV_GLADE_FILE=ggcov-glade2.glade
+    # gnome2 doesn't need popt, so it may or may not be present
+    AC_CHECK_LIB(popt,poptGetContext,
+    	    	 [
+AC_DEFINE(HAVE_LIBPOPT)
+LIBS="$LIBS -lpopt"
+		 ],,
+		 $GGCOV_GUI_CFLAGS $GGCOV_GUI_LIBS)
 else
     # fall back to gtk 1.2
+    AC_MSG_WARN([GNOME version 2 libraries not found, falling back to 1.2])
     AM_PATH_LIBGLADE(,AC_MSG_ERROR(ggcov requires the libglade library),gnome)
     AM_PATH_IMLIB(,,AC_MSG_ERROR(ggcov requires the libgdk_imlib library))
     AM_PATH_GLIB(,,AC_MSG_ERROR(ggcov requires the glib library))
     GGCOV_GUI_CFLAGS="$LIBGLADE_CFLAGS $IMLIB_CFLAGS"
     GGCOV_GUI_LIBS="$LIBGLADE_LIBS $IMLIB_LIBS"
     GGCOV_CLI_CFLAGS="$GLIB_CFLAGS"
-    GGCOV_CLI_LIBS="$GLIB_LIBS"
+    GGCOV_CLI_LIBS="$GLIB_LIBS -lpopt"
     GGCOV_GLADE_FILE=ggcov.glade
+    # gnome1.2 requires popt so we can assume it's present
+    AC_DEFINE(HAVE_LIBPOPT)
 fi
 AC_SUBST(GGCOV_GUI_CFLAGS)
 AC_SUBST(GGCOV_GUI_LIBS)
