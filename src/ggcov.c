@@ -35,7 +35,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.31 2003-07-14 15:57:04 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.32 2003-07-16 15:17:06 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -252,7 +252,12 @@ parse_args(int argc, char **argv)
 #endif
     
     while ((file = poptGetArg(popt_context)) != 0)
+    {
+    	/* transparently handle file: URLs for Nautilus integration */
+    	if (!strncmp(file, "file://", 7))
+	    file += 7;
 	files = g_list_append(files, (gpointer)file);
+    }
 	
     poptFreeContext(popt_context);
     
