@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.37 2004-03-16 20:26:42 gnb Exp $
+# $Id: Makefile.am,v 1.38 2004-03-21 13:55:48 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -75,6 +75,8 @@ ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		help.c ggcov.c
 
 INCLUDES=	$(GGCOV_GUI_CFLAGS) -DPKGDATADIR="\"$(pkgdatadir)\"" \
+		-DPREFIX="\"$(prefix)\"" -DDATADIR="\"$(datadir)\"" \
+		-DLIBDIR="\"$(libdir)\"" -DSYSCONFDIR="\"$(sysconfdir)\"" \
  		-DDEBUG=$(DEBUG) -DUI_DEBUG=$(UI_DEBUG)
 ggcov_LDADD=	libcov.a libcommon.a $(GGCOV_GUI_LIBS)
 CLI_LIBS=	libcov.a libcommon.a $(GGCOV_CLI_LIBS)
