@@ -1,20 +1,71 @@
 #!/bin/sh
 
 FORCE=no
+CVSUP=no
+BUILDHOST=
+LOCALHOST=$(uname -n|cut -d. -f1)
+RPMDEST=
+
+fatal ()
+{
+    echo "ERROR: $*" >&2
+    exit 1
+}
 
 usage ()
 {
-    echo "Usage: $0 [--force]"
+    echo "Usage: $0 [--force] [--cvs-update] [--build-host=host] [--rpm-destination=[host:]dir]"
     exit 1
+}
+
+boolopt ()
+{
+    case "${2#*=}" in
+    yes) eval $1=yes ;;
+    no) eval $1=no ;;
+    *) fatal "Bad boolean option \"$2\"" ;;
+    esac
 }
 
 while [ $# -gt 0 ]; do
     case "$1" in
-    --force|-f) FORCE=yes ;;
+    --force|-f) boolopt FORCE yes ;;
+    --force=*) boolopt FORCE $1 ;;
+    -h|--build-host) BUILDHOST=$2 ; shift ;;
+    --build-host=*) BUILDHOST=${1#*=} ;;
+    -u|--cvs-update) boolopt CVSUP yes ;;
+    --cvs-update=*) boolopt CVSUP $1 ;;
+    -d|--rpm-destination) RPMDEST=$2 ; shift ;;
+    --rpm-destination=*) RPMDEST=${1#*=} ;;
     *) usage ;;
     esac
     shift
 done
+
+# echo FORCE=$FORCE
+# echo BUILDHOST=$BUILDHOST
+# echo CVSUP=$CVSUP
+# echo RPMDEST=$RPMDEST
+# exit
+
+case "$BUILDHOST" in
+""|"$LOCALHOST"|localhost)
+    echo "Building on local host"
+    exec 2>&1 | tee build.$LOCALHOST.log
+    ;;
+*)
+    echo "Building on remote host \"$BUILDHOST\""
+    (
+	set -x
+	ssh $BUILDHOST "cd $PWD && \
+    	    ./buildrpm \
+	    	--cvs-update=$CVSUP \
+		--force=$FORCE \
+		--rpm-destination=${RPMDEST:-$LOCALHOST:$PWD}"
+    ) 2>&1 | tee build.$BUILDHOST.log
+    exit
+    ;;
+esac
 
 set `sed -n -e 's|^AM_INIT_AUTOMAKE(\([^,]\+\),\([^)]\+\))|\1 \2|p' < configure.in`
 PACKAGE=$1
@@ -45,47 +96,73 @@ fi
 #echo FORCE=$FORCE
 #exit 1
 
-set -x
+
+if [ $CVSUP = yes ]; then
+    echo "Checking for locally changed files"
+    NCHANGES=$(cvs -nq up | awk 'BEGIN{c=0} $1~/^[MC]$/{c++} END{print c}')
+    [ $NCHANGES -eq 0 ] || \
+    	fatal "There are $NCHANGES changed files in this work area."
+    echo "Updating files from CVS"
+    (
+    	set -x
+    	cvs -q up || exit 1
+    ) || exit 1
+fi
 
 if [ $FORCE = yes ]; then
-    # Force complete rebuild
-    /bin/rm -rf config.status config.cache autom4te.cache
-    /bin/rm -f $SPECFILE $TARBALL
+    echo "Removing files to force rebuild"
+    (
+    	set -x
+	/bin/rm -rf config.status config.cache autom4te.cache
+	/bin/rm -f $SPECFILE $TARBALL
+    )
 fi
 
 if [ ! -f $SPECFILE ]; then
-    autoconf
-    autoheader
-    automake -a
-    ./configure
-    if [ ! -f $SPECFILE ]; then
-    	echo "Can't build $SPECFILE, giving up"
-	exit 1
-    fi
+    echo "Specfile missing, building"
+    (
+    	set -x
+	autoconf
+	autoheader
+	automake -a
+	./configure
+    )
+    [ -f $SPECFILE ] || fatal "Can't build $SPECFILE, giving up"
 fi
 
 if [ ! -f $TARBALL ]; then
-    make dist
-    if [ ! -f $TARBALL ]; then
-    	echo "Can't build $TARBALL, giving up"
-	exit 1
-    fi
+    echo "Tarball missing, building"
+    (
+    	set -x
+	make dist
+    )
+    [ -f $TARBALL ] || fatal "Can't build $TARBALL, giving up"
 fi
 
+echo "Building $RPMDIR directory tree"
 /bin/rm -rf $RPMDIR
 mkdir -p $RPMDIR
 (cd $RPMDIR ; mkdir -p BUILD RPMS/i386 RPMS/`uname -m` SPECS SRPMS )
 
+echo "Building RPMs"
+(
+    set -x
+    $RPMBUILD -bb \
+	--define "_topdir $PWD/$RPMDIR" \
+	--define "_sourcedir $PWD" \
+	--verbose \
+	$SPECFILE || exit 1
+)
 
-$RPMBUILD -bb \
-    --define "_topdir $PWD/$RPMDIR" \
-    --define "_sourcedir $PWD" \
-    --verbose \
-    $SPECFILE
-
+echo "Copying RPMs to destination"
 for f in $(find $RPMDIR/RPMS -type f -name \*.rpm) ; do
     f2=$(echo $(basename $f) | sed -e 's|^\([a-z-]\+-\)|\1'${DISTRO}${DISTRO:+-}'|')
-    echo "Renaming $(basename $f) -> $f2"
-    mv $f $f2
+    if [ -z "$RPMDEST" ]; then
+	echo "Moving $f -> $f2"
+	mv $f $f2 || exit 1
+    else
+	echo "Copying $f -> $RPMDEST/$f2"
+	scp $f $RPMDEST/$f2 || exit 1
+    fi
 done
 
