@@ -2971,7 +2971,7 @@
 	  <child>
 	    <widget class="GtkImage" id="pixmap1">
 	      <property name="visible">True</property>
-	      <property name="pixbuf">logo.xpm</property>
+	      <property name="pixbuf">ggcov64.png</property>
 	      <property name="xalign">0.5</property>
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">4</property>

@@ -37,7 +37,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.42 2004-04-03 01:31:21 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.43 2004-10-24 06:48:57 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -326,7 +326,7 @@ on_windows_new_reportwin_activated(GtkWidget *w, gpointer userdata)
     rw->show();
 }
 
-#include "ui/icon.xpm"
+#include "ui/ggcov32.xpm"
 
 static void
 ui_create(void)
@@ -348,7 +348,7 @@ ui_create(void)
     ui_register_windows_entry("New Report...",
     			      on_windows_new_reportwin_activated, 0);
 
-    ui_set_default_icon(icon_xpm);
+    ui_set_default_icon(ggcov32_xpm);
 
     prefs.load();
 

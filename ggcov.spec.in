@@ -37,6 +37,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/ggcov
 %{_datadir}/ggcov/
 %{_datadir}/gnome/apps/Development/ggcov.desktop
+%{_datadir}/pixmaps/ggcov64.png
 %doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
 %docdir %{_mandir}
 %{_mandir}/man1/ggcov.1*

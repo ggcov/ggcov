@@ -16,21 +16,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.9 2003-07-17 15:05:45 gnb Exp $
+# $Id: Makefile.am,v 1.10 2004-10-24 06:48:57 gnb Exp $
 #
 
 desktopdir=	$(datadir)/gnome/apps/Development
+pixmapsdir=	$(datadir)/pixmaps
 
-GLADEFILES=	ggcov.glade ggcov-glade2.glade
-BUILD_PIXMAPS=	icon.xpm
-PIXMAPS=	logo.xpm icon-med.xpm
+EXTRA_DIST=	ggcov.glade ggcov-glade2.glade \
+		ggcov64.png ggcov32.png ggcov32.xpm \
+		ggcov.desktop
 
-EXTRA_DIST=	$(GLADEFILES) $(PIXMAPS) $(BUILD_PIXMAPS) ggcov.desktop.in
-pkgdata_DATA=	@GGCOV_GLADE_FILE@ $(PIXMAPS)
+pixmaps_DATA=	ggcov64.png
+pkgdata_DATA=	@GGCOV_GLADE_FILE@ ggcov64.png
 desktop_DATA=	ggcov.desktop
-
-# Expansion of datadir cannot be performed at configure time because we need
-# a full explicit pathname rather than a make/shell variable expression.
-ggcov.desktop: ggcov.desktop.in
-	sed -e 's|[@]datadir[@]|$(datadir)|g' \
-		< ggcov.desktop.in > $@

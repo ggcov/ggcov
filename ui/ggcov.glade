@@ -322,7 +322,7 @@
 
 	  <widget>
 	    <class>GtkPixmapMenuItem</class>
-	    <name>about</name>
+	    <name>help_about</name>
 	    <signal>
 	      <name>activate</name>
 	      <handler>on_about_activate</handler>
@@ -718,7 +718,7 @@
 
 	  <widget>
 	    <class>GtkPixmapMenuItem</class>
-	    <name>about</name>
+	    <name>help_about</name>
 	    <signal>
 	      <name>activate</name>
 	      <handler>on_about_activate</handler>
@@ -1895,7 +1895,7 @@
 
 	  <widget>
 	    <class>GtkPixmapMenuItem</class>
-	    <name>about</name>
+	    <name>help_about</name>
 	    <signal>
 	      <name>activate</name>
 	      <handler>on_about_activate</handler>
@@ -2267,7 +2267,7 @@
 
 	  <widget>
 	    <class>GtkPixmapMenuItem</class>
-	    <name>about</name>
+	    <name>help_about</name>
 	    <signal>
 	      <name>activate</name>
 	      <handler>on_about_activate</handler>
@@ -2595,7 +2595,7 @@
 
 	  <widget>
 	    <class>GtkPixmapMenuItem</class>
-	    <name>about</name>
+	    <name>help_about</name>
 	    <signal>
 	      <name>activate</name>
 	      <handler>on_about_activate</handler>
@@ -3040,7 +3040,7 @@
 
 	  <widget>
 	    <class>GtkPixmapMenuItem</class>
-	    <name>about</name>
+	    <name>help_about</name>
 	    <signal>
 	      <name>activate</name>
 	      <handler>on_about_activate</handler>
@@ -3342,7 +3342,7 @@
       <widget>
 	<class>GtkPixmap</class>
 	<name>pixmap1</name>
-	<filename>logo.xpm</filename>
+	<filename>ggcov64.png</filename>
 	<xalign>0.5</xalign>
 	<yalign>0.5</yalign>
 	<xpad>4</xpad>
@@ -3707,7 +3707,7 @@ C programs built with the GNU C Compiler.
 
 	    <widget>
 	      <class>GtkPixmapMenuItem</class>
-	      <name>about1</name>
+	      <name>help_about</name>
 	      <signal>
 		<name>activate</name>
 		<handler>on_about_activate</handler>
@@ -4603,7 +4603,7 @@ C programs built with the GNU C Compiler.
 
 	  <widget>
 	    <class>GtkPixmapMenuItem</class>
-	    <name>about</name>
+	    <name>help_about</name>
 	    <signal>
 	      <name>activate</name>
 	      <handler>on_about_activate</handler>
