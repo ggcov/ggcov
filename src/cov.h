@@ -84,5 +84,6 @@ const GList *cov_blocks_find_by_location(const char *filename, unsigned lineno);
 void cov_file_foreach(void (*func)(cov_file_t*, void *userdata), void *userdata);
 
 const cov_location_t *cov_function_get_first_location(const cov_function_t *fn);
+const cov_location_t *cov_function_get_last_location(const cov_function_t *fn);
 
 #endif /* _ggcov_cov_h_ */

@@ -22,7 +22,7 @@
 #include "filename.h"
 #include "estring.h"
 
-CVSID("$Id: cov.c,v 1.2 2001-11-23 09:05:26 gnb Exp $");
+CVSID("$Id: cov.c,v 1.3 2001-11-23 11:46:00 gnb Exp $");
 
 GHashTable *cov_files;
 /* TODO: ? reorg this */
@@ -83,6 +83,21 @@ cov_function_get_first_location(const cov_function_t *fn)
     return 0;
 }
 
+const cov_location_t *
+cov_function_get_last_location(const cov_function_t *fn)
+{
+    int bidx;
+    GList *iter;
+    
+    for (bidx = fn->blocks->len-1 ; bidx >= 0 ; bidx--)
+    {
+    	cov_block_t *b = (cov_block_t *)fn->blocks->pdata[bidx];
+	
+	for (iter = g_list_last(b->locations) ; iter != 0 ; iter = iter->prev)
+	    return (const cov_location_t *)iter->data;
+    }
+    return 0;
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
