@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.25 2003-07-17 15:50:47 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.26 2003-07-18 13:35:24 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -37,6 +37,7 @@ list_t<cov_file_t> cov_file_t::files_list_;
 list_t<char> cov_file_t::search_path_;
 char *cov_file_t::common_path_;
 int cov_file_t::common_len_;
+void *cov_file_t::files_model_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -263,6 +264,15 @@ cov_file_t::common_path()
 {
     check_common_path();
     return common_path_;
+}
+
+void *
+cov_file_t::files_model()
+{
+    /* currently MVC models just need to be a unique address */
+    if (files_model_ == 0)
+    	files_model_ = (void *)&files_model_;
+    return files_model_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

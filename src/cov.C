@@ -24,9 +24,10 @@
 #include "filename.h"
 #include "estring.H"
 #include "string_var.H"
+#include "mvc.h"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.18 2003-07-17 15:50:47 gnb Exp $");
+CVSID("$Id: cov.C,v 1.19 2003-07-18 13:35:24 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -204,7 +205,8 @@ cov_post_read(void)
     	cov_check_fakeness(*iter);
 #endif
 
-    /* TODO: emit an MVC notification */
+    /* emit an MVC notification */
+    mvc_changed(cov_file_t::files_model(), 1);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
