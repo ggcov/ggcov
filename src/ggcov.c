@@ -24,10 +24,11 @@
 #include "estring.h"
 #include "sourcewin.h"
 #include "summarywin.h"
+#include "functionswin.h"
 #include <dirent.h>
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.3 2001-11-25 05:51:41 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.4 2001-11-25 15:17:46 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -294,11 +295,14 @@ ui_create(void)
 {
     sourcewin_t *srcw;
     summarywin_t *sumw;
+    functionswin_t *funcw;
         
     srcw = sourcewin_new();
     sourcewin_set_filename(srcw, (const char *)filenames->data);
     
     sumw = summarywin_new();
+    
+    funcw = functionswin_new();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
