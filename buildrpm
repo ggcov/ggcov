@@ -101,14 +101,21 @@ fi
 # Calculate a string which identifies the Linux distro
 DISTRO=
 if [ -f /etc/redhat-release ]; then
-    DISTRO=rh$(sed -e 's|.*release[ \t]\+\([^ \t]\+\).*|\1|g' < /etc/redhat-release)
+    # Format for RH 7,8.9:
+    # Red Hat Linux release 9 (Shrike)
+    # Format for Fedora Core 1:
+    # Fedora Core release 1 (Yarrow)
+    DISTRO=$(sed \
+    	-e 's|.*Red[ \t]*Hat[ \t]\+Linux[ \t]\+|rh|' \
+	-e 's|.*Fedora[ \t]\+Core[ \t]\+|fc|' \
+	-e 's|[ \t]*release[ \t]\+\([^ \t]\+\).*|\1|g' < /etc/redhat-release)
 fi
 
 #echo PACKAGE=$PACKAGE
 #echo VERSION=$VERSION
 #echo TARBALL=$TARBALL
 #echo RPMDIR=$RPMDIR
-#echo DISTRO=$DISTRO
+#echo DISTRO=\"$DISTRO\"
 #echo RPMBUILD=$RPMBUILD
 #echo CVSIGNORES=\"$CVSIGNORES\"
 #echo FORCE=$FORCE
