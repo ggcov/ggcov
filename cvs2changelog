@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: cvs2changelog,v 1.1 2001-11-30 01:44:16 gnb Exp $
+# $Id: cvs2changelog,v 1.2 2003-03-13 19:42:20 gnb Exp $
 #
 # Shell script to build a change log for a new release
 # from CVS logs. The change log will still need some
@@ -71,6 +71,7 @@ get_rev_date ()
 
 usage ()
 {
+    [ -z "$*" ] || echo "cvs2changelog: $*"
     echo "Usage: cvs2changelog [--package pkg] [--dryrun] [rev1 [rev2]]"
     exit 0
 }
@@ -81,21 +82,21 @@ while [ $# -gt 0 ]; do
     --package) PACKAGE="$2" ; shift ;;
     --dryrun) DRYRUN=yes ;;
     --help) usage ;;
-    -*) usage ;;
-    [0-9]*.[0-9]*.[0-9]*)
+    -*) usage "bad option \"$1\"" ;;
+    [0-9]*.[0-9]*.[0-9]*|[0-9]*.[0-9]*)
     	case "$NREVS" in
 	0) REV1="$1" ;;
 	1) REV2="$1" ;;
-	*) usage ;;
+	*) usage "too many revisions at \"$1\"" ;;
 	esac
 	NREVS=`expr $NREVS + 1`
 	;;
-    *) usage ;;
+    *) usage "unexpected argument at \"$1\"" ;;
     esac
     shift
 done
 
-test -z "$PACKAGE" && usage
+test -z "$PACKAGE" && usage "no package specified"
 
 if [ -z "$REV1" ]; then
     # calculate previous tagged revision by getting
@@ -132,67 +133,111 @@ fi
     echo ""
 ) 1>&2
 
+# Extract change messages from multiple-file revision
+# history.  If the log contains a symbolic name matching
+# $TAG1, we drop the corresponding message because "cvs log"
+# emits one revision too many in that case.  Otherwise,
+# the file was created since $TAG1 and we use all messages.
+#
 # state:
 # 0 = reading log header
-# 1 = just read description separator, waiting for 1st line of description
-# 2 = reading 2nd & subsequent lines
-canonicalise ()
+# 1 = reading log lines
+# 2 = reading symbolic names
+extract ()
 {
-    awk '
+    awk -v TAG1=$TAG1 '
 BEGIN {
     state = 0;
     inattic = 0;
-    desc = "";
+    nlines = 0;
+    lines[0] = "";
+    tag1rev = "";
+    rev = "";
+}
+/^symbolic names:/ {
+    state = 2;
+    next;
+}
+/^keyword substitution:/ {
+    state = 0;
 }
 /^date: / {
     if (state == 0) {
     	state = 1;
+	nlines = 0;
 	next;
     }
 }
+#/^Working / {
+#    printf "******* %s\n", $0;
+#}
 /^RCS file: .*\/Attic\// {
     if (state == 0) {
     	inattic = 1;
 	next;
     }
 }
+/^revision [0-9.]*$/ {
+    if (state == 0) {
+    	rev = $2;
+#    	printf "183: rev=%s\n", rev;
+    }
+}
 /^----------------/ {
-    if (desc != "") print desc;
+    for (i = 0 ; i < nlines ; i++)
+    	print lines[i];
     state = 0;
 }
 /^================/ {
+    for (i = 0 ; i < nlines ; i++)
+    	print lines[i];
     state = 0;
     inattic = 0;
-    desc = "";
+    nlines = 0;
+    tag1rev = "";
 }
 {
-    if (state == 0 || inattic) {
-    	next;
-    } else if (state == 1) {
-	indent = "x  ";
-	state++;
-    } else if (state == 2) {
-	indent = "   ";
+#    printf "197: state=%d inattic=%d rev=\"%s\" tag1rev=\"%s\"\n", state, inattic, rev, tag1rev;
+    if (state == 1 && !inattic && rev != tag1rev)
+	lines[nlines++] = $0;
+    else if (state == 2 && $1 == TAG1":") {
+    	tag1rev = $2;
+#    	printf "205: tag1rev=\"%s\"\n", tag1rev;
     }
-    line = $0;
-    if (substr(line, 1, 3) == "x  " || substr(line, 1, 3) == "   ") {
-    	prefix = "";
-    } else if (substr(line, 1, 2) == "x " || substr(line, 1, 2) == "  ") {
-    	line = substr(line, 3, length(line))
-    	prefix = indent;
+}'
+}
+
+# Reformat the various strange ways I do checkin messages
+# into something approaching GNU ChangeLog format.
+canonicalise ()
+{
+    awk '
+BEGIN {
+    line = "";
+    prefix = "\t* ";
+    join = "\n\t";
+#    prefix = "X";
+#    join = "Y";
+}
+{
+    if (match($0, "^[*x][ \t][ \t][ \t]*")) {
+    	if (line != "") print line;
+	line = prefix""substr($0, RLENGTH+1, length($0)-RLENGTH);
+    } else if (match($0, "^[ \t][ \t][ \t]*")) {
+	line = line""join""substr($0, RLENGTH+1, length($0)-RLENGTH);
     } else {
-    	prefix = indent;
+    	if (line != "") print line;
+	line = prefix""$0;
     }
-    desc = desc"\n"prefix""line;
 }
-'
-}
-
-translate ()
-{
-    sed -e '/^[ 	]*$/d' -e 's|^   |	|' -e 's|^x  |	* |' 
+END {
+    if (line != "") print line;
+}'
 }
 
+# Remove duplicate log entries, usually due to the same
+# log message (or point in a log message) being used for
+# multiple files.
 uniquify ()
 {
     awk '
@@ -203,11 +248,12 @@ BEGIN {
 /^$/ {
     next;
 }
-/^x  / {
+/^\t\* / {
     alldesc[desc]++;
     desc = $0;
+    next;
 }
-/^   / {
+/^\t/ {
     desc = desc"\n"$0
 }
 END {
@@ -215,8 +261,7 @@ END {
     for (i in alldesc) {
     	if (i != "") print i;
     }
-}
-'
+}'
 }
 
 getDirs ()
@@ -234,7 +279,7 @@ gatherChanges ()
     if [ -z "$FILES" ]; then
     	FILES="-l "`getDirs`
     fi
-    cvs log -r${TAG1}:${TAG2} $FILES 2>&1 | canonicalise | uniquify | translate
+    cvs log -r${TAG1}:${TAG2} $FILES 2>&1 | extract | canonicalise | uniquify
     echo ""
 }
 
