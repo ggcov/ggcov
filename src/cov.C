@@ -27,7 +27,7 @@
 #include "mvc.h"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.20 2003-11-04 00:35:29 gnb Exp $");
+CVSID("$Id: cov.C,v 1.21 2004-02-16 22:51:41 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -326,6 +326,15 @@ cov_read_directory(const char *dirname, gboolean recursive)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static const char *status_names[cov::NUM_STATUS] = 
+{
+    "COVERED",
+    "PARTCOVERED",
+    "UNCOVERED",
+    "UNINSTRUMENTED",
+    "SUPPRESSED"
+};
+
 static void
 dump_callarcs(FILE *fp, GList *arcs)
 {
@@ -385,6 +394,7 @@ dump_arc(FILE *fp, cov_arc_t *a)
     fprintf(fp, "                        FAKE=%s\n", boolstr(a->fake_));
 #endif
     fprintf(fp, "                        FALL_THROUGH=%s\n", boolstr(a->fall_through_));
+    fprintf(fp, "                        STATUS=%s\n", status_names[a->status()]);
     fprintf(fp, "                    }\n");
 }
 
@@ -398,6 +408,7 @@ dump_block(FILE *fp, cov_block_t *b)
     fprintf(fp, "            BLOCK {\n");
     fprintf(fp, "                IDX=%s\n", desc.data());
     fprintf(fp, "                COUNT="GNB_U64_DFMT"\n", b->count());
+    fprintf(fp, "                STATUS=%s\n", status_names[b->status()]);
 
     fprintf(fp, "                OUT_ARCS {\n");
     for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
@@ -413,7 +424,11 @@ dump_block(FILE *fp, cov_block_t *b)
     for (liter = b->location_iterator() ; liter != (cov_location_t *)0 ; ++liter)
     {
     	cov_location_t *loc = *liter;
-	fprintf(fp, "                    %s:%ld\n", loc->filename, loc->lineno);
+	cov_line_t *ln = cov_line_t::find(loc);
+	fprintf(fp, "                    %s:%ld %s\n",
+	    	loc->filename,
+		loc->lineno,
+		status_names[ln->status()]);
     }
     fprintf(fp, "                }\n");
     fprintf(fp, "            }\n");
@@ -426,6 +441,7 @@ dump_function(FILE *fp, cov_function_t *fn)
     
     fprintf(fp, "        FUNCTION {\n");
     fprintf(fp, "            NAME=\"%s\"\n", fn->name());
+    fprintf(fp, "            STATUS=%s\n", status_names[fn->status()]);
     for (i = 0 ; i < fn->num_blocks() ; i++)
     	dump_block(fp, fn->nth_block(i));
     fprintf(fp, "    }\n");
@@ -439,6 +455,7 @@ dump_file(FILE *fp, cov_file_t *f)
     fprintf(fp, "FILE {\n");
     fprintf(fp, "    NAME=\"%s\"\n", f->name());
     fprintf(fp, "    MINIMAL_NAME=\"%s\"\n", f->minimal_name());
+    fprintf(fp, "    STATUS=%s\n", status_names[f->status()]);
     for (i = 0 ; i < f->num_functions() ; i++)
     	dump_function(fp, f->nth_function(i));
     fprintf(fp, "}\n");
