@@ -21,9 +21,9 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.5 2003-06-01 08:49:59 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.6 2003-06-01 09:49:13 gnb Exp $");
 
-GHashTable *cov_block_t::by_location_; 	/* GList of blocks keyed on "file:line" */
+hashtable_t<const char *, GList> *cov_block_t::by_location_; 	/* GList of blocks keyed on "file:line" */
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -42,7 +42,7 @@ cov_block_t::~cov_block_t()
 void
 cov_block_t::init()
 {
-    by_location_ = g_hash_table_new(g_str_hash, g_str_equal);
+    by_location_ = new hashtable_t<const char *, GList>;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -59,7 +59,7 @@ void
 cov_block_t::add_location(const char *filename, unsigned lineno)
 {
     cov_location_t *loc;
-    char *key;
+    string_var key;
     GList *list;
 
 #if DEBUG > 1
@@ -75,14 +75,13 @@ cov_block_t::add_location(const char *filename, unsigned lineno)
     locations_.append(loc);
 
     key = loc->make_key();
-    list = (GList *)g_hash_table_lookup(by_location_, key);
+    list = by_location_->lookup(key);
     
     if (list == 0)
-    	g_hash_table_insert(by_location_, key, g_list_append(0, this));
+    	by_location_->insert(key.take(), g_list_append(0, this));
     else
     {
     	g_list_append(list, this);
-	g_free(key);
 #if DEBUG > 1
     	fprintf(stderr, "%s:%ld: this line belongs to %d blocks\n",
 	    	    	    loc->filename, loc->lineno, g_list_length(list));
@@ -95,12 +94,8 @@ cov_block_t::add_location(const char *filename, unsigned lineno)
 const GList *
 cov_block_t::find_by_location(const cov_location_t *loc)
 {
-    GList *list;
-    char *key = loc->make_key();
-
-    list = (GList *)g_hash_table_lookup(by_location_, key);
-    g_free(key);
-    return list;
+    string_var key = loc->make_key();
+    return by_location_->lookup(key);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

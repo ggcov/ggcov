@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "list.H"
+#include "hashtable.H"
 
 class cov_file_t;
 class cov_function_t;
@@ -96,7 +97,7 @@ private:
     void add_call(const char *callname);
     char *pop_call();
 
-    static GHashTable *by_location_; 	/* GList of blocks keyed on "file:line" */
+    static hashtable_t<const char *, GList> *by_location_; 	/* GList of blocks keyed on "file:line" */
 
     cov_function_t *function_;
     unsigned int idx_; 	    /* serial number in function */

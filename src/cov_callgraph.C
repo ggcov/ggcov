@@ -19,9 +19,9 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_callgraph.C,v 1.4 2003-06-01 08:49:59 gnb Exp $");
+CVSID("$Id: cov_callgraph.C,v 1.5 2003-06-01 09:49:13 gnb Exp $");
 
-GHashTable *cov_callnode_t::all_;
+hashtable_t<const char*, cov_callnode_t> *cov_callnode_t::all_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -29,13 +29,13 @@ cov_callnode_t::cov_callnode_t(const char *nname)
 {
     name = nname;
     
-    g_hash_table_insert(all_, (void *)name.data(), this);
+    all_->insert(name, this);
 }
 
 cov_callnode_t::~cov_callnode_t()
 {
 #if 0
-    g_hash_table_remove(all_, name.data());
+    all_->remove(name);
     listdelete(out_arcs, cov_callarc_t, delete);
     listclear(in_arcs);
 #else
@@ -48,7 +48,7 @@ cov_callnode_t::~cov_callnode_t()
 void
 cov_callnode_t::init()
 {
-    all_ = g_hash_table_new(g_str_hash, g_str_equal);
+    all_ = new hashtable_t<const char*, cov_callnode_t>;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -56,7 +56,7 @@ cov_callnode_t::init()
 cov_callnode_t *
 cov_callnode_t::find(const char *nname)
 {
-    return (cov_callnode_t *)g_hash_table_lookup(all_, nname);
+    return all_->lookup(nname);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -68,9 +68,8 @@ typedef struct
 } cov_callnode_foreach_rec_t;
 
 static void
-cov_callnode_foreach_tramp(gpointer key, gpointer value, gpointer userdata)
+cov_callnode_foreach_tramp(const char *name, cov_callnode_t *cn, gpointer userdata)
 {
-    cov_callnode_t *cn = (cov_callnode_t *)value;
     cov_callnode_foreach_rec_t *rec = (cov_callnode_foreach_rec_t *)userdata;
     
     (*rec->func)(cn, rec->userdata);
@@ -85,26 +84,23 @@ cov_callnode_t::foreach(
     
     rec.func = func;
     rec.userdata = userdata;
-    g_hash_table_foreach(all_, cov_callnode_foreach_tramp, &rec);
+    all_->foreach(cov_callnode_foreach_tramp, &rec);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #if 0
 static gboolean
-cov_callnode_t::delete_one(gpointer key, gpointer value, gpointer userdata)
+cov_callnode_t::delete_one(const char *name, cov_callnode_t *cn, gpointer userdata)
 {
-    cov_callnode_t *cn = (cov_callnode_t *)value;
-    
     delete cn;
-    
     return TRUE;    /* please remove me */
 }
 
 static void
 cov_callnode_t::delete_all(void)
 {
-    g_hash_table_foreach_remove(all_, delete_one, 0);
+    all_->foreach_remove(delete_one, 0);
 }
 #endif
 

@@ -120,7 +120,7 @@ private:
 
     string_var name_;
     GPtrArray *functions_;
-    GHashTable *functions_by_name_;
+    hashtable_t<const char*, cov_function_t> *functions_by_name_;
     const cov_location_t *last_location_;
 
     /* Fields used to detect gcc 2.96 braindeath */

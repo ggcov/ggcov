@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "string_var.H"
+#include "hashtable.H"
 
 struct confenum_t
 {
@@ -57,7 +58,7 @@ private:
 
     char *make_key(const char *name) const;
 
-    static GHashTable *all_;
+    static hashtable_t<const char*, confsection_t> *all_;
 
     string_var secname_;
 };

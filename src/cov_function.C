@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.6 2003-06-01 08:49:59 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.7 2003-06-01 09:49:13 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -46,7 +46,7 @@ cov_function_t::set_name(const char *name)
 {
     assert(name_ == 0);
     name_ = name;
-    g_hash_table_insert(file_->functions_by_name_, (void *)name_.data(), this);
+    file_->functions_by_name_->insert(name_, this);
 }
 
 cov_block_t *

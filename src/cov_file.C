@@ -28,7 +28,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.11 2003-06-01 09:30:24 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.12 2003-06-01 09:49:13 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -44,7 +44,7 @@ cov_file_t::cov_file_t(const char *name)
  :  name_(name)
 {
     functions_ = g_ptr_array_new();
-    functions_by_name_ = g_hash_table_new(g_str_hash, g_str_equal);
+    functions_by_name_ = new hashtable_t<const char*, cov_function_t>;
     
     files_->insert(name_, this);
     add_name(name_);
@@ -232,7 +232,7 @@ cov_file_t::add_function()
 cov_function_t *
 cov_file_t::find_function(const char *fnname) const
 {
-    return (cov_function_t *)g_hash_table_lookup(functions_by_name_, fnname);
+    return functions_by_name_->lookup(fnname);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -21,6 +21,7 @@
 #define _ggcov_cov_callgraph_H_ 1
 
 #include "string_var.H"
+#include "hashtable.H"
 
 class cov_function_t;
 
@@ -49,7 +50,7 @@ private:
 
     cov_callarc_t *find_arc_to(cov_callnode_t *to) const;
 
-    static GHashTable *all_;
+    static hashtable_t<const char*, cov_callnode_t> *all_;
     
     friend void cov_init(void);
     friend void cov_add_callnodes(cov_file_t*);
