@@ -31,10 +31,8 @@
 
 #if HAVE_CONFIG_H
 #  include <config.h>
-#  if STDC_HEADERS
-#    include <string.h>
-#    include <stdio.h>
-#  endif
+#  include <string.h>
+#  include <stdio.h>
 #else
 #  include <stdio.h>
 #endif
