@@ -22,10 +22,20 @@
 
 #include "common.h"
 
+/*
+ * There are twice as many functions as necessary because the
+ * lowest level formatting changed at around gcc 3.3.  Integral
+ * data are now saved bigendian, and string data grew a preceeding
+ * length field.  The format now looks a *lot* like XDR!
+ */
+
 /* These functions return TRUE unless EOF */
-gboolean covio_read_u32(FILE *fp, gnb_u32_t*);
-gboolean covio_read_u64(FILE *fp, gnb_u64_t*);
+gboolean covio_read_lu32(FILE *fp, gnb_u32_t*); /* old format */
+gboolean covio_read_lu64(FILE *fp, gnb_u64_t*); /* old format */
+gboolean covio_read_bu32(FILE *fp, gnb_u32_t*); /* new format */
+gboolean covio_read_bu64(FILE *fp, gnb_u64_t*); /* new format */
 /* Returns a new string */
-char *covio_read_bbstring(FILE *fp, gnb_u32_t endtag);
+char *covio_read_bbstring(FILE *fp, gnb_u32_t endtag);	/* old format */
+char *covio_read_string(FILE *fp);	    	    	/* new format */
 
 #endif /* _ggcov_covio_h_ */

@@ -16,7 +16,7 @@ hexdump(FILE *fp, off_t lastoff)
     fseek(fp, lastoff, SEEK_SET);
     for ( ; lastoff < here ; lastoff += 4)
     {
-    	covio_read_u32(fp, &d);
+    	covio_read_lu32(fp, &d);
 	printf(GNB_U32_XFMT" ", d);
     }
     assert(here == lastoff);
@@ -35,7 +35,7 @@ do_tags(const char *filename, FILE *fp)
     off_t lastoff = 0;
     char *s;
     
-    while (covio_read_u32(fp, &tag))
+    while (covio_read_lu32(fp, &tag))
     {
     	printf("%08lx: ", lastoff);
     	switch (tag)

@@ -20,13 +20,13 @@
 #include "covio.h"
 #include "estring.H"
 
-CVSID("$Id: covio.c,v 1.4 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: covio.c,v 1.5 2003-06-28 10:33:42 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-    /* saved as 32 bit little-endian */
+    /* old format: saved as 32 bit little-endian */
 gboolean
-covio_read_u32(FILE *fp, gnb_u32_t *wp)
+covio_read_lu32(FILE *fp, gnb_u32_t *wp)
 {
     gnb_u32_t w;
     
@@ -40,12 +40,27 @@ covio_read_u32(FILE *fp, gnb_u32_t *wp)
     return (!feof(fp));
 }
 
+    /* new format: saved as 32 bit big-endian */
+gboolean
+covio_read_bu32(FILE *fp, gnb_u32_t *wp)
+{
+    gnb_u32_t w;
+    
+    w  = ((unsigned int)fgetc(fp) & 0xff) << 24;
+    w |= ((unsigned int)fgetc(fp) & 0xff) << 16;
+    w |= ((unsigned int)fgetc(fp) & 0xff) << 8;
+    w |= (unsigned int)fgetc(fp) & 0xff;
+    
+    *wp = w;
+
+    return (!feof(fp));
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-    /* saved as 64 bit little-endian */
+    /* old format: saved as 64 bit little-endian */
 gboolean
-covio_read_u64(FILE *fp, gnb_u64_t *wp)
+covio_read_lu64(FILE *fp, gnb_u64_t *wp)
 {
     gnb_u64_t w;
     
@@ -64,15 +79,37 @@ covio_read_u64(FILE *fp, gnb_u64_t *wp)
     return (!feof(fp));
 }
 
+    /* new format: saved as 64 bit big-endian */
+gboolean
+covio_read_bu64(FILE *fp, gnb_u64_t *wp)
+{
+    gnb_u64_t w;
+    
+    w  = ((gnb_u64_t)fgetc(fp) & 0xff) << 56;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 48;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 40;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 32;
+
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 24;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 16;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 8;
+    w |= (gnb_u64_t)fgetc(fp) & 0xff;
+
+    *wp = w;
+
+    return (!feof(fp));
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+/* old format: string bytes, 0-3 pad bytes, following by some magic tag */
 char *
 covio_read_bbstring(FILE *fp, gnb_u32_t endtag)
 {
     gnb_u32_t t;
     estring buf;
     
-    while (covio_read_u32(fp, &t))
+    while (covio_read_lu32(fp, &t))
     {
     	if (t == endtag)
 	    break;
@@ -85,6 +122,40 @@ covio_read_bbstring(FILE *fp, gnb_u32_t endtag)
     }
     
     return buf.take();
+}
+
+/* new format: int32 length, then string bytes, terminating nul, 0-3 pad bytes */
+char *
+covio_read_string(FILE *fp)
+{
+    gnb_u32_t len;
+    char *buf;
+    
+    if (!covio_read_bu32(fp, &len))
+    	return 0;   	    	/* short file */
+	
+    if (len == 0)
+    	return g_strdup("");	/* valid empty string */
+
+    if ((buf = (char *)malloc(len+1)) == 0)
+    	return 0;   	    	/* memory allocation failure */
+    if (fread(buf, 1, len+1, fp) != len+1)
+    {
+    	g_free(buf);
+	return 0;   	    	/* short file */
+    }    
+
+    /* skip padding bytes */
+    for (len++ ; len&0x3 ; len++)
+    {
+    	if (fgetc(fp) == EOF)
+	{
+	    g_free(buf);
+	    return 0;	    	/* short file */
+	}
+    }
+    
+    return buf;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
