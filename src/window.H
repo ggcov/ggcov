@@ -31,6 +31,11 @@ public:
 
     virtual void show();
 
+    GtkWidget *get_window() const
+    {
+    	return window_;
+    }
+
 protected:
     virtual void populate();
     static window_t *from_widget(GtkWidget *);
