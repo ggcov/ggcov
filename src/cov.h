@@ -109,6 +109,7 @@ struct cov_callnode_s
     cov_function_t *function;	/* may be NULL */
     count_t count;
     GList *in_arcs, *out_arcs;
+    void *userdata;
 };
 
 /*
@@ -125,10 +126,22 @@ struct cov_callarc_s
 #define cov_function_nth_block(fn, n) \
     	    ((cov_block_t *)(fn)->blocks->pdata[(n)])
 
+/* Call this to initialise the cov library */
 void cov_init(void);
-gboolean cov_handle_c_file(const char *cfilename);
-/* mostly just calculates callgraph */
+
+gboolean cov_is_source_filename(const char *filename);
+
+/* Call this before reading any object or source files */
+void cov_pre_read(void);
+/* Read coverage data for the given source file */
+gboolean cov_read_source_file(const char *cfilename);
+/* Read all the coveraged source files for the given object file or executable */
+gboolean cov_read_object_file(const char *exefilename);
+/* Read all the coveraged source files in the given directory */
+gboolean cov_read_directory(const char *exefilename);
+/* Call this after reading all files; mostly just calculates callgraph */
 void cov_post_read(void);
+
 cov_file_t *cov_file_find(const char *name);
 void cov_get_count_by_location(const cov_location_t *loc,
 			       count_t *countp, gboolean *existsp);
