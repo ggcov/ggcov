@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #define _config_h_ 1
 
 /*
- * $Id: acconfig.h,v 1.1 2001-11-23 03:47:48 gnb Exp $
+ * $Id: acconfig.h,v 1.2 2003-03-17 03:54:46 gnb Exp $
  */
  
 /*

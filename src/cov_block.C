@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.2 2003-03-11 21:20:16 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.3 2003-03-17 03:54:49 gnb Exp $");
 
 GHashTable *cov_block_t::by_location_; 	/* GList of blocks keyed on "file:line" */
 

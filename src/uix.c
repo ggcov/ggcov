@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "uix.h"
 #include <gdk/gdkx.h>	/* This is what we want to avoid in the main code */
 
-CVSID("$Id: uix.c,v 1.4 2002-12-22 02:50:29 gnb Exp $");
+CVSID("$Id: uix.c,v 1.5 2003-03-17 03:54:49 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

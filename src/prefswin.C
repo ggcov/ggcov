@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include <libgnomeui/libgnomeui.h>
 #endif
 
-CVSID("$Id: prefswin.C,v 1.2 2003-03-11 21:46:07 gnb Exp $");
+CVSID("$Id: prefswin.C,v 1.3 2003-03-17 03:54:49 gnb Exp $");
 
 prefswin_t *prefswin_t::instance_ = 0;
 

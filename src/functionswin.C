@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: functionswin.C,v 1.5 2003-01-01 04:16:45 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.6 2003-03-17 03:54:49 gnb Exp $");
 
 
 #define COL_LINES   	0
