@@ -22,23 +22,25 @@ over multiple test runs.
 %setup -q
 
 %build
-CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix=/usr
+%configure
 make
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make install prefix=$RPM_BUILD_ROOT/usr
+make install DESTDIR=$RPM_BUILD_ROOT
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root)
-/usr/bin/ggcov
-/usr/share/ggcov/@GGCOV_GLADE_FILE@
-/usr/share/ggcov/logo.xpm
+%{_bindir}/ggcov
+%{_datadir}/ggcov/
+%{_datadir}/gnome/apps/Development/ggcov.desktop
 %doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
 
 %changelog
+* Thu Jul 17 2003 Greg Banks <gnb@alphalink.com.au>
+- Full GTK2 features, GNOME desktop file.
 * Sat Nov 24 2001 Greg Banks <gnb@alphalink.com.au>
 - Building RPM for first release
