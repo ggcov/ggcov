@@ -26,7 +26,7 @@
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.9 2003-04-05 23:53:21 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.10 2003-05-31 13:42:57 gnb Exp $");
 
 list_t<summarywin_t> summarywin_t::instances_;
 
@@ -333,7 +333,8 @@ set_progressbar_fraction(
 void
 summarywin_t::update()
 {
-    cov_stats_t stats;
+    cov_scope_t *sc = 0;
+    const cov_stats_t *stats;
     
 #if DEBUG
     fprintf(stderr, "summarywin_t::update\n");
@@ -360,67 +361,60 @@ summarywin_t::update()
     {
 
     case SU_OVERALL:
-    	set_title("Overall");
-    	cov_overall_calc_stats(&stats);
+    	sc = new cov_overall_scope_t;
 	break;
 
     case SU_FILENAME:
     	assert(file_ != 0);
-	set_title(file_->minimal_name());
-    	file_->calc_stats(&stats);
+	sc = new cov_file_scope_t(file_);
 	break;
 
     case SU_FUNCTION:
     	assert(function_ != 0);
-	set_title(function_->name());
-    	function_->calc_stats(&stats);
+	sc = new cov_function_scope_t(function_);
 	break;
 
     case SU_RANGE:
-    	{
-    	    cov_location_t start, end;
-	    char *title;
-
-    	    assert(file_ != 0);
-            start.lineno = start_;
-	    end.lineno = end_;
-    	    end.filename = start.filename = (char *)file_->name();
-
+    	assert(file_ != 0);
 #if DEBUG
-    	    fprintf(stderr, "summarywin_update: SU_RANGE %s %ld-%ld\n",
-	    	    	    file_->minimal_name(), start.lineno, end.lineno);
+    	fprintf(stderr, "summarywin_update: SU_RANGE %s %lu-%lu\n",
+	    	    	file_->minimal_name(), start_, end_);
 #endif
-				
-    	    title = g_strdup_printf("%s:%lu-%lu",
-	    	    	    	    file_->minimal_name(),
-	    	    	    	    start.lineno, end.lineno);
-	    set_title(title);
-	    g_free(title);
-	    
-    	    cov_range_calc_stats(&start, &end, &stats);
-	}
+    	sc = new cov_range_scope_t(file_, start_, end_);
 	break;
 	
     case SU_NSCOPES:
     	break;
     }
-    
+
+    assert(sc != 0);    
+    set_title(sc->describe());
+    stats = sc->get_stats();
+    if (stats == 0)
+    {
+    	static const cov_stats_t empty;
+	stats = &empty;
+    }
+
     set_label_fraction(lines_label_,
-    	    	    	 stats.lines_executed, stats.lines);
+    	    	    	 stats->lines_executed, stats->lines);
     set_progressbar_fraction(lines_progressbar_,
-    	    	    	 stats.lines_executed, stats.lines);
+    	    	    	 stats->lines_executed, stats->lines);
     set_label_fraction(calls_label_,
-    	    	    	 stats.calls_executed, stats.calls);
+    	    	    	 stats->calls_executed, stats->calls);
     set_progressbar_fraction(calls_progressbar_,
-    	    	    	 stats.calls_executed, stats.calls);
+    	    	    	 stats->calls_executed, stats->calls);
     set_label_fraction(branches_executed_label_,
-    	    	    	 stats.branches_executed, stats.branches);
+    	    	    	 stats->branches_executed, stats->branches);
     set_progressbar_fraction(branches_executed_progressbar_,
-    	    	    	 stats.branches_executed, stats.branches);
+    	    	    	 stats->branches_executed, stats->branches);
     set_label_fraction(branches_taken_label_,
-    	    	    	 stats.branches_taken, stats.branches);
+    	    	    	 stats->branches_taken, stats->branches);
     set_progressbar_fraction(branches_taken_progressbar_,
-    	    	    	 stats.branches_taken, stats.branches);
+    	    	    	 stats->branches_taken, stats->branches);
+			 
+    delete sc;
+    /* TODO: keep the scope object around and MVC listen on it */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

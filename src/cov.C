@@ -31,7 +31,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov.C,v 1.9 2003-05-31 10:12:11 gnb Exp $");
+CVSID("$Id: cov.C,v 1.10 2003-05-31 13:42:57 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -129,89 +129,6 @@ gboolean
 cov_read_source_file(const char *filename)
 {
     return cov_read_source_file_2(filename, /*quiet*/FALSE);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
-cov_overall_calc_stats(cov_stats_t *stats)
-{
-    list_iterator_t<cov_file_t> iter;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	(*iter)->calc_stats(stats);
-}
-
-
-void
-cov_range_calc_stats(
-    const cov_location_t *startp,
-    const cov_location_t *endp,
-    cov_stats_t *stats)
-{
-    cov_file_t *f;
-    cov_location_t start = *startp, end = *endp;
-    cov_block_t *b;
-    unsigned fnidx, bidx;
-    unsigned long lastline;
-    const GList *startblocks, *endblocks;
-
-    /*
-     * Check inputs
-     */
-    if ((f = cov_file_t::find(start.filename)) == 0)
-    	return;     /* nonexistant filename */
-    if (strcmp(start.filename, end.filename))
-    	return;     /* invalid range */
-    if (start.lineno > end.lineno)
-    	return;     	/* invalid range */
-    if (start.lineno == 0 || end.lineno == 0)
-    	return;     	/* invalid range */
-    lastline = f->get_last_location()->lineno;
-    if (start.lineno > lastline)
-    	return;     	/* range is outside file */
-    if (end.lineno > lastline)
-    	end.lineno = lastline;     /* clamp range to file */
-    
-    /*
-     * Get blocklists for start and end.
-     */
-    do
-    {
-    	startblocks = cov_block_t::find_by_location(&start);
-    } while (startblocks == 0 && ++start.lineno <= end.lineno);
-    
-    if (startblocks == 0)
-    	return;     	/* no executable lines in the given range */
-
-    do
-    {
-    	endblocks = cov_block_t::find_by_location(&end);
-    } while (endblocks == 0 && --end.lineno > start.lineno-1);
-    
-    assert(endblocks != 0);
-    assert(start.lineno <= end.lineno);
-    
-
-    /*
-     * Iterate over the blocks between start and end,
-     * gathering stats as we go.  Note that this can
-     * span functions.
-     */    
-    b = (cov_block_t *)startblocks->data;
-    bidx = b->bindex();
-    fnidx = b->function()->findex();
-    
-    do
-    {
-	b = f->nth_function(fnidx)->nth_block(bidx);
-    	b->calc_stats(stats);
-	if (++bidx == f->nth_function(fnidx)->num_blocks())
-	{
-	    bidx = 0;
-	    ++fnidx;
-	}
-    } while (b != (cov_block_t *)endblocks->data);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

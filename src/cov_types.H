@@ -75,6 +75,12 @@ struct cov_stats_t
     }
     
     void
+    clear()
+    {
+    	memset(this, 0, sizeof(*this));
+    }
+
+    void
     accumulate(const cov_stats_t *st)
     {
     	lines += st->lines;

@@ -84,9 +84,6 @@ private:
     GPtrArray *blocks_;
     
     friend class cov_file_t;
-    friend void cov_range_calc_stats(const cov_location_t *startp,
-    	    	    	    	     const cov_location_t *endp,
-    	    	    	    	     cov_stats_t *stats);
 };
 
 #endif /* _ggcov_cov_function_H_ */
