@@ -21,12 +21,13 @@
 #include "covio.h"
 #include "filename.h"
 #include "estring.h"
+#include <dirent.h>
 
 
 #include <bfd.h>
 #include <elf.h>
 
-CVSID("$Id: cov.c,v 1.7 2002-09-28 00:17:29 gnb Exp $");
+CVSID("$Id: cov.c,v 1.8 2002-12-12 00:09:09 gnb Exp $");
 
 GHashTable *cov_files;
 /* TODO: ? reorg this */
@@ -586,6 +587,12 @@ cov_read_bb_file(cov_file_t *f, const char *bbfilename)
 	    if (filename != 0)
 	    	g_free(filename);
 	    filename = covio_read_bbstring(fp, tag);
+	    if (strchr(filename, '/') == 0 &&
+	    	!strcmp(filename, file_basename_c(f->name)))
+	    {
+	    	g_free(filename);
+		filename = g_strdup(f->name);
+	    }
 #if DEBUG    
 	    fprintf(stderr, "BB filename = \"%s\"\n", filename);
 #endif
@@ -1171,14 +1178,31 @@ cov_read_o_file(cov_file_t *f, const char *ofilename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+gboolean
+cov_is_source_filename(const char *filename)
+{
+    const char *ext;
+    static const char *recognised_exts[] = { ".c", ".C", 0 };
+    int i;
+    
+    if ((ext = file_extension_c(filename)) == 0)
+    	return FALSE;
+    for (i = 0 ; recognised_exts[i] != 0 ; i++)
+    {
+    	if (!strcmp(ext, recognised_exts[i]))
+	    return TRUE;
+    }
+    return FALSE;
+}
+
 #define FN_BB	0
 #define FN_BBG	1
 #define FN_DA	2
 #define FN_O	3
 #define FN_MAX	4
 
-gboolean
-cov_handle_c_file(const char *cfilename)
+static gboolean
+cov_read_source_file_2(const char *filename, gboolean quiet)
 {
     cov_file_t *f;
     gboolean res;
@@ -1188,12 +1212,13 @@ cov_handle_c_file(const char *cfilename)
 
 
 #if DEBUG    
-    fprintf(stderr, "Handling C source file %s\n", cfilename);
+    fprintf(stderr, "Handling source file %s\n", filename);
 #endif
 
-    if ((f = cov_file_find(cfilename)) != 0)
+    if ((f = cov_file_find(filename)) != 0)
     {
-    	fprintf(stderr, "Internal error: handling %s twice\n", cfilename);
+    	if (!quiet)
+    	    fprintf(stderr, "Internal error: handling %s twice\n", filename);
     	return FALSE;
     }
 
@@ -1201,17 +1226,18 @@ cov_handle_c_file(const char *cfilename)
     
     for (i = 0 ; i < FN_MAX ; i++)
     {
-	filenames[i] = file_change_extension(cfilename, ".c", extensions[i]);
+	filenames[i] = file_change_extension(filename, 0, extensions[i]);
 	if (file_is_regular(filenames[i]) < 0)
 	{
-    	    perror(filenames[i]);
+    	    if (!quiet)
+    		perror(filenames[i]);
 	    for (i = 0 ; i < FN_MAX ; i++)
 	    	strdelete(filenames[i]);
 	    return FALSE;
 	}
     }
         
-    f = cov_file_new(cfilename);
+    f = cov_file_new(filename);
 
     res = TRUE;
     if (!cov_read_bbg_file(f, filenames[FN_BBG]) ||
@@ -1224,6 +1250,12 @@ cov_handle_c_file(const char *cfilename)
     for (i = 0 ; i < FN_MAX ; i++)
 	strdelete(filenames[i]);
     return res;
+}
+
+gboolean
+cov_read_source_file(const char *filename)
+{
+    return cov_read_source_file_2(filename, /*quiet*/FALSE);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1599,9 +1631,213 @@ cov_init(void)
 }
 
 void
+cov_pre_read(void)
+{
+    /* TODO: clear out all the previous data structures */
+}
+
+void
 cov_post_read(void)
 {
     cov_callgraph_build();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+/*
+ * Large chunks of code ripped from binutils/rddbg.c and stabs.c
+ */
+ 
+typedef struct
+{
+    uint32_t strx;
+#define N_SO 0x64
+    uint8_t type;
+    uint8_t other;
+    uint16_t desc;
+    uint32_t value;
+} cov_stab32_t;
+
+gboolean
+cov_read_object_file(const char *exefilename)
+{
+    bfd *abfd;
+    asection *stab_sec, *string_sec;
+    bfd_size_type string_size;
+    bfd_size_type stroff, next_stroff;
+    unsigned int num_stabs;
+    cov_stab32_t *stabs, *st;
+    char *strings;
+    char *dir = "", *file;
+    int successes = 0;
+        
+#if DEBUG
+    fprintf(stderr, "Reading object or exe file \"%s\"\n", exefilename);
+#endif
+    
+    if ((abfd = bfd_openr(exefilename, 0)) == 0)
+    {
+    	/* TODO */
+    	bfd_perror(exefilename);
+	return FALSE;
+    }
+    if (!bfd_check_format(abfd, bfd_object))
+    {
+    	/* TODO */
+    	bfd_perror(exefilename);
+	bfd_close(abfd);
+	return FALSE;
+    }
+
+
+    if ((stab_sec = bfd_get_section_by_name(abfd, ".stab")) == 0)
+    {
+    	fprintf(stderr, "%s: no .stab section\n", exefilename);
+	bfd_close(abfd);
+	return FALSE;
+    }
+
+    if ((string_sec = bfd_get_section_by_name(abfd, ".stabstr")) == 0)
+    {
+    	fprintf(stderr, "%s: no .stabstr section\n", exefilename);
+	bfd_close(abfd);
+	return FALSE;
+    }
+    
+    num_stabs = bfd_section_size(abfd, stab_sec);
+    stabs = (cov_stab32_t *)gnb_xmalloc(num_stabs);
+    if (!bfd_get_section_contents(abfd, stab_sec, stabs, 0, num_stabs))
+    {
+    	/* TODO */
+    	bfd_perror(exefilename);
+	bfd_close(abfd);
+	return FALSE;
+    }
+    num_stabs /= sizeof(cov_stab32_t);
+
+    string_size = bfd_section_size(abfd, string_sec);
+    strings = gnb_xmalloc(string_size);
+    if (!bfd_get_section_contents(abfd, string_sec, strings, 0, string_size))
+    {
+    	/* TODO */
+    	bfd_perror(exefilename);
+	bfd_close(abfd);
+	g_free(stabs);
+	return FALSE;
+    }
+
+    assert(sizeof(cov_stab32_t) == 12);
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+    assert(bfd_little_endian(abfd));
+#else
+    assert(bfd_big_endian(abfd));
+#endif
+
+    stroff = 0;
+    next_stroff = 0;
+    for (st = stabs ; st < stabs + num_stabs ; st++)
+    {
+    	if (st->type == 0)
+	{
+	    /*
+	     * Special type 0 stabs indicate the offset to the
+	     * next string table.
+	     */
+	    stroff = next_stroff;
+	    next_stroff += st->value;
+	}
+	else if (st->type == N_SO)
+	{
+	    char *s;
+	    
+	    if (stroff + st->strx > string_size)
+	    {
+		fprintf(stderr, "%s: stab entry %d is corrupt, strx = 0x%x, type = %d\n",
+		    exefilename,
+		    (st - stabs), st->strx, st->type);
+		continue;
+	    }
+	    
+    	    s = strings + stroff + st->strx;
+	    
+#if 0
+	    printf("%u|%02x|%02x|%04x|%08x|%s|\n",
+	    	(st - stabs),
+		st->type,
+		st->other,
+		st->desc,
+		st->value,
+		s);
+#endif
+	    if (s[0] == '\0')
+	    	continue;
+	    if (s[strlen(s)-1] == '/')
+	    {
+	    	dir = s;
+	    }
+	    else
+	    {
+	    	file = g_strconcat(dir, s, 0);
+		if (cov_is_source_filename(file) &&
+		    file_is_regular(file) == 0 &&
+		    cov_read_source_file_2(file, /*quiet*/TRUE))
+		    successes++;
+		g_free(file);
+	    }
+	}
+    }
+
+    g_free(stabs); 
+    g_free(strings);
+    bfd_close(abfd);
+    if (successes == 0)
+    	fprintf(stderr, "found no coveraged source files in executable \"%s\"\n",
+	    	exefilename);
+    return (successes > 0);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_read_directory(const char *dirname)
+{
+    DIR *dir;
+    struct dirent *de;
+    estring child;
+    int successes = 0;
+    
+    if ((dir = opendir(dirname)) == 0)
+    {
+    	perror(dirname);
+    	return FALSE;
+    }
+    
+    estring_init(&child);
+    while ((de = readdir(dir)) != 0)
+    {
+    	if (!strcmp(de->d_name, ".") || 
+	    !strcmp(de->d_name, ".."))
+	    continue;
+	    
+	estring_truncate(&child);
+	if (strcmp(dirname, "."))
+	{
+	    estring_append_string(&child, dirname);
+	    if (child.data[child.length-1] != '/')
+		estring_append_char(&child, '/');
+	}
+	estring_append_string(&child, de->d_name);
+	
+    	if (file_is_regular(child.data) == 0 &&
+	    cov_is_source_filename(child.data))
+	    successes += cov_read_source_file(child.data);
+    }
+    
+    estring_free(&child);
+    closedir(dir);
+    if (successes == 0)
+    	fprintf(stderr, "found no coveraged source files in directory \"%s\"\n",
+	    	dirname);
+    return (successes > 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
