@@ -58,8 +58,6 @@ x  Additional source annotations in the Source window (i.e. non-column
    additions like per-function stats) should be colour coded to
    make them distinct from non-executable lines of source.
    
-x  Add menu item to Source window to save the text with annotations.
-
 x  Add column titles to Source window, with the ability to hide them,
    visible by default, state saved automatically.
    
@@ -83,6 +81,8 @@ x  ??? Minimise filenames only within the context of a program or library?
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
+
+x  Add menu item to Source window to save the text with annotations.
 
 x  Reorganise the text widget of the Source window so that there are
    (passive) column headers like a clist.  May require some trickery,
