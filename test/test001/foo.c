@@ -29,6 +29,14 @@ function_one(int x)
 }
 
 int
+unused_function(int x)
+{
+    x += 24;
+    x -= 56;
+    return x;
+}
+
+int
 main(int argc, char **argv)
 {
     int x, y;
