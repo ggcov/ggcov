@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.35 2004-04-04 13:50:17 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.36 2004-08-20 16:28:02 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -731,7 +731,6 @@ cov_file_t::read_old_bbg_file(const char *bbgfilename, FILE *fp)
 	    /* TODO */
 	    fprintf(stderr, "%s: file is corrupted or in a bad file format.\n",
 	    	    bbgfilename);
-	    fclose(fp);
 	    return FALSE;
 	}
     }
@@ -959,6 +958,7 @@ cov_file_t::read_bbg_file(const char *bbgfilename)
     	/* TODO */
     	fprintf(stderr, "%s: short file while reading magic number\n",
 	    	bbgfilename);
+	fclose(fp);
 	return FALSE;
     }
     
@@ -1026,6 +1026,7 @@ cov_file_t::read_old_da_file(const char *dafilename)
     		if (!covio_read_lu64(fp, &ent))
 		{
 		    fprintf(stderr, "%s: short file\n", dafilename);
+		    fclose(fp);
 		    return FALSE;
 		}
 
@@ -1084,6 +1085,7 @@ cov_file_t::read_oldplus_da_file(const char *dafilename)
     unsigned int bidx;
     unsigned int actual_narcs;
     list_iterator_t<cov_arc_t> aiter;
+    gboolean ret = TRUE;
     
     
     if ((fp = fopen(dafilename, "r")) == 0)
@@ -1121,7 +1123,10 @@ cov_file_t::read_oldplus_da_file(const char *dafilename)
     	cov_function_t *fn = nth_function(fnidx);
 	
     	if (!skip_oldplus_func_header(fp, "DA "))
-    	    return FALSE;
+	{
+	    ret = FALSE;
+    	    break;
+	}
 
 	if (!covio_read_lu32(fp, &file_narcs))
     	    da_failed0("short file");
@@ -1165,7 +1170,7 @@ cov_file_t::read_oldplus_da_file(const char *dafilename)
     }    
     
     fclose(fp);
-    return TRUE;
+    return ret;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
