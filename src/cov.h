@@ -134,6 +134,10 @@ void cov_get_count_by_location(const cov_location_t *loc,
 			       count_t *countp, gboolean *existsp);
 const GList *cov_blocks_find_by_location(const cov_location_t *loc);
 void cov_file_foreach(void (*func)(cov_file_t*, void *userdata), void *userdata);
+/* Returns a sorted new list of interesting functions */
+GList *cov_list_functions(void);
+#define cov_arc_get_from_location(a) \
+    ((cov_location_t *)(a)->from->locations->data)
 
 const cov_location_t *cov_function_get_first_location(const cov_function_t *fn);
 const cov_location_t *cov_function_get_last_location(const cov_function_t *fn);
