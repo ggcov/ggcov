@@ -32,9 +32,11 @@
 #include "fileswin.H"
 #if !GTK2
 #include <libgnomeui/libgnomeui.h>
+#else
+#include <popt.h>
 #endif
 
-CVSID("$Id: ggcov.c,v 1.24 2003-06-06 15:30:52 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.25 2003-06-07 03:05:53 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -42,8 +44,7 @@ char *argv0;
 GList *files;	    /* incoming specification from commandline */
 int screenshot_mode = 0;
 
-/* TODO: need to parse commandline for -r or --recursive */
-static gboolean recursive = TRUE;
+static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -57,7 +58,7 @@ read_gcov_files(void)
     
     if (files == 0)
     {
-    	if (!cov_read_directory(".", /*recursive*/FALSE))
+    	if (!cov_read_directory(".", recursive))
 	    exit(1);
     }
     else
@@ -400,18 +401,57 @@ ui_create(void)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+/*
+ * With the old GTK, we're forced to parse our own arguments
+ * the way the library wants, with popt and in such a way
+ * that we can't use the return from poptGetNextOpt() to
+ * implement multiple-valued options (e.g. -o dir1 -o dir2).
+ * This limits our ability to parse arguments for both old
+ * and new GTK builds.
+ */
+static poptContext popt_context;
+static struct poptOption popt_options[] =
+{
+    {
+    	"recursive",	    	    	    	/* longname */
+	'r',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&recursive,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"recursively scan directories for source", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    { 0, 0, 0, 0, 0, 0, 0 }
+};
+
 static void
 parse_args(int argc, char **argv)
 {
-    int i;
+    int rc;
+    const char *file;
     
     argv0 = argv[0];
     
-    for (i = 1 ; i < argc ; i++)
+#if GTK2
+    popt_context = poptGetContext(PACKAGE, argc, (const char**)argv,
+    	    	    	    	  popt_options, 0);
+#endif
+
+    while ((rc = poptGetNextOpt(popt_context)) > 0)
+    	;
+    if (rc < -1)
     {
-    	if (argv[i][0] != '-')
-    	    files = g_list_append(files, argv[i]);
+    	fprintf(stderr, "%s:%s at or near %s\n",
+	    argv[0],
+	    poptStrerror(rc),
+	    poptBadOption(popt_context, POPT_BADOPTION_NOALIAS));
+    	exit(1);
     }
+    
+    while ((file = poptGetArg(popt_context)) != 0)
+	files = g_list_append(files, (gpointer)file);
+	
+    poptFreeContext(popt_context);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -476,7 +516,9 @@ main(int argc, char **argv)
     gtk_init(&argc, &argv);
     /* As of 2.0 we don't need to explicitly initialise libGlade anymore */
 #else
-    gnome_init(PACKAGE, VERSION, argc, argv);
+    gnome_init_with_popt_table(PACKAGE, VERSION, argc, argv,
+			       popt_options, /*popt flags*/0,
+			       &popt_context);
     glade_gnome_init();
 #endif
 
