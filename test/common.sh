@@ -12,7 +12,8 @@ CXXWARNFLAGS="-Wall"
 CXXCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
 CXXDEFINES=
 
-LDCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
+LDLIBS=
+CXXLINK=no
 
 TGGCOV_ANNOTATE_FORMAT=auto
 TGGCOV_FLAGS=
@@ -68,6 +69,7 @@ compile_c ()
 compile_cxx ()
 {
     vcmd "compile_cxx $*"
+    CXXLINK=yes
     vdo $CXX $CXXWARNFLAGS $CXXCOVFLAGS $CXXDEFINES -c $srcdir/$1 || fatal "can't compile $srcdir/$1"
 }
 
@@ -76,7 +78,15 @@ link ()
     vcmd "link $*"
     local AOUT="$1"
     shift
-    vdo $CC $LDCOVFLAGS -o "$AOUT" "$@" || fatal "can't link $AOUT"
+    
+    case "$CXXLINK" in
+    yes)
+	vdo $CXX $CXXCOVFLAGS -o "$AOUT" "$@" $LDLIBS || fatal "can't link $AOUT"
+    	;;
+    no)
+	vdo $CC $CCOVFLAGS -o "$AOUT" "$@" $LDLIB || fatal "can't link $AOUT"
+    	;;
+    esac
 }
 
 subtest ()
