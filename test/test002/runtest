@@ -1,0 +1,17 @@
+#!/bin/sh
+
+. ../common.sh
+
+init
+
+compile_c foo.c
+link foo foo.o
+
+./foo 1
+./foo 2
+./foo 3
+./foo 4
+
+run_gcov foo.c
+run_tggcov foo.c
+compare_lines foo.c
