@@ -16,9 +16,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.4 2003-05-04 05:59:48 gnb Exp $
+# $Id: Makefile.am,v 1.1 2003-05-04 05:57:59 gnb Exp $
 #
 
-SUBDIRS=	src ui doc
+EXTRA_DIST=	bbg-file-format.txt
 
-EXTRA_DIST=	.cvsignore .gdbinit
