@@ -16,15 +16,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.24 2003-06-03 14:46:49 gnb Exp $
+# $Id: Makefile.am,v 1.25 2003-06-09 06:12:13 gnb Exp $
 #
+
+SUBDIRS=	libiberty
 
 bin_PROGRAMS=	ggcov
 
-# libiberty/demangle.h is from the GNU libiberty library,
-# for some reason the RedHat distro doesn't install it.
-
-ggcov_SOURCES=	libiberty/demangle.h demangle.h demangle.c \
+ggcov_SOURCES=	demangle.h demangle.c \
 		common.h common.c \
 		estring.H estring.C string_var.H tok.H tok.C \
 		filename.h filename.c \
