@@ -2637,7 +2637,7 @@
 
     <widget>
       <class>GtkHPaned</class>
-      <name>hpaned1</name>
+      <name>callgraph_hpaned</name>
       <handle_size>10</handle_size>
       <gutter_size>6</gutter_size>
       <position>0</position>

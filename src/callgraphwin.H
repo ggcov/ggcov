@@ -46,6 +46,7 @@ private:
     static void init_clist(GtkCList *clist,
     	    	    	   int (*sortfn)(GtkCList *, const void*, const void*));
     static void update_clist(GtkWidget *clist, GList *arcs, gboolean isin);
+    static void on_callgraph_show(GtkWidget *w, gpointer data);
     void update();
     static callgraphwin_t *from_widget(GtkWidget *w)
     {
@@ -59,6 +60,8 @@ private:
 
     GtkWidget *ancestors_clist_;
     GtkWidget *descendants_clist_;
+
+    GtkWidget *hpaned_;
 
     friend void on_callgraph_close_activate(GtkWidget *w, gpointer data);
     friend void on_callgraph_exit_activate(GtkWidget *w, gpointer data);

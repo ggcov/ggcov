@@ -2698,7 +2698,7 @@
         </child>
 
         <child>
-          <widget class="GtkHPaned" id="hpaned1">
+          <widget class="GtkHPaned" id="callgraph_hpaned">
             <property name="position">0</property>
             <property name="visible">yes</property>
 

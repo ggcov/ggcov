@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.7 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.8 2003-03-28 07:41:10 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -104,6 +104,11 @@ callgraphwin_t::callgraphwin_t()
     	    	    	    callgraphwin_descendants_compare);
     
     ui_register_windows_menu(ui_get_dummy_menu(xml, "callgraph_windows_dummy"));
+
+
+    hpaned_ = glade_xml_get_widget(xml, "callgraph_hpaned");
+    gtk_signal_connect(GTK_OBJECT(get_window()), "show",
+    	GTK_SIGNAL_FUNC(on_callgraph_show), 0);
 }
 
 callgraphwin_t::~callgraphwin_t()
@@ -359,6 +364,17 @@ on_callgraph_descendants_clist_button_press_event(
     }
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+callgraphwin_t::on_callgraph_show(GtkWidget *w, gpointer data)
+{
+    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
+    GtkPaned *paned = GTK_PANED(cw->hpaned_);
+
+    gtk_paned_set_position(paned,
+    	    	    	   (paned->max_position + paned->min_position) / 2);
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
