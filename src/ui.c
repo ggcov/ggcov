@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.h"
 
-CVSID("$Id: ui.c,v 1.7 2001-12-03 01:03:13 gnb Exp $");
+CVSID("$Id: ui.c,v 1.8 2002-01-17 03:49:46 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -322,15 +322,6 @@ ui_register_windows_entry(
 static const char ui_title_key[] = "ui_title_key";
 
 static void
-ui_replace_all(estring *e, const char *from, const char *to)
-{
-    char *p;
-
-    while ((p = strstr(e->data, from)) != 0)
-    	estring_replace_string(e, (p - e->data), strlen(from), to);
-}
-
-static void
 ui_window_title_destroy(void *data)
 {
     g_free(data);
@@ -353,8 +344,8 @@ ui_window_set_title(GtkWidget *w, const char *filename)
     estring_init(&title);
     
     estring_append_string(&title, proto);
-    ui_replace_all(&title, "@FILE@", filename);
-    ui_replace_all(&title, "@VERSION@", VERSION);
+    estring_replace_all(&title, "@FILE@", filename);
+    estring_replace_all(&title, "@VERSION@", VERSION);
     
     gtk_window_set_title(GTK_WINDOW(w), title.data);
         

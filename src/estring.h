@@ -54,6 +54,7 @@ void estring_replace_chars(estring *e, unsigned int start, unsigned int len,
     	    	    	    const char *buf, unsigned int buflen);
 void estring_replace_printf(estring *e, unsigned int start, unsigned int len,
     	    	    	    const char *fmt, ...) _printf_fmt(4,5);
+void estring_replace_all(estring *e, const char *from, const char *to);
 
 void estring_insert_string(estring *e, unsigned int start, const char *str);
 void estring_insert_char(estring *e, unsigned int start, char c);
