@@ -28,7 +28,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.7 2003-05-11 02:32:31 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.8 2003-05-31 07:31:39 gnb Exp $");
 
 
 GHashTable *cov_file_t::files_;
@@ -394,7 +394,7 @@ cov_file_t::read_bbg_function(FILE *fp)
     for (bidx = 0 ; bidx < nblocks ; bidx++)
     {
 #if DEBUG > 1
-    	fprintf(stderr, "BBG   block %ld\n", bidx);
+    	fprintf(stderr, "BBG   block %d\n", bidx);
 #endif
 	b = fn->nth_block(bidx);
 	covio_read_u32(fp, &narcs);
@@ -405,7 +405,7 @@ cov_file_t::read_bbg_function(FILE *fp)
 	    covio_read_u32(fp, &flags);
 
 #if DEBUG > 1
-    	    fprintf(stderr, "BBG     arc %ld: %ld->%ld flags %x(%s,%s,%s)\n",
+    	    fprintf(stderr, "BBG     arc %d: %d->%d flags %x(%s,%s,%s)\n",
 	    	    	    aidx,
 			    bidx, dest, flags,
 			    (flags & 0x1 ? "on_tree" : ""),
