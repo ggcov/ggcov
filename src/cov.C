@@ -31,7 +31,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov.C,v 1.8 2003-05-11 02:32:30 gnb Exp $");
+CVSID("$Id: cov.C,v 1.9 2003-05-31 10:12:11 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -83,7 +83,7 @@ gboolean
 cov_is_source_filename(const char *filename)
 {
     const char *ext;
-    static const char *recognised_exts[] = { ".c", ".C", 0 };
+    static const char *recognised_exts[] = { ".c", ".cc", ".cxx", ".cpp", ".C", 0 };
     int i;
     
     if ((ext = file_extension_c(filename)) == 0)
