@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.28 2003-06-13 14:22:17 gnb Exp $
+dnl $Id: configure.in,v 1.29 2003-06-28 10:12:11 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -50,6 +50,7 @@ AC_PROG_INSTALL
 AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CXX
+AC_PROG_RANLIB
 
 if test x$debug = xyes ; then
 ##   CFLAGS="$CFLAGS -DGTK_DISABLE_DEPRECATED=1 -DGLIB_DISABLE_DEPRECATED=1"
@@ -100,25 +101,31 @@ AC_MSG_RESULT($gtk2)
 
 if test $gtk2 = yes ; then
     # v.1.99.9 shipped in RH 7.3
-    PKG_CHECK_MODULES(GGCOV, libglade-2.0 >= 1.99.9)
-    GGCOV_LIBS="$GGCOV_LIBS -lpopt"
+    PKG_CHECK_MODULES(GGCOV_GUI, libglade-2.0 >= 1.99.9)
+    PKG_CHECK_MODULES(GGCOV_CLI, glib-2.0 >= 2.0.0)
+dnl    GGCOV_LIBS="$GGCOV_LIBS -lpopt"
     if test "x$GCC" = "xyes"; then
     	# The gtk2 build on RH7.3 seems to be missing an -rdynamic
 	# option, which causes global symbols to be exported by
 	# default, which is needed by libglade.
-    	GGCOV_LIBS="$GGCOV_LIBS -rdynamic"
+    	GGCOV_GUI_LIBS="$GGCOV_GUI_LIBS -rdynamic"
     fi
     AC_CHECK_LIB(gtk-x11-2.0, gtk_text_buffer_select_range,
 	      AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE),,
-	      [$GGCOV_LIBS])
+	      [$GGCOV_GUI_LIBS])
 else
     AM_PATH_LIBGLADE(,AC_MSG_ERROR(ggcov requires the libglade library),gnome)
     AM_PATH_IMLIB(,,AC_MSG_ERROR(ggcov requires the libgdk_imlib library))
-    GGCOV_CFLAGS="$LIBGLADE_CFLAGS $IMLIB_CFLAGS"
-    GGCOV_LIBS="$LIBGLADE_LIBS $IMLIB_LIBS"
+    AM_PATH_GLIB(,,AC_MSG_ERROR(ggcov requires the glib library))
+    GGCOV_GUI_CFLAGS="$LIBGLADE_CFLAGS $IMLIB_CFLAGS"
+    GGCOV_GUI_LIBS="$LIBGLADE_LIBS $IMLIB_LIBS"
+    GGCOV_CLI_CFLAGS="$GLIB_CFLAGS"
+    GGCOV_CLI_LIBS="$GLIB_LIBS"
 fi
-AC_SUBST(GGCOV_CFLAGS)
-AC_SUBST(GGCOV_LIBS)
+AC_SUBST(GGCOV_GUI_CFLAGS)
+AC_SUBST(GGCOV_GUI_LIBS)
+AC_SUBST(GGCOV_CLI_CFLAGS)
+AC_SUBST(GGCOV_CLI_LIBS)
 
 dnl Compile C and C++ with the same (C++) compiler.
 CXXFLAGS="$CFLAGS"
