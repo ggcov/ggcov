@@ -18,11 +18,11 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.30 2003-07-02 12:30:45 gnb Exp $
+dnl $Id: configure.in,v 1.31 2003-07-05 09:20:52 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
-AM_INIT_AUTOMAKE(ggcov, 0.1.6)
+AM_INIT_AUTOMAKE(ggcov, 0.1.7)
 AM_CONFIG_HEADER(config.h)
 
 AM_MAINTAINER_MODE
