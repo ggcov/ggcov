@@ -31,7 +31,7 @@
 #include "functionswin.H"
 #include "fileswin.H"
 
-CVSID("$Id: ggcov.c,v 1.18 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.19 2003-03-30 04:46:45 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -392,7 +392,10 @@ parse_args(int argc, char **argv)
     argv0 = argv[0];
     
     for (i = 1 ; i < argc ; i++)
-    	files = g_list_append(files, argv[i]);
+    {
+    	if (argv[i][0] != '-')
+    	    files = g_list_append(files, argv[i]);
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
