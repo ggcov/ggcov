@@ -20,8 +20,9 @@
 #include "sourcewin.h"
 #include "cov.h"
 #include "estring.h"
+#include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.1 2001-11-23 09:09:25 gnb Exp $");
+CVSID("$Id: sourcewin.c,v 1.2 2001-11-23 10:38:14 gnb Exp $");
 
 extern GList *filenames;
 
@@ -29,6 +30,7 @@ static const char sourcewin_window_key[] = "sourcewin_key";
 static gboolean sourcewin_initted = FALSE;
 static GdkColor sourcewin_color0;	    /* colour for lines with count==0 */
 static GdkColor sourcewin_color1;	    /* colour for lines with count>0 */
+static GdkFont *sourcewin_font;
 
 static void sourcewin_populate_filenames(sourcewin_t *sw);
 
@@ -54,6 +56,8 @@ sourcewin_init(GtkWidget *w)
     gdk_color_parse("#00c000", &sourcewin_color1);
     gdk_colormap_alloc_color(cmap, &sourcewin_color1,
     	    	    	    	    /*writeable*/FALSE, /*best_match*/TRUE);
+
+    sourcewin_font = uix_fixed_width_font(gtk_widget_get_style(w)->font);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -198,7 +202,7 @@ on_source_function_activate(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *sw = sourcewin_from_widget(w);
     cov_function_t *fn = (cov_function_t *)userdata;
-    cov_location_t *loc;
+    const cov_location_t *loc;
     GtkAdjustment *adj = GTK_TEXT(sw->text)->vadj;
 
     loc = cov_function_get_first_location(fn);
@@ -365,7 +369,7 @@ sourcewin_update_source(sourcewin_t *sw)
 
     	for (i = 0 ; i < nstrs ; i++)
 	{
-    	    gtk_text_insert(text, /*font*/0,
+    	    gtk_text_insert(text, sourcewin_font,
 	    		    color, /*back*/0,
 			    strs[i], strlen(strs[i]));
     	}
