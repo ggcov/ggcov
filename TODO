@@ -66,8 +66,6 @@ x  Additional source annotations in the Source window (i.e. non-column
    additions like per-function stats) should be colour coded to
    make them distinct from non-executable lines of source.
    
-x  Add icon.
-
 --- CLOSED ---
 
 x  Add a "Files List" window analagous to the existing "Functions List"
@@ -86,4 +84,6 @@ x  Try to correlate the call numbers from blocks with function symbols
    overlap on a line.
    
 x  Add Help->About, Help->Licence etc menu commands.
+
+x  Add icon.
 

@@ -31,7 +31,7 @@
 #include <dirent.h>
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.8 2002-01-17 03:51:16 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.9 2002-01-21 08:29:05 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -387,6 +387,8 @@ on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
     sourcewin_set_filename(srcw, (const char *)filenames->data);
 }
 
+#include "ui/icon.xpm"
+
 static void
 ui_create(void)
 {
@@ -402,6 +404,8 @@ ui_create(void)
     			      on_windows_new_callgraphwin_activated, 0);
     ui_register_windows_entry("New Source...",
     			      on_windows_new_sourcewin_activated, 0);
+
+    ui_set_default_icon(icon_xpm);
 
     summarywin_new();
 }

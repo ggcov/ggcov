@@ -55,6 +55,12 @@ void ui_register_windows_entry(const char *label,
 			       gpointer userdata);
 
 /*
+ * Set the icon that will be used for all toplevel windows.
+ */
+void ui_set_default_icon(char **xpm_data);
+
+
+/*
  * Update the window's title to reflect `filename'.  The
  * magic string @FILE@ is used in the glade file to mark
  * where the filename will be inserted; @VERSION@ works too.

@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.h"
 
-CVSID("$Id: ui.c,v 1.8 2002-01-17 03:49:46 gnb Exp $");
+CVSID("$Id: ui.c,v 1.9 2002-01-21 08:29:06 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -190,6 +190,52 @@ ui_get_window(GtkWidget *w)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static struct
+{
+    char **xpm;
+    GdkPixmap *pm;
+    GdkBitmap *mask;
+} ui_default_icon;
+
+static void
+ui_window_set_default_icon(GtkWidget *w)
+{
+    if (!GTK_WIDGET_REALIZED(w))
+    {
+#if UI_DEBUG > 10
+    	fprintf(stderr, "ui_window_set_default_icon(w=0x%08lx): delaying until realized\n",
+	    	(unsigned)w);
+#endif
+    	/* delay self until realized */
+	gtk_signal_connect(GTK_OBJECT(w), "realize",
+	    GTK_SIGNAL_FUNC(ui_window_set_default_icon), 0);
+	/* don't bother disconnecting the signal, it will only ever fire once */
+    	return;
+    }
+    
+#if UI_DEBUG > 10
+    fprintf(stderr, "ui_window_set_default_icon(w=0x%08lx)\n",
+	    (unsigned)w);
+#endif
+	    
+    if (ui_default_icon.pm == 0)
+    	ui_default_icon.pm = gdk_pixmap_create_from_xpm_d(w->window,
+	    	    	    	&ui_default_icon.mask, 0,
+				ui_default_icon.xpm);
+    gdk_window_set_icon(w->window, 0,
+	ui_default_icon.pm, ui_default_icon.mask);
+}
+
+void
+ui_set_default_icon(char **xpm_data)
+{
+    ui_default_icon.xpm = xpm_data;
+    ui_default_icon.pm = 0; 	/* JIC */
+}
+
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 typedef struct
 {
     char *label;
@@ -283,6 +329,10 @@ ui_register_window(GtkWidget *w)
     gtk_signal_connect(GTK_OBJECT(w), "destroy", 
     	GTK_SIGNAL_FUNC(ui_on_window_destroy), 0);
     ui_update_windows_menus();
+    
+    if (GTK_WINDOW(w)->type == GTK_WINDOW_TOPLEVEL &&
+    	ui_default_icon.xpm != 0)
+    	ui_window_set_default_icon(w);
 }
 
 static void

@@ -16,13 +16,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.3 2002-01-17 04:56:37 gnb Exp $
+# $Id: Makefile.am,v 1.4 2002-01-21 08:29:34 gnb Exp $
 #
 
 
 GLADEFILE=	ggcov.glade
+BUILD_PIXMAPS=	icon.xpm
 PIXMAPS=	logo.xpm
 
-EXTRA_DIST=	$(GLADEFILE) $(PIXMAPS)
+EXTRA_DIST=	$(GLADEFILE) $(PIXMAPS) $(BUILD_PIXMAPS)
 pkgdata_DATA=	$(GLADEFILE) $(PIXMAPS)
 
