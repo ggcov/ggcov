@@ -36,9 +36,6 @@ x  Handle the boundary case of the last block in a function properly.
 x  In the Source window, show branches graphically, as drawn arrows
    (labelled with branch probablities) from one block to another.
    
-x  Implement the -o option of gcov which specifies a directory in
-   which .bb .bbg and .da files are found (also .o for ggcov).
-   
 x  Option to watch mtimes of .da files and reload them when they
    change, so that user can watch coverage stats update in realtime
    as their testsuite is run.
@@ -82,6 +79,9 @@ x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
 
+x  Implement the -o option of gcov which specifies a directory in
+   which .bb .bbg and .da files are found (also .o for ggcov).
+   
 x  Add menu item to Source window to save the text with annotations.
 
 x  Reorganise the text widget of the Source window so that there are

@@ -31,7 +31,7 @@
 #include "functionswin.H"
 #include "fileswin.H"
 
-CVSID("$Id: ggcov.c,v 1.19 2003-03-30 04:46:45 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.20 2003-05-11 00:29:30 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -56,6 +56,14 @@ read_gcov_files(void)
     }
     else
     {
+	for (iter = files ; iter != 0 ; iter = iter->next)
+	{
+	    const char *filename = (const char *)iter->data;
+	    
+	    if (file_is_directory(filename) == 0)
+	    	cov_add_search_directory(filename);
+    	}
+
 	for (iter = files ; iter != 0 ; iter = iter->next)
 	{
 	    const char *filename = (const char *)iter->data;

@@ -90,6 +90,11 @@ private:
     static void add_name(const char *name);
     cov_function_t *add_function();
     void add_location(const cov_location_t *);
+    char *try_file(const char *dir, const char *ext) const;
+    char *find_file(const char *ext, gboolean quiet) const;
+
+    static void search_path_append(const char *dir);
+    gboolean read(gboolean quiet);
 
     gboolean read_bb_file(const char *filename);
     gboolean read_bbg_function(FILE *fp);
@@ -101,6 +106,7 @@ private:
 
     static GHashTable *files_;
     static list_t<cov_file_t> files_list_;
+    static list_t<char> search_path_;
     static char *common_path_;
     static int common_len_;
 
@@ -109,6 +115,7 @@ private:
     GHashTable *functions_by_name_;
     const cov_location_t *last_location_;
 
+    friend void cov_add_search_directory(const char *fname);
     friend gboolean cov_read_source_file_2(const char *fname, gboolean quiet);
     friend void cov_init(void);
     friend void cov_post_read(void);
