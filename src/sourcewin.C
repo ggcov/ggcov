@@ -23,7 +23,7 @@
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.24 2004-02-08 11:06:00 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.25 2004-02-18 11:24:19 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -47,19 +47,19 @@ sourcewin_t::setup_text()
     ui_text_setup(text_);
     font_width_ = ui_text_font_width(text_);
 
-    text_tags_[cov_line_t::COVERED] =
+    text_tags_[cov::COVERED] =
 	ui_text_create_tag(text_, "covered", &prefs.covered_foreground);
     
-    text_tags_[cov_line_t::PARTCOVERED] =
+    text_tags_[cov::PARTCOVERED] =
 	ui_text_create_tag(text_, "partcovered", &prefs.partcovered_foreground);
     
-    text_tags_[cov_line_t::UNCOVERED] =
+    text_tags_[cov::UNCOVERED] =
 	ui_text_create_tag(text_, "uncovered", &prefs.uncovered_foreground);
     
-    text_tags_[cov_line_t::UNINSTRUMENTED] =
+    text_tags_[cov::UNINSTRUMENTED] =
 	ui_text_create_tag(text_, "uninstrumented", &prefs.uninstrumented_foreground);
 
-    text_tags_[cov_line_t::SUPPRESSED] =
+    text_tags_[cov::SUPPRESSED] =
 	ui_text_create_tag(text_, "suppressed", &prefs.suppressed_foreground);
 }
 
@@ -353,16 +353,16 @@ sourcewin_t::update()
 	{
 	    switch (ln->status())
 	    {
-	    case cov_line_t::COVERED:
-	    case cov_line_t::PARTCOVERED:
+	    case cov::COVERED:
+	    case cov::PARTCOVERED:
 		snprintf(countbuf, sizeof(countbuf), "%*llu",
 		    	 column_widths_[COL_COUNT]-1, ln->count());
 		break;
-	    case cov_line_t::UNCOVERED:
+	    case cov::UNCOVERED:
 		strncpy(countbuf, " ######", sizeof(countbuf));
 		break;
-	    case cov_line_t::UNINSTRUMENTED:
-	    case cov_line_t::SUPPRESSED:
+	    case cov::UNINSTRUMENTED:
+	    case cov::SUPPRESSED:
 	    	countbuf[0] = '\0';
 		break;
 	    }

@@ -92,7 +92,7 @@ private:
     static list_t<sourcewin_t> instances_;
     
     GtkWidget *text_;	/* GtkText in gtk1.2, GtkTextView in gtk2.0 */
-    ui_text_tag *text_tags_[cov_line_t::NUM_STATUS];
+    ui_text_tag *text_tags_[cov::NUM_STATUS];
     GtkWidget *column_checks_[NUM_COLS];
     GtkWidget *colors_check_;
     GtkWidget *toolbar_;
