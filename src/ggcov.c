@@ -35,13 +35,12 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.30 2003-07-05 02:57:20 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.31 2003-07-14 15:57:04 gnb Exp $");
 
 #define DEBUG_GTK 1
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
-int screenshot_mode = 0;
 
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
 
@@ -152,7 +151,6 @@ on_windows_new_callgraphwin_activated(GtkWidget *w, gpointer userdata)
     cgw->show();
 }
 
-#if CALLGRAPH2
 static void
 on_windows_new_callgraph2win_activated(GtkWidget *w, gpointer userdata)
 {
@@ -162,7 +160,6 @@ on_windows_new_callgraph2win_activated(GtkWidget *w, gpointer userdata)
     cgw = new callgraph2win_t;
     cgw->show();
 }
-#endif
 
 static void
 on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
@@ -191,10 +188,8 @@ ui_create(void)
     			      on_windows_new_callswin_activated, 0);
     ui_register_windows_entry("New Call Butterfly...",
     			      on_windows_new_callgraphwin_activated, 0);
-#if CALLGRAPH2
     ui_register_windows_entry("New Call Graph...",
     			      on_windows_new_callgraph2win_activated, 0);
-#endif
     ui_register_windows_entry("New Source...",
     			      on_windows_new_sourcewin_activated, 0);
 
