@@ -23,7 +23,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.4 2002-12-31 14:50:18 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.5 2003-01-01 03:19:29 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 GdkFont *sourcewin_t::font_;
@@ -293,13 +293,40 @@ format_blocks(char *buf, unsigned int width, const cov_location_t *loc)
 {
     const GList *blocks;
     unsigned int len;
+    unsigned int start = 0, end;
     
     for (blocks = cov_block_t::find_by_location(loc) ; 
     	 blocks != 0 && width > 0 ;
 	 blocks = blocks->next)
     {
     	cov_block_t *b = (cov_block_t *)blocks->data;
-    	len = snprintf(buf, width, "%u%s", b->bindex(), (blocks->next == 0 ? "" : ","));
+	
+	assert(b->bindex() != 0);
+	if (start > 0 && b->bindex() == end+1)
+	{
+	    end++;
+	    continue;
+	}
+	if (start == 0)
+	{
+	    start = end = b->bindex();
+	    continue;
+	}
+	
+    	snprintf(buf, width, "%u-%u,", start, end);
+	len = strlen(buf);
+	buf += len;
+	width -= len;
+	start = end = b->bindex();
+    }
+    
+    if (width > 0 && start > 0)
+    {
+	if (start == end)
+    	    snprintf(buf, width, "%u", start);
+	else
+    	    snprintf(buf, width, "%u-%u", start, end);
+	len = strlen(buf);
 	buf += len;
 	width -= len;
     }
@@ -315,10 +342,15 @@ sourcewin_t::update()
     FILE *fp;
     cov_location_t loc;
     count_t count;
-    gboolean have_count;
+    cov_status_t status;
     GtkText *text = GTK_TEXT(text_);
     int i, nstrs;
     GdkColor *color;
+    static GdkColor *scolors[4] =
+    {
+    	&prefs.covered_foreground, &prefs.partcovered_foreground,
+	&prefs.uncovered_foreground, &prefs.uninstrumented_foreground
+    };
     const char *strs[5];
     char linenobuf[32];
     char blockbuf[32];
@@ -360,18 +392,12 @@ sourcewin_t::update()
 #endif
 	}
 	
-	cov_get_count_by_location(&loc, &count, &have_count);
+	status = cov_get_count_by_location(&loc, &count);
 
     	/* choose colours */
 	color = 0;
 	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
-	{
-	    if (have_count)
-		color = (count ? &prefs.covered_foreground :
-	    	    		 &prefs.uncovered_foreground);
-	    else
-	        color = &prefs.uninstrumented_foreground;
-	}
+	    color = scolors[status];
 
     	/* generate strings */
 	
@@ -391,18 +417,20 @@ sourcewin_t::update()
 	
 	if (GTK_CHECK_MENU_ITEM(count_check_)->active)
 	{
-	    if (have_count)
+	    switch (status)
 	    {
-		if (count)
-		{
-		    snprintf(countbuf, sizeof(countbuf), "%7lu ", (unsigned long)count);
-		    strs[nstrs++] = countbuf;
-		}
-		else
-		    strs[nstrs++] = " ###### ";
-	    }
-	    else
+	    case CS_COVERED:
+	    case CS_PARTCOVERED:
+		snprintf(countbuf, sizeof(countbuf), "%7lu ", (unsigned long)count);
+		strs[nstrs++] = countbuf;
+		break;
+	    case CS_UNCOVERED:
+		strs[nstrs++] = " ###### ";
+		break;
+	    case CS_UNINSTRUMENTED:
 		strs[nstrs++] = "        ";
+		break;
+	    }
     	}
 
 	if (GTK_CHECK_MENU_ITEM(source_check_)->active)
