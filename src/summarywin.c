@@ -18,11 +18,12 @@
  */
 
 #include "summarywin.h"
+#include "sourcewin.h"
 #include "cov.h"
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: summarywin.c,v 1.1 2001-11-25 05:50:39 gnb Exp $");
+CVSID("$Id: summarywin.c,v 1.2 2001-11-25 06:44:52 gnb Exp $");
 
 extern GList *filenames;
 
@@ -58,10 +59,13 @@ summarywin_new(void)
     	    	    	    	    	    	    "summary_range_radio");
     
     sw->filename_combo = glade_xml_get_widget(xml, "summary_filename_combo");
+    sw->filename_view = glade_xml_get_widget(xml, "summary_filename_view");
     sw->function_combo = glade_xml_get_widget(xml, "summary_function_combo");
+    sw->function_view = glade_xml_get_widget(xml, "summary_function_view");
     sw->range_combo = glade_xml_get_widget(xml, "summary_range_combo");
     sw->range_start_spin = glade_xml_get_widget(xml, "summary_range_start_spin");
     sw->range_end_spin = glade_xml_get_widget(xml, "summary_range_end_spin");
+    sw->range_view = glade_xml_get_widget(xml, "summary_range_view");
 
     sw->lines_label = glade_xml_get_widget(xml, "summary_lines_label");
     sw->calls_label = glade_xml_get_widget(xml, "summary_calls_label");
@@ -223,6 +227,22 @@ summarywin_spin_update(summarywin_t *sw)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
+summarywin_get_range(
+    summarywin_t *sw,
+    char **filenamep,
+    unsigned long *startlinep,
+    unsigned long *endlinep)
+{
+    *filenamep = gtk_entry_get_text(GTK_ENTRY(GTK_COMBO(sw->range_combo)->entry));
+    *startlinep = gtk_spin_button_get_value_as_int(
+	    	    	    GTK_SPIN_BUTTON(sw->range_start_spin));
+    *endlinep = gtk_spin_button_get_value_as_int(
+	    	    	    GTK_SPIN_BUTTON(sw->range_end_spin));
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void
 summarywin_set_label(
     GtkWidget *label,
     unsigned long numerator,
@@ -248,10 +268,13 @@ summarywin_update(summarywin_t *sw)
     fprintf(stderr, "summarywin_update\n");
     
     gtk_widget_set_sensitive(sw->filename_combo, (sw->scope == SU_FILENAME));
+    gtk_widget_set_sensitive(sw->filename_view, (sw->scope == SU_FILENAME));
     gtk_widget_set_sensitive(sw->function_combo, (sw->scope == SU_FUNCTION));
+    gtk_widget_set_sensitive(sw->function_view, (sw->scope == SU_FUNCTION));
     gtk_widget_set_sensitive(sw->range_combo, (sw->scope == SU_RANGE));
     gtk_widget_set_sensitive(sw->range_start_spin, (sw->scope == SU_RANGE));
     gtk_widget_set_sensitive(sw->range_end_spin, (sw->scope == SU_RANGE));
+    gtk_widget_set_sensitive(sw->range_view, (sw->scope == SU_RANGE));
     
     cov_stats_init(&stats);
     switch (sw->scope)
@@ -285,21 +308,14 @@ summarywin_update(summarywin_t *sw)
 
     case SU_RANGE:
     	{
-	    GtkWidget *entry = GTK_COMBO(sw->range_combo)->entry;
-	    char *filename = gtk_entry_get_text(GTK_ENTRY(entry));
     	    cov_location_t start, end;
 	    char *title;
 
-    	    start.filename = filename;
-	    start.lineno = gtk_spin_button_get_value_as_int(
-	    	    	    	    GTK_SPIN_BUTTON(sw->range_start_spin));
-
-    	    end.filename = filename;
-	    end.lineno = gtk_spin_button_get_value_as_int(
-	    	    	    	    GTK_SPIN_BUTTON(sw->range_end_spin));
+    	    summarywin_get_range(sw, &start.filename, &start.lineno, &end.lineno);
+    	    end.filename = start.filename;
 
     	    fprintf(stderr, "summarywin_update: SU_RANGE %s %ld-%ld\n",
-	    	    	    	filename, start.lineno, end.lineno);
+	    	    	    	start.filename, start.lineno, end.lineno);
 				
     	    title = g_strdup_printf("%s:%lu-%lu", start.filename,
 	    	    	    	    	    	  start.lineno, end.lineno);
@@ -322,6 +338,24 @@ summarywin_update(summarywin_t *sw)
     	    	    	 stats.branches_executed, stats.branches);
     summarywin_set_label(sw->branches_taken_label,
     	    	    	 stats.branches_taken, stats.branches);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void
+summarywin_show_source(
+    const char *filename,
+    unsigned long startline,
+    unsigned long endline)
+{
+    sourcewin_t *srcw = sourcewin_new();
+    
+    sourcewin_set_filename(srcw, filename);
+    if (startline > 0)
+    {
+	sourcewin_ensure_visible(srcw, startline);
+	sourcewin_select_region(srcw, startline, endline);
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -368,6 +402,16 @@ on_summary_filename_entry_changed(GtkWidget *w, gpointer data)
 }
 
 GLADE_CALLBACK void
+on_summary_filename_view_clicked(GtkWidget *w, gpointer data)
+{
+    summarywin_t *sw = summarywin_from_widget(w);
+    GtkWidget *entry = GTK_COMBO(sw->filename_combo)->entry;
+    char *filename = gtk_entry_get_text(GTK_ENTRY(entry));
+
+    summarywin_show_source(filename, 0, 0);    
+}
+
+GLADE_CALLBACK void
 on_summary_function_radio_toggled(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_from_widget(w);
@@ -382,6 +426,20 @@ on_summary_function_entry_changed(GtkWidget *w, gpointer data)
     summarywin_t *sw = summarywin_from_widget(w);
 
     summarywin_update(sw);    
+}
+
+GLADE_CALLBACK void
+on_summary_function_view_clicked(GtkWidget *w, gpointer data)
+{
+    summarywin_t *sw = summarywin_from_widget(w);
+    cov_function_t *fn = ui_combo_get_current_data(
+	    	    	    	GTK_COMBO(sw->function_combo));
+    const cov_location_t *start, *end;
+
+    start = cov_function_get_first_location(fn);
+    end = cov_function_get_last_location(fn);
+
+    summarywin_show_source(start->filename, start->lineno, end->lineno);
 }
 
 GLADE_CALLBACK void
@@ -416,6 +474,17 @@ on_summary_range_end_spin_changed(GtkWidget *w, gpointer data)
     summarywin_t *sw = summarywin_from_widget(w);
 
     summarywin_update(sw);    
+}
+
+GLADE_CALLBACK void
+on_summary_range_view_clicked(GtkWidget *w, gpointer data)
+{
+    summarywin_t *sw = summarywin_from_widget(w);
+    unsigned long start, end;
+    char *filename;
+    
+    summarywin_get_range(sw, &filename, &start, &end);
+    summarywin_show_source(filename, start, end);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -39,10 +39,13 @@ typedef struct
     GtkWidget *scope_radio[SU_NSCOPES];
     
     GtkWidget *filename_combo;
+    GtkWidget *filename_view;
     GtkWidget *function_combo;
+    GtkWidget *function_view;
     GtkWidget *range_combo;
     GtkWidget *range_start_spin;
     GtkWidget *range_end_spin;
+    GtkWidget *range_view;
 
     GtkWidget *lines_label;
     GtkWidget *calls_label;
