@@ -164,43 +164,18 @@
 	    <active>True</active>
 	    <always_show_toggle>False</always_show_toggle>
 	  </widget>
-	</widget>
-      </widget>
-
-      <widget>
-	<class>GtkMenuItem</class>
-	<name>source_files_menu</name>
-	<label>F_ilenames</label>
-	<right_justify>False</right_justify>
-
-	<widget>
-	  <class>GtkMenu</class>
-	  <name>source_files_menu_menu</name>
 
 	  <widget>
-	    <class>GtkMenuItem</class>
-	    <name>source_file_dummy</name>
-	    <label>dummy</label>
-	    <right_justify>False</right_justify>
-	  </widget>
-	</widget>
-      </widget>
-
-      <widget>
-	<class>GtkMenuItem</class>
-	<name>source_functions_menu</name>
-	<label>F_unctions</label>
-	<right_justify>False</right_justify>
-
-	<widget>
-	  <class>GtkMenu</class>
-	  <name>source_functions_menu_menu</name>
-
-	  <widget>
-	    <class>GtkMenuItem</class>
-	    <name>source_func_dummy</name>
-	    <label>dummy</label>
-	    <right_justify>False</right_justify>
+	    <class>GtkCheckMenuItem</class>
+	    <name>source_toolbar_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_source_toolbar_check_activate</handler>
+	      <last_modification_time>Sat, 04 Jan 2003 01:33:40 GMT</last_modification_time>
+	    </signal>
+	    <label>_Toolbar</label>
+	    <active>True</active>
+	    <always_show_toggle>False</always_show_toggle>
 	  </widget>
 	</widget>
       </widget>
@@ -264,6 +239,138 @@
 	      <last_modification_time>Sat, 29 Dec 2001 01:11:18 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_ABOUT_ITEM</stock_item>
+	  </widget>
+	</widget>
+      </widget>
+    </widget>
+
+    <widget>
+      <class>GtkToolbar</class>
+      <name>source_toolbar</name>
+      <border_width>4</border_width>
+      <orientation>GTK_ORIENTATION_HORIZONTAL</orientation>
+      <type>GTK_TOOLBAR_ICONS</type>
+      <space_size>5</space_size>
+      <space_style>GTK_TOOLBAR_SPACE_EMPTY</space_style>
+      <relief>GTK_RELIEF_NORMAL</relief>
+      <tooltips>True</tooltips>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>False</fill>
+      </child>
+
+      <widget>
+	<class>GtkHBox</class>
+	<name>hbox2</name>
+	<homogeneous>False</homogeneous>
+	<spacing>0</spacing>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <name>label60</name>
+	  <label>Filenames:</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>1</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkCombo</class>
+	  <name>source_filenames_combo</name>
+	  <value_in_list>True</value_in_list>
+	  <ok_if_empty>True</ok_if_empty>
+	  <case_sensitive>False</case_sensitive>
+	  <use_arrows>True</use_arrows>
+	  <use_arrows_always>False</use_arrows_always>
+	  <items></items>
+	  <child>
+	    <padding>4</padding>
+	    <expand>True</expand>
+	    <fill>True</fill>
+	  </child>
+
+	  <widget>
+	    <class>GtkEntry</class>
+	    <child_name>GtkCombo:entry</child_name>
+	    <name>source_filenames_entry</name>
+	    <can_focus>True</can_focus>
+	    <signal>
+	      <name>changed</name>
+	      <handler>on_source_filenames_entry_changed</handler>
+	      <last_modification_time>Sat, 04 Jan 2003 01:39:34 GMT</last_modification_time>
+	    </signal>
+	    <editable>False</editable>
+	    <text_visible>True</text_visible>
+	    <text_max_length>0</text_max_length>
+	    <text></text>
+	  </widget>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkHBox</class>
+	<name>hbox3</name>
+	<homogeneous>False</homogeneous>
+	<spacing>0</spacing>
+	<child>
+	  <new_group>True</new_group>
+	</child>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <name>label61</name>
+	  <label>Functions:</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>1</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <child>
+	    <padding>0</padding>
+	    <expand>False</expand>
+	    <fill>False</fill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkCombo</class>
+	  <name>source_functions_combo</name>
+	  <value_in_list>True</value_in_list>
+	  <ok_if_empty>True</ok_if_empty>
+	  <case_sensitive>False</case_sensitive>
+	  <use_arrows>True</use_arrows>
+	  <use_arrows_always>False</use_arrows_always>
+	  <items></items>
+	  <child>
+	    <padding>4</padding>
+	    <expand>True</expand>
+	    <fill>True</fill>
+	  </child>
+
+	  <widget>
+	    <class>GtkEntry</class>
+	    <child_name>GtkCombo:entry</child_name>
+	    <name>source_functions_entry</name>
+	    <can_focus>True</can_focus>
+	    <signal>
+	      <name>changed</name>
+	      <handler>on_source_functions_entry_changed</handler>
+	      <last_modification_time>Sat, 04 Jan 2003 01:39:40 GMT</last_modification_time>
+	    </signal>
+	    <editable>False</editable>
+	    <text_visible>True</text_visible>
+	    <text_max_length>0</text_max_length>
+	    <text></text>
 	  </widget>
 	</widget>
       </widget>

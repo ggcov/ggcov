@@ -89,10 +89,6 @@ x  ??? Add a Weighted Sum to the Summary Overall window.
 x  Arrows appear in all the sortable column titles...they should appear
    only in the current sort column.
    
-x  In the Source window, deal with large Filenames and Functions menus
-   by splitting them up, like maketool's targets menu.  Or make them
-   comboboxes in a toolbar, which would probably be easier.
-
 x  Handle shared libraries...scan the .dynamic structure of the executable
    for runtime path and list of sonames, resolve each, and recursively
    scan them for coveraged source files.
@@ -102,6 +98,10 @@ x  ??? Minimise filenames only within the context of a program or library?
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
+
+x  In the Source window, deal with large Filenames and Functions menus
+   by splitting them up, like maketool's targets menu.  Or make them
+   comboboxes in a toolbar, which would probably be easier.
 
 x   Callgraphwin should label the two lists something easier to
     understand.  Instead of "Distibution to Ancestors" something like

@@ -30,6 +30,9 @@ GLADE_CALLBACK void on_source_number_check_activate(GtkWidget *w, gpointer data)
 GLADE_CALLBACK void on_source_block_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_source_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_colors_check_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_toolbar_check_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_filenames_entry_changed(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_functions_entry_changed(GtkWidget *w, gpointer data);
 
 class sourcewin_t : public window_t
 {
@@ -48,7 +51,8 @@ public:
     static void show_lines(const char *filename, unsigned long startline,
 			      unsigned long endline);
     static void show_function(const cov_function_t *);
-    static void show_file(const char *filename);
+    static void show_file(const cov_file_t *);
+    static void show_filename(const char *filename);
 
 
 private:
@@ -79,8 +83,10 @@ private:
     GtkWidget *count_check_;
     GtkWidget *source_check_;
     GtkWidget *colors_check_;
-    GtkWidget *filenames_menu_;
-    GtkWidget *functions_menu_;
+    GtkWidget *toolbar_;
+    GtkWidget *filenames_combo_;
+    GtkWidget *functions_combo_;
+    gboolean populating_;
     char *filename_;
     unsigned int max_lineno_;	/* the largest linenumber */
     GArray *offsets_by_line_;
@@ -92,6 +98,9 @@ private:
     friend void on_source_block_check_activate(GtkWidget *w, gpointer data);
     friend void on_source_source_check_activate(GtkWidget *w, gpointer data);
     friend void on_source_colors_check_activate(GtkWidget *w, gpointer data);
+    friend void on_source_toolbar_check_activate(GtkWidget *w, gpointer data);
+    friend void on_source_filenames_entry_changed(GtkWidget *w, gpointer data);
+    friend void on_source_functions_entry_changed(GtkWidget *w, gpointer data);
 };
 
 #endif /* _ggcov_sourcewin_H_ */

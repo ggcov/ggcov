@@ -23,7 +23,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.6 2003-01-01 04:15:56 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.7 2003-01-04 02:39:13 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 GdkFont *sourcewin_t::font_;
@@ -73,8 +73,9 @@ sourcewin_t::sourcewin_t()
     count_check_ = glade_xml_get_widget(xml, "source_count_check");
     source_check_ = glade_xml_get_widget(xml, "source_source_check");
     colors_check_ = glade_xml_get_widget(xml, "source_colors_check");
-    filenames_menu_ = ui_get_dummy_menu(xml, "source_file_dummy");
-    functions_menu_ = ui_get_dummy_menu(xml, "source_func_dummy");
+    toolbar_ = glade_xml_get_widget(xml, "source_toolbar");
+    filenames_combo_ = glade_xml_get_widget(xml, "source_filenames_combo");
+    functions_combo_ = glade_xml_get_widget(xml, "source_functions_combo");
     ui_register_windows_menu(ui_get_dummy_menu(xml, "source_windows_dummy"));
         
     init(window_);
@@ -96,14 +97,16 @@ sourcewin_t::~sourcewin_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-sourcewin_t::on_source_filename_activate(GtkWidget *w, gpointer userdata)
+GLADE_CALLBACK void
+on_source_filenames_entry_changed(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
-    const char *filename = (const char *)userdata;
-    estring fullname = cov_file_t::unminimise_name(filename);
+    cov_file_t *f = (cov_file_t *)ui_combo_get_current_data(
+    	    	    	    	    GTK_COMBO(sw->filenames_combo_));
     
-    sw->set_filename(fullname.data(), filename);
+    if (sw->populating_)
+    	return;
+    sw->set_filename(f->name(), f->minimal_name());
 }
 
 
@@ -112,40 +115,30 @@ sourcewin_t::populate_filenames()
 {
     list_iterator_t<cov_file_t> iter;
    
-    ui_delete_menu_items(filenames_menu_);
-    
+    populating_ = TRUE; /* suppress combo entry callback */
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     {
-    	const char *filename = (*iter)->minimal_name();
+    	cov_file_t *f = *iter;
 
-	ui_menu_add_simple_item(filenames_menu_, filename,
-	    	    on_source_filename_activate, (gpointer)filename);
+    	ui_combo_add_data(GTK_COMBO(filenames_combo_), f->minimal_name(), f);
     }
+    populating_ = FALSE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-/*
- * Sadly, this godawful hack is necessary to delay the
- * select/scroll code until after the Functions menu has
- * popped down, there being some sort of display bug
- * in GTK 1.2.7.
- */
-typedef struct
+GLADE_CALLBACK void
+on_source_functions_entry_changed(GtkWidget *w, gpointer userdata)
 {
-    sourcewin_t *sourcewin;
-    cov_function_t *function;
-} sourcewin_hacky_rec_t;
-
-int
-sourcewin_t::delayed_function_activate(gpointer userdata)
-{
-    sourcewin_hacky_rec_t *rec = (sourcewin_hacky_rec_t *)userdata;
-    sourcewin_t *sw = rec->sourcewin;
-    cov_function_t *fn = rec->function;
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
+    	    	    	    	    	    GTK_COMBO(sw->functions_combo_));
     const cov_location_t *first;
     const cov_location_t *last;
-
+    
+    if (sw->populating_)
+    	return;
+    
     first = fn->get_first_location();
     last = fn->get_last_location();
 #if DEBUG
@@ -160,36 +153,19 @@ sourcewin_t::delayed_function_activate(gpointer userdata)
     {
     	fprintf(stderr, "WTF?  Wrong filename for first loc: %s vs %s\n",
 	    	    	first->filename, sw->filename_);
-	g_free(rec);
-	return FALSE;
+	return;
     }
     if (strcmp(last->filename, sw->filename_))
     {
     	fprintf(stderr, "WTF?  Wrong filename for last loc: %s vs %s\n",
 	    	    	last->filename, sw->filename_);
-	g_free(rec);
-	return FALSE;
+	return;
     }
 
     sw->ensure_visible(first->lineno);
 
     /* This only selects the span of the lines which contain executable code */		    
     sw->select_region(first->lineno, last->lineno);
-
-    delete rec;
-    return FALSE;   /* and don't call me again! */
-}
-
-void
-sourcewin_t::on_source_function_activate(GtkWidget *w, gpointer userdata)
-{
-    sourcewin_hacky_rec_t *rec;
-    
-    rec = new sourcewin_hacky_rec_t;
-    rec->sourcewin = sourcewin_t::from_widget(w);
-    rec->function = (cov_function_t *)userdata;
-
-    gtk_idle_add(delayed_function_activate, rec);
 }
 
 void
@@ -200,7 +176,7 @@ sourcewin_t::populate_functions()
     cov_file_t *f;
     cov_function_t *fn;
     
-    /* build an alphabetically sorted list of functions */
+    /* build an alphabetically sorted list of functions in the file */
     f = cov_file_t::find(filename_);
     assert(f != 0);
     for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
@@ -211,22 +187,22 @@ sourcewin_t::populate_functions()
 	    continue;
 	functions = g_list_prepend(functions, fn);
     }
-    
     functions = g_list_sort(functions, cov_function_t::compare);
     
     /* now build the menu */
 
-    ui_delete_menu_items(functions_menu_);
+    gtk_list_clear_items(GTK_LIST(GTK_COMBO(functions_combo_)->list), 0, -1);
+    populating_ = TRUE; /* suppress combo entry callback */
     
     while (functions != 0)
     {
     	fn = (cov_function_t *)functions->data;
 	
-	ui_menu_add_simple_item(functions_menu_, fn->name(),
-	    	    on_source_function_activate, fn);
+	ui_combo_add_data(GTK_COMBO(functions_combo_), fn->name(), fn);
 	
 	functions = g_list_remove_link(functions, functions);
     }
+    populating_ = FALSE;
 }
 
 void
@@ -568,7 +544,13 @@ sourcewin_t::show_function(const cov_function_t *fn)
 }
 
 void
-sourcewin_t::show_file(const char *filename)
+sourcewin_t::show_file(const cov_file_t *f)
+{
+    show_lines(f->name(), 0, 0);
+}
+
+void
+sourcewin_t::show_filename(const char *filename)
 {
     show_lines(filename, 0, 0);
 }
@@ -628,6 +610,17 @@ on_source_colors_check_activate(GtkWidget *w, gpointer data)
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     
     sw->update();
+}
+
+GLADE_CALLBACK void
+on_source_toolbar_check_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    
+    if (GTK_CHECK_MENU_ITEM(w)->active)
+    	gtk_widget_show(sw->toolbar_);
+    else
+    	gtk_widget_hide(sw->toolbar_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
