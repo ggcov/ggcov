@@ -22,7 +22,7 @@
 #include "filename.h"
 #include "estring.h"
 
-CVSID("$Id: cov.c,v 1.1 2001-11-23 03:47:48 gnb Exp $");
+CVSID("$Id: cov.c,v 1.2 2001-11-23 09:05:26 gnb Exp $");
 
 GHashTable *cov_files;
 /* TODO: ? reorg this */
@@ -66,6 +66,23 @@ cov_function_add_block(cov_function_t *fn)
     
     return b;
 }
+
+const cov_location_t *
+cov_function_get_first_location(const cov_function_t *fn)
+{
+    unsigned int bidx;
+    GList *iter;
+    
+    for (bidx = 0 ; bidx < fn->blocks->len ; bidx++)
+    {
+    	cov_block_t *b = (cov_block_t *)fn->blocks->pdata[bidx];
+	
+	for (iter = b->locations ; iter != 0 ; iter = iter->next)
+	    return (const cov_location_t *)iter->data;
+    }
+    return 0;
+}
+
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -305,7 +322,6 @@ cov_function_solve(cov_function_t *fn)
     cov_arc_t *a;
     cov_block_t *b;
     int num_blocks;
-    GList *iter;
 
     num_blocks = fn->blocks->len;
 
@@ -520,7 +536,7 @@ cov_read_bbg_function(cov_file_t *f, FILE *fp)
     for (bidx = 0 ; bidx < nblocks ; bidx++)
     {
 #if DEBUG    
-    	fprintf(stderr, "BBG   block %d\n", bidx);
+    	fprintf(stderr, "BBG   block %ld\n", bidx);
 #endif
 	b = g_ptr_array_index(fn->blocks, bidx);
 	covio_read_u32(fp, &narcs);
@@ -531,7 +547,7 @@ cov_read_bbg_function(cov_file_t *f, FILE *fp)
 	    covio_read_u32(fp, &flags);
 
 #if DEBUG    
-    	    fprintf(stderr, "BBG     arc %d: %d->%d flags %s,%s,%s\n",
+    	    fprintf(stderr, "BBG     arc %ld: %ld->%ld flags %s,%s,%s\n",
 	    	    	    aidx,
 			    bidx, dest,
 			    (flags & 1 ? "on_tree" : ""),
