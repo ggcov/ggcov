@@ -84,6 +84,10 @@ public:
     {
     	return data_;
     }
+    operator const char *() const
+    {
+    	return data_;
+    }
     unsigned int length() const
     {
     	return length_;
