@@ -137,8 +137,11 @@ private:
     gboolean read_old_da_file(const char *filename);
     gboolean read_new_da_file(const char *filename);
     gboolean read_da_file(const char *filename);
-    gboolean read_o_file_relocs(const char *filename);
+#ifdef HAVE_LIBBFD
+    static gboolean o_file_add_call(const cov_location_t *, const char *);
+    gboolean scan_o_file_calls(const char *filename);
     gboolean read_o_file(const char *filename);
+#endif
     gboolean solve();
     void finalise();
 
