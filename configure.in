@@ -18,22 +18,14 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.10 2003-01-01 03:04:57 gnb Exp $
+dnl $Id: configure.in,v 1.11 2003-02-18 14:38:20 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
-dnl sinclude(/usr/share/aclocal/gettext.m4)dnl
-dnl sinclude(/usr/share/aclocal/lcmessage.m4)dnl
-sinclude(/usr/share/aclocal/init.m4)dnl
-sinclude(/usr/share/aclocal/header.m4)dnl
-sinclude(/usr/share/aclocal/progtest.m4)dnl
-sinclude(/usr/share/aclocal/missing.m4)dnl
-sinclude(/usr/share/aclocal/sanity.m4)dnl
-sinclude(/usr/share/aclocal/cond.m4)dnl
-sinclude(/usr/share/aclocal/libglade.m4)dnl
-AM_INIT_AUTOMAKE(ggcov,0.0.7)
+AM_INIT_AUTOMAKE(ggcov, 0.0.7)
 AM_CONFIG_HEADER(config.h)
 
+AM_MAINTAINER_MODE
 
 dnl Enabling debugging code
 dnl This is mostly straight out of the automake manual.
@@ -50,9 +42,7 @@ yes|no)
 esac
 ],[debug=no])
 AC_MSG_RESULT($debug)
-test x$debug = xyes && CFLAGS="-g"
 AM_CONDITIONAL(DEBUG, test x$debug = xyes)
-
 
 dnl Checks for programs.
 AC_ARG_PROGRAM
@@ -61,8 +51,21 @@ AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_CXX
 
+if test x$debug = xyes ; then
+##   CFLAGS="$CFLAGS -DGTK_DISABLE_DEPRECATED=1 -DGLIB_DISABLE_DEPRECATED=1"
+    echo "debug mode on"
+fi
+
+dnl A bunch of warning options for gcc
+dnl -Wshadow
+AC_GCC_ADD_CFLAGS([-Wall -Wchar-subscripts -Wmissing-declarations
+    -Wmissing-prototypes -Wnested-externs -Wpointer-arithmetic
+    -Wcast-align -Wsign-compare -pedantic])
+
+dnl Compile C and C++ with the same (C++) compiler.
 CXXFLAGS="$CFLAGS"
 CC="$CXX"
+
 
 dnl Stuff for gettext
 dnl ALL_LINGUAS="la"
@@ -77,11 +80,13 @@ AC_CHECK_HEADERS(malloc.h sys/ioctl.h sys/time.h unistd.h memory.h)
 AC_CHECK_HEADERS(signal.h sys/filio.h stdint.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
 AC_TYPE_PID_T
 
 dnl Check for the libglade, libxml, and GTK libraries
+dnl PKG_CHECK_MODULES(GGCOV, libglade-2.0 >= 2.0.0)
 AM_PATH_LIBGLADE(,AC_MSG_ERROR(ggcov requires the libglade library),gnome)
+AC_SUBST(GGCOV_CFLAGS)
+AC_SUBST(GGCOV_LIBS)
 
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
