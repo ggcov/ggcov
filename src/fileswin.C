@@ -25,7 +25,7 @@
 #include "prefs.H"
 #include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.16 2003-06-09 05:26:02 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.17 2003-06-14 13:50:08 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -263,7 +263,7 @@ dump_file_tree(file_rec_t *fr, int indent)
     
     for (i = 0 ; i < indent ; i++)
     	fputc(' ', stderr);
-    fprintf(stderr, "%s\n", fr->name);
+    fprintf(stderr, "%s\n", fr->name.data());
 
     for (friter = fr->children.first() ;
 	 friter != (file_rec_t *)0 ;
