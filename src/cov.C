@@ -26,7 +26,7 @@
 #include "string_var.H"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.13 2003-06-14 13:57:30 gnb Exp $");
+CVSID("$Id: cov.C,v 1.14 2003-06-28 10:23:00 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -356,6 +356,146 @@ cov_read_directory(const char *dirname, gboolean recursive)
 {
     return cov_read_directory_2(dirname, recursive, /*quiet*/FALSE);
 }
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+#if DEBUG > 1
+
+static void
+dump_callarcs(FILE *fp, GList *arcs)
+{
+    for ( ; arcs != 0 ; arcs = arcs->next)
+    {
+    	cov_callarc_t *ca = (cov_callarc_t *)arcs->data;
+	
+	fprintf(fp, "        ARC {\n");
+	fprintf(fp, "            FROM=%s\n", ca->from->name.data());
+	fprintf(fp, "            TO=%s\n", ca->to->name.data());
+	fprintf(fp, "            COUNT="GNB_U64_DFMT"\n", ca->count);
+	fprintf(fp, "        }\n");
+    }
+}
+
+static void
+dump_callnode(cov_callnode_t *cn, void *userdata)
+{
+    FILE *fp = (FILE *)userdata;
+
+    fprintf(fp, "CALLNODE {\n");
+    fprintf(fp, "    NAME=%s\n", cn->name.data());
+    if (cn->function == 0)
+	fprintf(fp, "    FUNCTION=null\n");
+    else
+	fprintf(fp, "    FUNCTION=%s:%s\n", cn->function->file()->name(),
+	    	    	    	    	    	cn->function->name());
+    fprintf(fp, "    COUNT="GNB_U64_DFMT"\n", cn->count);
+    fprintf(fp, "    OUT_ARCS={\n");
+    dump_callarcs(fp, cn->out_arcs);
+    fprintf(fp, "    }\n");
+    fprintf(fp, "    IN_ARCS={\n");
+    dump_callarcs(fp, cn->in_arcs);
+    fprintf(fp, "    }\n");
+    fprintf(fp, "}\n");
+    
+}
+
+static void
+dump_arc(FILE *fp, cov_arc_t *a)
+{
+    estring fromdesc = a->from()->describe();
+    estring todesc = a->to()->describe();
+
+    fprintf(fp, "                    ARC {\n");
+    fprintf(fp, "                        FROM=%s\n", fromdesc.data());
+    fprintf(fp, "                        TO=%s\n", todesc.data());
+    fprintf(fp, "                        COUNT="GNB_U64_DFMT"\n", a->count());
+    fprintf(fp, "                        NAME=%s\n", a->name());
+    fprintf(fp, "                        ON_TREE=%s\n", boolstr(a->on_tree_));
+#ifdef HAVE_BBG_FAKE_FLAG
+    fprintf(fp, "                        FAKE=%s\n", boolstr(a->fake_));
+#endif
+    fprintf(fp, "                        FALL_THROUGH=%s\n", boolstr(a->fall_through_));
+    fprintf(fp, "                    }\n");
+}
+
+static void
+dump_block(FILE *fp, cov_block_t *b)
+{
+    list_iterator_t<cov_arc_t> aiter;
+    list_iterator_t<cov_location_t>liter;
+    estring desc = b->describe();
+    
+    fprintf(fp, "            BLOCK {\n");
+    fprintf(fp, "                IDX=%s\n", desc.data());
+    fprintf(fp, "                COUNT="GNB_U64_DFMT"\n", b->count());
+
+    fprintf(fp, "                OUT_ARCS {\n");
+    for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+    	dump_arc(fp, *aiter);
+    fprintf(fp, "                }\n");
+
+    fprintf(fp, "                IN_ARCS {\n");
+    for (aiter = b->in_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+    	dump_arc(fp, *aiter);
+    fprintf(fp, "                }\n");
+    
+    fprintf(fp, "                LOCATIONS {\n");
+    for (liter = b->location_iterator() ; liter != (cov_location_t *)0 ; ++liter)
+    {
+    	cov_location_t *loc = *liter;
+	fprintf(fp, "                    %s:%ld\n", loc->filename, loc->lineno);
+    }
+    fprintf(fp, "                }\n");
+    fprintf(fp, "            }\n");
+}
+
+static void
+dump_function(FILE *fp, cov_function_t *fn)
+{
+    unsigned int i;
+    
+    fprintf(fp, "        FUNCTION {\n");
+    fprintf(fp, "            NAME=\"%s\"\n", fn->name());
+    for (i = 0 ; i < fn->num_blocks() ; i++)
+    	dump_block(fp, fn->nth_block(i));
+    fprintf(fp, "    }\n");
+}
+
+static void
+dump_file(FILE *fp, cov_file_t *f)
+{
+    unsigned int i;
+    
+    fprintf(fp, "FILE {\n");
+    fprintf(fp, "    NAME=\"%s\"\n", f->name());
+    fprintf(fp, "    MINIMAL_NAME=\"%s\"\n", f->minimal_name());
+    for (i = 0 ; i < f->num_functions() ; i++)
+    	dump_function(fp, f->nth_function(i));
+    fprintf(fp, "}\n");
+}
+
+void
+cov_dump(FILE *fp)
+{
+    list_iterator_t<cov_file_t> iter;
+
+    if (fp == 0)
+    	fp = stderr;
+    
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    	dump_file(fp, *iter);
+
+    cov_callnode_t::foreach(dump_callnode, fp);
+}
+
+#else /* DEBUG */
+
+/*ARGSUSED*/
+void
+cov_dump(FILE *fp)
+{
+}
+
+#endif /* !DEBUG */
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

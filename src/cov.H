@@ -49,4 +49,11 @@ void cov_post_read(void);
 cov_status_t cov_get_count_by_location(const cov_location_t *loc,
 			       count_t *countp);
 
+/*
+ * If -DDEBUG > 1, dump human-readable debugging description
+ * of contents of cov data structures to the given FILE*
+ * (defaults to stderr if NULL is passed).
+ */
+void cov_dump(FILE *);
+
 #endif /* _ggcov_cov_H_ */
