@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.39 2004-11-20 08:46:21 gnb Exp $
+# $Id: Makefile.am,v 1.40 2004-11-20 09:13:38 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -36,7 +36,7 @@ libcommon_a_SOURCES= \
 		cpp_parser.H cpp_parser.C
 
 libcov_a_SOURCES= \
-		covio.h covio.c \
+		covio.H covio.C \
 		cov_specific.H cov_specific.C \
 		cov_bfd.H cov_bfd.C \
 		cov_file.H cov_file.C \
