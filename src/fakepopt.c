@@ -21,6 +21,8 @@
 
 #ifndef HAVE_LIBPOPT
 
+CVSID("$Id: fakepopt.c,v 1.2 2003-06-12 16:56:56 gnb Exp $");
+
 /*
  * Simulate enough of the popt interface so that I only have
  * to write and maintain a single argument parsing routine for
