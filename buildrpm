@@ -1,5 +1,21 @@
 #!/bin/sh
 
+FORCE=no
+
+usage ()
+{
+    echo "Usage: $0 [--force]"
+    exit 1
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --force|-f) FORCE=yes ;;
+    *) usage ;;
+    esac
+    shift
+done
+
 set `sed -n -e 's|^AM_INIT_AUTOMAKE(\([^,]\+\),\([^)]\+\))|\1 \2|p' < configure.in`
 PACKAGE=$1
 VERSION=$2
@@ -26,9 +42,16 @@ fi
 #echo RPMDIR=$RPMDIR
 #echo DISTRO=$DISTRO
 #echo RPMBUILD=$RPMBUILD
+#echo FORCE=$FORCE
 #exit 1
 
 set -x
+
+if [ $FORCE = yes ]; then
+    # Force complete rebuild
+    /bin/rm -rf config.status config.cache autom4te.cache
+    /bin/rm -f $SPECFILE $TARBALL
+fi
 
 if [ ! -f $SPECFILE ]; then
     autoconf
