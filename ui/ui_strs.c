@@ -5,12 +5,13 @@
  */
 
 gchar *s = N_("GGCov: Source @FILE@");
-gchar *s = N_("_Number");
+gchar *s = N_("_Line");
 gchar *s = N_("_Block");
 gchar *s = N_("_Count");
 gchar *s = N_("_Source");
 gchar *s = N_("Co_lors");
 gchar *s = N_("_Toolbar");
+gchar *s = N_("T_itles");
 gchar *s = N_("S_ummarise");
 gchar *s = N_("_File");
 gchar *s = N_("F_unction");
@@ -19,6 +20,10 @@ gchar *s = N_("dummy");
 gchar *s = N_("_Help");
 gchar *s = N_("Filenames:");
 gchar *s = N_("Functions:");
+gchar *s = N_("Line");
+gchar *s = N_("Block(s)");
+gchar *s = N_("Count");
+gchar *s = N_("Source");
 gchar *s = N_("GGCov: Summary @FILE@");
 gchar *s = N_("dummy");
 gchar *s = N_("_Help");
@@ -44,7 +49,7 @@ gchar *s = N_("_Help");
 gchar *s = N_("Lines");
 gchar *s = N_("Calls");
 gchar *s = N_("Branches");
-gchar *s = N_("Function\t");
+gchar *s = N_("Function");
 gchar *s = N_("GGCov: File List");
 gchar *s = N_("_Lines");
 gchar *s = N_("_Calls");

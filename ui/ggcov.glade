@@ -91,13 +91,13 @@
 
 	  <widget>
 	    <class>GtkCheckMenuItem</class>
-	    <name>source_number_check</name>
+	    <name>source_line_check</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_source_number_check_activate</handler>
-	      <last_modification_time>Fri, 23 Nov 2001 06:27:10 GMT</last_modification_time>
+	      <handler>on_source_column_check_activate</handler>
+	      <last_modification_time>Fri, 18 Apr 2003 10:22:17 GMT</last_modification_time>
 	    </signal>
-	    <label>_Number</label>
+	    <label>_Line</label>
 	    <active>True</active>
 	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
@@ -107,8 +107,8 @@
 	    <name>source_block_check</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_source_block_check_activate</handler>
-	      <last_modification_time>Fri, 30 Nov 2001 11:35:39 GMT</last_modification_time>
+	      <handler>on_source_column_check_activate</handler>
+	      <last_modification_time>Fri, 18 Apr 2003 10:22:17 GMT</last_modification_time>
 	    </signal>
 	    <label>_Block</label>
 	    <active>False</active>
@@ -120,8 +120,8 @@
 	    <name>source_count_check</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_source_count_check_activate</handler>
-	      <last_modification_time>Fri, 23 Nov 2001 06:27:18 GMT</last_modification_time>
+	      <handler>on_source_column_check_activate</handler>
+	      <last_modification_time>Fri, 18 Apr 2003 10:22:17 GMT</last_modification_time>
 	    </signal>
 	    <label>_Count</label>
 	    <active>True</active>
@@ -133,12 +133,18 @@
 	    <name>source_source_check</name>
 	    <signal>
 	      <name>activate</name>
-	      <handler>on_source_source_check_activate</handler>
-	      <last_modification_time>Fri, 23 Nov 2001 06:27:38 GMT</last_modification_time>
+	      <handler>on_source_column_check_activate</handler>
+	      <last_modification_time>Fri, 18 Apr 2003 10:22:17 GMT</last_modification_time>
 	    </signal>
 	    <label>_Source</label>
 	    <active>True</active>
 	    <always_show_toggle>True</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkMenuItem</class>
+	    <name>separator2</name>
+	    <right_justify>False</right_justify>
 	  </widget>
 
 	  <widget>
@@ -165,6 +171,25 @@
 	    <label>_Toolbar</label>
 	    <active>True</active>
 	    <always_show_toggle>True</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkCheckMenuItem</class>
+	    <name>source_titles_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_source_titles_check_activate</handler>
+	      <last_modification_time>Mon, 21 Apr 2003 13:32:53 GMT</last_modification_time>
+	    </signal>
+	    <label>T_itles</label>
+	    <active>True</active>
+	    <always_show_toggle>True</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkMenuItem</class>
+	    <name>separator3</name>
+	    <right_justify>False</right_justify>
 	  </widget>
 
 	  <widget>
@@ -410,6 +435,104 @@
 	    <text></text>
 	  </widget>
 	</widget>
+      </widget>
+    </widget>
+
+    <widget>
+      <class>GtkHBox</class>
+      <name>source_titles_hbox</name>
+      <homogeneous>False</homogeneous>
+      <spacing>0</spacing>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>False</fill>
+      </child>
+
+      <widget>
+	<class>GtkLabel</class>
+	<name>source_left_pad_label</name>
+	<label></label>
+	<justify>GTK_JUSTIFY_CENTER</justify>
+	<wrap>False</wrap>
+	<xalign>0.5</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+	<child>
+	  <padding>0</padding>
+	  <expand>False</expand>
+	  <fill>True</fill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>source_col_line_button</name>
+	<can_focus>True</can_focus>
+	<label>Line</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
+	<child>
+	  <padding>0</padding>
+	  <expand>False</expand>
+	  <fill>False</fill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>source_col_block_button</name>
+	<can_focus>True</can_focus>
+	<label>Block(s)</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
+	<child>
+	  <padding>0</padding>
+	  <expand>False</expand>
+	  <fill>False</fill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>source_col_count_button</name>
+	<can_focus>True</can_focus>
+	<label>Count</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
+	<child>
+	  <padding>0</padding>
+	  <expand>False</expand>
+	  <fill>False</fill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>source_col_source_button</name>
+	<can_focus>True</can_focus>
+	<label>Source</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
+	<child>
+	  <padding>0</padding>
+	  <expand>True</expand>
+	  <fill>True</fill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkLabel</class>
+	<name>source_right_pad_label</name>
+	<label></label>
+	<justify>GTK_JUSTIFY_CENTER</justify>
+	<wrap>False</wrap>
+	<xalign>0.5</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+	<child>
+	  <padding>0</padding>
+	  <expand>False</expand>
+	  <fill>True</fill>
+	</child>
       </widget>
     </widget>
 
