@@ -220,10 +220,24 @@ compare_lines ()
     diff -u $TMP1 $TGGCOV_FILE || fatal "tggcov line coverage differs from gcov"
 }
 
+
+_filter_spurious_counts ()
+{
+    local FILE="$1"
+    
+    sed -e 's|^ *[#0-9-]*\(: *[0-9]*:[ \t]*[{}]\)$|        .\1|' $FILE
+}
+
 compare_file ()
 {
     vcmd "compare_file $*"
     local SRC="$1"
+    local EXPECTED_FILE="$srcdir/$SRC$SUBTEST.expected"
+    local TGGCOV_FILE=`_tggcov_file $SRC`
+
+    _filter_spurious_counts "$EXPECTED_FILE" > $TMP1
+    _filter_spurious_counts "$TGGCOV_FILE" > $TMP2
     
-    vdo diff -u "$srcdir/$SRC$SUBTEST.expected" `_tggcov_file $SRC`
+    echo "diff -u filter($EXPECTED_FILE) filter($TGGCOV_FILE)"
+    diff -u $TMP1 $TMP2
 }
