@@ -22,7 +22,11 @@
 #include "filename.h"
 #include "estring.h"
 
-CVSID("$Id: cov.c,v 1.4 2001-11-25 05:42:10 gnb Exp $");
+
+#include <bfd.h>
+#include <elf.h>
+
+CVSID("$Id: cov.c,v 1.5 2001-12-02 07:27:29 gnb Exp $");
 
 GHashTable *cov_files;
 /* TODO: ? reorg this */
@@ -216,6 +220,8 @@ cov_block_add_arc_to(cov_block_t *from, cov_block_t *to)
     
     a = new(cov_arc_t);
     
+    a->idx = g_list_length(from->out_arcs);
+    
     a->from = from;
     from->out_arcs = g_list_append(from->out_arcs, a);
     from->out_ninvalid++;
@@ -276,13 +282,13 @@ cov_block_add_location(cov_block_t *b, const char *filename, unsigned lineno)
     	g_list_append(list, b);
 	g_free(key);
 #if DEBUG    
-    	fprintf(stderr, "%s:%d: this line belongs to %d blocks\n",
+    	fprintf(stderr, "%s:%ld: this line belongs to %d blocks\n",
 	    	    	    loc->filename, loc->lineno, g_list_length(list));
 #endif
     }
 }
 
-static const GList *
+const GList *
 cov_blocks_find_by_location(const cov_location_t *loc)
 {
     GList *list;
@@ -348,6 +354,21 @@ cov_arcs_total(GList *list)
     }
     return total;
 }
+
+static unsigned int
+cov_arcs_nfake(GList *list)
+{
+    unsigned int nfake = 0;
+
+    for ( ; list != 0 ; list = list->next)
+    {
+	cov_arc_t *a = (cov_arc_t *)list->data;
+
+	if (a->fake)
+	    nfake++;
+    }
+    return nfake;
+}	    
 
 static cov_arc_t *
 cov_arcs_find_invalid(GList *list)
@@ -607,9 +628,9 @@ cov_read_bbg_function(cov_file_t *f, FILE *fp)
     	    fprintf(stderr, "BBG     arc %ld: %ld->%ld flags %s,%s,%s\n",
 	    	    	    aidx,
 			    bidx, dest,
-			    (flags & 1 ? "on_tree" : ""),
-			    (flags & 1 ? "fake" : ""),
-			    (flags & 1 ? "fall_through" : ""));
+			    (flags & 0x1 ? "on_tree" : ""),
+			    (flags & 0x2 ? "fake" : ""),
+			    (flags & 0x4 ? "fall_through" : ""));
 #endif
 			    
 	    a = cov_block_add_arc_to(
@@ -715,63 +736,452 @@ cov_read_da_file(cov_file_t *f, const char *dafilename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static void
+cov_block_add_call(cov_block_t *b, const char *callname)
+{
+    if (b->calls != 0 || cov_arcs_nfake(b->out_arcs) == 0)
+    {
+    	/*
+	 * Multiple blocks on the same line, the first doesn't
+	 * do the call: skip until we find the one that does.
+	 * Also, multiple blocks with calls in the same statement
+	 * (line numbers are only recorded at the start of the
+	 * statement); both the blocks and relocs are ordered,
+	 * so assume it's 1:1 and skip blocks which already have
+	 * a call name recorded.  This breaks if the statement
+	 * mixes calls to static and extern functions.
+	 */
+	do
+	{
+#if DEBUG
+	    fprintf(stderr, "    skipping block %s:%d (%s)\n",
+	    	    	    b->function->name, b->idx,
+			    (b->calls != 0 ? "has a call" : "no fake arcs"));
+#endif
+    	    b = cov_function_nth_block(b->function, b->idx+1);
+	}
+    	while (b->idx < b->function->blocks->len-2 &&
+	       b->locations == 0 &&
+	       (b->calls != 0 || cov_arcs_nfake(b->out_arcs) == 0));
+    }
+
+#if DEBUG
+    fprintf(stderr, "    block %s:%d\n", b->function->name, b->idx);
+#endif
+    b->calls = g_list_append(b->calls, g_strdup(callname));		    
+}
+
+
+static void
+cov_o_file_add_call(
+    bfd *abfd,
+    asection *sec,
+    asymbol **symbols,
+    unsigned long address,
+    const char *callname)
+{
+    const char *filename = 0;
+    const char *function = 0;
+    unsigned int lineno = 0;
+    cov_location_t loc;
+    const GList *blocks;
+
+    if (!bfd_find_nearest_line(abfd, sec, symbols, address,
+		    	       &filename, &function, &lineno))
+	return;
+#if DEBUG
+    fprintf(stderr, "%s:%d: %s calls %s\n",
+		file_basename_c(filename), lineno, function, callname);
+#endif
+
+    loc.filename = (char *)file_basename_c(filename);
+    loc.lineno = lineno;
+    blocks = cov_blocks_find_by_location(&loc);
+    if (g_list_length((GList*)blocks) != 1)
+    {
+	fprintf(stderr, "%s blocks for call to %s at %s:%ld\n",
+		    (blocks == 0 ? "No" : "Multiple"),
+		    callname, loc.filename, loc.lineno);
+    }
+    else
+    {
+	cov_block_t *b = (cov_block_t *)blocks->data;
+
+	cov_block_add_call(b, callname);
+    }
+}
+
+#ifdef __i386__
+
+#define read_lu32(p)	\
+    ( (p)[0] |      	\
+     ((p)[1] <<  8) |	\
+     ((p)[2] << 16) |	\
+     ((p)[3] << 24))
+
+static void
+cov_o_file_scan_static_calls(
+    bfd *abfd,
+    asection *sec,
+    asymbol **symbols,
+    unsigned long startaddr,
+    unsigned long endaddr)
+{
+    unsigned char *buf, *p;
+    unsigned long len = endaddr - startaddr;
+    unsigned long callfrom, callto;
+    int i;
+    
+    if (len < 1)
+    	return;
+    buf = g_new(unsigned char, len);
+    
+    if (!bfd_get_section_contents(abfd, sec, buf, startaddr, len))
+    {
+    	g_free(buf);
+    	return;
+    }
+
+    for (p = buf ; p < buf+len ; p++)
+    {
+    	if (*p != 0xe8)
+	    continue;	    /* not a CALL instruction */
+	callfrom = startaddr + (p - buf);
+	callto = callfrom + read_lu32(p+1) + 5;
+	
+	/*
+	 * Scan symbols to see if this is a PCREL32
+	 * reference to a static function entry point
+	 */
+	for (i = 0 ; symbols[i] != 0 ; i++)
+	{
+	    if (symbols[i]->section == sec &&
+	    	symbols[i]->value == callto &&
+	    	(symbols[i]->flags & (BSF_LOCAL|BSF_GLOBAL|BSF_FUNCTION)) == 
+		    	    	     (BSF_LOCAL|           BSF_FUNCTION))
+	    {
+#if DEBUG
+    	    	fprintf(stderr, "Scanned static call\n");
+#endif
+		cov_o_file_add_call(abfd, sec, symbols, callfrom,
+		    	    	    symbols[i]->name);
+		p += 4;
+    	    	break;
+	    }
+	}
+    }
+    
+    g_free(buf);
+}
+#else
+
+static void
+cov_o_file_scan_static_calls(
+    bfd *abfd,
+    asection *sec,
+    asymbol **symbols,
+    unsigned long startaddr,
+    unsigned long endaddr)
+{
+}
+
+#endif
+
+/*
+ * Use the BFD library to scan relocation records in the .o file.
+ */
+static gboolean
+cov_read_o_file_relocs(cov_file_t *f, const char *ofilename)
+{
+    bfd *abfd;
+    asection *sec;
+    asymbol **symbols, *sym;
+    long nsymbols;
+    long i;
+    unsigned codesectype = (SEC_ALLOC|SEC_HAS_CONTENTS|SEC_RELOC|SEC_CODE|SEC_READONLY);
+    
+#if DEBUG
+    fprintf(stderr, "Reading .o file \"%s\"\n", ofilename);
+#endif
+    
+    if ((abfd = bfd_openr(ofilename, 0)) == 0)
+    {
+    	/* TODO */
+    	bfd_perror(ofilename);
+	return FALSE;
+    }
+    if (!bfd_check_format(abfd, bfd_object))
+    {
+    	/* TODO */
+    	bfd_perror(ofilename);
+	bfd_close(abfd);
+	return FALSE;
+    }
+
+#if DEBUG
+    fprintf(stderr, "%s: reading symbols...\n", ofilename);
+#endif
+    nsymbols = bfd_get_symtab_upper_bound(abfd);
+    symbols = g_new(asymbol*, nsymbols);
+    nsymbols = bfd_canonicalize_symtab(abfd, symbols);
+    if (nsymbols < 0)
+    {
+	bfd_perror(ofilename);
+	bfd_close(abfd);
+	g_free(symbols);
+	return FALSE;
+    }
+
+#if DEBUG > 5
+    for (i = 0 ; i < nsymbols ; i++)
+    {
+    	sym = symbols[i];
+	
+	fprintf(stderr, "%s\n", sym->name);
+    }
+#endif
+
+    for (sec = abfd->sections ; sec != 0 ; sec = sec->next)
+    {
+	unsigned long lastaddr = 0UL;
+	arelent **relocs, *rel;
+	long nrelocs;
+
+#if DEBUG
+	fprintf(stderr, "%s[%d %s]: ", ofilename, sec->index, sec->name);
+#endif
+
+	if ((sec->flags & codesectype) != codesectype)
+	{
+#if DEBUG
+	    fprintf(stderr, "skipping\n");
+#endif
+    	    continue;
+	}
+
+#if DEBUG
+	fprintf(stderr, "reading relocs...\n");
+#endif
+
+    	nrelocs = bfd_get_reloc_upper_bound(abfd, sec);
+	relocs = g_new(arelent*, nrelocs);
+    	nrelocs = bfd_canonicalize_reloc(abfd, sec, relocs, symbols);
+	if (nrelocs < 0)
+	{
+	    bfd_perror(ofilename);
+	    g_free(relocs);
+	    continue;
+	}
+    
+    	for (i = 0 ; i < nrelocs ; i++)
+	{
+	    
+	    rel = relocs[i];
+	    sym = *rel->sym_ptr_ptr;
+	    
+#if DEBUG
+    	    {
+		char *type;
+
+		if ((sym->flags & BSF_FUNCTION))
+	    	    type = "FUN";
+		else if ((sym->flags & BSF_OBJECT))
+	    	    type = "DAT";
+		else if (sym->flags & BSF_SECTION_SYM)
+	    	    type = "SEC";
+		else if ((sym->flags & (BSF_LOCAL|BSF_GLOBAL)) == 0)
+	    	    type = "UNK";
+		else
+	    	    type = "---";
+		fprintf(stderr, "%5ld %08lx %08lx %08lx %d(%s) %s %s\n",
+	    		i, rel->address, rel->addend,
+			(unsigned long)sym->flags,
+			rel->howto->type,
+			rel->howto->name,
+			type, sym->name);
+    	    }
+#endif
+
+#ifdef __i386__
+    	    /*
+	     * Experiment shows that functions calls result in an R_386_PC32
+	     * reloc and external data references in an R_386_32 reloc.
+	     * Haven't yet seen any others -- so give a warning if we do.
+	     */
+	    if (rel->howto->type == R_386_32)
+	    	continue;
+	    else if (rel->howto->type != R_386_PC32)
+	    {
+	    	fprintf(stderr, "%s: Warning unexpected 386 reloc howto type %d\n",
+		    	    	    ofilename, rel->howto->type);
+	    	continue;
+	    }
+#endif
+
+    	    /* __bb_init_func is code inserted by gcc to instrument blocks */
+    	    if (!strcmp(sym->name, "__bb_init_func"))
+	    	continue;
+    	    if ((sym->flags & BSF_FUNCTION) ||
+		(sym->flags & (BSF_LOCAL|BSF_GLOBAL|BSF_SECTION_SYM|BSF_OBJECT)) == 0)
+	    {
+
+    	    	/*
+		 * Scan the instructions between the previous reloc and
+		 * this instruction for calls to static functions.  Very
+		 * platform specific!
+		 */
+		cov_o_file_scan_static_calls(abfd, sec, symbols,
+		    	    	      lastaddr, rel->address);
+		lastaddr = rel->address + bfd_get_reloc_size(rel->howto);
+		
+		cov_o_file_add_call(abfd, sec, symbols, rel->address, sym->name);
+	    }
+
+	}
+    	g_free(relocs);
+
+    	if (lastaddr < sec->_raw_size)
+	    cov_o_file_scan_static_calls(abfd, sec, symbols,
+		    	      lastaddr, sec->_raw_size);
+    }
+
+    g_free(symbols);
+    
+    bfd_close(abfd);
+    return TRUE;
+}
+
+
+static void
+cov_file_reconcile_calls(cov_file_t *f)
+{
+    unsigned int fnidx;
+    unsigned int bidx;
+    GList *aiter;
+    
+    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    {
+    	cov_function_t *fn = cov_file_nth_function(f, fnidx);
+
+    	if (!strncmp(fn->name, "_GLOBAL_", 8))
+	    continue;
+	    
+	/*
+	 * Last two blocks in a function appear to be the function
+	 * epilogue with one fake arc out representing returns *from*
+	 * the function, and a block inserted as the target of all
+	 * function call arcs, with one fake arc back to block 0
+	 * representing returns *to* the function.  So don't attempt
+	 * to reconcile those.
+	 */
+	if (fn->blocks->len <= 2)
+	    continue;
+	for (bidx = 0 ; bidx < fn->blocks->len-2 ; bidx++)
+	{
+    	    cov_block_t *b = cov_function_nth_block(fn, bidx);
+
+	    if (cov_arcs_nfake(b->out_arcs) != g_list_length(b->calls))
+	    {
+	    	/* TODO */
+	    	fprintf(stderr, "Failed to reconcile calls for %s:%d\n",
+		    	    	    b->function->name, b->idx);
+		fprintf(stderr, "    %d fake arcs, %d recorded calls\n",
+		    	    	cov_arcs_nfake(b->out_arcs),
+				g_list_length(b->calls));
+		listdelete(b->calls, char *, g_free);
+		continue;
+	    }
+	    
+	    for (aiter = b->out_arcs ; aiter != 0 ; aiter = aiter->next)
+	    {
+	    	cov_arc_t *a = (cov_arc_t *)aiter->data;
+
+    	    	if (a->fake)
+		{
+	    	    a->name = (char *)b->calls->data;
+		    b->calls = g_list_remove_link(b->calls, b->calls);
+		}
+    	    }
+#if DEBUG
+	    fprintf(stderr, "Reconciled %d calls for %s:%d\n",
+		    	    	cov_arcs_nfake(b->out_arcs),
+				b->function->name, b->idx);
+#endif
+	}
+    }	
+}
+
+
+static gboolean
+cov_read_o_file(cov_file_t *f, const char *ofilename)
+{
+    if (!cov_read_o_file_relocs(f, ofilename))
+    {
+    	/* TODO */
+    	fprintf(stderr, "%s: Warning: could not read object file, less information may be displayed\n",
+	    ofilename);
+	return TRUE;	    /* this info is optional */
+    }
+    
+    cov_file_reconcile_calls(f);
+    
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#define FN_BB	0
+#define FN_BBG	1
+#define FN_DA	2
+#define FN_O	3
+#define FN_MAX	4
+
 gboolean
 cov_handle_c_file(const char *cfilename)
 {
-    char *bbfilename;
-    char *bbgfilename;
-    char *dafilename;
     cov_file_t *f;
     gboolean res;
+    int i;
+    char *filenames[FN_MAX];
+    static const char *extensions[FN_MAX] = { ".bb", ".bbg", ".da", ".o" };
+
 
 #if DEBUG    
     fprintf(stderr, "Handling C source file %s\n", cfilename);
 #endif
-        
-    bbfilename = file_change_extension(cfilename, ".c", ".bb");
-    if (file_is_regular(bbfilename) < 0)
-    {
-    	perror(bbfilename);
-	return FALSE;
-    }
-
-    bbgfilename = file_change_extension(cfilename, ".c", ".bbg");
-    if (file_is_regular(bbgfilename) < 0)
-    {
-    	perror(bbgfilename);
-	g_free(bbfilename);
-	return FALSE;
-    }
-
-    dafilename = file_change_extension(cfilename, ".c", ".da");
-    if (file_is_regular(dafilename) < 0)
-    {
-    	perror(dafilename);
-	g_free(bbfilename);
-	g_free(bbgfilename);
-	return FALSE;
-    }
 
     if ((f = cov_file_find(cfilename)) != 0)
     {
     	fprintf(stderr, "Internal error: handling %s twice\n", cfilename);
-	g_free(bbfilename);
-	g_free(bbgfilename);
-	g_free(dafilename);
     	return FALSE;
     }
+
+    memset(filenames, 0, sizeof(filenames));
+    
+    for (i = 0 ; i < FN_MAX ; i++)
+    {
+	filenames[i] = file_change_extension(cfilename, ".c", extensions[i]);
+	if (file_is_regular(filenames[i]) < 0)
+	{
+    	    perror(filenames[i]);
+	    for (i = 0 ; i < FN_MAX ; i++)
+	    	strdelete(filenames[i]);
+	    return FALSE;
+	}
+    }
+        
     f = cov_file_new(cfilename);
 
     res = TRUE;
-    if (!cov_read_bbg_file(f, bbgfilename) ||
-	!cov_read_bb_file(f, bbfilename) ||
-	!cov_read_da_file(f, dafilename) ||
+    if (!cov_read_bbg_file(f, filenames[FN_BBG]) ||
+	!cov_read_bb_file(f, filenames[FN_BB]) ||
+	!cov_read_da_file(f, filenames[FN_DA]) ||
+	!cov_read_o_file(f, filenames[FN_O]) ||
     	!cov_file_solve(f))
 	res = FALSE;
 
-    g_free(bbfilename);
-    g_free(bbgfilename);
-    g_free(dafilename);
+    for (i = 0 ; i < FN_MAX ; i++)
+	strdelete(filenames[i]);
     return res;
 }
 
@@ -940,6 +1350,25 @@ cov_range_calc_stats(
 	    ++fnidx;
 	}
     } while (b != (cov_block_t *)endblocks->data);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void
+cov_bfd_error_handler(const char *fmt, ...)
+{
+    va_list args;
+    
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+}
+
+void
+cov_init(void)
+{
+    bfd_init();
+    bfd_set_error_handler(cov_bfd_error_handler);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

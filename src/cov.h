@@ -49,7 +49,9 @@ struct cov_function_s
 struct cov_arc_s
 {
     cov_block_t *from, *to;
+    unsigned idx; 	    /* serial number in from->out_arcs */
     count_t count;
+    char *name;     	    /* name of function called (if known) or NULL */
     gboolean on_tree:1;
     gboolean fake:1;
     gboolean fall_through:1;
@@ -71,6 +73,9 @@ struct cov_block_s
     unsigned out_ninvalid;  /* number of outbound arcs with invalid counts */
     
     GList *locations;	    /* list of cov_location_t */
+    
+    /* used while reading .o files to get arc names */
+    GList *calls;
 };
 
 struct cov_location_s
@@ -96,11 +101,12 @@ struct cov_stats_s
 #define cov_function_nth_block(fn, n) \
     	    ((cov_block_t *)(fn)->blocks->pdata[(n)])
 
-
+void cov_init(void);
 gboolean cov_handle_c_file(const char *cfilename);
 cov_file_t *cov_file_find(const char *name);
 void cov_get_count_by_location(const cov_location_t *loc,
 			       count_t *countp, gboolean *existsp);
+const GList *cov_blocks_find_by_location(const cov_location_t *loc);
 void cov_file_foreach(void (*func)(cov_file_t*, void *userdata), void *userdata);
 
 const cov_location_t *cov_function_get_first_location(const cov_function_t *fn);
