@@ -77,10 +77,8 @@ gchar *s = N_("GGCov @VERSION@\n"
               "\n"
               "@AUTHOR@\n"
               "\n"
-              "A program for browsing\n"
-              " test coverage data for C\n"
-              "programs built with the\n"
-              "GNU C Compiler.\n"
+              "A program for browsing test coverage data for \n"
+              "C programs built with the GNU C Compiler.\n"
               "\n"
               "@WARRANTY@");
 gchar *s = N_("Licence...");

@@ -6,7 +6,7 @@
   <program_name>ggcov</program_name>
   <directory></directory>
   <source_directory>src</source_directory>
-  <pixmaps_directory>pixmaps</pixmaps_directory>
+  <pixmaps_directory>.</pixmaps_directory>
   <language>C</language>
   <gnome_support>True</gnome_support>
   <gettext_support>True</gettext_support>
@@ -2331,8 +2331,8 @@
 	<filename>logo.xpm</filename>
 	<xalign>0.5</xalign>
 	<yalign>0.5</yalign>
-	<xpad>0</xpad>
-	<ypad>0</ypad>
+	<xpad>4</xpad>
+	<ypad>4</ypad>
 	<build_insensitive>True</build_insensitive>
 	<child>
 	  <padding>0</padding>
@@ -2348,10 +2348,8 @@
 
 @AUTHOR@
 
-A program for browsing
- test coverage data for C
-programs built with the
-GNU C Compiler.
+A program for browsing test coverage data for 
+C programs built with the GNU C Compiler.
 
 @WARRANTY@</label>
 	<justify>GTK_JUSTIFY_CENTER</justify>
