@@ -38,7 +38,11 @@
 #else
 #  include <stdio.h>
 #endif
+#if HAVE_MEMORY_H
+#include <memory.h>
+#endif
 
+#include "uicommon.h"
 #include "gnbprogressbar.h"
 #include <gtk/gtkgc.h>
 
@@ -47,7 +51,11 @@ static void gnb_progress_bar_class_init    (GnbProgressBarClass *klass);
 static void gnb_progress_bar_init          (GnbProgressBar      *pbar);
 static void gnb_progress_bar_paint         (GtkProgress         *progress);
 static void gnb_progress_bar_real_update   (GtkProgress         *progress);
+#if GTK2
+static void gnb_progress_bar_finalize	   (GObject	        *object);
+#else
 static void gnb_progress_bar_finalize	   (GtkObject	        *object);
+#endif
 
 GtkType
 gnb_progress_bar_get_type (void)
@@ -77,13 +85,15 @@ gnb_progress_bar_get_type (void)
 static void
 gnb_progress_bar_class_init (GnbProgressBarClass *klass)
 {
-    GtkObjectClass *object_class;
     GtkProgressClass *progress_class;
 
-    object_class = (GtkObjectClass *) klass;
     progress_class = (GtkProgressClass *) klass;
 
-    object_class->finalize = gnb_progress_bar_finalize;
+#if GTK2
+    ((GObjectClass *)klass)->finalize = gnb_progress_bar_finalize;
+#else
+    ((GtkObjectClass *)klass)->finalize = gnb_progress_bar_finalize;
+#endif
     progress_class->paint = gnb_progress_bar_paint;
     progress_class->update = gnb_progress_bar_real_update;
 }
@@ -102,7 +112,13 @@ gnb_progress_bar_init (GnbProgressBar *pbar)
 }
 
 static void
-gnb_progress_bar_finalize(GtkObject *object)
+gnb_progress_bar_finalize(
+#if GTK2
+    GObject *object
+#else
+    GtkObject *object
+#endif
+    )
 {
     GnbProgressBar *pbar = (GnbProgressBar *)object;
     
@@ -145,6 +161,14 @@ gnb_progress_bar_new_with_adjustment (GtkAdjustment *adjustment)
     return pbar;
 }
 
+#if GTK2
+#define xthickness(w)	((w)->style->xthickness)
+#define ythickness(w)	((w)->style->ythickness)
+#else
+#define xthickness(w)	((w)->style->klass->xthickness)
+#define ythickness(w)	((w)->style->klass->ythickness)
+#endif
+
 static void
 gnb_progress_bar_paint (GtkProgress *progress)
 {
@@ -165,22 +189,20 @@ gnb_progress_bar_paint (GtkProgress *progress)
 
     if (ppbar->orientation == GTK_PROGRESS_LEFT_TO_RIGHT ||
 	ppbar->orientation == GTK_PROGRESS_RIGHT_TO_LEFT)
-	space = widget->allocation.width -
-		    2 * widget->style->klass->xthickness;
+	space = widget->allocation.width - 2 * xthickness(widget);
     else
-	space = widget->allocation.height -
-		    2 * widget->style->klass->ythickness;
+	space = widget->allocation.height - 2 * ythickness(widget);
 
     percentage = gtk_progress_get_current_percentage(progress);
     
-#if DEBUG
+#if DEBUG > 3
     fprintf(stderr, "\n");
 #endif
 
     if (progress->offscreen_pixmap)
     {
     	/* paint the outside shadow */
-#if DEBUG
+#if DEBUG > 3
 	fprintf(stderr, "PAINTBOX(trough, %d, %d, %d, %d)\n",
 		       0, 0,
 		       widget->allocation.width,
@@ -217,7 +239,7 @@ gnb_progress_bar_paint (GtkProgress *progress)
 					     (GdkGCValuesMask)gcmask);
 	    }
 	    
-#if DEBUG
+#if DEBUG > 3
 	    fprintf(stderr, "FILLRECT(trough, 2, 2, %d, %d)\n",
 			widget->allocation.width - 4,
 			widget->allocation.height - 4);
@@ -241,33 +263,33 @@ gnb_progress_bar_paint (GtkProgress *progress)
 
 	      case GTK_PROGRESS_LEFT_TO_RIGHT:
 
-		rect.x = widget->style->klass->xthickness;
-		rect.y = widget->style->klass->ythickness;
+		rect.x = xthickness(widget);
+		rect.y = ythickness(widget);
 		rect.width = amount;
-		rect.height = widget->allocation.height - widget->style->klass->ythickness * 2;
+		rect.height = widget->allocation.height - ythickness(widget) * 2;
 		break;
 
 	      case GTK_PROGRESS_RIGHT_TO_LEFT:
 
-		rect.x = widget->allocation.width - widget->style->klass->xthickness - amount;
-		rect.y = widget->style->klass->ythickness;
+		rect.x = widget->allocation.width - xthickness(widget) - amount;
+		rect.y = ythickness(widget);
 		rect.width = amount;
-		rect.height = widget->allocation.height - widget->style->klass->ythickness * 2;
+		rect.height = widget->allocation.height - ythickness(widget) * 2;
 		break;
 
 	      case GTK_PROGRESS_BOTTOM_TO_TOP:
 
-		rect.x = widget->style->klass->xthickness;
-		rect.y = widget->allocation.height - widget->style->klass->ythickness - amount;
-		rect.width = widget->allocation.width - widget->style->klass->xthickness * 2;
+		rect.x = xthickness(widget);
+		rect.y = widget->allocation.height - ythickness(widget) - amount;
+		rect.width = widget->allocation.width - xthickness(widget) * 2;
 		rect.height = amount;
 		break;
 
 	      case GTK_PROGRESS_TOP_TO_BOTTOM:
 
-		rect.x = widget->style->klass->xthickness;
-		rect.y = widget->style->klass->ythickness;
-		rect.width = widget->allocation.width - widget->style->klass->xthickness * 2;
+		rect.x = xthickness(widget);
+		rect.y = ythickness(widget);
+		rect.width = widget->allocation.width - xthickness(widget) * 2;
 		rect.height = amount;
 		break;
 
@@ -295,7 +317,7 @@ gnb_progress_bar_paint (GtkProgress *progress)
 						 (GdkGCValuesMask)gcmask);
 		}
 
-#if DEBUG
+#if DEBUG > 3
 		fprintf(stderr, "FILLRECT(bar, %d, %d, %d, %d)\n",
 	    	    	    (int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
 #endif
@@ -307,7 +329,7 @@ gnb_progress_bar_paint (GtkProgress *progress)
 	    }
 	    else
 	    {
-#if DEBUG
+#if DEBUG > 3
 		fprintf(stderr, "PAINTBOX(bar, %d, %d, %d, %d)\n",
 	    	    	    (int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
 #endif
@@ -326,11 +348,15 @@ gnb_progress_bar_real_update(GtkProgress *progress)
 {
     GtkProgressClass *progress_class;
     
-#if DEBUG
+#if DEBUG > 3
     fprintf(stderr, "gnb_progress_bar_real_update\n");
 #endif
 
+#if GTK2
+    progress_class = (GtkProgressClass *)g_type_class_peek_parent(g_type_class_peek(GNB_TYPE_PROGRESS_BAR));
+#else
     progress_class = (GtkProgressClass *)gtk_type_parent_class(GNB_TYPE_PROGRESS_BAR);
+#endif
     progress_class->update(progress);
     gnb_progress_bar_paint(progress);
 }
