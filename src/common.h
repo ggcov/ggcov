@@ -129,8 +129,34 @@ void operator delete(void *);
 #define delete(p)     	free((p))
 #endif
 
-extern int ulcmp(unsigned long ul1, unsigned long ul2);
-extern int ullcmp(unsigned long long ull1, unsigned long long ull2);
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+/*
+ * Unsigned 32-bit and 64-bit integral types are used in various
+ * places throughout ggcov, in particular the files store execution
+ * counts as 64-bit numbers.  We use <stdint.h> where its available
+ * otherwise fall back to other less modern & portable techniques.
+  */
+
+#if HAVE_STDINT_H
+typedef uint32_t    	    	gnb_u32_t;
+typedef uint64_t    	    	gnb_u64_t;
+#else
+/* works on 32 bit machines with gcc */
+typedef unsigned long	    	gnb_u32_t;
+typedef unsigned long long	gnb_u64_t;
+#endif
+
+/* These work for 32 bit machines */
+/* TODO: make these portable by calculating 0,1,or 2 'l's in configure */
+#define GNB_U32_DFMT	    	"%u"
+#define GNB_U32_XFMT	    	"%08x"
+
+#define GNB_U64_DFMT	    	"%llu"
+#define GNB_U64_XFMT	    	"%016llx"
+
+/* Comparison functions, for sorting */
+extern int u32cmp(gnb_u32_t, gnb_u32_t);
+extern int u64cmp(gnb_u64_t, gnb_u64_t);
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
