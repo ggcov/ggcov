@@ -4,7 +4,7 @@
  * DO NOT compile it as part of your application.
  */
 
-gchar *s = N_("GGCov: @FILE@");
+gchar *s = N_("GGCov: Source @FILE@");
 gchar *s = N_("_Number");
 gchar *s = N_("_Count");
 gchar *s = N_("_Source");
@@ -13,3 +13,13 @@ gchar *s = N_("F_ilenames");
 gchar *s = N_("dummy");
 gchar *s = N_("F_unctions");
 gchar *s = N_("dummy");
+gchar *s = N_("GGCov: Summary @FILE@");
+gchar *s = N_("Filename");
+gchar *s = N_("Function");
+gchar *s = N_("Range");
+gchar *s = N_("to");
+gchar *s = N_("Overall");
+gchar *s = N_("Branches taken:");
+gchar *s = N_("Branches executed:");
+gchar *s = N_("Functions called:");
+gchar *s = N_("Source lines executed:");
