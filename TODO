@@ -1,6 +1,10 @@
 
 --- OPEN ---
 
+x  Handle C & C++ inline functions in header files properly by
+   creating cov_file_t objects for header files on demand, i.e.
+   as locations for them are discovered in reading bbg files.
+
 x  When turning on or off columns in the Source Window View menu,
    maintain the same visible lines in the text rather than scrolling
    back to the start.
