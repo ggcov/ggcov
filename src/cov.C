@@ -18,6 +18,7 @@
  */
 
 #include "cov.H"
+#include "cov_specific.H"
 #include "covio.h"
 #include "estring.H"
 #include "filename.h"
@@ -25,13 +26,7 @@
 #include "string_var.H"
 #include <dirent.h>
 
-
-#ifdef HAVE_LIBBFD
-#include <bfd.h>
-#include <elf.h>
-#endif
-
-CVSID("$Id: cov.C,v 1.12 2003-06-06 15:15:49 gnb Exp $");
+CVSID("$Id: cov.C,v 1.13 2003-06-14 13:57:30 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -250,160 +245,56 @@ cov_post_read(void)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-/*
- * Large chunks of code ripped from binutils/rddbg.c and stabs.c
- */
  
-typedef struct
-{
-    uint32_t strx;
-#define N_SO 0x64
-    uint8_t type;
-    uint8_t other;
-    uint16_t desc;
-    uint32_t value;
-} cov_stab32_t;
-
 gboolean
 cov_read_object_file(const char *exefilename)
 {
-#ifdef HAVE_LIBBFD
-    bfd *abfd;
-    asection *stab_sec, *string_sec;
-    bfd_size_type string_size;
-    bfd_size_type stroff, next_stroff;
-    unsigned int num_stabs;
-    cov_stab32_t *stabs, *st;
-    char *strings;
-    char *dir = "", *file;
+    cov_filename_scanner_t *fs;
+    string_var file;
     int successes = 0;
-        
+    
 #if DEBUG
     fprintf(stderr, "Reading object or exe file \"%s\"\n", exefilename);
 #endif
     
-    if ((abfd = bfd_openr(exefilename, 0)) == 0)
+    cov_factory_t<cov_filename_scanner_t> factory;
+    do
     {
-    	/* TODO */
-    	bfd_perror(exefilename);
-	return FALSE;
+#if DEBUG > 1
+    	fprintf(stderr, "cov_read_object_file: trying scanner %s\n", factory.name());
+#endif
+    	if ((fs = factory.create()) != 0 && fs->open(exefilename))
+	    break;
+	delete fs;
+	fs = 0;
     }
-    if (!bfd_check_format(abfd, bfd_object))
-    {
-    	/* TODO */
-    	bfd_perror(exefilename);
-	bfd_close(abfd);
-	return FALSE;
-    }
+    while (factory.next());
 
-
-    if ((stab_sec = bfd_get_section_by_name(abfd, ".stab")) == 0)
+    if (fs == 0)
+    	return FALSE;	/* no scanner can open this file */
+    
+    /*
+     * TODO: instead of using the first scanner that succeeds open()
+     *       use the first one that returns any results.
+     */
+    while ((file = fs->next()) != 0)
     {
-    	fprintf(stderr, "%s: no .stab section\n", exefilename);
-	bfd_close(abfd);
-	return FALSE;
-    }
-
-    if ((string_sec = bfd_get_section_by_name(abfd, ".stabstr")) == 0)
-    {
-    	fprintf(stderr, "%s: no .stabstr section\n", exefilename);
-	bfd_close(abfd);
-	return FALSE;
+#if DEBUG > 1
+    	fprintf(stderr, "cov_read_object_file: trying filename %s\n",
+	    	file.data());
+#endif
+	if (cov_is_source_filename(file) &&
+	    file_is_regular(file) == 0 &&
+	    cov_read_source_file_2(file, /*quiet*/TRUE))
+	    successes++;
     }
     
-    num_stabs = bfd_section_size(abfd, stab_sec);
-    stabs = (cov_stab32_t *)gnb_xmalloc(num_stabs);
-    if (!bfd_get_section_contents(abfd, stab_sec, stabs, 0, num_stabs))
-    {
-    	/* TODO */
-    	bfd_perror(exefilename);
-	bfd_close(abfd);
-	return FALSE;
-    }
-    num_stabs /= sizeof(cov_stab32_t);
+    delete fs;
 
-    string_size = bfd_section_size(abfd, string_sec);
-    strings = (char *)gnb_xmalloc(string_size);
-    if (!bfd_get_section_contents(abfd, string_sec, strings, 0, string_size))
-    {
-    	/* TODO */
-    	bfd_perror(exefilename);
-	bfd_close(abfd);
-	g_free(stabs);
-	return FALSE;
-    }
-
-    assert(sizeof(cov_stab32_t) == 12);
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-    assert(bfd_little_endian(abfd));
-#else
-    assert(bfd_big_endian(abfd));
-#endif
-
-    stroff = 0;
-    next_stroff = 0;
-    for (st = stabs ; st < stabs + num_stabs ; st++)
-    {
-    	if (st->type == 0)
-	{
-	    /*
-	     * Special type 0 stabs indicate the offset to the
-	     * next string table.
-	     */
-	    stroff = next_stroff;
-	    next_stroff += st->value;
-	}
-	else if (st->type == N_SO)
-	{
-	    char *s;
-	    
-	    if (stroff + st->strx > string_size)
-	    {
-		fprintf(stderr, "%s: stab entry %d is corrupt, strx = 0x%x, type = %d\n",
-		    exefilename,
-		    (st - stabs), st->strx, st->type);
-		continue;
-	    }
-	    
-    	    s = strings + stroff + st->strx;
-	    
-#if 0
-	    printf("%u|%02x|%02x|%04x|%08x|%s|\n",
-	    	(st - stabs),
-		st->type,
-		st->other,
-		st->desc,
-		st->value,
-		s);
-#endif
-	    if (s[0] == '\0')
-	    	continue;
-	    if (s[strlen(s)-1] == '/')
-	    {
-	    	dir = s;
-	    }
-	    else
-	    {
-	    	file = g_strconcat(dir, s, 0);
-		if (cov_is_source_filename(file) &&
-		    file_is_regular(file) == 0 &&
-		    cov_read_source_file_2(file, /*quiet*/TRUE))
-		    successes++;
-		g_free(file);
-	    }
-	}
-    }
-
-    g_free(stabs); 
-    g_free(strings);
-    bfd_close(abfd);
     if (successes == 0)
     	fprintf(stderr, "found no coveraged source files in executable \"%s\"\n",
 	    	exefilename);
     return (successes > 0);
-#else /* !HAVE_LIBBFD */
-    return TRUE;
-#endif /* !HAVE_LIBBFD */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

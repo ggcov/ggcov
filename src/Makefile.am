@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.26 2003-06-12 00:52:09 gnb Exp $
+# $Id: Makefile.am,v 1.27 2003-06-14 13:57:29 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -31,6 +31,8 @@ ggcov_SOURCES=	demangle.h demangle.c \
 		list.H \
 		hashtable.H hashtable.C \
 		covio.h covio.c \
+		cov_specific.H cov_specific.C \
+		cov_stab32.C \
 		cov_file.H cov_file.C \
 		cov_function.H cov_function.C \
 		cov_block.H cov_block.C \
