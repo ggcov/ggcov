@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.H"
 
-CVSID("$Id: ui.c,v 1.12 2002-12-29 12:49:49 gnb Exp $");
+CVSID("$Id: ui.c,v 1.13 2003-03-11 21:40:09 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -120,13 +120,19 @@ find_file(const char *path, const char *base)
     return 0;
 }
 
+#if GTK2
+#define LIBGLADE    "-glade2"
+#else
+#define LIBGLADE
+#endif
+
 GladeXML *
 ui_load_tree(const char *root)
 {
     GladeXML *xml = 0;
     /* load & create the interface */
     static char *filename = 0;
-    static const char gladefile[] = PACKAGE ".glade";
+    static const char gladefile[] = PACKAGE LIBGLADE ".glade";
     
     if (filename == 0)
     {
@@ -137,7 +143,13 @@ ui_load_tree(const char *root)
 	fprintf(stderr, "Loading Glade UI from file \"%s\"\n", filename);
 #endif
     }
+
+#if GTK2
+    xml = glade_xml_new(filename, root, /* translation domain */PACKAGE);
+#else
     xml = glade_xml_new(filename, root);
+#endif
+
     if (xml == 0)
     	fatal("can't load Glade UI from file \"%s\"\n", filename);
     
@@ -547,7 +559,7 @@ static GtkWidget *
 ui_clist_get_column_arrow(GtkCList *clist, int col)
 {
     GtkWidget *button = clist->column[col].button;
-    GtkWidget *hbox = GTK_BUTTON(button)->child;
+    GtkWidget *hbox = GTK_BIN(button)->child;
     GtkBoxChild *boxchild = (GtkBoxChild *)g_list_nth_data(GTK_BOX(hbox)->children, 1);
     return boxchild->widget;
 }

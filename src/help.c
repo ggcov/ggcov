@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "ui.h"
 
-CVSID("$Id: help.c,v 1.3 2002-12-22 02:23:06 gnb Exp $");
+CVSID("$Id: help.c,v 1.4 2003-03-11 21:44:21 gnb Exp $");
 
 static GtkWidget *about_window;
 static GtkWidget *licence_window;
@@ -50,10 +50,19 @@ on_about_licence_clicked(GtkWidget *w, gpointer data)
     if (licence_window == 0)
     {
 	GladeXML *xml = ui_load_tree("licence");
+#if GTK2
+    	GtkWidget *text_view;
+	GtkTextBuffer *buffer;
+#else
     	GtkWidget *licence_text;
-
+#endif
 	licence_window = glade_xml_get_widget(xml, "licence");
 
+#if GTK2
+    	text_view = glade_xml_get_widget(xml, "licence_text");
+    	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+	gtk_text_buffer_set_text(buffer, licence_str, sizeof(licence_str)-1);
+#else
 	licence_text = glade_xml_get_widget(xml, "licence_text");
 	gtk_text_freeze(GTK_TEXT(licence_text));
 	gtk_editable_delete_text(GTK_EDITABLE(licence_text), 0, -1);
@@ -61,6 +70,7 @@ on_about_licence_clicked(GtkWidget *w, gpointer data)
 	    	    	/*fore*/0, /*back*/0,
 			licence_str, sizeof(licence_str)-1);
 	gtk_text_thaw(GTK_TEXT(licence_text));
+#endif
     }
     
     gtk_widget_show(licence_window);

@@ -21,7 +21,7 @@
 #define _ggcov_ui_h_ 1
 
 #include "common.h"
-#include <gtk/gtk.h>
+#include "uicommon.h"
 #include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk_imlib.h>
