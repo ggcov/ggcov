@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.51 2005-02-27 06:17:19 gnb Exp $
+dnl $Id: configure.in,v 1.52 2005-03-06 02:42:43 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -162,7 +162,7 @@ if test x$gui = xyes ; then
     ])
 	fi
     else
-ifdef(`AM_PATH_LIBGLADE',[
+ifdef([AM_PATH_LIBGLADE],[
 	# fall back to gtk 1.2
 	AC_MSG_WARN([GNOME version 2 libraries not found, falling back to 1.2])
 	AM_PATH_LIBGLADE(,AC_MSG_ERROR(ggcov requires the libglade library),gnome)
@@ -186,7 +186,7 @@ else
     # gui disabled
     PKG_CHECK_MODULES(GGCOV_CLI, glib-2.0 >= 2.0.0, [glib2=yes],[glib2=no])
     if test $glib2 = no ; then
-ifdef(`AM_PATH_LIBGLADE',[
+ifdef([AM_PATH_LIBGLADE],[
 	# fall back to glib 1.2
 	AC_MSG_WARN([glib version 2 library not found, falling back to 1.2])
 	AM_PATH_GLIB(,,AC_MSG_ERROR(ggcov requires the glib library))
