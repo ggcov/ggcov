@@ -18,10 +18,10 @@
  */
 
 #include "common.h"
-#include "estring.h"
+#include "estring.H"
 #include "ui.h"
 
-CVSID("$Id: help.c,v 1.2 2002-01-17 04:55:06 gnb Exp $");
+CVSID("$Id: help.c,v 1.3 2002-12-22 02:23:06 gnb Exp $");
 
 static GtkWidget *about_window;
 static GtkWidget *licence_window;
@@ -81,7 +81,6 @@ on_about_activate(GtkWidget *w, gpointer data)
 	GladeXML *xml = ui_load_tree("about");
     	GtkWidget *about_label;
 	char *blurb_proto = 0;
-	estring blurb;
 
 	about_window = glade_xml_get_widget(xml, "about");
 	ui_window_set_title(about_window, "");
@@ -89,13 +88,12 @@ on_about_activate(GtkWidget *w, gpointer data)
 	about_label = glade_xml_get_widget(xml, "about_label");
 	gtk_label_get(GTK_LABEL(about_label), &blurb_proto);
 	
-	estring_init(&blurb);
-	estring_append_string(&blurb, blurb_proto);
-	estring_replace_all(&blurb, "@VERSION@", VERSION);
-	estring_replace_all(&blurb, "@AUTHOR@", "Greg Banks <gnb@alphalink.com.au>");
-	estring_replace_all(&blurb, "@WARRANTY@", _(warranty_str));
-	gtk_label_set_text(GTK_LABEL(about_label), blurb.data);
-	estring_free(&blurb);
+	estring blurb;
+	blurb.append_string(blurb_proto);
+	blurb.replace_all("@VERSION@", VERSION);
+	blurb.replace_all("@AUTHOR@", "Greg Banks <gnb@alphalink.com.au>");
+	blurb.replace_all("@WARRANTY@", _(warranty_str));
+	gtk_label_set_text(GTK_LABEL(about_label), blurb.data());
     }
     
     gtk_widget_show(about_window);
