@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.34 2004-02-08 10:47:12 gnb Exp $
+# $Id: Makefile.am,v 1.35 2004-02-16 16:24:29 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -57,7 +57,7 @@ LIBCOV_STATIC_SOURCES= \
 bin_PROGRAMS=	ggcov
 
 ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
-		gnbprogressbar.h gnbprogressbar.c \
+		gnbstackedbar.h gnbstackedbar.c \
 		confsection.H confsection.C \
 		prefs.H prefs.C \
 		window.H window.C \
