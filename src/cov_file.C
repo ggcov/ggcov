@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.23 2003-07-12 11:18:25 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.24 2003-07-13 00:21:16 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -53,7 +53,8 @@ cov_file_t::cov_file_t(const char *name)
 
     functions_ = new ptrarray_t<cov_function_t>();
     functions_by_name_ = new hashtable_t<const char*, cov_function_t>;
-    lines_ = new ptrarray_t<cov_linerec_t>();
+    lines_ = new ptrarray_t<cov_line_t>();
+    null_line_ = new cov_line_t();
 }
 
 cov_file_t::~cov_file_t()
@@ -75,6 +76,7 @@ cov_file_t::~cov_file_t()
     for (i = 0 ; i < lines_->length() ; i++)
     	delete lines_->nth(i);
     delete lines_;
+    delete null_line_;
 
     if (finalised_)
     {
@@ -264,10 +266,15 @@ cov_file_t::common_path()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-unsigned int
-cov_file_t::get_num_lines() const
+cov_line_t *
+cov_file_t::nth_line(unsigned int n) const
 {
-    return lines_->length();
+    cov_line_t *ln;
+    
+    if (n > lines_->length() ||
+    	(ln = lines_->nth(n-1)) == 0)
+	ln = null_line_;
+    return ln;
 }
 
 void
@@ -277,7 +284,7 @@ cov_file_t::add_location(
     unsigned long lineno)
 {
     cov_file_t *f;
-    cov_linerec_t *lr;
+    cov_line_t *ln;
     
     if (!strcmp(filename, name_))
     {
@@ -301,33 +308,21 @@ cov_file_t::add_location(
     assert(f->name_[0] == '/');    
     assert(lineno > 0);
     
-    if (lineno-1 >= f->lines_->length() ||
-    	(lr = f->lines_->nth(lineno-1)) == 0)
-	f->lines_->set(lineno-1, lr = new cov_linerec_t());
+    if (lineno > f->lines_->length() ||
+    	(ln = f->lines_->nth(lineno-1)) == 0)
+	f->lines_->set(lineno-1, ln = new cov_line_t());
     
 #if DEBUG > 1
     string_var desc = b->describe();
     fprintf(stderr, "Block %s adding location %s:%lu\n",
     	desc.data(), filename, lineno);
-    if (lr->blocks_ != 0)
+    if (ln->blocks_ != 0)
     	fprintf(stderr, "%s:%lu: this line belongs to %d blocks\n",
-	    	    	    filename, lineno, g_list_length(lr->blocks_)+1);
+	    	    	    filename, lineno, g_list_length(ln->blocks_)+1);
 #endif
 
-    lr->blocks_ = g_list_append(lr->blocks_, b);
+    ln->blocks_ = g_list_append(ln->blocks_, b);
     b->add_location(f->name_, lineno);
-}
-
-cov_linerec_t *
-cov_file_t::find_linerec_by_location(const cov_location_t *loc)
-{
-    cov_file_t *f;
-
-    return ((f = find(loc->filename)) == 0 ||
-    	    loc->lineno < 1 ||
-	    loc->lineno > f->lines_->length()
-    	    ? 0
-	    : f->lines_->nth(loc->lineno-1));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1140,7 +1135,7 @@ cov_o_file_add_call(
     const char *function = 0;
     unsigned int lineno = 0;
     cov_location_t loc;
-    cov_linerec_t *lr;
+    cov_line_t *ln;
     string_var callname_dem = demangle(callname);
 
     if (!bfd_find_nearest_line(rs->abfd, rs->section, rs->symbols, address,
@@ -1158,9 +1153,9 @@ cov_o_file_add_call(
 
     loc.filename = (char *)filename;
     loc.lineno = lineno;
-    lr = cov_file_t::find_linerec_by_location(&loc);
+    ln = cov_line_t::find(&loc);
     
-    if (lr == 0)
+    if (ln == 0)
     {
 	fprintf(stderr, "No blocks for call to %s at %s:%ld\n",
 		    callname_dem.data(), loc.filename, loc.lineno);
@@ -1169,7 +1164,7 @@ cov_o_file_add_call(
     else
     {
     	const GList *iter;
-    	for (iter = lr->blocks_ ; iter != 0 ; iter = iter->next)
+    	for (iter = ln->blocks() ; iter != 0 ; iter = iter->next)
 	{
 	    cov_block_t *b = (cov_block_t *)iter->data;
 #if DEBUG > 1

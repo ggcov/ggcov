@@ -26,7 +26,7 @@
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.12 2003-07-12 11:18:25 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.13 2003-07-13 00:21:16 gnb Exp $");
 
 list_t<summarywin_t> summarywin_t::instances_;
 
@@ -263,7 +263,7 @@ summarywin_t::spin_update()
     unsigned long lastline;
     
     assert(file_ != 0);
-    lastline = file_->get_num_lines();
+    lastline = file_->num_lines();
     
 #if DEBUG
     fprintf(stderr, "summarywin_t::spin_update: %s[1-%lu]\n",

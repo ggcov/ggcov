@@ -30,7 +30,7 @@
 #include "estring.H"
 #include "fakepopt.h"
 
-CVSID("$Id: tggcov.c,v 1.3 2003-07-12 11:18:25 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.4 2003-07-13 00:21:16 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -106,64 +106,6 @@ read_gcov_files(void)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-/*
- * TODO: this function is almost identical with one on sourcewin.C, they
- *       should be in common cov*.C code.
- */
-static void
-format_blocks(char *buf, unsigned int width, const cov_location_t *loc)
-{
-    const GList *blocks;
-    unsigned int len;
-    unsigned int start = 0, end = 0;
-    cov_linerec_t *lr;
-    
-    if ((lr = cov_file_t::find_linerec_by_location(loc)) != 0)
-    {
-	for (blocks = lr->blocks_ ; 
-    	     blocks != 0 && width > 0 ;
-	     blocks = blocks->next)
-	{
-    	    cov_block_t *b = (cov_block_t *)blocks->data;
-
-	    assert(b->bindex() != 0);
-	    if (start > 0 && b->bindex() == end+1)
-	    {
-		end++;
-		continue;
-	    }
-	    if (start == 0)
-	    {
-		start = end = b->bindex();
-		continue;
-	    }
-
-    	    snprintf(buf, width, "%u-%u,", start, end);
-	    len = strlen(buf);
-	    buf += len;
-	    width -= len;
-	    start = end = b->bindex();
-	}
-    }
-    
-    if (width > 0 && start > 0)
-    {
-	if (start == end)
-    	    snprintf(buf, width, "%u", start);
-	else
-    	    snprintf(buf, width, "%u-%u", start, end);
-	len = strlen(buf);
-	buf += len;
-	width -= len;
-    }
-    
-#if 0
-    for ( ; width > 0 ; width--)
-    	*buf++ = ' ';
-    *buf = '\0';
-#endif
-}
-
 #define BLOCKS_WIDTH	8
 
 static void
@@ -171,9 +113,8 @@ annotate_file(cov_file_t *f)
 {
     const char *cfilename = f->name();
     FILE *infp, *outfp;
-    cov_location_t loc;
-    count_t count;
-    cov_status_t status;
+    unsigned long lineno;
+    cov_line_t *ln;
     char *ggcov_filename;
     char buf[1024];
     
@@ -211,31 +152,30 @@ annotate_file(cov_file_t *f)
     	fprintf(outfp, "=======\n");
     }
     
-    loc.filename = (char *)cfilename;
-    loc.lineno = 0;
+    lineno = 0;
     while (fgets(buf, sizeof(buf), infp) != 0)
     {
-    	++loc.lineno;
-	
-	status = cov_get_count_by_location(&loc, &count);
+    	++lineno;
+	ln = f->nth_line(lineno);
+
 	if (new_format_flag)
 	{
-	    if (status != CS_UNINSTRUMENTED)
+	    if (ln->status() != cov_line_t::UNINSTRUMENTED)
 	    {
-		if (count)
-		    fprintf(outfp, "%9llu:%5lu:", count, loc.lineno);
+		if (ln->count())
+		    fprintf(outfp, "%9llu:%5lu:", ln->count(), lineno);
 		else
-		    fprintf(outfp, "    #####:%5lu:", loc.lineno);
+		    fprintf(outfp, "    #####:%5lu:", lineno);
 	    }
 	    else
-		fprintf(outfp, "        -:%5lu:", loc.lineno);
+		fprintf(outfp, "        -:%5lu:", lineno);
 	}
 	else
 	{
-	    if (status != CS_UNINSTRUMENTED)
+	    if (ln->status() != cov_line_t::UNINSTRUMENTED)
 	    {
-		if (count)
-		    fprintf(outfp, "%12lld    ", count);
+		if (ln->count())
+		    fprintf(outfp, "%12lld    ", ln->count());
 		else
 		    fputs("      ######    ", outfp);
 	    }
@@ -245,13 +185,12 @@ annotate_file(cov_file_t *f)
 	if (blocks_flag)
 	{
     	    char blocks_buf[BLOCKS_WIDTH];
-	    blocks_buf[0] = '\0';
-    	    format_blocks(blocks_buf, BLOCKS_WIDTH-1, &loc);
+    	    ln->format_blocks(blocks_buf, BLOCKS_WIDTH-1);
 	    fprintf(outfp, "%*s ", BLOCKS_WIDTH-1, blocks_buf);
 	}
 	if (lines_flag)
 	{
-	    fprintf(outfp, "%7lu ", loc.lineno);
+	    fprintf(outfp, "%7lu ", lineno);
 	}
 	fputs(buf, outfp);
     }

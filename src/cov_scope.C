@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "filename.h"
 
-CVSID("$Id: cov_scope.C,v 1.3 2003-07-12 11:18:25 gnb Exp $");
+CVSID("$Id: cov_scope.C,v 1.4 2003-07-13 00:21:16 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -198,7 +198,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
     cov_block_t *b;
     unsigned fnidx, bidx;
     unsigned long lastline;
-    cov_linerec_t *startlr, *endlr;
+    cov_line_t *startln, *endln;
 
     if (!file_)
     	return FALSE;
@@ -214,7 +214,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
     	return FALSE;     	/* invalid range */
     if (start.lineno == 0 || end.lineno == 0)
     	return FALSE;     	/* invalid range */
-    lastline = file_->get_num_lines();
+    lastline = file_->num_lines();
     if (start.lineno > lastline)
     	return FALSE;     	/* range is outside file */
     if (end.lineno > lastline)
@@ -225,18 +225,19 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
      */
     do
     {
-    	startlr = cov_file_t::find_linerec_by_location(&start);
-    } while (startlr == 0 && ++start.lineno <= end.lineno);
+    	startln = cov_line_t::find(&start);
+    } while (startln == 0 && ++start.lineno <= end.lineno);
     
-    if (startlr == 0)
+    if (startln == 0)
     	return TRUE;     	/* no executable lines in the given range */
+    assert(startln->blocks() != 0);
 
     do
     {
-    	endlr = cov_file_t::find_linerec_by_location(&end);
-    } while (endlr == 0 && --end.lineno > start.lineno-1);
+    	endln = cov_line_t::find(&end);
+    } while (endln == 0 && --end.lineno > start.lineno-1);
     
-    assert(endlr != 0);
+    assert(endln != 0);
     assert(start.lineno <= end.lineno);
     
 
@@ -245,7 +246,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
      * gathering stats as we go.  Note that this can
      * span functions.
      */    
-    b = (cov_block_t *)startlr->blocks_->data;
+    b = (cov_block_t *)startln->blocks()->data;
     bidx = b->bindex();
     fnidx = b->function()->findex();
     
@@ -258,7 +259,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
 	    bidx = 0;
 	    ++fnidx;
 	}
-    } while (b != (cov_block_t *)endlr->blocks_->data);
+    } while (b != (cov_block_t *)endln->blocks()->data);
 
     return TRUE;
 }

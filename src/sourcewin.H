@@ -105,7 +105,7 @@ private:
     
 #if GTK2
     GtkWidget *text_view_;
-    GtkTextTag *text_tags_[CS_NUM_STATUS];
+    GtkTextTag *text_tags_[cov_line_t::NUM_STATUS];
 #else
     GtkWidget *text_;
 #endif

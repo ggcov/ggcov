@@ -27,6 +27,7 @@
 #include "cov_arc.H"
 #include "cov_callgraph.H"
 #include "cov_scope.H"
+#include "cov_line.H"
 
 /* Call this to initialise the cov library */
 void cov_init(void);
@@ -45,9 +46,6 @@ gboolean cov_read_object_file(const char *exefilename);
 unsigned int cov_read_directory(const char *dirname, gboolean recursive);
 /* Call this after reading all files; mostly just calculates callgraph */
 void cov_post_read(void);
-
-cov_status_t cov_get_count_by_location(const cov_location_t *loc,
-			       count_t *countp);
 
 /*
  * If -DDEBUG > 1, dump human-readable debugging description

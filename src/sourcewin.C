@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.18 2003-07-12 11:18:25 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.19 2003-07-13 00:21:16 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -36,7 +36,7 @@ int sourcewin_t::font_width_, sourcewin_t::font_height_;
 list_t<sourcewin_t> sourcewin_t::instances_;
 
 /* column widths, in *characters* */
-const int sourcewin_t::column_widths_[sourcewin_t::NUM_COLS] = { 7, 16, 7, -1 };
+const int sourcewin_t::column_widths_[sourcewin_t::NUM_COLS] = { 8, 16, 8, -1 };
 const char *sourcewin_t::column_names_[sourcewin_t::NUM_COLS] = {
     "Line", "Blocks", "Count", "Source"
 };
@@ -337,65 +337,27 @@ fgets_tabexpand(char *buf, unsigned int maxlen, FILE *fp)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void
-format_blocks(char *buf, unsigned int width, const cov_location_t *loc)
+static char *
+pad(char *buf, unsigned int width, char c)
 {
-    const GList *blocks;
-    unsigned int len;
-    unsigned int start = 0, end = 0;
-    cov_linerec_t *lr;
-    
-    if ((lr = cov_file_t::find_linerec_by_location(loc)) != 0)
-    {
-	for (blocks = lr->blocks_ ; 
-    	     blocks != 0 && width > 0 ;
-	     blocks = blocks->next)
-	{
-    	    cov_block_t *b = (cov_block_t *)blocks->data;
+    char *p = buf;
 
-	    assert(b->bindex() != 0);
-	    if (start > 0 && b->bindex() == end+1)
-	    {
-		end++;
-		continue;
-	    }
-	    if (start == 0)
-	    {
-		start = end = b->bindex();
-		continue;
-	    }
-
-    	    snprintf(buf, width, "%u-%u,", start, end);
-	    len = strlen(buf);
-	    buf += len;
-	    width -= len;
-	    start = end = b->bindex();
-	}
-    }
-    
-    if (width > 0 && start > 0)
-    {
-	if (start == end)
-    	    snprintf(buf, width, "%u", start);
-	else
-    	    snprintf(buf, width, "%u-%u", start, end);
-	len = strlen(buf);
-	buf += len;
-	width -= len;
-    }
-    
+    for ( ; *p && width > 0 ; p++, width--)
+    	;
     for ( ; width > 0 ; width--)
-    	*buf++ = ' ';
-    *buf = '\0';
+    	*p++ = c;
+    *p = '\0';
+    
+    return buf;
 }
 
 void
 sourcewin_t::update()
 {
     FILE *fp;
-    cov_location_t loc;
-    count_t count;
-    cov_status_t status;
+    unsigned long lineno;
+    cov_file_t *f;
+    cov_line_t *ln;
     int i, nstrs;
     gfloat scrollval;
 #if GTK2
@@ -405,7 +367,7 @@ sourcewin_t::update()
 #else
     GtkText *text = GTK_TEXT(text_);
     GdkColor *color;
-    static GdkColor *scolors[CS_NUM_STATUS] =
+    static GdkColor *scolors[cov_line_t::NUM_STATUS] =
     {
     	&prefs.covered_foreground, &prefs.partcovered_foreground,
 	&prefs.uncovered_foreground, &prefs.uninstrumented_foreground
@@ -418,6 +380,9 @@ sourcewin_t::update()
     char linebuf[1024];
     
     update_title_buttons();
+
+    if ((f = cov_file_t::find(filename_)) == 0)
+    	return;
 
     if ((fp = fopen(filename_, "r")) == 0)
     {
@@ -437,11 +402,11 @@ sourcewin_t::update()
     g_array_set_size(offsets_by_line_, 0);
 #endif
 
-    loc.filename = (char *)filename_.data();
-    loc.lineno = 0;
+    lineno = 0;
     while (fgets_tabexpand(linebuf, sizeof(linebuf), fp) != 0)
     {
-    	++loc.lineno;
+    	++lineno;
+    	ln = f->nth_line(lineno);
 	
 #if !GTK2
 	/*
@@ -460,18 +425,16 @@ sourcewin_t::update()
 #endif
 	}
 #endif
-	
-	status = cov_get_count_by_location(&loc, &count);
 
 #if GTK2
     	/* choose colours */
 	tag = 0;
 	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
-	    tag = text_tags_[status];
+	    tag = text_tags_[ln->status()];
 #else
 	color = 0;
 	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
-	    color = scolors[status];
+	    color = scolors[ln->status()];
 #endif
 
     	/* generate strings */
@@ -481,33 +444,33 @@ sourcewin_t::update()
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_LINE])->active)
 	{
 	    snprintf(linenobuf, sizeof(linenobuf), "%*lu ",
-	    	      column_widths_[COL_LINE], loc.lineno);
+	    	      column_widths_[COL_LINE]-1, lineno);
 	    strs[nstrs++] = linenobuf;
 	}
 	
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_BLOCK])->active)
 	{
-	    format_blocks(blockbuf, column_widths_[COL_BLOCK], &loc);
-	    strs[nstrs++] = blockbuf;
+	    ln->format_blocks(blockbuf, column_widths_[COL_BLOCK]-1);
+	    strs[nstrs++] = pad(blockbuf, column_widths_[COL_BLOCK], ' ');
 	}
 	
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_COUNT])->active)
 	{
-	    switch (status)
+	    switch (ln->status())
 	    {
-	    case CS_COVERED:
-	    case CS_PARTCOVERED:
-		snprintf(countbuf, sizeof(countbuf), "%*lu ",
-		    	 column_widths_[COL_COUNT], (unsigned long)count);
+	    case cov_line_t::COVERED:
+	    case cov_line_t::PARTCOVERED:
+		snprintf(countbuf, sizeof(countbuf), "%*llu",
+		    	 column_widths_[COL_COUNT]-1, ln->count());
 		break;
-	    case CS_UNCOVERED:
-		strncpy(countbuf, " ###### ", sizeof(countbuf));
+	    case cov_line_t::UNCOVERED:
+		strncpy(countbuf, " ######", sizeof(countbuf));
 		break;
-	    case CS_UNINSTRUMENTED:
-		strncpy(countbuf, "        ", sizeof(countbuf));
+	    case cov_line_t::UNINSTRUMENTED:
+	    	countbuf[0] = '\0';
 		break;
 	    }
-	    strs[nstrs++] = countbuf;
+	    strs[nstrs++] = pad(countbuf, column_widths_[COL_COUNT], ' ');
     	}
 
 
@@ -532,7 +495,7 @@ sourcewin_t::update()
     	}
     }
     
-    max_lineno_ = loc.lineno;
+    max_lineno_ = lineno;
 #if !GTK2
     assert(offsets_by_line_->len == max_lineno_);
 #endif
@@ -937,16 +900,16 @@ on_source_summarise_function_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     cov_location_t loc;
-    cov_linerec_t *lr;
+    cov_line_t *ln;
     
     loc.filename = (char *)sw->filename_.data();
     sw->get_selected_lines(&loc.lineno, 0);
 
-    if (loc.lineno != 0 ||
-    	(lr = cov_file_t::find_linerec_by_location(&loc)) == 0 ||
-	lr->blocks_ == 0)
+    if (loc.lineno == 0 ||
+    	(ln = cov_line_t::find(&loc)) == 0 ||
+	ln->blocks() == 0)
     	return;
-    summarywin_t::show_function(((cov_block_t *)lr->blocks_->data)->function());
+    summarywin_t::show_function(((cov_block_t *)ln->blocks()->data)->function());
 }
 
 GLADE_CALLBACK void

@@ -26,50 +26,7 @@
 #include "string_var.H"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.16 2003-07-12 11:18:25 gnb Exp $");
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-cov_status_t
-cov_get_count_by_location(const cov_location_t *loc, count_t *countp)
-{
-    cov_linerec_t *lr = cov_file_t::find_linerec_by_location(loc);
-
-    if (lr == 0)
-    	return CS_UNINSTRUMENTED;
-
-    if (!lr->count_valid_)
-    {
-	count_t minc = COV_COUNT_MAX, maxc = 0;
-	GList *iter;
-	int len = 0;
-
-    	lr->count_valid_ = TRUE;
-	for (iter = lr->blocks_ ; iter != 0 ; iter = iter->next)
-	{
-    	    cov_block_t *b = (cov_block_t *)iter->data;
-
-	    if (b->count() > maxc)
-		maxc = b->count();
-	    if (b->count() < minc)
-		minc = b->count();
-	    len++;
-	}
-    
-    	lr->count_ = maxc;
-
-	if (len == 0)
-    	    lr->status_ = CS_UNINSTRUMENTED;
-	else if (maxc == 0)
-    	    lr->status_ = CS_UNCOVERED;
-	else
-	    lr->status_ = (minc == 0 ? CS_PARTCOVERED : CS_COVERED);
-    }
-
-    if (countp != 0)
-	*countp = lr->count_;
-    return lr->status_;
-}
+CVSID("$Id: cov.C,v 1.17 2003-07-13 00:21:16 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

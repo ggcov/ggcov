@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.9 2003-07-12 11:18:25 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.10 2003-07-13 00:21:16 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -146,7 +146,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
      */
     for (liter = locations_.first() ; liter != (cov_location_t *)0 ; ++liter)
     {
-	GList *blocks = cov_file_t::find_linerec_by_location(*liter)->blocks_;
+	const GList *blocks = cov_line_t::find(*liter)->blocks();
 
 	/*
 	 * Compensate for multiple blocks on a line by

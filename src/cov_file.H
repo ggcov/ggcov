@@ -27,6 +27,7 @@
 #include "string_var.H"
 
 class cov_function_t;
+class cov_line_t;
 
 class cov_file_t
 {
@@ -67,7 +68,10 @@ public:
     /* Return an iterator over all the files in minimal filename order */
     static list_iterator_t<cov_file_t> first();
 
-    /* For iterating over a file's functions */
+    /*
+     * For iterating over a file's functions.  Functions are
+     * numbered 0..num_functions-1
+     */
     unsigned int
     num_functions() const
     {
@@ -80,9 +84,20 @@ public:
     }
     cov_function_t *find_function(const char *name) const;
 
-    unsigned int get_num_lines() const;
-
-    static cov_linerec_t *find_linerec_by_location(const cov_location_t *);
+    /*
+     * Unlike everything else, lines are numbered 1..num_lines
+     */
+    unsigned int
+    num_lines() const
+    {
+    	return lines_->length();
+    }
+    /* 
+     * Never returns a NULL pointer.  If n is outside the line number
+     * range or the line is not instrumented, returns a default line
+     * object which has count=0 and status=UNINSTRUMENTED.
+     */
+    cov_line_t *nth_line(unsigned int n) const;
 
 private:
     cov_file_t(const char *name);
@@ -135,7 +150,8 @@ private:
     gnb_u32_t format_version_;	/* file format version */
     ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char*, cov_function_t> *functions_by_name_;
-    ptrarray_t<cov_linerec_t> *lines_;
+    ptrarray_t<cov_line_t> *lines_;
+    cov_line_t *null_line_; /* returned for all uninstrumented lines */
 
     /* Fields used to detect gcc 2.96 braindeath */
     unsigned num_missing_fake_;

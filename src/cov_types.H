@@ -39,10 +39,6 @@ struct cov_callnode_t;
 struct cov_callarc_t;
 struct cov_read_state_t;
 
-/*
- * TODO: have a static member hashtable which uniquifies the storage
- * of all the filenames in cov_location_t's.  Add a ctor to use it.
- */
 struct cov_location_t
 {
     char *filename;
@@ -89,24 +85,5 @@ struct cov_stats_t
     }
 };
 
-enum cov_status_t
-{
-    CS_COVERED,
-    CS_PARTCOVERED,
-    CS_UNCOVERED,
-    CS_UNINSTRUMENTED
-};
-#define CS_NUM_STATUS	4
-
-/*
- * TODO: this structure is private to the cov* library.
- */
-struct cov_linerec_t
-{
-    GList *blocks_;
-    gboolean count_valid_;  /* covers status_, count_ */
-    cov_status_t status_;
-    unsigned long count_;
-};
 
 #endif /* _ggcov_cov_types_H_ */
