@@ -26,14 +26,8 @@
  */
 
 #include "common.h"
-
-#ifdef HAVE_LIBBFD
-#include <bfd.h>
-#endif
-
-#ifdef HAVE_ELF_H
-#include <elf.h>
-#endif
+#include "cov_bfd.H"
+#include "cov_types.H"
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
@@ -169,8 +163,8 @@ public:
     cov_filename_scanner_t();
     virtual ~cov_filename_scanner_t();
     
-    /* tries to open the object filename */
-    virtual gboolean open(const char *filename);
+    // attempt to use the given object file
+    virtual gboolean attach(cov_bfd_t *);
 
     /* Iteration interface: returns new strings until it returns NULL */
     virtual char *next() = 0;
@@ -178,12 +172,41 @@ public:
     static int factory_category();
 
 protected:
-#ifdef HAVE_LIBBFD
-    /* utility functions */
-    void *get_section(const char *name, bfd_size_type *lenp);
+    cov_bfd_t *cbfd_;
+};
 
-    bfd *abfd_;
-#endif
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+/*
+ * Base class for classes which scan an object looking for
+ * function calls in the object code.  Used to implement
+ * extraction of the call graph.
+ */
+
+class cov_call_scanner_t
+{
+public:
+    cov_call_scanner_t();
+    virtual ~cov_call_scanner_t();
+    
+    virtual gboolean attach(cov_bfd_t *b);
+    
+    struct calldata_t
+    {
+    	cov_location_t location;
+	const char *callname;	/* demangled */
+	const char *function;	/* mangled */
+    };
+
+    /* returns 1=have call, 0=end of scan, -1=error */    
+    virtual int next(calldata_t *call/*return*/) = 0;
+
+    static int factory_category();
+
+protected:
+    gboolean setup_calldata(cov_bfd_section_t *, unsigned long,
+    	    	    	    const char *, calldata_t *);
+
+    cov_bfd_t *cbfd_;
 };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

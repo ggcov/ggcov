@@ -18,8 +18,11 @@
  */
 
 #include "cov_specific.H"
+#include "string_var.H"
+#include "filename.h"
+#include "demangle.h"
 
-CVSID("$Id: cov_specific.C,v 1.1 2003-06-14 13:57:30 gnb Exp $");
+CVSID("$Id: cov_specific.C,v 1.2 2003-11-04 00:31:57 gnb Exp $");
 
  
 cov_factory_item_t *cov_factory_item_t::all_;
@@ -28,76 +31,21 @@ cov_factory_item_t *cov_factory_item_t::all_;
 
 cov_filename_scanner_t::cov_filename_scanner_t()
 {
-#ifdef HAVE_LIBBFD
-    abfd_ = 0;
-#endif
+    cbfd_ = 0;
 }
 
 cov_filename_scanner_t::~cov_filename_scanner_t()
 {
-#ifdef HAVE_LIBBFD
-    if (abfd_ != 0)
-	bfd_close(abfd_);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
-cov_filename_scanner_t::open(const char *filename)
+cov_filename_scanner_t::attach(cov_bfd_t *c)
 {
-#ifdef HAVE_LIBBFD
-    if ((abfd_ = bfd_openr(filename, 0)) == 0)
-    {
-    	/* TODO */
-    	bfd_perror(filename);
-	return FALSE;
-    }
-
-    if (!bfd_check_format(abfd_, bfd_object))
-    {
-    	/* TODO */
-    	bfd_perror(filename);
-	bfd_close(abfd_);
-	abfd_ = 0;
-	return FALSE;
-    }
+    cbfd_ = c;
     return TRUE;
-#else
-    return FALSE;
-#endif
 }
-
-#ifdef HAVE_LIBBFD
-void *
-cov_filename_scanner_t::get_section(const char *secname, bfd_size_type *lenp)
-{
-    asection *sec;
-    bfd_size_type size;
-    void *contents;
-
-    if ((sec = bfd_get_section_by_name(abfd_, secname)) == 0)
-    {
-    	/* TODO */
-    	fprintf(stderr, "%s: no %s section\n", abfd_->filename, secname);
-	return 0;
-    }
-
-    size = bfd_section_size(abfd_, sec);
-    contents = gnb_xmalloc(size);
-    if (!bfd_get_section_contents(abfd_, sec, contents, 0, size))
-    {
-    	/* TODO */
-    	bfd_perror(abfd_->filename);
-	free(contents);
-	return 0;
-    }
-    
-    if (lenp != 0)
-    	*lenp = size;
-    return contents;
-}
-#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -106,6 +54,63 @@ int
 cov_filename_scanner_t::factory_category()
 {
     return 1;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+cov_call_scanner_t::cov_call_scanner_t()
+{
+}
+
+cov_call_scanner_t::~cov_call_scanner_t()
+{
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_call_scanner_t::attach(cov_bfd_t *c)
+{
+    cbfd_ = c;
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_call_scanner_t::setup_calldata(
+    cov_bfd_section_t *sec,
+    unsigned long address,
+    const char *callname,
+    cov_call_scanner_t::calldata_t *calld)
+{
+    string_var callname_dem = demangle(callname);
+
+    memset(calld, 0, sizeof(*calld));
+    if (!sec->find_nearest_line(address, &calld->location, &calld->function))
+	return FALSE;
+
+    if (debug_enabled(D_CGRAPH))
+    {
+    	string_var function_dem = demangle(calld->function);
+	duprintf4("%s:%ld: %s calls %s\n",
+		file_basename_c(calld->location.filename),
+		calld->location.lineno,
+		function_dem.data(),
+		callname_dem.data());
+    }
+
+    calld->callname = callname_dem.take();
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+/* TODO: allocate these dynamically */
+int
+cov_call_scanner_t::factory_category()
+{
+    return 2;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
