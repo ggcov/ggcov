@@ -139,7 +139,10 @@ run_gcov ()
         vdo cd $srcdir
 	if vcapdo $TMP1 gcov -b -f -o $O $SRC ; then
 	    cat $TMP1
-	    GCOV_FILES=`sed -n -e 's:^Creating[ \t][ \t]*\([^ \t]*\)\.gcov\.$:\1:p' < $TMP1`
+	    GCOV_FILES=`sed -n \
+		-e 's|^Creating[ \t][ \t]*\([^ \t]*\)\.gcov\.$|\1|p' \
+		-e 's|^.*:creating[ \t][ \t]*.\([^ \t]*\)\.gcov.$|\1|p' \
+		< $TMP1`
     	    [ -z "$GCOV_FILES" ] && fatal "no output files from gcov"
 	    for f in $GCOV_FILES ; do
 		vdo mv $f.gcov $O/`_gcov_file $f`
@@ -215,7 +218,7 @@ compare_lines ()
     local GCOV_FILE=`_gcov_file $SRC`
     local TGGCOV_FILE=`_tggcov_file $SRC`
 
-    egrep -v '^(call|branch|        -:    0:)' $GCOV_FILE > $TMP1
+    egrep -v '^(call|branch|function|        -:    0:)' $GCOV_FILE > $TMP1
     echo "diff -u filter($GCOV_FILE) filter($TGGCOV_FILE)"
     diff -u $TMP1 $TGGCOV_FILE || fatal "tggcov line coverage differs from gcov"
 }
