@@ -1,0 +1,13 @@
+Fri Nov 23 15:41:28 2001  Greg Banks <gnb@alphalink.com.au>
+
+	* Release 0.0.2
+	* Split source code up from one big .c file.
+	* First check into CVS.
+
+Thu Nov 22 17:39:15 2001  Greg Banks <gnb@alphalink.com.au>
+
+	* Release 0.0.1
+	* Reads .bb, .bbg, and .da files to construct data structures
+	* Annotates C files with line counts, identical results to gcov.
+
+

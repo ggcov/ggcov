@@ -1,0 +1,10 @@
+config.log
+config.status
+config.cache
+configure
+config.h
+config.h.in
+stamp-h
+stamp-h.in
+Makefile.in
+Makefile

@@ -1,0 +1,18 @@
+#!/bin/sh
+
+CC="gcc"
+CWARNFLAGS="-Wall"
+CCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
+
+set -x
+/bin/rm -f *.bb *.bbg
+$CC $CWARNFLAGS $CCOVFLAGS -c foo.c
+$CC $CCOVFLAGS -o foo foo.o
+
+/bin/rm -f *.da *.gcov
+
+./foo 1
+./foo 2
+./foo 23 423
+
+gcov -b -f foo.c
