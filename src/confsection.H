@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2002-2004 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2002-2005 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,8 @@ class confsection_t
 public:
     static confsection_t *get(const char *secname);
 
-    const char *get_string(const char *name, const char *deflt);
+    // returns a new string that must be freed
+    char *get_string(const char *name, const char *deflt);
     void set_string(const char *name, const char *value);
 
     int get_enum(const char *name, const confenum_t *tbl, int deflt);

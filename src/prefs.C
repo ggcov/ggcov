@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2002-2004 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2002-2005 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "confsection.H"
 #include "prefs.H"
 
-CVSID("$Id: prefs.C,v 1.7 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: prefs.C,v 1.8 2005-03-14 08:24:26 gnb Exp $");
 
 prefs_t prefs;
 
@@ -48,10 +48,12 @@ GdkColor *backgrounds_by_status[] =
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-colorstr(const char *val, GdkColor *col, const char *deflt)
+colorstr(char *val, GdkColor *col, const char *deflt)
 {
     if (val == 0 || !gdk_color_parse(val, col))
     	gdk_color_parse(deflt, col);
+    if (val != 0)
+	g_free(val);
 }
 
 void
