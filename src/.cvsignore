@@ -8,3 +8,4 @@ filetest
 mangletest
 newbbgdump
 tggcov
+*.bck
