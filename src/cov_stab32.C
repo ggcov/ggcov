@@ -22,7 +22,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_stab32.C,v 1.2 2003-07-09 01:14:01 gnb Exp $");
+CVSID("$Id: cov_stab32.C,v 1.3 2003-11-04 00:29:54 gnb Exp $");
 
 /*
  * Machine-specific code to read 32-bit .stabs entries from an
@@ -49,7 +49,7 @@ class cov_stab32_filename_scanner_t : public cov_filename_scanner_t
 {
 public:
     ~cov_stab32_filename_scanner_t();
-    gboolean open(const char *name);
+    gboolean attach(cov_bfd_t *b);
     char *next();
 
 private:
@@ -82,26 +82,24 @@ cov_stab32_filename_scanner_t::~cov_stab32_filename_scanner_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
-cov_stab32_filename_scanner_t::open(const char *filename)
+cov_stab32_filename_scanner_t::attach(cov_bfd_t *b)
 {
-    if (!cov_filename_scanner_t::open(filename))
+    cov_bfd_section_t *sec;
+
+    if (!cov_filename_scanner_t::attach(b))
     	return FALSE;
 
-    stabs_ = (cov_stab32_t *)get_section(".stab", &num_stabs_);
-    if (stabs_  == 0)
+    if ((sec = cbfd_->find_section(".stab")) == 0 ||
+    	(stabs_ = (cov_stab32_t *)sec->get_contents(&num_stabs_)) == 0)
     	return FALSE;
     num_stabs_ /= sizeof(cov_stab32_t);
     
-    strings_ = (char *)get_section(".stabstr", &string_size_);
+    if ((sec = cbfd_->find_section(".stabstr")) == 0 ||
+    	(strings_ = (char *)sec->get_contents(&string_size_)) == 0)
     if (strings_ == 0)
     	return FALSE;
     
     assert(sizeof(cov_stab32_t) == 12);
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-    assert(bfd_little_endian(abfd_));
-#else
-    assert(bfd_big_endian(abfd_));
-#endif
 
     return TRUE;
 }
@@ -111,6 +109,9 @@ cov_stab32_filename_scanner_t::open(const char *filename)
 char *
 cov_stab32_filename_scanner_t::next()
 {
+    if (!stabi_)
+	dprintf0(D_STABS|D_VERBOSE, "index|type|other|desc|value   |string\n");
+
     for ( ; stabi_ < num_stabs_ ; stabi_++)
     {
     	cov_stab32_t *st = &stabs_[stabi_];
@@ -130,17 +131,17 @@ cov_stab32_filename_scanner_t::next()
 	    {
 	    	/* TODO */
 		fprintf(stderr, "%s: stab entry %u is corrupt, strx = 0x%x, type = %d\n",
-		    abfd_->filename,
+		    cbfd_->filename(),
 		    stabi_, st->strx, st->type);
 		continue;
 	    }
 	    
     	    const char *s = strings_ + stroff_ + st->strx;
 	    
-#if DEBUG > 5
-	    fprintf(stderr, "stab32:%5u|%02x|%02x|%04x|%08x|%s|\n",
-	    	stabi_, st->type, st->other, st->desc, st->value, s);
-#endif
+	    dprintf6(D_STABS|D_VERBOSE,
+	    	     "%5u|%4x|%5x|%04x|%08x|%s\n",
+		     stabi_, st->type, st->other, st->desc, st->value, s);
+
 	    if (s[0] == '\0')
 	    	continue;
 
@@ -149,7 +150,9 @@ cov_stab32_filename_scanner_t::next()
 	    else
 	    {
 	    	stabi_++;
-	    	return g_strconcat(dir_.data(), s, 0);
+		char *res = g_strconcat(dir_.data(), s, 0);
+		dprintf1(D_STABS, "Scanned source file \"%s\"\n", res);
+		return res;
 	    }
 	}
     }
