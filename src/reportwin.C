@@ -26,7 +26,7 @@
 #include "uix.h"
 #include "gnbstackedbar.h"
 
-CVSID("$Id: reportwin.C,v 1.1 2004-03-08 09:54:39 gnb Exp $");
+CVSID("$Id: reportwin.C,v 1.2 2004-03-08 10:00:09 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -36,7 +36,7 @@ null_report_func(FILE *)
     return 0;
 }
 
-static const report_t null_report =  { "none", "None", null_report_func };
+static const report_t null_report =  { "none", N_("None"), null_report_func };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

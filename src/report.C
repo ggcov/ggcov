@@ -26,7 +26,7 @@
 #include "estring.H"
 #include "report.H"
 
-CVSID("$Id: report.C,v 1.1 2004-03-08 09:54:39 gnb Exp $");
+CVSID("$Id: report.C,v 1.2 2004-03-08 10:00:09 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -287,15 +287,15 @@ const report_t all_reports[] =
 {
 #define report(name, label) { #name, label, report_##name },
     report(summary_all,
-    	  "Summary, all files")
+    	   N_("Summary, all files"))
     report(summary_per_directory,
-    	   "Summary, per directory")
+    	   N_("Summary, per directory"))
     report(untested_functions_per_file,
-    	   "Untested functions per file")
+    	   N_("Untested functions per file"))
     report(poorly_covered_functions_per_file,
-    	   "Poorly covered functions per file")
+    	   N_("Poorly covered functions per file"))
     report(incompletely_covered_functions_per_file,
-    	   "Incompletely covered functions per file")
+    	   N_("Incompletely covered functions per file"))
 #undef report
     {0, 0}
 };
