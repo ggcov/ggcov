@@ -22,7 +22,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.6 2001-11-25 05:49:39 gnb Exp $");
+CVSID("$Id: sourcewin.c,v 1.7 2001-11-25 06:44:41 gnb Exp $");
 
 extern GList *filenames;
 
@@ -207,7 +207,6 @@ sourcewin_delayed_function_activate(gpointer userdata)
     cov_function_t *fn = rec->function;
     const cov_location_t *first;
     const cov_location_t *last;
-    GtkAdjustment *adj = GTK_TEXT(sw->text)->vadj;
 
     first = cov_function_get_first_location(fn);
     last = cov_function_get_last_location(fn);
@@ -233,16 +232,11 @@ sourcewin_delayed_function_activate(gpointer userdata)
 	g_free(rec);
 	return FALSE;
     }
-    
-    /* This mostly works.  Not totally predictable but good enough for now */
-    gtk_adjustment_set_value(adj,
-	    	adj->upper * (float)first->lineno / (float)sw->max_lineno
-		    - adj->page_size/2.0);
+
+    sourcewin_ensure_visible(sw, first->lineno);
 
     /* This only selects the span of the lines which contain executable code */		    
-    gtk_editable_select_region(GTK_EDITABLE(sw->text),
-    	    g_array_index(sw->offsets_by_line, unsigned int, first->lineno-1),
-    	    g_array_index(sw->offsets_by_line, unsigned int, last->lineno)-1);
+    sourcewin_select_region(sw, first->lineno, last->lineno);
 
     g_free(rec);
     return FALSE;   /* and don't call me again! */
@@ -474,6 +468,37 @@ sourcewin_set_filename(sourcewin_t *sw, const char *filename)
     strassign(sw->filename, filename);
     sourcewin_update_source(sw);
     sourcewin_populate_functions(sw);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+sourcewin_select_region(
+    sourcewin_t *sw,
+    unsigned long startline,
+    unsigned long endline)
+{
+    if (startline > sw->offsets_by_line->len)
+    	startline = sw->offsets_by_line->len;
+    if (endline > sw->offsets_by_line->len)
+    	endline = sw->offsets_by_line->len;
+    if (startline > endline)
+    	return;
+	
+    gtk_editable_select_region(GTK_EDITABLE(sw->text),
+    	    g_array_index(sw->offsets_by_line, unsigned int, startline-1),
+    	    g_array_index(sw->offsets_by_line, unsigned int, endline)-1);
+}
+
+/* This mostly works.  Not totally predictable but good enough for now */
+void
+sourcewin_ensure_visible(sourcewin_t *sw, unsigned long line)
+{
+    GtkAdjustment *adj = GTK_TEXT(sw->text)->vadj;
+
+    gtk_adjustment_set_value(adj,
+	    	adj->upper * (double)line / (double)sw->max_lineno
+		    - adj->page_size/2.0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -42,6 +42,9 @@ typedef struct
 sourcewin_t *sourcewin_new(void);
 void sourcewin_delete(sourcewin_t *sw);
 void sourcewin_set_filename(sourcewin_t *sw, const char *filename);
+void sourcewin_select_region(sourcewin_t *sw,
+    	    	    	     unsigned long start, unsigned long end);
+void sourcewin_ensure_visible(sourcewin_t *sw, unsigned long line);
 
 
 #endif /* _ggcov_sourcewin_h_ */
