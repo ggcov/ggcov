@@ -16,13 +16,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.12 2002-12-15 15:53:23 gnb Exp $
+# $Id: Makefile.am,v 1.13 2002-12-22 01:37:17 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
 
 ggcov_SOURCES=	common.h common.c \
-		estring.h estring.c \
+		estring.H estring.C \
 		filename.h filename.c \
 		covio.h covio.c \
 		cov.h cov.c \
