@@ -19,9 +19,8 @@
 
 #include "window.H"
 #include "cov.H"
-#include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: window.C,v 1.4 2002-12-31 14:46:04 gnb Exp $");
+CVSID("$Id: window.C,v 1.5 2003-03-11 21:39:15 gnb Exp $");
 
 static const char window_key[] = "callgraph2win_key";
 
@@ -84,7 +83,8 @@ window_t::populate()
 void
 window_t::show()
 {
-    populate();
+    if (!shown_)
+	populate();
     gtk_widget_show(window_);
     if (shown_)
     	gdk_window_raise(window_->window);
