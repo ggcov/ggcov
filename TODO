@@ -7,12 +7,6 @@ x  Annotate source with per-function coverage summaries.  The challenge
 
 x  Annotate blocks with call and branch stats.
 
-x  Try to correlate the call numbers from blocks with function symbols
-   by looking up ELF relocs and debug line number records in the object
-   files using the BFD library.  For each reloc, reloc -> address ->
-   linenumber -> block(s).  May be tricky, especially when blocks
-   overlap on a line.
-   
 x  Show block boundaries in the Source window using one of:
    1. drawn rectangles with block number labelled, or
    2. 4-colour mapping, or
@@ -72,7 +66,7 @@ x  Additional source annotations in the Source window (i.e. non-column
    additions like per-function stats) should be colour coded to
    make them distinct from non-executable lines of source.
    
-x  Add Help->About, Help->Licence etc menu commands.
+x  Add icon.
 
 --- CLOSED ---
 
@@ -84,3 +78,12 @@ x  Add a "Files List" window analagous to the existing "Functions List"
 x  Add menu commands to the Windows menu to create new Summary window
    etc, and replace all the initial startup windows with just an
    overall Summary.
+
+x  Try to correlate the call numbers from blocks with function symbols
+   by looking up ELF relocs and debug line number records in the object
+   files using the BFD library.  For each reloc, reloc -> address ->
+   linenumber -> block(s).  May be tricky, especially when blocks
+   overlap on a line.
+   
+x  Add Help->About, Help->Licence etc menu commands.
+
