@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.28 2005-03-15 12:04:41 gnb Exp $");
+CVSID("$Id: ui.c,v 1.29 2005-03-18 15:39:06 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -468,6 +468,7 @@ ui_menu_add_seperator(GtkWidget *menu)
      
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 #if !GTK2
+/* column sorting is trivial in gtk2.x, extremely painful in gtk1.2 */
 
 static const char ui_clist_arrow_key[] = "ui_clist_arrow_key";
 
@@ -659,9 +660,24 @@ ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+void
+ui_list_set_column_visibility(GtkWidget *w, int col, gboolean vis)
+{
+#if !GTK2
+    gtk_clist_set_column_visibility(GTK_CLIST(w), col, vis);
+#else
+    gtk_tree_view_column_set_visible(
+    	    gtk_tree_view_get_column(GTK_TREE_VIEW(w), col),
+	    vis);
+#endif
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 #if GTK2
 static PangoFontDescription *ui_text_font_desc;
 #else
+/* we have to fake a *lot* of stuff for gtk1.2 */
 static GdkFont *ui_text_font;
 
 struct ui_text_tag_s
@@ -695,19 +711,6 @@ ui_text_on_destroy(GtkWidget *w, gpointer closure)
     }
     g_array_free(td->offsets_by_line, /*free_segment*/TRUE);
     g_free(td);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
-ui_list_set_column_visibility(GtkWidget *w, int col, gboolean vis)
-{
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(w), col, vis);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(w), col),
-	    vis);
 }
 
 static void
@@ -759,6 +762,7 @@ ui_text_setup(GtkWidget *w)
 #endif /* !GTK2 */
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 int
 ui_text_font_width(GtkWidget *w)
@@ -775,6 +779,7 @@ ui_text_font_width(GtkWidget *w)
 #endif /* !GTK2 */
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 ui_text_tag *
 ui_text_create_tag(GtkWidget *w, const char *name, GdkColor *fg)
@@ -799,6 +804,7 @@ ui_text_create_tag(GtkWidget *w, const char *name, GdkColor *fg)
 #endif /* !GTK2 */
 }   
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gfloat
 ui_text_vscroll_sample(GtkWidget *w)
@@ -825,6 +831,8 @@ ui_text_vscroll_restore(GtkWidget *w, gfloat vs)
     gtk_adjustment_set_value(GTK_TEXT(w)->vadj, vs);
 #endif /* !GTK2 */
 }
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
 ui_text_begin(GtkWidget *w)
@@ -891,6 +899,7 @@ ui_text_end(GtkWidget *w)
 #endif /* !GTK2 */
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
 ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endline)
@@ -970,6 +979,7 @@ ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endlin
 #endif /* !GTK2 */
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
 ui_text_ensure_visible(GtkWidget *w, unsigned long line)
@@ -993,6 +1003,7 @@ ui_text_ensure_visible(GtkWidget *w, unsigned long line)
 #endif
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #if !GTK2
 static unsigned long
@@ -1084,6 +1095,7 @@ ui_text_get_selected_lines(
 #endif /* !GTK2 */
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 char *
 ui_text_get_contents(GtkWidget *w)
