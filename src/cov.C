@@ -19,7 +19,6 @@
 
 #include "cov.H"
 #include "cov_specific.H"
-#include "covio.h"
 #include "estring.H"
 #include "filename.h"
 #include "estring.H"
@@ -27,7 +26,7 @@
 #include "mvc.h"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.22 2004-04-03 03:17:11 gnb Exp $");
+CVSID("$Id: cov.C,v 1.23 2004-11-20 09:08:40 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

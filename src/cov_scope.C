@@ -18,12 +18,11 @@
  */
 
 #include "cov.H"
-#include "covio.h"
 #include "estring.H"
 #include "string_var.H"
 #include "filename.h"
 
-CVSID("$Id: cov_scope.C,v 1.6 2004-02-16 23:28:29 gnb Exp $");
+CVSID("$Id: cov_scope.C,v 1.7 2004-11-20 09:08:40 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
