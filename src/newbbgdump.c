@@ -5,6 +5,8 @@
 #include <stdarg.h>
 #include <assert.h>
 
+const char *argv0;
+
 static void
 hexdump(FILE *fp, off_t lastoff)
 {
@@ -278,7 +280,8 @@ main(int argc, char **argv)
     int i;
     int nfiles = 0;
     char **files = (char **)malloc(sizeof(char*) * argc);
-    
+
+    argv0 = argv[0];    
     for (i = 1 ; i < argc ; i++)
     {
     	if (argv[i][0] == '-')

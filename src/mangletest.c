@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include "demangle.h"
 
+const char *argv0;
+
 int
 main(int argc, char **argv)
 {
     enum { DEMANGLE, NORMALISE } mode = DEMANGLE;
     int i;
+
+    argv0 = argv[0];
     
     for (i = 1 ; i < argc ; i++)
     {
