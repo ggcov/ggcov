@@ -23,6 +23,7 @@
 #include "common.h"
 #include "list.H"
 #include "hashtable.H"
+#include "ptrarray.H"
 #include "string_var.H"
 
 class cov_function_t;
@@ -70,12 +71,12 @@ public:
     unsigned int
     num_functions() const
     {
-    	return functions_->len;
+    	return functions_->length();
     }
     cov_function_t *
     nth_function(unsigned int n) const
     {
-    	return (cov_function_t *)functions_->pdata[n];
+    	return functions_->nth(n);
     }
     cov_function_t *find_function(const char *name) const;
 
@@ -129,7 +130,7 @@ private:
     string_var name_;
     gboolean finalised_;    /* data read & `this' inserted into files_ */
     gnb_u32_t format_version_;	/* file format version */
-    GPtrArray *functions_;
+    ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char*, cov_function_t> *functions_by_name_;
     const cov_location_t *last_location_;
 

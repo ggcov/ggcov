@@ -50,12 +50,12 @@ public:
     unsigned int
     num_blocks() const
     {
-	return blocks_->len;
+	return blocks_->length();
     }
     cov_block_t *
     nth_block(unsigned int n) const
     {
-    	return (cov_block_t *)blocks_->pdata[n];
+    	return blocks_->nth(n);
     }
 
     const cov_location_t *get_first_location() const;
@@ -82,7 +82,7 @@ private:
     string_var name_;
     unsigned int idx_; 	    /* serial number in file */
     cov_file_t *file_;
-    GPtrArray *blocks_;
+    ptrarray_t<cov_block_t> *blocks_;
     
     friend class cov_file_t;
     friend class cov_function_scope_t;

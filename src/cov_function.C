@@ -20,22 +20,22 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.10 2003-06-30 13:52:56 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.11 2003-07-11 14:14:32 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_function_t::cov_function_t()
 {
-    blocks_ = g_ptr_array_new();
+    blocks_ = new ptrarray_t<cov_block_t>();
 }
 
 cov_function_t::~cov_function_t()
 {
     unsigned int i;
     
-    for (i = 0 ; i < num_blocks() ; i++)
-    	delete nth_block(i);
-    g_ptr_array_free(blocks_, /*delete_seg*/TRUE);
+    for (i = 0 ; i < blocks_->length() ; i++)
+    	delete blocks_->nth(i);
+    delete blocks_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -55,8 +55,7 @@ cov_function_t::add_block()
     
     b = new cov_block_t;
 
-    b->idx_ = blocks_->len;
-    g_ptr_array_add(blocks_, b);
+    b->idx_ = blocks_->append(b);
     b->function_ = this;
     
     return b;
