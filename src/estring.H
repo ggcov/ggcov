@@ -88,6 +88,31 @@ public:
     {
     	return data_;
     }
+
+    // assignment operators
+    const char *operator=(const char *s)
+    {
+    	length_ = 0;
+	append_string(s);
+	return data_;
+    }
+    const char *operator=(char *s)
+    {
+    	if (data_ != 0)
+	    g_free(data_);
+	data_ = s;
+    	if (s == 0)
+	{
+	    length_ = available_ = 0;
+	}
+	else
+	{
+	    length_ = strlen(s);
+	    available_ = length_+1;
+	}
+	return data_;
+    }
+
     unsigned int length() const
     {
     	return length_;
