@@ -1,0 +1,38 @@
+
+
+File format of .bbg file
+------------------------
+
+Derived from source code of gcc/gcov.c (CVS snapshot 20001120)
+
+LUINT32 is a little-endian 32 bit unsigned integer
+LUINT64 is a little-endian 64 bit unsigned integer
+
+{
+    LUINT32 num_blocks
+    LUINT32 num_arcs
+    {
+	LUINT32 num_arcs_per_block
+	{
+    	    LUINT32 dest
+	    LUINT32 flags
+		 {
+	     	    on_tree = (1<<0),
+		    fake = (1<<1),
+		    fall_through = (1<<2)
+		 }
+	}
+	[num_arcs_per_block]
+    }
+    [num_blocks]
+    LUINT32 seperator = 0x80000001
+}[*]
+
+Read LUINT32s from the .da file in this order:
+(ignoring the first LUINT64 which is a count of the LUINT64s following)
+
+foreach function in .bbg file
+    foreach block in function->blocks
+	foreach arcs in block->outarcs where !arc->on_tree
+	    LUINT64 arc_count
+
