@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.3 2001-11-23 10:38:14 gnb Exp $
+# $Id: Makefile.am,v 1.4 2001-11-25 05:51:14 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
@@ -28,10 +28,12 @@ ggcov_SOURCES=	common.h common.c \
 		cov.h cov.c \
 		ui.h ui.c uix.h uix.c \
 		sourcewin.h sourcewin.c \
+		summarywin.h summarywin.c \
 		ggcov.c
 INCLUDES=	$(LIBGLADE_CFLAGS)
 ggcov_LDADD=	$(LIBGLADE_LIBS)
-CPPFLAGS=	-DPKGDATADIR="\"$(pkgdatadir)\"" -DDEBUG=$(DEBUG)
+CPPFLAGS=	-DPKGDATADIR="\"$(pkgdatadir)\"" \
+		-DDEBUG=$(DEBUG) -DUI_DEBUG=$(UI_DEBUG)
 
 # Note this is an automake conditional *not* a gmake conditional
 if DEBUG
@@ -40,3 +42,4 @@ else
 DEBUG=0
 endif
 
+UI_DEBUG=0
