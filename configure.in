@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.39 2003-11-05 14:07:44 gnb Exp $
+dnl $Id: configure.in,v 1.40 2004-03-21 13:54:48 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -100,7 +100,7 @@ dnl	# default, which is needed by libglade.
 dnl    	GGCOV_GUI_LIBS="$GGCOV_GUI_LIBS -rdynamic"
 dnl    fi
     AC_CHECK_LIB(gtk-x11-2.0, gtk_text_buffer_select_range,
-	      AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE,,[
+	      AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE,1,[
  * The function gtk_text_buffer_select_range may or may
  * not be present in the gtk2 libraries...we have to work
  * around it if not.
@@ -111,6 +111,11 @@ dnl    fi
     AC_CHECK_LIB(popt,poptGetContext,
     	    	 [ libpopt=yes ;  LIBS="$LIBS -lpopt" ],,
 		 $GGCOV_GUI_CFLAGS $GGCOV_GUI_LIBS)
+    AC_CHECK_LIB(gnome,gnome_program_init,
+	      AC_DEFINE(HAVE_GNOME_PROGRAM_INIT,1,[
+Whether to use the GnomeProgram feature to initialise GNOME.
+]),,
+	      [$GGCOV_GUI_LIBS])
 else
     # fall back to gtk 1.2
     AC_MSG_WARN([GNOME version 2 libraries not found, falling back to 1.2])
