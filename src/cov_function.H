@@ -59,7 +59,6 @@ public:
 
     const cov_location_t *get_first_location() const;
     const cov_location_t *get_last_location() const;
-    void calc_stats(cov_stats_t *) const;
 
     static int compare(gconstpointer, gconstpointer);
     
@@ -77,6 +76,7 @@ private:
     cov_block_t *add_block();
     gboolean reconcile_calls();
     gboolean solve();
+    void calc_stats(cov_stats_t *) const;
 
     char *name_;
     unsigned int idx_; 	    /* serial number in file */
@@ -84,6 +84,7 @@ private:
     GPtrArray *blocks_;
     
     friend class cov_file_t;
+    friend class cov_function_scope_t;
 };
 
 #endif /* _ggcov_cov_function_H_ */

@@ -79,8 +79,6 @@ public:
 
     const cov_location_t *get_last_location() const;
 
-    void calc_stats(cov_stats_t *stats) const;
-
 private:
     cov_file_t(const char *name);
     ~cov_file_t();
@@ -104,6 +102,8 @@ private:
     gboolean read_o_file(const char *filename);
     gboolean solve();
 
+    void calc_stats(cov_stats_t *stats) const;
+
     static GHashTable *files_;
     static list_t<cov_file_t> files_list_;
     static list_t<char> search_path_;
@@ -121,6 +121,8 @@ private:
     friend void cov_post_read(void);
     friend class cov_function_t;
     friend class cov_block_t;
+    friend class cov_overall_scope_t;
+    friend class cov_file_scope_t;
 };
 
 
