@@ -17,12 +17,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: valgrind-run.sh,v 1.2 2005-03-14 07:49:15 gnb Exp $
+# $Id: valgrind-run.sh,v 1.3 2005-03-14 08:20:20 gnb Exp $
 #
 
+#    --workaround-gcc296-bugs=yes
+
 valgrind \
+    --tool=memcheck \
     --num-callers=16 \
     --leak-check=yes \
-    --workaround-gcc296-bugs=yes \
     src/ggcov "$@" \
     2>&1 | tee vg$$.log
