@@ -60,6 +60,9 @@ private:
     GtkWidget *collapse_all_btn_;
     GtkWidget *expand_all_btn_;
     GtkWidget *ctree_;
+#if GTK2
+    GtkTreeStore *store_;
+#endif
 
     friend void on_files_lines_check_activate(GtkWidget *w, gpointer data);
     friend void on_files_calls_check_activate(GtkWidget *w, gpointer data);
