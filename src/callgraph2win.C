@@ -18,10 +18,10 @@
  */
 
 #include "callgraph2win.H"
-#include "cov.h"
+#include "cov.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: callgraph2win.C,v 1.2 2002-12-22 01:40:37 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.3 2002-12-29 13:10:28 gnb Exp $");
 
 #define CANVAS_WIDTH	    30.0
 #define CANVAS_HEIGHT	    30.0
@@ -119,22 +119,21 @@ callgraph2win_t::add_callnode(
 
 
     fprintf(stderr, "callgraph2win_t::add_callnode: %s:%s\n",
-    	(cn->function == 0 ? "library" : cov_file_minimal_name(cn->function->file)),
+    	(cn->function == 0 ? "library" : cn->function->file()->minimal_name()),
 	cn->name);
     
     if (cn->function != 0)
     {
     	double lines_pc;
 	
-	cov_stats_init(&stats);
-	cov_function_calc_stats(cn->function, &stats);
+	cn->function->calc_stats(&stats);
     	lines_pc = (stats.lines ? 
 	    	    100.0 *(double)stats.lines_executed / (double)stats.lines : 
 		    0.0);
 	
 	label = g_strdup_printf("%s\n%s\n%g%%",
 	    cn->name,
-    	    cov_file_minimal_name(cn->function->file),
+    	    cn->function->file()->minimal_name(),
 	    lines_pc);
 	if (stats.lines_executed == stats.lines)
 	    fn_color = "green";
@@ -197,7 +196,7 @@ callgraph2win_t::add_callnode(
 	points->coords[2] = nx,
 	points->coords[3] = ny + ystep/2.0 + BOX_HEIGHT/2.0;
 
-	ctext = gnome_canvas_item_new(
+	cline = gnome_canvas_item_new(
     	    	    root,
     	    	    GNOME_TYPE_CANVAS_LINE,
 		    "points", 	    	points,
