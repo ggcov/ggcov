@@ -1,10 +1,6 @@
 
 --- OPEN ---
 
-x  The gtk2 version check at sourcewin.C:622 may be bogus...stay tuned.
-   Hmm, the text buffer function is missing in gtk2-devel-2.2.1-29 on
-   suse8.2.  Will have to add a special check.
-
 x  Fine tune -W* options for gcc 3.3.  Remove -Wmissing-declarations,
    C++ won't compile if the declarations are missing.  Apparently
    -Wnested-externs isn't for C++ either!?
@@ -99,6 +95,10 @@ x  ??? Minimise filenames only within the context of a program or library?
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
+
+x  The gtk2 version check at sourcewin.C:622 may be bogus...stay tuned.
+   Hmm, the text buffer function is missing in gtk2-devel-2.2.1-29 on
+   suse8.2.  Will have to add a special check.
 
 x  In gtk2 build, check for popt library.
 

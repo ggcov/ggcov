@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.25 2003-06-12 00:52:05 gnb Exp $
+dnl $Id: configure.in,v 1.26 2003-06-12 16:59:41 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -83,11 +83,6 @@ AC_GCC_ADD_CFLAGS([-Wall -Wchar-subscripts -Wmissing-declarations
     -Wmissing-prototypes -Wnested-externs -Wpointer-arithmetic
     -Wcast-align -Wsign-compare -pedantic -Wno-long-long])
 
-dnl Compile C and C++ with the same (C++) compiler.
-CXXFLAGS="$CFLAGS"
-CC="$CXX"
-
-
 
 AC_MSG_CHECKING(whether to enable GTK2)
 AC_ARG_ENABLE(gtk2,
@@ -113,6 +108,9 @@ if test $gtk2 = yes ; then
 	# default, which is needed by libglade.
     	GGCOV_LIBS="$GGCOV_LIBS -rdynamic"
     fi
+    AC_CHECK_LIB(gtk-x11-2.0, gtk_text_buffer_select_range,
+	      AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE),,
+	      [$GGCOV_LIBS])
 else
     AM_PATH_LIBGLADE(,AC_MSG_ERROR(ggcov requires the libglade library),gnome)
     AM_PATH_IMLIB(,,AC_MSG_ERROR(ggcov requires the libgdk_imlib library))
@@ -121,6 +119,10 @@ else
 fi
 AC_SUBST(GGCOV_CFLAGS)
 AC_SUBST(GGCOV_LIBS)
+
+dnl Compile C and C++ with the same (C++) compiler.
+CXXFLAGS="$CFLAGS"
+CC="$CXX"
 
 
 dnl Checks for library functions.
