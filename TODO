@@ -1,6 +1,10 @@
 
 --- OPEN ---
 
+x  find out how to get ggcov to be a std GNOME prog.
+
+x  Suppress blocks on the failure branch of the assert() macro.
+
 x  File->Open dialog needs to allow user to select a directory
    recursively like the --recursive commandline option.
 
@@ -119,6 +123,23 @@ x  ??? Minimise filenames only within the context of a program or library?
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
+
+x  Change parsing of source for cpp dependencies to reuse a single
+   dummy cov_line_t for lines which are suppressed but not otherwise
+   needed, instead of allocating new ones. (Actually, lines are not
+   allocated if they don't exist at suppression time).
+
+x  Change logic for suppressing functions to allow functions which
+   have no lines at all to *not* be supressed.
+   
+x  Need a commandline program which generates various reports
+   like the GUI but to stdout in plain text, driven by command
+   line options.
+
+x  Provide a commandline option to specify one or more cpp symbols;
+   code which depends positively (e.g. #if SYMBOL) on those symbols
+   is suppressed.  Implies major change to architecture because
+   suppression can now be applied to lines.
 
 x  Configuring on RH9 seems to result in *not* getting the new
    text buffer line selection code.  Investigate....it seems that
