@@ -81,13 +81,13 @@ public:
     {
     	if (data_ != 0)
 	    g_free(data_);
-	data_ = g_strdup(s);
+	return data_ = g_strdup(s);
     }
     const char *operator=(char *s)
     {
     	if (data_ != 0)
 	    g_free(data_);
-	data_ = s;
+	return data_ = s;
     }
     // equality operator
     int operator==(const char *s)
