@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "filename.h"
 
-CVSID("$Id: cov_scope.C,v 1.4 2003-07-13 00:21:16 gnb Exp $");
+CVSID("$Id: cov_scope.C,v 1.5 2003-07-19 07:32:34 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -226,18 +226,22 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
     do
     {
     	startln = cov_line_t::find(&start);
-    } while (startln == 0 && ++start.lineno <= end.lineno);
+    } while ((startln == 0 || startln->blocks() == 0) &&
+             ++start.lineno <= end.lineno);
     
-    if (startln == 0)
+    if (startln == 0 || startln->blocks() == 0)
     	return TRUE;     	/* no executable lines in the given range */
+    assert(startln != 0);
     assert(startln->blocks() != 0);
 
     do
     {
     	endln = cov_line_t::find(&end);
-    } while (endln == 0 && --end.lineno > start.lineno-1);
+    } while ((endln == 0 || endln->blocks() == 0) &&
+    	     --end.lineno > start.lineno-1);
     
     assert(endln != 0);
+    assert(endln->blocks() != 0);
     assert(start.lineno <= end.lineno);
     
 
