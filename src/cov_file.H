@@ -140,12 +140,14 @@ private:
     static void search_path_append(const char *dir);
     gboolean read(gboolean quiet);
 
+    int skip_oldplus_func_header(FILE *fp, const char *prefix);
     gboolean read_bb_file(const char *filename);
     gboolean read_old_bbg_function(FILE *fp);
     gboolean read_old_bbg_file(const char *filename, FILE *fp);
     gboolean read_new_bbg_file(const char *filename, FILE *fp);
     gboolean read_bbg_file(const char *filename);
     gboolean read_old_da_file(const char *filename);
+    gboolean read_oldplus_da_file(const char *filename);
     gboolean read_new_da_file(const char *filename);
     gboolean read_da_file(const char *filename);
 #ifdef HAVE_LIBBFD

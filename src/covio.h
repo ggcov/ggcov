@@ -37,5 +37,6 @@ gboolean covio_read_bu64(FILE *fp, gnb_u64_t*); /* new format */
 /* Returns a new string */
 char *covio_read_bbstring(FILE *fp, gnb_u32_t endtag);	/* old format */
 char *covio_read_string(FILE *fp);	    	    	/* new format */
+char *covio_read_lstring(FILE *fp);			/* like new format but little-endian */
 
 #endif /* _ggcov_covio_h_ */

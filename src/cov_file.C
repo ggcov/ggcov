@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.33 2004-02-22 10:57:57 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.34 2004-03-21 09:48:04 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -36,6 +36,14 @@ list_t<char> cov_file_t::search_path_;
 char *cov_file_t::common_path_;
 int cov_file_t::common_len_;
 void *cov_file_t::files_model_;
+
+#define BBG_VERSION_3_3p \
+     	(((gnb_u32_t)'3'<<24)| \
+	 ((gnb_u32_t)'0'<<16)| \
+	 ((gnb_u32_t)'3'<<8)| \
+	 ((gnb_u32_t)'p'))
+#define BBG_VERSION_OLD     	0
+#define BBG_VERSION_OLDPLUS     1
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -555,6 +563,42 @@ cov_file_t::read_bb_file(const char *bbfilename)
     	return FALSE; \
     }
 
+/*
+ * Skip some pointless crap seen in Fedora Core 1:  a per-function
+ * header with the function name, which duplicates the info in
+ * the .bb file which is also present.  This rubbish is seen in
+ * both the .bbg and .da files.  Returns TRUE if header correct,
+ * FALSE if broken and EOF on EOF.
+ */
+
+int
+cov_file_t::skip_oldplus_func_header(FILE *fp, const char *prefix)
+{
+    gnb_u32_t crud;
+    char *funcname;
+
+    if (!covio_read_lu32(fp, &crud))
+    	return EOF;
+    if (crud != BBG_SEPARATOR)
+	bbg_failed1("expecting separator, got %u", crud);
+
+    if ((funcname = covio_read_lstring(fp)) == 0)
+	bbg_failed0("short file");
+    dprintf2(D_BBG, "%sskipping function name: \"%s\"\n", prefix, funcname);
+    g_free(funcname);
+
+    if (!covio_read_lu32(fp, &crud))
+	bbg_failed0("short file");
+    if (crud != BBG_SEPARATOR)
+	bbg_failed1("expecting separator, got %u", crud);
+
+    if (!covio_read_lu32(fp, &crud))
+	bbg_failed0("short file");
+    dprintf2(D_BBG, "%sskipping function flags(?): 0x%08x\n", prefix, crud);
+
+    return TRUE;
+}
+
 
 gboolean
 cov_file_t::read_old_bbg_function(FILE *fp)
@@ -569,8 +613,21 @@ cov_file_t::read_old_bbg_function(FILE *fp)
     
     dprintf0(D_BBG, "BBG reading function\n");
     
+    if (format_version_ == BBG_VERSION_OLDPLUS)
+    {
+    	switch (skip_oldplus_func_header(fp, "BBG   "))
+	{
+	case FALSE: return FALSE;
+	case EOF: return TRUE;
+	}
+    }
+    
     if (!covio_read_lu32(fp, &nblocks))
+    {
+    	if (format_version_ == BBG_VERSION_OLDPLUS)
+    	    bbg_failed0("short file");
     	return TRUE;	/* end of file */
+    }
 
     if (!covio_read_lu32(fp, &totnarcs))
     	bbg_failed0("short file");
@@ -637,16 +694,6 @@ cov_file_t::read_old_bbg_function(FILE *fp)
 gboolean
 cov_file_t::read_old_bbg_file(const char *bbgfilename, FILE *fp)
 {
-    dprintf0(D_FILES, "Detected old .bbg format\n");
-    format_version_ = 0;
-
-    /*
-     * Rewind to the start of the file, because the FILE* passed in has
-     * been seeked past the magic number, which we need to read again
-     * as a function block count.
-     */
-    fseek(fp, 0L, SEEK_SET);
-    
     while (!feof(fp))
     {
     	if (!read_old_bbg_function(fp))
@@ -711,12 +758,6 @@ gcov_tag_as_string(gnb_u32_t tag)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#define BBG_VERSION_3_3p \
-     	(((gnb_u32_t)'3'<<24)| \
-	 ((gnb_u32_t)'0'<<16)| \
-	 ((gnb_u32_t)'3'<<8)| \
-	 ((gnb_u32_t)'p'))
-
 gboolean
 cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 {
@@ -730,8 +771,6 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
     cov_arc_t *a;
     gnb_u32_t dest, flags;
     gnb_u32_t line, last_line = 0;
-
-    dprintf0(D_FILES, "Detected new .bbg format\n");
 
     if (!covio_read_bu32(fp, &format_version_))
     	bbg_failed0("short file");
@@ -867,6 +906,9 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 #define BBG_NEW_MAGIC	    	"gbbg"
 #define BBG_NEW_MAGIC_LEN	4
 
+#define BBG_OLDPLUS_MAGIC	"\x01\x00\x00\x80"
+#define BBG_OLDPLUS_MAGIC_LEN	4
+
 gboolean
 cov_file_t::read_bbg_file(const char *bbgfilename)
 {
@@ -891,9 +933,24 @@ cov_file_t::read_bbg_file(const char *bbgfilename)
     }
     
     if (!memcmp(magic, BBG_NEW_MAGIC, BBG_NEW_MAGIC_LEN))
+    {
+	dprintf0(D_FILES, "Detected new .bbg format\n");
 	ret = read_new_bbg_file(bbgfilename, fp);
-    else
+    }
+    else if (!memcmp(magic, BBG_OLDPLUS_MAGIC, BBG_OLDPLUS_MAGIC_LEN))
+    {
+	dprintf0(D_FILES, "Detected old .bbg format plus function names (e.g. Fedora Core 1)\n");
+	format_version_ = BBG_VERSION_OLDPLUS;
+	fseek(fp, 0L, SEEK_SET);
 	ret = read_old_bbg_file(bbgfilename, fp);
+    }
+    else
+    {
+	dprintf0(D_FILES, "Detected old .bbg format\n");
+	format_version_ = BBG_VERSION_OLD;
+	fseek(fp, 0L, SEEK_SET);
+	ret = read_old_bbg_file(bbgfilename, fp);
+    }
     
     fclose(fp);
     return ret;
@@ -911,7 +968,6 @@ cov_file_t::read_old_da_file(const char *dafilename)
     unsigned int bidx;
     list_iterator_t<cov_arc_t> aiter;
     
-    dprintf0(D_FILES, "Detected old .da format\n");
     
     if ((fp = fopen(dafilename, "r")) == 0)
     {
@@ -963,13 +1019,6 @@ cov_file_t::read_old_da_file(const char *dafilename)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-#define DA_NEW_MAGIC	\
-     	(((gnb_u32_t)'g'<<24)| \
-	 ((gnb_u32_t)'c'<<16)| \
-	 ((gnb_u32_t)'o'<<8)| \
-	 ((gnb_u32_t)'v'))
-
 /*
  * The da_failed*() macros are for debugging problems with .da files.
  */
@@ -992,6 +1041,112 @@ cov_file_t::read_old_da_file(const char *dafilename)
     	return FALSE; \
     }
 
+#define DA_OLDPLUS_MAGIC    0x8000007b
+
+gboolean
+cov_file_t::read_oldplus_da_file(const char *dafilename)
+{
+    FILE *fp;
+    gnb_u32_t crud;
+    gnb_u32_t file_narcs;
+    gnb_u64_t ent;
+    unsigned int fnidx;
+    unsigned int bidx;
+    unsigned int actual_narcs;
+    list_iterator_t<cov_arc_t> aiter;
+    
+    
+    if ((fp = fopen(dafilename, "r")) == 0)
+    {
+    	perror(dafilename);
+	return FALSE;
+    }
+    
+    /*
+     * I haven't yet looked in the FC1 gcc source to figure out what
+     * it's writing in the .da header...this is reverse engineered.
+     */
+    if (!covio_read_lu32(fp, &crud))
+    	da_failed0("short file");
+    if (crud != DA_OLDPLUS_MAGIC)
+    	da_failed2("bad magic, expecting 0x%08x got 0x%08x\n",
+	    	   DA_OLDPLUS_MAGIC, crud);
+    
+    if (!covio_read_lu32(fp, &crud))
+    	da_failed0("short file");
+    if (crud != num_functions())
+    	da_failed2("bad num functions, expecting %d got %d\n",
+	    	   num_functions(), crud);
+
+    if (!covio_read_lu32(fp, &crud))
+    	da_failed0("short file");
+    while (crud--)
+    {
+    	if (fgetc(fp) == EOF)
+	    da_failed0("short file");
+    }
+
+    for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
+    {
+    	cov_function_t *fn = nth_function(fnidx);
+	
+    	if (!skip_oldplus_func_header(fp, "DA "))
+    	    return FALSE;
+
+	if (!covio_read_lu32(fp, &file_narcs))
+    	    da_failed0("short file");
+	actual_narcs = 0;
+
+	for (bidx = 0 ; bidx < fn->num_blocks() ; bidx++)
+	{
+    	    cov_block_t *b = fn->nth_block(bidx);
+	
+	    for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+	    {
+	    	cov_arc_t *a = *aiter;
+		
+		if (a->on_tree_)
+		    continue;
+
+    	    	if (++actual_narcs > file_narcs)
+		    da_failed2("bad num arcs, expecting %d got >= %d\n",
+		    	    	file_narcs, actual_narcs);
+
+    		if (!covio_read_lu64(fp, &ent))
+		    da_failed0("short file");
+
+    	    	if (debug_enabled(D_DA))
+		{
+    	    	    string_var fromdesc = a->from()->describe();
+    	    	    string_var todesc = a->to()->describe();
+    	    	    duprintf3("DA arc {from=%s to=%s} count=%llu\n",
+		    	      fromdesc.data(),
+		    	      todesc.data(),
+			      ent);
+    	    	}
+
+    	    	a->set_count(ent);
+	    }
+	}
+	
+	if (actual_narcs != file_narcs)
+	    da_failed2("bad num arcs, expecting %d got %d\n",
+		    	file_narcs, actual_narcs);
+    }    
+    
+    fclose(fp);
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#define DA_NEW_MAGIC	\
+     	(((gnb_u32_t)'g'<<24)| \
+	 ((gnb_u32_t)'c'<<16)| \
+	 ((gnb_u32_t)'o'<<8)| \
+	 ((gnb_u32_t)'v'))
+
+
 gboolean
 cov_file_t::read_new_da_file(const char *dafilename)
 {
@@ -1005,8 +1160,6 @@ cov_file_t::read_new_da_file(const char *dafilename)
     unsigned int bidx;
     list_iterator_t<cov_arc_t> aiter;
 
-
-    dprintf0(D_FILES, "Detected new .da format\n");
     
     if ((fp = fopen(dafilename, "r")) == 0)
     {
@@ -1100,10 +1253,19 @@ cov_file_t::read_da_file(const char *dafilename)
     
     switch (format_version_)
     {
+
     case BBG_VERSION_3_3p:
+	dprintf0(D_FILES, "Detected new .da format\n");
     	return read_new_da_file(dafilename);
-    case 0:
+
+    case BBG_VERSION_OLD:
+	dprintf0(D_FILES, "Detected old .da format\n");
     	return read_old_da_file(dafilename);
+
+    case BBG_VERSION_OLDPLUS:
+	dprintf0(D_FILES, "Detected old .da format plus function names (e.g. Fedora Core 1)\n");
+    	return read_oldplus_da_file(dafilename);
+
     default:
     	fprintf(stderr, "%s: unknown format version 0x%08x\n",
 	    	dafilename, format_version_);
@@ -1394,7 +1556,7 @@ cov_file_t::read(gboolean quiet)
      * In the new formats, the information from the .bb file has been
      * merged into the .bbg file, so only read the .bb for the old format.
      */
-    if (format_version_ == 0)
+    if (format_version_ <= BBG_VERSION_OLDPLUS)
     {
 	if ((filename = find_file(".bb", quiet)) == 0 ||
 	    !read_bb_file(filename))

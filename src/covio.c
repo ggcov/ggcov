@@ -20,7 +20,7 @@
 #include "covio.h"
 #include "estring.H"
 
-CVSID("$Id: covio.c,v 1.5 2003-06-28 10:33:42 gnb Exp $");
+CVSID("$Id: covio.c,v 1.6 2004-03-21 09:48:04 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -124,26 +124,21 @@ covio_read_bbstring(FILE *fp, gnb_u32_t endtag)
     return buf.take();
 }
 
-/* new format: int32 length, then string bytes, terminating nul, 0-3 pad bytes */
-char *
-covio_read_string(FILE *fp)
+static char *
+covio_read_string_1(FILE *fp, gnb_u32_t len)
 {
-    gnb_u32_t len;
     char *buf;
     
-    if (!covio_read_bu32(fp, &len))
-    	return 0;   	    	/* short file */
-	
     if (len == 0)
     	return g_strdup("");	/* valid empty string */
 
     if ((buf = (char *)malloc(len+1)) == 0)
     	return 0;   	    	/* memory allocation failure */
-    if (fread(buf, 1, len+1, fp) != len+1)
+    if (fread(buf, 1, len+1, fp) != len+1 || buf[len] != '\0')
     {
     	g_free(buf);
 	return 0;   	    	/* short file */
-    }    
+    }
 
     /* skip padding bytes */
     for (len++ ; len&0x3 ; len++)
@@ -156,6 +151,28 @@ covio_read_string(FILE *fp)
     }
     
     return buf;
+}
+
+/* new format: big-endian int32 length, then string bytes, terminating nul, 0-3 pad bytes */
+char *
+covio_read_string(FILE *fp)
+{
+    gnb_u32_t len;
+
+    if (!covio_read_bu32(fp, &len))
+    	return 0;   	    	/* short file */
+    return covio_read_string_1(fp, len);
+}
+
+/* oldplus format: little-endian int32 length, then string bytes, terminating nul, 0-3 pad bytes */
+char *
+covio_read_lstring(FILE *fp)
+{
+    gnb_u32_t len;
+
+    if (!covio_read_lu32(fp, &len))
+    	return 0;   	    	/* short file */
+    return covio_read_string_1(fp, len);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
