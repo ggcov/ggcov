@@ -48,9 +48,13 @@ typedef struct
     GtkWidget *range_view;
 
     GtkWidget *lines_label;
+    GtkWidget *lines_progressbar;
     GtkWidget *calls_label;
+    GtkWidget *calls_progressbar;
     GtkWidget *branches_executed_label;
+    GtkWidget *branches_executed_progressbar;
     GtkWidget *branches_taken_label;
+    GtkWidget *branches_taken_progressbar;
 } summarywin_t;
 
 

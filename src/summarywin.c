@@ -23,7 +23,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: summarywin.c,v 1.4 2001-11-25 07:43:11 gnb Exp $");
+CVSID("$Id: summarywin.c,v 1.5 2001-11-26 01:11:36 gnb Exp $");
 
 extern GList *filenames;
 
@@ -68,11 +68,17 @@ summarywin_new(void)
     sw->range_view = glade_xml_get_widget(xml, "summary_range_view");
 
     sw->lines_label = glade_xml_get_widget(xml, "summary_lines_label");
+    sw->lines_progressbar = glade_xml_get_widget(xml, "summary_lines_progressbar");
     sw->calls_label = glade_xml_get_widget(xml, "summary_calls_label");
+    sw->calls_progressbar = glade_xml_get_widget(xml, "summary_calls_progressbar");
     sw->branches_executed_label = glade_xml_get_widget(xml,
     	    	    	    	    "summary_branches_executed_label");
+    sw->branches_executed_progressbar = glade_xml_get_widget(xml,
+    	    	    	    	    "summary_branches_executed_progressbar");
     sw->branches_taken_label = glade_xml_get_widget(xml,
     	    	    	    	    "summary_branches_taken_label");
+    sw->branches_taken_progressbar = glade_xml_get_widget(xml,
+    	    	    	    	    "summary_branches_taken_progressbar");
     
     ui_register_windows_menu(ui_get_dummy_menu(xml, "summary_windows_dummy"));
 
@@ -256,13 +262,31 @@ summarywin_set_label(
 {
     char buf[128];
 
-    /* TODO: colorize */    
     if (denominator == 0)
 	snprintf(buf, sizeof(buf), "%ld/%ld", numerator, denominator);
     else
 	snprintf(buf, sizeof(buf), "%ld/%ld  %.2f%%", numerator, denominator,
     	    		(double)numerator * 100.0 / (double)denominator);
     gtk_label_set_text(GTK_LABEL(label), buf);
+}
+
+static void
+summarywin_set_progressbar(
+    GtkWidget *progressbar,
+    unsigned long numerator,
+    unsigned long denominator)
+{
+    if (denominator == 0)
+    {
+    	gtk_widget_hide(progressbar);
+    }
+    else
+    {
+    	gtk_widget_show(progressbar);
+	gtk_progress_configure(GTK_PROGRESS(progressbar),
+	    	    /*value*/(gfloat)numerator,
+		    /*min*/0.0, /*max*/(gfloat)denominator);
+    }
 }
 
 
@@ -342,11 +366,19 @@ summarywin_update(summarywin_t *sw)
     
     summarywin_set_label(sw->lines_label,
     	    	    	 stats.lines_executed, stats.lines);
+    summarywin_set_progressbar(sw->lines_progressbar,
+    	    	    	 stats.lines_executed, stats.lines);
     summarywin_set_label(sw->calls_label,
+    	    	    	 stats.calls_executed, stats.calls);
+    summarywin_set_progressbar(sw->calls_progressbar,
     	    	    	 stats.calls_executed, stats.calls);
     summarywin_set_label(sw->branches_executed_label,
     	    	    	 stats.branches_executed, stats.branches);
+    summarywin_set_progressbar(sw->branches_executed_progressbar,
+    	    	    	 stats.branches_executed, stats.branches);
     summarywin_set_label(sw->branches_taken_label,
+    	    	    	 stats.branches_taken, stats.branches);
+    summarywin_set_progressbar(sw->branches_taken_progressbar,
     	    	    	 stats.branches_taken, stats.branches);
 }
 
