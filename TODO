@@ -1,15 +1,6 @@
 
 --- OPEN ---
 
-x  cov_file_t are kept in a hashtable, and the only standard iteration
-   mechanism uses this hashtable, which is very clunky as it requires
-   passing a function pointer to be called for every cov_file_t. OTOH
-   there is a global alphabetically sorted list of minimal file names.
-   Replace that global list of filenames with a static member list of
-   cov_file_t, sorted in alphabetical minimal file name order, built
-   in cov_post_read.  Replace the clunky iteration interface with a
-   list iterator over that list.
-
 x  Annotate source with per-function coverage summaries.  The challenge
    is that this breaks the identity between source code line and text
    widget line.
@@ -36,18 +27,12 @@ x  Colour-code the coverage stats cells in the Function List and
 x  Provide a menu command to export the file and function lists and
    summaries to useful formats, e.g. CSV, XML, Excel spreadsheet.
    
-x  Added a Properties window which allows the user to control the
-   colours used for colour coding.
-   
 x  Add to the Properties window a list of filename and function name
    patterns to ignore, e.g. ignore functions matching "_GLOBAL_*".
 
 x  Add to the Properties window an option to control display of
    filenames: full, basename, or minimal (default, dynamically calculated
    minimal unique trailing subset of path components).
-
-x  Add to the Properties window an option to re-use the same Source
-   window instead of popping up new ones all the time.
 
 x  Extend colour coding to all the places where a percentage, fraction,
    or count of coverage is shown, especially the appropriate columns in
@@ -61,9 +46,6 @@ x  In the Source window, show branches graphically, as drawn arrows
    
 x  Implement the -o option of gcov which specifies a directory in
    which .bb .bbg and .da files are found (also .o for ggcov).
-   
-x  Source files found by all techniques should generate full pathnames,
-   including especially cov_read_directory() and cov_read_source_file().
    
 x  Option to watch mtimes of .da files and reload them when they
    change, so that user can watch coverage stats update in realtime
@@ -108,8 +90,6 @@ x  Merge the Line column in the Calls window into the Call From column,
 x  Make the default widths of the columns in the Call List window wide
    enough to actually show the label.
 
-x  Preferences window pane to control colour coding colours.
-
 x  ??? Add a Weighted Sum to the Summary Overall window.
 
 x  Arrows appear in all the sortable column titles...they should appear
@@ -127,15 +107,35 @@ x  ??? Minimise filenames only within the context of a program or library?
 
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
-x   Rename Windows->New Call Graph to Windows->New Call Butterfly and
-    Windows->New Call Graph2 to Windows->New Call Tree.
-    
 x   Callgraphwin should label the two lists something easier to
     understand.  Instead of "Distibution to Ancestors" something like
     "Called From".
 
 --- CLOSED ---
 
+x  Preferences window pane to control colour coding colours.
+
+x  Added a Properties window which allows the user to control the
+   colours used for colour coding.
+
+x  Add to the Properties window an option to re-use the same Source
+   window instead of popping up new ones all the time.
+
+x  Source files found by all techniques should generate full pathnames,
+   including especially cov_read_directory() and cov_read_source_file().   
+
+x  cov_file_t are kept in a hashtable, and the only standard iteration
+   mechanism uses this hashtable, which is very clunky as it requires
+   passing a function pointer to be called for every cov_file_t. OTOH
+   there is a global alphabetically sorted list of minimal file names.
+   Replace that global list of filenames with a static member list of
+   cov_file_t, sorted in alphabetical minimal file name order, built
+   in cov_post_read.  Replace the clunky iteration interface with a
+   list iterator over that list.
+
+x   Rename Windows->New Call Graph to Windows->New Call Butterfly and
+    Windows->New Call Graph2 to Windows->New Call Tree.
+    
 x  Calls List window should have an "All Functions" entry in the
    Function combo box.  This should be the first and default entry.
    
