@@ -21,11 +21,11 @@
 #include "sourcewin.H"
 #include "filename.h"
 #include "cov.h"
-#include "estring.h"
+#include "estring.H"
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.1 2002-12-15 15:53:24 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.2 2002-12-22 02:49:19 gnb Exp $");
 
 extern GList *filenames;
 
@@ -148,13 +148,12 @@ populate_function_combo(GtkCombo *combo)
     cov_file_foreach(add_functions, &list);
     list = g_list_sort(list, compare_functions);
     
-    estring_init(&label);
     for (iter = list ; iter != 0 ; iter = iter->next)
     {
     	cov_function_t *fn = (cov_function_t *)iter->data;
 
-    	estring_truncate(&label);
-	estring_append_string(&label, fn->name);
+    	label.truncate();
+	label.append_string(fn->name);
 
     	/* see if we need to present some more scope to uniquify the name */
 	if ((iter->next != 0 &&
@@ -162,14 +161,13 @@ populate_function_combo(GtkCombo *combo)
 	    (iter->prev != 0 &&
 	     !strcmp(((cov_function_t *)iter->prev->data)->name, fn->name)))
 	{
-	    estring_append_string(&label, " (");
-	    estring_append_string(&label, file_basename_c(fn->file->name));
-	    estring_append_string(&label, ")");
+	    label.append_string(" (");
+	    label.append_string(cov_file_minimal_name(fn->file));
+	    label.append_string(")");
 	}
 	
-    	ui_combo_add_data(combo, label.data, fn);
+    	ui_combo_add_data(combo, label.data(), fn);
     }
-    estring_free(&label);
     
     while (list != 0)
 	list = g_list_remove_link(list, list);
@@ -310,7 +308,7 @@ summarywin_t::update()
 	    char *filename = gtk_entry_get_text(GTK_ENTRY(entry));
 	    cov_file_t *f = cov_file_find(filename);
 
-	    set_title(f->name);
+	    set_title(cov_file_minimal_name(f));
     	    cov_file_calc_stats(f, &stats);
 	}
 	break;
@@ -327,11 +325,12 @@ summarywin_t::update()
 
     case SU_RANGE:
     	{
+	    char *filename;
     	    cov_location_t start, end;
 	    char *title;
 
-    	    get_range(&start.filename, &start.lineno, &end.lineno);
-    	    end.filename = start.filename;
+    	    get_range(&filename, &start.lineno, &end.lineno);
+    	    end.filename = start.filename = cov_unminimise_filename(filename);
 
 #if DEBUG
     	    fprintf(stderr, "summarywin_update: SU_RANGE %s %ld-%ld\n",
@@ -339,12 +338,13 @@ summarywin_t::update()
 #endif
 				
     	    title = g_strdup_printf("%s:%lu-%lu",
-	    	    	    	    file_basename_c(start.filename),
+	    	    	    	    filename,
 	    	    	    	    start.lineno, end.lineno);
 	    set_title(title);
 	    g_free(title);
 	    
     	    cov_range_calc_stats(&start, &end, &stats);
+	    g_free(start.filename);
 	}
 	break;
 	
