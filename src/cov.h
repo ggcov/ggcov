@@ -121,8 +121,12 @@ struct cov_callarc_s
     count_t count;
 };
 
+#define cov_file_num_functions(f) \
+    	    ((f)->functions->len)
 #define cov_file_nth_function(f, n) \
     	    ((cov_function_t *)(f)->functions->pdata[(n)])
+#define cov_function_num_blocks(fn) \
+    	    ((fn)->blocks->len)
 #define cov_function_nth_block(fn, n) \
     	    ((cov_block_t *)(fn)->blocks->pdata[(n)])
 

@@ -27,7 +27,7 @@
 #include <bfd.h>
 #include <elf.h>
 
-CVSID("$Id: cov.c,v 1.8 2002-12-12 00:09:09 gnb Exp $");
+CVSID("$Id: cov.c,v 1.9 2002-12-15 15:51:54 gnb Exp $");
 
 GHashTable *cov_files;
 /* TODO: ? reorg this */
@@ -79,9 +79,9 @@ cov_function_get_first_location(const cov_function_t *fn)
     unsigned int bidx;
     GList *iter;
     
-    for (bidx = 0 ; bidx < fn->blocks->len ; bidx++)
+    for (bidx = 0 ; bidx < cov_function_num_blocks(fn) ; bidx++)
     {
-    	cov_block_t *b = (cov_block_t *)fn->blocks->pdata[bidx];
+    	cov_block_t *b = cov_function_nth_block(fn, bidx);
 	
 	for (iter = b->locations ; iter != 0 ; iter = iter->next)
 	    return (const cov_location_t *)iter->data;
@@ -95,9 +95,9 @@ cov_function_get_last_location(const cov_function_t *fn)
     int bidx;
     GList *iter;
     
-    for (bidx = fn->blocks->len-1 ; bidx >= 0 ; bidx--)
+    for (bidx = cov_function_num_blocks(fn)-1 ; bidx >= 0 ; bidx--)
     {
-    	cov_block_t *b = (cov_block_t *)fn->blocks->pdata[bidx];
+    	cov_block_t *b = cov_function_nth_block(fn, bidx);
 	
 	for (iter = g_list_last(b->locations) ; iter != 0 ; iter = iter->prev)
 	    return (const cov_location_t *)iter->data;
@@ -111,9 +111,9 @@ cov_file_get_last_location(const cov_file_t *f)
     int fnidx;
     const cov_location_t *loc;
     
-    for (fnidx = f->functions->len-1 ; fnidx >= 0 ; fnidx--)
+    for (fnidx = cov_file_num_functions(f)-1 ; fnidx >= 0 ; fnidx--)
     {
-    	cov_function_t *fn = (cov_function_t *)f->functions->pdata[fnidx];
+    	cov_function_t *fn = cov_file_nth_function(f, fnidx);
     	if ((loc = cov_function_get_last_location(fn)) != 0)
 	    return loc;
     }
@@ -159,7 +159,7 @@ cov_file_delete(cov_file_t *f)
 cov_file_t *
 cov_file_find(const char *name)
 {
-    return (cov_files == 0 ? 0 : g_hash_table_lookup(cov_files, name));
+    return (cov_files == 0 ? 0 : (cov_file_t *)g_hash_table_lookup(cov_files, name));
 }
 
 
@@ -212,7 +212,7 @@ add_functions(cov_file_t *f, void *userdata)
     GList **listp = (GList **)userdata;
     unsigned fnidx;
     
-    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
     {
     	cov_function_t *fn = cov_file_nth_function(f, fnidx);
 	
@@ -250,7 +250,7 @@ cov_file_add_function(cov_file_t *f)
 cov_function_t *
 cov_file_find_function(cov_file_t *f, const char *fnname)
 {
-    return g_hash_table_lookup(f->functions_by_name, fnname);
+    return (cov_function_t *)g_hash_table_lookup(f->functions_by_name, fnname);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -315,7 +315,7 @@ cov_block_add_location(cov_block_t *b, const char *filename, unsigned lineno)
     	cov_blocks_by_location = g_hash_table_new(g_str_hash, g_str_equal);
     
     key = cov_location_make_key(filename, lineno);
-    list = g_hash_table_lookup(cov_blocks_by_location, key);
+    list = (GList *)g_hash_table_lookup(cov_blocks_by_location, key);
     
     if (list == 0)
     	g_hash_table_insert(cov_blocks_by_location, key, g_list_append(0, b));
@@ -336,7 +336,7 @@ cov_blocks_find_by_location(const cov_location_t *loc)
     GList *list;
     char *key = cov_location_make_key(loc->filename, loc->lineno);
 
-    list = g_hash_table_lookup(cov_blocks_by_location, key);
+    list = (GList *)g_hash_table_lookup(cov_blocks_by_location, key);
     g_free(key);
     return list;
 }
@@ -443,7 +443,7 @@ cov_function_solve(cov_function_t *fn)
     cov_block_t *b;
     int num_blocks;
 
-    num_blocks = fn->blocks->len;
+    num_blocks = cov_function_num_blocks(fn);
 
     /* For every block in the file,
        - if every exit/entrance arc has a known count, then set the block count
@@ -471,7 +471,7 @@ cov_function_solve(cov_function_t *fn)
 
 	for (i = num_blocks - 1; i >= 0; i--)
 	{
-	    b = g_ptr_array_index(fn->blocks, i);
+	    b = cov_function_nth_block(fn, i);
 	    
 	    if (!b->count_valid)
 	    {
@@ -519,7 +519,7 @@ cov_function_solve(cov_function_t *fn)
        succ and pred count of zero.  */
     for (i = 0; i < num_blocks; i++)
     {
-    	b = g_ptr_array_index(fn->blocks, i);
+    	b = cov_function_nth_block(fn, i);
 	if (b->out_ninvalid || b->in_ninvalid)
 	    return FALSE;
     }
@@ -538,10 +538,9 @@ cov_file_solve(cov_file_t *f)
 {
     int fnidx;
     
-    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
     {
-    	if (!cov_function_solve(
-	    	    g_ptr_array_index(f->functions, fnidx)))
+    	if (!cov_function_solve(cov_file_nth_function(f, fnidx)))
 	{
 	    fprintf(stderr, "ERROR: could not solve flow graph\n");
 	    return FALSE;
@@ -603,7 +602,7 @@ cov_read_bb_file(cov_file_t *f, const char *bbfilename)
 #if DEBUG    
 	    fprintf(stderr, "BB function = \"%s\"\n", funcname);
 #endif
-	    fn = g_ptr_array_index(f->functions, funcidx);
+	    fn = cov_file_nth_function(f, funcidx);
 	    funcidx++;
 	    bidx = 0;
 	    cov_function_set_name(fn, funcname);
@@ -621,7 +620,7 @@ cov_read_bb_file(cov_file_t *f, const char *bbfilename)
 	    assert(fn != 0);
 
 	    cov_block_add_location(
-	    	    g_ptr_array_index(fn->blocks, bidx),
+	    	    cov_function_nth_block(fn, bidx),
 		    filename, tag);
 	    break;
 	}
@@ -664,7 +663,7 @@ cov_read_bbg_function(cov_file_t *f, FILE *fp)
 #if DEBUG    
     	fprintf(stderr, "BBG   block %ld\n", bidx);
 #endif
-	b = g_ptr_array_index(fn->blocks, bidx);
+	b = cov_function_nth_block(fn, bidx);
 	covio_read_u32(fp, &narcs);
 
 	for (aidx = 0 ; aidx < narcs ; aidx++)
@@ -682,8 +681,8 @@ cov_read_bbg_function(cov_file_t *f, FILE *fp)
 #endif
 			    
 	    a = cov_block_add_arc_to(
-	    	    g_ptr_array_index(fn->blocks, bidx),
-	    	    g_ptr_array_index(fn->blocks, dest));
+	    	    cov_function_nth_block(fn, bidx),
+	    	    cov_function_nth_block(fn, dest));
 	    a->on_tree = (flags & 0x1);
 	    a->fake = !!(flags & 0x2);
 	    a->fall_through = !!(flags & 0x4);
@@ -744,13 +743,13 @@ cov_read_da_file(cov_file_t *f, const char *dafilename)
 
     covio_read_u64(fp, &nents);
     
-    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
     {
-    	cov_function_t *fn = g_ptr_array_index(f->functions, fnidx);
+    	cov_function_t *fn = cov_file_nth_function(f, fnidx);
 	
-	for (bidx = 0 ; bidx < fn->blocks->len ; bidx++)
+	for (bidx = 0 ; bidx < cov_function_num_blocks(fn) ; bidx++)
 	{
-    	    cov_block_t *b = g_ptr_array_index(fn->blocks, bidx);
+    	    cov_block_t *b = cov_function_nth_block(fn, bidx);
 	
 	    for (aiter = b->out_arcs ; aiter != 0 ; aiter = aiter->next)
 	    {
@@ -808,7 +807,7 @@ cov_block_add_call(cov_block_t *b, const char *callname)
 #endif
     	    b = cov_function_nth_block(b->function, b->idx+1);
 	}
-    	while (b->idx < b->function->blocks->len-2 &&
+    	while (b->idx < cov_function_num_blocks(b->function)-2 &&
 	       b->locations == 0 &&
 	       (b->calls != 0 || cov_arcs_nfake(b->out_arcs) == 0));
     }
@@ -842,7 +841,7 @@ cov_o_file_add_call(
 		file_basename_c(filename), lineno, function, callname);
 #endif
 
-    loc.filename = (char *)file_basename_c(filename);
+    loc.filename = (char *)filename;
     loc.lineno = lineno;
     blocks = cov_blocks_find_by_location(&loc);
     if (g_list_length((GList*)blocks) != 1)
@@ -1107,7 +1106,7 @@ cov_file_reconcile_calls(cov_file_t *f)
     unsigned int bidx;
     GList *aiter;
     
-    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
     {
     	cov_function_t *fn = cov_file_nth_function(f, fnidx);
 
@@ -1122,9 +1121,9 @@ cov_file_reconcile_calls(cov_file_t *f)
 	 * representing returns *to* the function.  So don't attempt
 	 * to reconcile those.
 	 */
-	if (fn->blocks->len <= 2)
+	if (cov_function_num_blocks(fn) <= 2)
 	    continue;
-	for (bidx = 0 ; bidx < fn->blocks->len-2 ; bidx++)
+	for (bidx = 0 ; bidx < cov_function_num_blocks(fn)-2 ; bidx++)
 	{
     	    cov_block_t *b = cov_function_nth_block(fn, bidx);
 
@@ -1326,9 +1325,9 @@ cov_function_calc_stats(const cov_function_t *fn, cov_stats_t *stats)
 {
     unsigned int bidx;
     
-    for (bidx = 0 ; bidx < fn->blocks->len ; bidx++)
+    for (bidx = 0 ; bidx < cov_function_num_blocks(fn) ; bidx++)
     {
-    	cov_block_t *b = fn->blocks->pdata[bidx];
+    	cov_block_t *b = cov_function_nth_block(fn, bidx);
 	
 	cov_block_calc_stats(b, stats);
     }
@@ -1339,9 +1338,9 @@ cov_file_calc_stats(const cov_file_t *f, cov_stats_t *stats)
 {
     unsigned int fnidx;
     
-    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
     {
-    	cov_function_t *fn = f->functions->pdata[fnidx];
+    	cov_function_t *fn = cov_file_nth_function(f, fnidx);
 	
 	cov_function_calc_stats(fn, stats);
     }
@@ -1417,7 +1416,7 @@ cov_range_calc_stats(
     {
 	b = cov_function_nth_block(cov_file_nth_function(f, fnidx), bidx);
     	cov_block_calc_stats(b, stats);
-	if (++bidx == cov_file_nth_function(f, fnidx)->blocks->len)
+	if (++bidx == cov_function_num_blocks(cov_file_nth_function(f, fnidx)))
 	{
 	    bidx = 0;
 	    ++fnidx;
@@ -1460,7 +1459,7 @@ cov_callnode_foreach(
 cov_callnode_t *
 cov_callnode_find(const char *name)
 {
-    return g_hash_table_lookup(cov_callnodes, name);
+    return (cov_callnode_t *)g_hash_table_lookup(cov_callnodes, name);
 }
 
 static cov_callnode_t *
@@ -1544,7 +1543,7 @@ cov_file_add_callnodes(cov_file_t *f, void *userdata)
     unsigned int fnidx;
     cov_callnode_t *cn;
     
-    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
     {
     	cov_function_t *fn = cov_file_nth_function(f, fnidx);
 	
@@ -1569,7 +1568,7 @@ cov_file_add_callarcs(cov_file_t *f, void *userdata)
     cov_callnode_t *to;
     cov_callarc_t *ca;
     
-    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
     {
     	cov_function_t *fn = cov_file_nth_function(f, fnidx);
 	
@@ -1579,7 +1578,7 @@ cov_file_add_callarcs(cov_file_t *f, void *userdata)
 	from = cov_callnode_find(fn->name);
 	assert(from != 0);
 	
-	for (bidx = 0 ; bidx < fn->blocks->len-2 ; bidx++)
+	for (bidx = 0 ; bidx < cov_function_num_blocks(fn)-2 ; bidx++)
 	{
     	    cov_block_t *b = cov_function_nth_block(fn, bidx);
 	
@@ -1715,7 +1714,7 @@ cov_read_object_file(const char *exefilename)
     num_stabs /= sizeof(cov_stab32_t);
 
     string_size = bfd_section_size(abfd, string_sec);
-    strings = gnb_xmalloc(string_size);
+    strings = (char *)gnb_xmalloc(string_size);
     if (!bfd_get_section_contents(abfd, string_sec, strings, 0, string_size))
     {
     	/* TODO */
