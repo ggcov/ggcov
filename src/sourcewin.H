@@ -53,6 +53,7 @@ public:
 
 private:
     static void init(GtkWidget *);
+    static sourcewin_t *instance();
     void populate_filenames();
     void populate_functions();
     void populate();
@@ -67,10 +68,9 @@ private:
     }
 
     static gboolean initialised_;
-    static GdkColor color0_;	    /* colour for lines with count==0 */
-    static GdkColor color1_;	    /* colour for lines with count>0 */
     static GdkFont *font_;
     static int font_width_, font_height_;
+    static list_t<sourcewin_t> instances_;
     
 
     GtkWidget *text_;

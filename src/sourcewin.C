@@ -20,40 +20,24 @@
 #include "sourcewin.H"
 #include "cov.H"
 #include "estring.H"
+#include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.3 2002-12-29 13:21:45 gnb Exp $");
-
-extern GList *filenames;
+CVSID("$Id: sourcewin.C,v 1.4 2002-12-31 14:50:18 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
-GdkColor sourcewin_t::color0_;	     /* colour for lines with count==0 */
-GdkColor sourcewin_t::color1_;	     /* colour for lines with count>0 */
 GdkFont *sourcewin_t::font_;
 int sourcewin_t::font_width_, sourcewin_t::font_height_;
+list_t<sourcewin_t> sourcewin_t::instances_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
 sourcewin_t::init(GtkWidget *w)
 {
-    GdkColormap *cmap;
-
     if (initialised_)
     	return;
     initialised_ = TRUE;
-
-    gtk_widget_realize(w);
-    
-    cmap = gtk_widget_get_colormap(w);
-
-    gdk_color_parse("#c00000", &color0_);
-    gdk_colormap_alloc_color(cmap, &color0_,
-    	    	    	    	    /*writeable*/FALSE, /*best_match*/TRUE);
-
-    gdk_color_parse("#00c000", &color1_);
-    gdk_colormap_alloc_color(cmap, &color1_,
-    	    	    	    	    /*writeable*/FALSE, /*best_match*/TRUE);
 
     font_ = uix_fixed_width_font(gtk_widget_get_style(w)->font);
     font_height_ = uix_font_height(font_);
@@ -99,12 +83,15 @@ sourcewin_t::sourcewin_t()
 	gtk_widget_set_usize(text_,
     	    SOURCE_COLUMNS * font_width_ + MAGIC_MARGINX,
     	    SOURCE_ROWS * font_height_ + MAGIC_MARGINY);
+	    
+    instances_.append(this);
 }
 
 sourcewin_t::~sourcewin_t()
 {
     strdelete(filename_);
     g_array_free(offsets_by_line_, /*free_segment*/TRUE);
+    instances_.remove(this);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -123,13 +110,13 @@ sourcewin_t::on_source_filename_activate(GtkWidget *w, gpointer userdata)
 void
 sourcewin_t::populate_filenames()
 {
-    GList *iter;
-    
+    list_iterator_t<cov_file_t> iter;
+   
     ui_delete_menu_items(filenames_menu_);
     
-    for (iter = filenames ; iter != 0 ; iter = iter->next)
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     {
-    	const char *filename = (const char *)iter->data;
+    	const char *filename = (*iter)->minimal_name();
 
 	ui_menu_add_simple_item(filenames_menu_, filename,
 	    	    on_source_filename_activate, (gpointer)filename);
@@ -377,8 +364,14 @@ sourcewin_t::update()
 
     	/* choose colours */
 	color = 0;
-	if (GTK_CHECK_MENU_ITEM(colors_check_)->active && have_count)
-	    color = (count ? &color1_ : &color0_);
+	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
+	{
+	    if (have_count)
+		color = (count ? &prefs.covered_foreground :
+	    	    		 &prefs.uncovered_foreground);
+	    else
+	        color = &prefs.uninstrumented_foreground;
+	}
 
     	/* generate strings */
 	
@@ -496,13 +489,27 @@ sourcewin_t::ensure_visible(unsigned long line)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+sourcewin_t *
+sourcewin_t::instance()
+{
+    sourcewin_t *sw = 0;
+    
+    if (prefs.reuse_srcwin)
+    	sw = instances_.head();
+    if (sw == 0)
+    	sw = new sourcewin_t;
+
+    return sw;
+}
+
+
 void
 sourcewin_t::show_lines(
     const char *filename,
     unsigned long startline,
     unsigned long endline)
 {
-    sourcewin_t *sw = new sourcewin_t();
+    sourcewin_t *sw = instance();
     estring fullname = cov_file_t::unminimise_name(filename);
     estring displayname = cov_file_t::minimise_name(fullname.data());
 
