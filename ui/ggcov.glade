@@ -177,6 +177,54 @@
 	    <active>True</active>
 	    <always_show_toggle>False</always_show_toggle>
 	  </widget>
+
+	  <widget>
+	    <class>GtkMenuItem</class>
+	    <name>summarise1</name>
+	    <label>S_ummarise</label>
+	    <right_justify>False</right_justify>
+
+	    <widget>
+	      <class>GtkMenu</class>
+	      <name>summarise1_menu</name>
+
+	      <widget>
+		<class>GtkMenuItem</class>
+		<name>source_summarise_file</name>
+		<signal>
+		  <name>activate</name>
+		  <handler>on_source_summarise_file_activate</handler>
+		  <last_modification_time>Sat, 04 Jan 2003 08:41:01 GMT</last_modification_time>
+		</signal>
+		<label>_File</label>
+		<right_justify>False</right_justify>
+	      </widget>
+
+	      <widget>
+		<class>GtkMenuItem</class>
+		<name>source_summarise_function</name>
+		<signal>
+		  <name>activate</name>
+		  <handler>on_source_summarise_function_activate</handler>
+		  <last_modification_time>Sat, 04 Jan 2003 08:41:27 GMT</last_modification_time>
+		</signal>
+		<label>F_unction</label>
+		<right_justify>False</right_justify>
+	      </widget>
+
+	      <widget>
+		<class>GtkMenuItem</class>
+		<name>source_summarise_range</name>
+		<signal>
+		  <name>activate</name>
+		  <handler>on_source_summarise_range_activate</handler>
+		  <last_modification_time>Sat, 04 Jan 2003 08:41:50 GMT</last_modification_time>
+		</signal>
+		<label>_Range</label>
+		<right_justify>False</right_justify>
+	      </widget>
+	    </widget>
+	  </widget>
 	</widget>
       </widget>
 
@@ -3200,7 +3248,7 @@ C programs built with the GNU C Compiler.
 	<class>GtkTable</class>
 	<name>table5</name>
 	<border_width>4</border_width>
-	<rows>1</rows>
+	<rows>2</rows>
 	<columns>3</columns>
 	<homogeneous>False</homogeneous>
 	<row_spacing>4</row_spacing>
@@ -3221,6 +3269,29 @@ C programs built with the GNU C Compiler.
 	    <xpad>0</xpad>
 	    <ypad>0</ypad>
 	    <xexpand>True</xexpand>
+	    <yexpand>False</yexpand>
+	    <xshrink>False</xshrink>
+	    <yshrink>False</yshrink>
+	    <xfill>True</xfill>
+	    <yfill>False</yfill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkCheckButton</class>
+	  <name>preferences_general_reuse_summwin_check</name>
+	  <can_focus>True</can_focus>
+	  <label>Reuse S_ummary window when viewing summaries.</label>
+	  <active>False</active>
+	  <draw_indicator>True</draw_indicator>
+	  <child>
+	    <left_attach>0</left_attach>
+	    <right_attach>3</right_attach>
+	    <top_attach>1</top_attach>
+	    <bottom_attach>2</bottom_attach>
+	    <xpad>0</xpad>
+	    <ypad>0</ypad>
+	    <xexpand>False</xexpand>
 	    <yexpand>False</yexpand>
 	    <xshrink>False</xshrink>
 	    <yshrink>False</yshrink>
