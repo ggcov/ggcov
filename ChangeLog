@@ -1,3 +1,17 @@
+Tue Nov 27 11:53:14 2001  Greg Banks <gnb@alphalink.com.au>
+
+	* Release 0.0.5
+	* Added progress bars to show test coverage stats in the Summary window.
+	* Progress bars display red/green to color code coverage stats.
+	Had to subclass from GtkProgressBar to achieve this.
+	* Added a Functions List window to show all the functions in all
+	the files, with line call and branch coverage results.  Clicking
+	on columns sorts the list by that column.  Double-clicking on
+	rows shows the source for that function.
+	* Added support for having an up or down arrow in the current sort
+	column of a clist.  Clicking on the columns does the expected
+	thing with sorting.
+
 Sun Nov 25 19:44:38 2001  Greg Banks <gnb@alphalink.com.au>
 
 	* Release 0.0.4
