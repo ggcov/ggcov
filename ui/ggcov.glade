@@ -3363,7 +3363,7 @@
 @AUTHOR@
 
 A program for browsing test coverage data for 
-C programs built with the GNU C Compiler.
+C and C++ programs built with the GNU compiler.
 
 @WARRANTY@</label>
 	<justify>GTK_JUSTIFY_CENTER</justify>
