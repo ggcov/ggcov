@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.15 2003-06-12 16:59:53 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.16 2003-07-05 03:08:34 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -139,8 +139,10 @@ sourcewin_t::sourcewin_t()
     
 #if GTK2
     gtk_widget_modify_font(text_view_, font_);
+#ifndef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
     /* select_region() relies on not having line wrapping */
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view_), GTK_WRAP_NONE);
+#endif /* !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
 #else
     if (!screenshot_mode)
 	gtk_widget_set_usize(text_,
