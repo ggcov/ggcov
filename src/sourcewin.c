@@ -22,7 +22,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.5 2001-11-23 13:31:31 gnb Exp $");
+CVSID("$Id: sourcewin.c,v 1.6 2001-11-25 05:49:39 gnb Exp $");
 
 extern GList *filenames;
 
@@ -113,7 +113,6 @@ sourcewin_new(void)
     sw->filenames_menu = get_dummy_menu(xml, "source_file_dummy");
     sw->functions_menu = get_dummy_menu(xml, "source_func_dummy");
     
-    sw->title_string = g_strdup(GTK_WINDOW(sw->window)->title);
     gtk_object_set_data(GTK_OBJECT(sw->window), sourcewin_window_key, sw);
     
     sourcewin_init(sw->window);
@@ -139,7 +138,6 @@ sourcewin_delete(sourcewin_t *sw)
     
     gtk_widget_destroy(sw->window);
     strdelete(sw->filename);
-    strdelete(sw->title_string);
     g_array_free(sw->offsets_by_line, /*free_segment*/TRUE);
 
     g_free(sw);
@@ -152,34 +150,6 @@ sourcewin_from_widget(GtkWidget *w)
 {
     w = ui_get_window(w);
     return (w == 0 ? 0 : gtk_object_get_data(GTK_OBJECT(w), sourcewin_window_key));
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static void
-replace_all(estring *e, const char *from, const char *to)
-{
-    char *p;
-
-    while ((p = strstr(e->data, from)) != 0)
-    	estring_replace_string(e, (p - e->data), strlen(from), to);
-}
-
-/* Replace @FILE@ and @VERSION@ in the title string */
-static void
-sourcewin_set_title(sourcewin_t *sw, const char *filename)
-{
-    estring title;
-    
-    estring_init(&title);
-    
-    estring_append_string(&title, sw->title_string);
-    replace_all(&title, "@FILE@", filename);
-    replace_all(&title, "@VERSION@", VERSION);
-    
-    gtk_window_set_title(GTK_WINDOW(sw->window), title.data);
-        
-    estring_free(&title);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -343,17 +313,6 @@ sourcewin_populate_functions(sourcewin_t *sw)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static count_t
-block_list_total(const GList *list)
-{
-    count_t total = 0;
-    
-    for ( ; list != 0 ; list = list->next)
-    	total += ((cov_block_t *)list->data)->count;
-    return total;
-}
-
-
 /*
  * Expand tabs in the line because GTK 1.2.7 through 1.2.9 can
  * only be trusted to expand *initial* tabs correctly, DAMMIT.
@@ -401,12 +360,13 @@ fgets_tabexpand(char *buf, unsigned int maxlen, FILE *fp)
     return buf;
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
 sourcewin_update_source(sourcewin_t *sw)
 {
     FILE *fp;
-    unsigned int lineno;
+    cov_location_t loc;
     count_t count;
     gboolean have_count;
     GtkText *text = GTK_TEXT(sw->text);
@@ -428,13 +388,13 @@ sourcewin_update_source(sourcewin_t *sw)
     gtk_text_freeze(text);
     gtk_editable_delete_text(GTK_EDITABLE(text), 0, -1);
     
-    sw->max_lineno = 0;
     g_array_set_size(sw->offsets_by_line, 0);
 
-    lineno = 0;
+    loc.filename = sw->filename;
+    loc.lineno = 0;
     while (fgets_tabexpand(linebuf, sizeof(linebuf), fp) != 0)
     {
-    	++lineno;
+    	++loc.lineno;
 	
 	/*
 	 * Stash the offset of this (file) line number.
@@ -452,16 +412,7 @@ sourcewin_update_source(sourcewin_t *sw)
 #endif
 	}
 	
-    	/* setup `count', `have_count' */
-	{
-	    const GList *blocks = cov_blocks_find_by_location(sw->filename, lineno);
-	    have_count = FALSE;
-	    if (blocks != 0)
-	    {
-		count = block_list_total(blocks);
-		have_count = TRUE;
-	    }
-	}
+	cov_get_count_by_location(&loc, &count, &have_count);
 
     	/* choose colours */
 	color = 0;
@@ -474,7 +425,7 @@ sourcewin_update_source(sourcewin_t *sw)
 	
 	if (GTK_CHECK_MENU_ITEM(sw->number_check)->active)
 	{
-	    snprintf(linenobuf, sizeof(linenobuf), "%7u ", lineno);
+	    snprintf(linenobuf, sizeof(linenobuf), "%7lu ", loc.lineno);
 	    strs[nstrs++] = linenobuf;
 	}
 	
@@ -507,7 +458,7 @@ sourcewin_update_source(sourcewin_t *sw)
     	}
     }
     
-    sw->max_lineno = lineno;
+    sw->max_lineno = loc.lineno;
     assert(sw->offsets_by_line->len == sw->max_lineno);
     
     fclose(fp);
@@ -519,7 +470,7 @@ sourcewin_update_source(sourcewin_t *sw)
 void
 sourcewin_set_filename(sourcewin_t *sw, const char *filename)
 {
-    sourcewin_set_title(sw, filename);
+    ui_window_set_title(sw->window, filename);
     strassign(sw->filename, filename);
     sourcewin_update_source(sw);
     sourcewin_populate_functions(sw);
@@ -534,6 +485,12 @@ on_source_close_activate(GtkWidget *w, gpointer data)
     
     if (sw != 0)
 	sourcewin_delete(sw);
+}
+
+GLADE_CALLBACK void
+on_source_exit_activate(GtkWidget *w, gpointer data)
+{
+    gtk_main_quit();
 }
 
 GLADE_CALLBACK void

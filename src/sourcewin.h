@@ -32,7 +32,6 @@ typedef struct
     GtkWidget *colors_check;
     GtkWidget *filenames_menu;
     GtkWidget *functions_menu;
-    char *title_string;
     char *filename;
     unsigned int max_lineno;	/* the largest linenumber */
     GArray *offsets_by_line;
