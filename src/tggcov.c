@@ -30,7 +30,7 @@
 #include "estring.H"
 #include "fakepopt.h"
 
-CVSID("$Id: tggcov.c,v 1.1 2003-06-28 10:21:54 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.2 2003-06-30 13:52:44 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -39,6 +39,8 @@ int screenshot_mode = 0;
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
 static int header_flag = FALSE;
 static int blocks_flag = FALSE;
+static int lines_flag = FALSE;
+static int new_format_flag = FALSE;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /* 
@@ -192,11 +194,15 @@ annotate_file(cov_file_t *f)
     {
     	fprintf(outfp, "    Count       ");
 	if (blocks_flag)
-    	fprintf(outfp, "Block(s)");
-    	    fprintf(outfp, " Source\n");
+    	    fprintf(outfp, "Block(s)");
+	if (lines_flag)
+    	    fprintf(outfp, " Line   ");
+    	fprintf(outfp, " Source\n");
 
     	fprintf(outfp, "============    ");
 	if (blocks_flag)
+    	    fprintf(outfp, "======= ");
+	if (lines_flag)
     	    fprintf(outfp, "======= ");
     	fprintf(outfp, "=======\n");
     }
@@ -208,21 +214,40 @@ annotate_file(cov_file_t *f)
     	++loc.lineno;
 	
 	status = cov_get_count_by_location(&loc, &count);
-	if (status != CS_UNINSTRUMENTED)
+	if (new_format_flag)
 	{
-	    if (count)
-		fprintf(outfp, "%12lld    ", count);
+	    if (status != CS_UNINSTRUMENTED)
+	    {
+		if (count)
+		    fprintf(outfp, "%9llu:%5lu:", count, loc.lineno);
+		else
+		    fprintf(outfp, "    #####:%5lu:", loc.lineno);
+	    }
 	    else
-		fputs("      ######    ", outfp);
+		fprintf(outfp, "        -:%5lu:", loc.lineno);
 	}
 	else
-	    fputs("\t\t", outfp);
+	{
+	    if (status != CS_UNINSTRUMENTED)
+	    {
+		if (count)
+		    fprintf(outfp, "%12lld    ", count);
+		else
+		    fputs("      ######    ", outfp);
+	    }
+	    else
+		fputs("\t\t", outfp);
+	}
 	if (blocks_flag)
 	{
     	    char blocks_buf[BLOCKS_WIDTH];
 	    blocks_buf[0] = '\0';
     	    format_blocks(blocks_buf, BLOCKS_WIDTH-1, &loc);
 	    fprintf(outfp, "%*s ", BLOCKS_WIDTH-1, blocks_buf);
+	}
+	if (lines_flag)
+	{
+	    fprintf(outfp, "%7lu ", loc.lineno);
 	}
 	fputs(buf, outfp);
     }
@@ -281,6 +306,24 @@ static struct poptOption popt_options[] =
 	"display header line",	    	    	/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
+    {
+    	"lines",	    	    	    	/* longname */
+	'L',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&lines_flag,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"display line numbers",	    	    	/* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"new-format",	    	    	    	/* longname */
+	'N',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&new_format_flag,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"display count in new gcc 3.3 format",	/* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
     POPT_AUTOHELP
     { 0, 0, 0, 0, 0, 0, 0 }
 };
@@ -321,6 +364,7 @@ parse_args(int argc, char **argv)
 	fprintf(stderr, "parse_args: recursive=%d\n", recursive);
 	fprintf(stderr, "parse_args: blocks_flag=%d\n", blocks_flag);
 	fprintf(stderr, "parse_args: header_flag=%d\n", header_flag);
+	fprintf(stderr, "parse_args: lines_flag=%d\n", lines_flag);
 
 	fprintf(stderr, "parse_args: files = {\n");
 	for (iter = files ; iter != 0 ; iter = iter->next)
