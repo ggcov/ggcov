@@ -28,6 +28,7 @@
 #include "common.h"
 #include "cov_bfd.H"
 #include "cov_types.H"
+#include "string_var.H"
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
@@ -193,7 +194,7 @@ public:
     struct calldata_t
     {
     	cov_location_t location;
-	const char *callname;	/* demangled */
+	string_var callname;	/* demangled */
 	const char *function;	/* mangled */
     };
 

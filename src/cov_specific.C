@@ -22,7 +22,7 @@
 #include "filename.h"
 #include "demangle.h"
 
-CVSID("$Id: cov_specific.C,v 1.4 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: cov_specific.C,v 1.5 2005-03-14 08:20:59 gnb Exp $");
 
  
 cov_factory_item_t *cov_factory_item_t::all_;
@@ -86,6 +86,7 @@ cov_call_scanner_t::setup_calldata(
 {
     string_var callname_dem = demangle(callname);
 
+    calld->callname = (char *)0;    /* free and null out */
     memset(calld, 0, sizeof(*calld));
     if (!sec->find_nearest_line(address, &calld->location, &calld->function))
 	return FALSE;
