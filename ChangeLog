@@ -1,3 +1,27 @@
+Mon Dec  3 12:07:12 2001  Greg Banks <gnb@alphalink.com.au>
+
+	* Release 0.0.7.
+
+	* Builds a callgraph from the information read from various files,
+	including calls to functions not covered (like printf).
+	* Added a window to explore the call graph.  Shows distribution to
+	callers and callees in clists; double-clicking navigates to the
+	new function.
+	* Added a Calls window which shows the call coverage per-call
+	for a given function.
+	* Ggcov uses the BFD library to read object files, using relocs,
+	contents and symbols for text sections to figure out names
+	for function call arcs in the block graph.
+	* Added option to Source window to show block numbers.
+	* Added ulcmp() and ullcmp() to help sorting on unsigned longs
+	and unsigned long longs respectively.
+	* Renamed xmalloc() -> gnb_xmalloc() to avoid possible clash
+	with function of same name in -liberty.
+	* Added ui_combo_set_current_data().
+	* Added listclear() macro which deletes GList structures like listdelete()
+	but does not call any dtor.
+	* Fixed a few minor problems with debugging prints and warnings.
+
 Fri Nov 30 12:26:55 2001  Greg Banks <gnb@alphalink.com.au>
 
 	* Release 0.0.6
