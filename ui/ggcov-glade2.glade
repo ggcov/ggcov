@@ -12,6 +12,11 @@
   <property name="modal">False</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <signal name="delete_event" handler="on_window_close_activate"/>
 
   <child>
@@ -281,199 +286,191 @@
       </child>
 
       <child>
-	<widget class="GtkToolbar" id="source_toolbar">
+	<widget class="GtkTable" id="source_toolbar">
 	  <property name="border_width">4</property>
 	  <property name="visible">True</property>
-	  <property name="orientation">GTK_ORIENTATION_HORIZONTAL</property>
-	  <property name="toolbar_style">GTK_TOOLBAR_ICONS</property>
-	  <property name="tooltips">True</property>
+	  <property name="n_rows">1</property>
+	  <property name="n_columns">4</property>
+	  <property name="homogeneous">False</property>
+	  <property name="row_spacing">0</property>
+	  <property name="column_spacing">4</property>
 
 	  <child>
-	    <widget class="GtkHBox" id="hbox2">
+	    <widget class="GtkLabel" id="label72">
 	      <property name="visible">True</property>
-	      <property name="homogeneous">False</property>
-	      <property name="spacing">0</property>
-
-	      <child>
-		<widget class="GtkLabel" id="label60">
-		  <property name="visible">True</property>
-		  <property name="label" translatable="yes">Filenames:</property>
-		  <property name="use_underline">False</property>
-		  <property name="use_markup">False</property>
-		  <property name="justify">GTK_JUSTIFY_CENTER</property>
-		  <property name="wrap">False</property>
-		  <property name="selectable">False</property>
-		  <property name="xalign">1</property>
-		  <property name="yalign">0.5</property>
-		  <property name="xpad">0</property>
-		  <property name="ypad">0</property>
-		</widget>
-		<packing>
-		  <property name="padding">0</property>
-		  <property name="expand">False</property>
-		  <property name="fill">False</property>
-		</packing>
-	      </child>
-
-	      <child>
-		<widget class="GtkCombo" id="source_filenames_combo">
-		  <property name="visible">True</property>
-		  <property name="value_in_list">True</property>
-		  <property name="allow_empty">True</property>
-		  <property name="case_sensitive">False</property>
-		  <property name="enable_arrow_keys">True</property>
-		  <property name="enable_arrows_always">False</property>
-
-		  <child internal-child="entry">
-		    <widget class="GtkEntry" id="source_filenames_entry">
-		      <property name="visible">True</property>
-		      <property name="can_focus">True</property>
-		      <property name="editable">False</property>
-		      <property name="visibility">True</property>
-		      <property name="max_length">0</property>
-		      <property name="text" translatable="yes"></property>
-		      <property name="has_frame">True</property>
-		      <property name="invisible_char" translatable="yes">*</property>
-		      <property name="activates_default">False</property>
-		      <signal name="changed" handler="on_source_filenames_entry_changed"/>
-		    </widget>
-		  </child>
-
-		  <child internal-child="list">
-		    <widget class="GtkList" id="convertwidget1">
-		      <property name="visible">True</property>
-		      <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-
-		      <child>
-			<widget class="GtkListItem" id="convertwidget2">
-			  <property name="visible">True</property>
-
-			  <child>
-			    <widget class="GtkLabel" id="convertwidget3">
-			      <property name="visible">True</property>
-			      <property name="label" translatable="yes"></property>
-			      <property name="use_underline">False</property>
-			      <property name="use_markup">False</property>
-			      <property name="justify">GTK_JUSTIFY_LEFT</property>
-			      <property name="wrap">False</property>
-			      <property name="selectable">False</property>
-			      <property name="xalign">0</property>
-			      <property name="yalign">0.5</property>
-			      <property name="xpad">0</property>
-			      <property name="ypad">0</property>
-			    </widget>
-			  </child>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
-		</widget>
-		<packing>
-		  <property name="padding">4</property>
-		  <property name="expand">True</property>
-		  <property name="fill">True</property>
-		</packing>
-	      </child>
+	      <property name="label" translatable="yes">Filenames:</property>
+	      <property name="use_underline">False</property>
+	      <property name="use_markup">False</property>
+	      <property name="justify">GTK_JUSTIFY_CENTER</property>
+	      <property name="wrap">False</property>
+	      <property name="selectable">False</property>
+	      <property name="xalign">1</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
 	    </widget>
+	    <packing>
+	      <property name="left_attach">0</property>
+	      <property name="right_attach">1</property>
+	      <property name="top_attach">0</property>
+	      <property name="bottom_attach">1</property>
+	      <property name="x_options">fill</property>
+	      <property name="y_options"></property>
+	    </packing>
 	  </child>
 
 	  <child>
-	    <widget class="GtkHBox" id="hbox3">
+	    <widget class="GtkLabel" id="label73">
 	      <property name="visible">True</property>
-	      <property name="homogeneous">False</property>
-	      <property name="spacing">0</property>
-	      <property name="new_group">True</property>
+	      <property name="label" translatable="yes">Functions:</property>
+	      <property name="use_underline">False</property>
+	      <property name="use_markup">False</property>
+	      <property name="justify">GTK_JUSTIFY_CENTER</property>
+	      <property name="wrap">False</property>
+	      <property name="selectable">False</property>
+	      <property name="xalign">1</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	    <packing>
+	      <property name="left_attach">2</property>
+	      <property name="right_attach">3</property>
+	      <property name="top_attach">0</property>
+	      <property name="bottom_attach">1</property>
+	      <property name="x_options">fill</property>
+	      <property name="y_options"></property>
+	    </packing>
+	  </child>
 
-	      <child>
-		<widget class="GtkLabel" id="label61">
+	  <child>
+	    <widget class="GtkCombo" id="source_functions_combo">
+	      <property name="visible">True</property>
+	      <property name="value_in_list">True</property>
+	      <property name="allow_empty">False</property>
+	      <property name="case_sensitive">False</property>
+	      <property name="enable_arrow_keys">True</property>
+	      <property name="enable_arrows_always">False</property>
+
+	      <child internal-child="entry">
+		<widget class="GtkEntry" id="source_functions_entry">
 		  <property name="visible">True</property>
-		  <property name="label" translatable="yes">Functions:</property>
-		  <property name="use_underline">False</property>
-		  <property name="use_markup">False</property>
-		  <property name="justify">GTK_JUSTIFY_CENTER</property>
-		  <property name="wrap">False</property>
-		  <property name="selectable">False</property>
-		  <property name="xalign">1</property>
-		  <property name="yalign">0.5</property>
-		  <property name="xpad">0</property>
-		  <property name="ypad">0</property>
+		  <property name="can_focus">True</property>
+		  <property name="editable">False</property>
+		  <property name="visibility">True</property>
+		  <property name="max_length">0</property>
+		  <property name="text" translatable="yes"></property>
+		  <property name="has_frame">True</property>
+		  <property name="invisible_char" translatable="yes">*</property>
+		  <property name="activates_default">False</property>
+		  <signal name="changed" handler="on_source_functions_entry_changed"/>
 		</widget>
-		<packing>
-		  <property name="padding">0</property>
-		  <property name="expand">False</property>
-		  <property name="fill">False</property>
-		</packing>
 	      </child>
 
-	      <child>
-		<widget class="GtkCombo" id="source_functions_combo">
+	      <child internal-child="list">
+		<widget class="GtkList" id="list2">
 		  <property name="visible">True</property>
-		  <property name="value_in_list">True</property>
-		  <property name="allow_empty">True</property>
-		  <property name="case_sensitive">False</property>
-		  <property name="enable_arrow_keys">True</property>
-		  <property name="enable_arrows_always">False</property>
+		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
 
-		  <child internal-child="entry">
-		    <widget class="GtkEntry" id="source_functions_entry">
+		  <child>
+		    <widget class="GtkListItem" id="listitem2">
 		      <property name="visible">True</property>
-		      <property name="can_focus">True</property>
-		      <property name="editable">False</property>
-		      <property name="visibility">True</property>
-		      <property name="max_length">0</property>
-		      <property name="text" translatable="yes"></property>
-		      <property name="has_frame">True</property>
-		      <property name="invisible_char" translatable="yes">*</property>
-		      <property name="activates_default">False</property>
-		      <signal name="changed" handler="on_source_functions_entry_changed"/>
-		    </widget>
-		  </child>
-
-		  <child internal-child="list">
-		    <widget class="GtkList" id="convertwidget4">
-		      <property name="visible">True</property>
-		      <property name="selection_mode">GTK_SELECTION_BROWSE</property>
 
 		      <child>
-			<widget class="GtkListItem" id="convertwidget5">
+			<widget class="GtkLabel" id="label75">
 			  <property name="visible">True</property>
-
-			  <child>
-			    <widget class="GtkLabel" id="convertwidget6">
-			      <property name="visible">True</property>
-			      <property name="label" translatable="yes"></property>
-			      <property name="use_underline">False</property>
-			      <property name="use_markup">False</property>
-			      <property name="justify">GTK_JUSTIFY_LEFT</property>
-			      <property name="wrap">False</property>
-			      <property name="selectable">False</property>
-			      <property name="xalign">0</property>
-			      <property name="yalign">0.5</property>
-			      <property name="xpad">0</property>
-			      <property name="ypad">0</property>
-			    </widget>
-			  </child>
+			  <property name="label" translatable="yes"></property>
+			  <property name="use_underline">False</property>
+			  <property name="use_markup">False</property>
+			  <property name="justify">GTK_JUSTIFY_LEFT</property>
+			  <property name="wrap">False</property>
+			  <property name="selectable">False</property>
+			  <property name="xalign">0</property>
+			  <property name="yalign">0.5</property>
+			  <property name="xpad">0</property>
+			  <property name="ypad">0</property>
 			</widget>
 		      </child>
 		    </widget>
 		  </child>
 		</widget>
-		<packing>
-		  <property name="padding">4</property>
-		  <property name="expand">True</property>
-		  <property name="fill">True</property>
-		</packing>
 	      </child>
 	    </widget>
 	    <packing>
-	      <property name="new_group">True</property>
+	      <property name="left_attach">3</property>
+	      <property name="right_attach">4</property>
+	      <property name="top_attach">0</property>
+	      <property name="bottom_attach">1</property>
+	      <property name="y_options"></property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkCombo" id="source_filenames_combo">
+	      <property name="visible">True</property>
+	      <property name="value_in_list">True</property>
+	      <property name="allow_empty">False</property>
+	      <property name="case_sensitive">False</property>
+	      <property name="enable_arrow_keys">True</property>
+	      <property name="enable_arrows_always">False</property>
+
+	      <child internal-child="entry">
+		<widget class="GtkEntry" id="source_filenames_entry">
+		  <property name="visible">True</property>
+		  <property name="can_focus">True</property>
+		  <property name="editable">False</property>
+		  <property name="visibility">True</property>
+		  <property name="max_length">0</property>
+		  <property name="text" translatable="yes"></property>
+		  <property name="has_frame">True</property>
+		  <property name="invisible_char" translatable="yes">*</property>
+		  <property name="activates_default">False</property>
+		  <signal name="changed" handler="on_source_filenames_entry_changed"/>
+		</widget>
+	      </child>
+
+	      <child internal-child="list">
+		<widget class="GtkList" id="list3">
+		  <property name="visible">True</property>
+		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
+
+		  <child>
+		    <widget class="GtkListItem" id="listitem3">
+		      <property name="visible">True</property>
+
+		      <child>
+			<widget class="GtkLabel" id="label76">
+			  <property name="visible">True</property>
+			  <property name="label" translatable="yes"></property>
+			  <property name="use_underline">False</property>
+			  <property name="use_markup">False</property>
+			  <property name="justify">GTK_JUSTIFY_LEFT</property>
+			  <property name="wrap">False</property>
+			  <property name="selectable">False</property>
+			  <property name="xalign">0</property>
+			  <property name="yalign">0.5</property>
+			  <property name="xpad">0</property>
+			  <property name="ypad">0</property>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+	    </widget>
+	    <packing>
+	      <property name="left_attach">1</property>
+	      <property name="right_attach">2</property>
+	      <property name="top_attach">0</property>
+	      <property name="bottom_attach">1</property>
+	      <property name="y_options"></property>
 	    </packing>
 	  </child>
 	</widget>
 	<packing>
 	  <property name="padding">0</property>
 	  <property name="expand">False</property>
-	  <property name="fill">False</property>
+	  <property name="fill">True</property>
 	</packing>
       </child>
 
@@ -511,6 +508,7 @@
 	      <property name="label" translatable="yes">Line</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	    </widget>
 	    <packing>
 	      <property name="padding">0</property>
@@ -526,6 +524,7 @@
 	      <property name="label" translatable="yes">Block(s)</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	    </widget>
 	    <packing>
 	      <property name="padding">0</property>
@@ -541,6 +540,7 @@
 	      <property name="label" translatable="yes">Count</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	    </widget>
 	    <packing>
 	      <property name="padding">0</property>
@@ -556,6 +556,7 @@
 	      <property name="label" translatable="yes">Source</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	    </widget>
 	    <packing>
 	      <property name="padding">0</property>
@@ -606,6 +607,8 @@
 	      <property name="visible">True</property>
 	      <property name="can_focus">True</property>
 	      <property name="editable">False</property>
+	      <property name="overwrite">False</property>
+	      <property name="accepts_tab">True</property>
 	      <property name="justification">GTK_JUSTIFY_LEFT</property>
 	      <property name="wrap_mode">GTK_WRAP_WORD</property>
 	      <property name="cursor_visible">True</property>
@@ -636,6 +639,11 @@
   <property name="modal">False</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <signal name="delete_event" handler="on_window_close_activate"/>
 
   <child>
@@ -773,6 +781,7 @@
 	      <property name="label" translatable="yes">Filename</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="active">False</property>
 	      <property name="inconsistent">False</property>
 	      <property name="draw_indicator">True</property>
@@ -795,6 +804,7 @@
 	      <property name="label" translatable="yes">Function</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="active">False</property>
 	      <property name="inconsistent">False</property>
 	      <property name="draw_indicator">True</property>
@@ -818,6 +828,7 @@
 	      <property name="label" translatable="yes">Range</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="active">False</property>
 	      <property name="inconsistent">False</property>
 	      <property name="draw_indicator">True</property>
@@ -1095,6 +1106,7 @@
 	      <property name="label" translatable="yes">Overall</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <property name="active">True</property>
 	      <property name="inconsistent">False</property>
 	      <property name="draw_indicator">True</property>
@@ -1118,6 +1130,7 @@
 	      <property name="label" translatable="yes">View...</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_summary_filename_view_clicked"/>
 	    </widget>
 	    <packing>
@@ -1137,6 +1150,7 @@
 	      <property name="label" translatable="yes">View...</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_summary_function_view_clicked"/>
 	    </widget>
 	    <packing>
@@ -1156,6 +1170,7 @@
 	      <property name="label" translatable="yes">View...</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_summary_range_view_clicked"/>
 	    </widget>
 	    <packing>
@@ -1645,6 +1660,11 @@
   <property name="default_height">400</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <signal name="delete_event" handler="on_window_close_activate"/>
 
   <child>
@@ -1868,6 +1888,11 @@
   <property name="default_height">400</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <signal name="delete_event" handler="on_window_close_activate"/>
 
   <child>
@@ -2132,6 +2157,11 @@
   <property name="modal">False</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <signal name="delete_event" handler="on_window_close_activate"/>
 
   <child>
@@ -2417,6 +2447,7 @@
 	      <property name="label" translatable="yes">View...</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_calls_from_function_view_clicked"/>
 	    </widget>
 	    <packing>
@@ -2460,6 +2491,7 @@
 	      <property name="label" translatable="yes">View...</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_calls_to_function_view_clicked"/>
 	    </widget>
 	    <packing>
@@ -2581,6 +2613,11 @@
   <property name="default_height">300</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <signal name="delete_event" handler="on_window_close_activate"/>
 
   <child>
@@ -2803,6 +2840,7 @@
 	      <property name="label" translatable="yes">View...</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_callgraph_function_view_clicked"/>
 	    </widget>
 	    <packing>
@@ -2954,6 +2992,11 @@
   <property name="modal">False</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <signal name="delete_event" handler="on_about_close_clicked"/>
 
   <child>
@@ -3044,6 +3087,7 @@ C programs built with the GNU C Compiler.
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_about_close_clicked"/>
 	    </widget>
 	  </child>
@@ -3056,6 +3100,7 @@ C programs built with the GNU C Compiler.
 	      <property name="label" translatable="yes">Licence...</property>
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_about_licence_clicked"/>
 	    </widget>
 	  </child>
@@ -3079,6 +3124,11 @@ C programs built with the GNU C Compiler.
   <property name="default_height">300</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <signal name="delete_event" handler="on_licence_close_clicked"/>
 
   <child>
@@ -3101,6 +3151,8 @@ C programs built with the GNU C Compiler.
 	      <property name="visible">True</property>
 	      <property name="can_focus">True</property>
 	      <property name="editable">False</property>
+	      <property name="overwrite">False</property>
+	      <property name="accepts_tab">True</property>
 	      <property name="justification">GTK_JUSTIFY_LEFT</property>
 	      <property name="wrap_mode">GTK_WRAP_WORD</property>
 	      <property name="cursor_visible">True</property>
@@ -3146,6 +3198,7 @@ C programs built with the GNU C Compiler.
 	      <property name="label">gtk-close</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_licence_close_clicked"/>
 	    </widget>
 	  </child>
@@ -3170,6 +3223,11 @@ C programs built with the GNU C Compiler.
   <property name="default_height">300</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
 
   <child>
     <widget class="GtkVBox" id="vbox9">
@@ -3184,6 +3242,10 @@ C programs built with the GNU C Compiler.
 	  <property name="yalign">0.5</property>
 	  <property name="xscale">1</property>
 	  <property name="yscale">1</property>
+	  <property name="top_padding">0</property>
+	  <property name="bottom_padding">0</property>
+	  <property name="left_padding">0</property>
+	  <property name="right_padding">0</property>
 
 	  <child>
 	    <widget class="GtkMenuBar" id="menubar7">
@@ -3379,6 +3441,11 @@ C programs built with the GNU C Compiler.
   <property name="modal">False</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
 
   <child>
     <widget class="GtkVBox" id="vbox10">
@@ -3414,6 +3481,7 @@ C programs built with the GNU C Compiler.
 		  <property name="label" translatable="yes">Reuse _Source window when viewing source.</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -3434,6 +3502,7 @@ C programs built with the GNU C Compiler.
 		  <property name="label" translatable="yes">Reuse S_ummary window when viewing summaries.</property>
 		  <property name="use_underline">True</property>
 		  <property name="relief">GTK_RELIEF_NORMAL</property>
+		  <property name="focus_on_click">True</property>
 		  <property name="active">False</property>
 		  <property name="inconsistent">False</property>
 		  <property name="draw_indicator">True</property>
@@ -3490,6 +3559,7 @@ C programs built with the GNU C Compiler.
 		  <property name="dither">True</property>
 		  <property name="use_alpha">False</property>
 		  <property name="title" translatable="yes">Uninstrumented Foreground</property>
+		  <property name="focus_on_click">True</property>
 		</widget>
 		<packing>
 		  <property name="left_attach">1</property>
@@ -3508,6 +3578,7 @@ C programs built with the GNU C Compiler.
 		  <property name="dither">True</property>
 		  <property name="use_alpha">False</property>
 		  <property name="title" translatable="yes">Suppressed Foreground</property>
+		  <property name="focus_on_click">True</property>
 		</widget>
 		<packing>
 		  <property name="left_attach">1</property>
@@ -3526,6 +3597,7 @@ C programs built with the GNU C Compiler.
 		  <property name="dither">True</property>
 		  <property name="use_alpha">False</property>
 		  <property name="title" translatable="yes">Uncovered Foreground</property>
+		  <property name="focus_on_click">True</property>
 		</widget>
 		<packing>
 		  <property name="left_attach">1</property>
@@ -3544,6 +3616,7 @@ C programs built with the GNU C Compiler.
 		  <property name="dither">False</property>
 		  <property name="use_alpha">False</property>
 		  <property name="title" translatable="yes">Partially Covered Foreground</property>
+		  <property name="focus_on_click">True</property>
 		</widget>
 		<packing>
 		  <property name="left_attach">1</property>
@@ -3562,6 +3635,7 @@ C programs built with the GNU C Compiler.
 		  <property name="dither">False</property>
 		  <property name="use_alpha">False</property>
 		  <property name="title" translatable="yes">Covered Foreground</property>
+		  <property name="focus_on_click">True</property>
 		</widget>
 		<packing>
 		  <property name="left_attach">1</property>
@@ -3628,6 +3702,7 @@ C programs built with the GNU C Compiler.
 		  <property name="dither">False</property>
 		  <property name="use_alpha">False</property>
 		  <property name="title" translatable="yes">Covered Background</property>
+		  <property name="focus_on_click">True</property>
 		</widget>
 		<packing>
 		  <property name="left_attach">2</property>
@@ -3646,6 +3721,7 @@ C programs built with the GNU C Compiler.
 		  <property name="dither">False</property>
 		  <property name="use_alpha">False</property>
 		  <property name="title" translatable="yes">Partially Covered Background</property>
+		  <property name="focus_on_click">True</property>
 		</widget>
 		<packing>
 		  <property name="left_attach">2</property>
@@ -3664,6 +3740,7 @@ C programs built with the GNU C Compiler.
 		  <property name="dither">False</property>
 		  <property name="use_alpha">False</property>
 		  <property name="title" translatable="yes">Uncovered Background</property>
+		  <property name="focus_on_click">True</property>
 		</widget>
 		<packing>
 		  <property name="left_attach">2</property>
@@ -3682,6 +3759,7 @@ C programs built with the GNU C Compiler.
 		  <property name="dither">False</property>
 		  <property name="use_alpha">False</property>
 		  <property name="title" translatable="yes">Uninstrumented Background</property>
+		  <property name="focus_on_click">True</property>
 		</widget>
 		<packing>
 		  <property name="left_attach">2</property>
@@ -3700,6 +3778,7 @@ C programs built with the GNU C Compiler.
 		  <property name="dither">False</property>
 		  <property name="use_alpha">False</property>
 		  <property name="title" translatable="yes">Suppressed Background</property>
+		  <property name="focus_on_click">True</property>
 		</widget>
 		<packing>
 		  <property name="left_attach">2</property>
@@ -3912,6 +3991,7 @@ C programs built with the GNU C Compiler.
 	      <property name="label">gtk-ok</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_preferences_ok_clicked"/>
 	    </widget>
 	  </child>
@@ -3924,6 +4004,7 @@ C programs built with the GNU C Compiler.
 	      <property name="label">gtk-apply</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_preferences_apply_clicked"/>
 	    </widget>
 	  </child>
@@ -3936,6 +4017,7 @@ C programs built with the GNU C Compiler.
 	      <property name="label">gtk-cancel</property>
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
+	      <property name="focus_on_click">True</property>
 	      <signal name="clicked" handler="on_preferences_cancel_clicked"/>
 	    </widget>
 	  </child>
@@ -3958,6 +4040,11 @@ C programs built with the GNU C Compiler.
   <property name="modal">True</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="show_fileops">True</property>
 
   <child internal-child="cancel_button">
@@ -3966,6 +4053,7 @@ C programs built with the GNU C Compiler.
       <property name="can_default">True</property>
       <property name="can_focus">True</property>
       <property name="relief">GTK_RELIEF_NORMAL</property>
+      <property name="focus_on_click">True</property>
       <signal name="clicked" handler="on_source_saveas_cancel_button_clicked"/>
     </widget>
   </child>
@@ -3976,6 +4064,7 @@ C programs built with the GNU C Compiler.
       <property name="can_default">True</property>
       <property name="can_focus">True</property>
       <property name="relief">GTK_RELIEF_NORMAL</property>
+      <property name="focus_on_click">True</property>
       <signal name="clicked" handler="on_source_saveas_ok_button_clicked"/>
     </widget>
   </child>
@@ -3990,6 +4079,11 @@ C programs built with the GNU C Compiler.
   <property name="modal">True</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="show_fileops">True</property>
 
   <child internal-child="cancel_button">
@@ -3998,6 +4092,7 @@ C programs built with the GNU C Compiler.
       <property name="can_default">True</property>
       <property name="can_focus">True</property>
       <property name="relief">GTK_RELIEF_NORMAL</property>
+      <property name="focus_on_click">True</property>
       <signal name="clicked" handler="on_open_cancel_button_clicked"/>
     </widget>
   </child>
@@ -4008,6 +4103,7 @@ C programs built with the GNU C Compiler.
       <property name="can_default">True</property>
       <property name="can_focus">True</property>
       <property name="relief">GTK_RELIEF_NORMAL</property>
+      <property name="focus_on_click">True</property>
       <signal name="clicked" handler="on_open_ok_button_clicked"/>
     </widget>
   </child>
@@ -4020,6 +4116,11 @@ C programs built with the GNU C Compiler.
   <property name="modal">False</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
 
   <child>
     <widget class="GtkVBox" id="vbox11">
@@ -4247,6 +4348,8 @@ C programs built with the GNU C Compiler.
 	      <property name="visible">True</property>
 	      <property name="can_focus">True</property>
 	      <property name="editable">False</property>
+	      <property name="overwrite">False</property>
+	      <property name="accepts_tab">True</property>
 	      <property name="justification">GTK_JUSTIFY_LEFT</property>
 	      <property name="wrap_mode">GTK_WRAP_WORD</property>
 	      <property name="cursor_visible">True</property>
