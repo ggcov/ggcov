@@ -26,7 +26,7 @@
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.14 2003-07-17 15:50:47 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.15 2003-07-18 12:10:42 gnb Exp $");
 
 list_t<summarywin_t> summarywin_t::instances_;
 
@@ -244,9 +244,6 @@ summarywin_t::populate()
     fprintf(stderr, "summarywin_t::populate\n");
 #endif
 
-    if (file_ == 0)
-    	return;
-
     populating_ = TRUE;     /* suppress combo entry callbacks */
     populate_filename_combo(GTK_COMBO(filename_combo_));
     populate_function_combo(GTK_COMBO(function_combo_));
@@ -348,10 +345,9 @@ summarywin_t::update()
 #endif
     
     grey_items();
-    if (file_ == 0)
-    	return;
 
     populating_ = TRUE;
+    assert(file_ != 0);    
     ui_combo_set_current_data(GTK_COMBO(filename_combo_), (gpointer)file_);
     ui_combo_set_current_data(GTK_COMBO(range_combo_), (gpointer)file_);
     assert(function_ != 0);    
