@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.19 2003-07-13 00:21:16 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.20 2003-07-13 13:22:40 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -67,19 +67,23 @@ sourcewin_t::initialise_tags()
 {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
     
-    text_tags_[CS_COVERED] = gtk_text_buffer_create_tag(buffer, "covered",
+    text_tags_[cov_line_t::COVERED] =
+	gtk_text_buffer_create_tag(buffer, "covered",
     	"foreground-gdk",   	&prefs.covered_foreground,
 	(char *)0);
     
-    text_tags_[CS_PARTCOVERED] = gtk_text_buffer_create_tag(buffer, "partcovered",
+    text_tags_[cov_line_t::PARTCOVERED] =
+	gtk_text_buffer_create_tag(buffer, "partcovered",
     	"foreground-gdk",   	&prefs.partcovered_foreground,
 	(char *)0);
     
-    text_tags_[CS_UNCOVERED] = gtk_text_buffer_create_tag(buffer, "uncovered",
+    text_tags_[cov_line_t::UNCOVERED] =
+	gtk_text_buffer_create_tag(buffer, "uncovered",
     	"foreground-gdk",   	&prefs.uncovered_foreground,
 	(char *)0);
     
-    text_tags_[CS_UNINSTRUMENTED] = gtk_text_buffer_create_tag(buffer, "uninstrumented",
+    text_tags_[cov_line_t::UNINSTRUMENTED] =
+	gtk_text_buffer_create_tag(buffer, "uninstrumented",
     	"foreground-gdk",   	&prefs.uninstrumented_foreground,
 	(char *)0);
 }
