@@ -73,6 +73,18 @@ struct cov_stats_t
     {
     	memset(this, 0, sizeof(*this));
     }
+    
+    void
+    accumulate(const cov_stats_t *st)
+    {
+    	lines += st->lines;
+    	lines_executed += st->lines_executed;
+    	calls += st->calls;
+    	calls_executed += st->calls_executed;
+    	branches += st->branches;
+    	branches_executed += st->branches_executed;
+    	branches_taken += st->branches_taken;
+    }
 };
 
 enum cov_status_t

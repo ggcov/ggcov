@@ -34,6 +34,8 @@ GLADE_CALLBACK void on_files_collapse_all_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_expand_all_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
 
+struct file_rec_t;
+
 class fileswin_t : public window_t
 {
 public:
@@ -44,13 +46,13 @@ private:
     void populate();
     void update();
     void grey_items();
+    void add_node(file_rec_t*, file_rec_t*, gboolean, gboolean);
     static fileswin_t *from_widget(GtkWidget *w)
     {
     	return (fileswin_t *)window_t::from_widget(w);
     }
 
-
-    GList *files_;	    /* list of file_rec_t */
+    file_rec_t *root_;
     
     GtkWidget *lines_check_;
     GtkWidget *calls_check_;
@@ -60,7 +62,6 @@ private:
     GtkWidget *collapse_all_btn_;
     GtkWidget *expand_all_btn_;
     GtkWidget *ctree_;
-    GtkCTreeNode *root_;
 
     friend void on_files_close_activate(GtkWidget *w, gpointer data);
     friend void on_files_exit_activate(GtkWidget *w, gpointer data);

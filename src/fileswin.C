@@ -21,9 +21,10 @@
 #include <math.h>
 #include "sourcewin.H"
 #include "cov.H"
+#include "list.H"
 #include "prefs.H"
 
-CVSID("$Id: fileswin.C,v 1.8 2003-03-30 04:47:56 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.9 2003-04-05 11:21:58 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -36,25 +37,42 @@ CVSID("$Id: fileswin.C,v 1.8 2003-03-30 04:47:56 gnb Exp $");
 
 struct file_rec_t
 {
+    char *name; 	    	/* partial name */
     cov_file_t *file;
     cov_stats_t stats;
+    GtkCTreeNode *node;
+    list_t<file_rec_t> children;
+    /* directory file_rec_t's have children and no file */
 
     file_rec_t()
     {
+	if (name != 0)
+	    g_free(name);
     }
-    
-    file_rec_t(cov_file_t *f)
+
+    file_rec_t(const char *nm, cov_file_t *f)
     {
-	file = f;
-	f->calc_stats(&stats);
+	if (nm != 0)
+	    name = g_strdup(nm);
+	if ((file = f) != 0)
+	    f->calc_stats(&stats);
     }
-    
+
     ~file_rec_t()
     {
+    	children.delete_all();
+    }
+
+    void
+    add_child(file_rec_t *child)
+    {
+    	children.append(child);
+	stats.accumulate(&child->stats);
     }
 };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 
 #define ratio(n,d) \
     ((d) == 0 ? -1.0 : (double)(n) / (double)(d))
@@ -70,12 +88,6 @@ fileswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
 {
     file_rec_t *fr1 = (file_rec_t *)((GtkCListRow *)ptr1)->data;
     file_rec_t *fr2 = (file_rec_t *)((GtkCListRow *)ptr2)->data;
-    static file_rec_t nullfr;
-    
-    if (fr1 == 0)
-    	fr1 = &nullfr;
-    if (fr2 == 0)
-    	fr2 = &nullfr;
 
     switch (clist->sort_column)
     {
@@ -95,8 +107,7 @@ fileswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
     	    	    ratio(fr2->stats.branches_executed, fr2->stats.branches));
 	
     case COL_FILE:
-    	return strcmp(fr1->file == 0 ? "" : fr1->file->name(),
-	    	      fr2->file == 0 ? "" : fr2->file->name());
+    	return strcmp(fr1->name, fr2->name);
 	
     default:
 	return 0;
@@ -145,10 +156,27 @@ fileswin_t::fileswin_t()
 
 fileswin_t::~fileswin_t()
 {
-    listdelete(files_, file_rec_t, delete);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#if DEBUG > 2
+static void
+dump_file_tree(file_rec_t *fr, int indent)
+{
+    int i;
+    list_iterator_t<file_rec_t> friter;
+    
+    for (i = 0 ; i < indent ; i++)
+    	fputc(' ', stderr);
+    fprintf(stderr, "%s\n", fr->name);
+
+    for (friter = fr->children.first() ;
+	 friter != (file_rec_t *)0 ;
+	 ++friter)
+    	dump_file_tree((*friter), indent+4);
+}
+#endif
 
 void
 fileswin_t::populate()
@@ -158,9 +186,51 @@ fileswin_t::populate()
 #if DEBUG
     fprintf(stderr, "fileswin_t::populate\n");
 #endif
+
+    root_ = new file_rec_t(cov_file_t::common_path(), 0);
     
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	files_ = g_list_prepend(files_, new file_rec_t(*iter));
+    {
+	file_rec_t *parent, *fr;
+	char *buf = g_strdup((*iter)->minimal_name());
+	char *end = buf + strlen(buf);
+	char *part;
+
+    	parent = root_;
+
+	for (part = strtok(buf, "/") ; 
+	     part != 0 ; 
+	     part = strtok(0, "/"))
+	{
+	    if (part + strlen(part) == end)
+	    {
+	    	parent->add_child(fr = new file_rec_t(part, (*iter)));
+	    }
+	    else
+	    {
+	    	list_iterator_t<file_rec_t> friter;
+
+	    	for (friter = parent->children.first() ;
+		     friter != (file_rec_t *)0 ;
+		     ++friter)
+		{
+		    if (!strcmp((*friter)->name, part))
+		    	break;
+		}
+		
+		if ((*friter) != 0)
+		    fr = (*friter);
+		else
+	    	    parent->add_child(fr = new file_rec_t(part, 0));
+	    }
+	    parent = fr;
+	}
+	g_free(buf);
+    }
+
+#if DEBUG > 2
+    dump_file_tree(root_, 0);
+#endif
 
     update();
 }
@@ -183,47 +253,75 @@ format_stat(
     	snprintf(buf, maxlen, "%lu/%lu", numerator, denominator);
 }
 
-static GtkCTreeNode *
-add_node(
-    GtkCTree *ctree,
-    GtkCTreeNode *parent,
-    char **text,
-    gboolean is_leaf,
-    void *data,
-    GdkColor *color)
-{
-    GtkCTreeNode *node;
-
-    node = gtk_ctree_insert_node(
-	    ctree,
-	    parent,
-	    (GtkCTreeNode *)0,	    /* sibling */
-	    text,
-	    4,     	    	    /* spacing */
-	    (GdkPixmap *)0,	    /* pixmap_closed */
-	    (GdkBitmap *)0,	    /* mask_closed */
-	    (GdkPixmap *)0,	    /* pixmap_opened */
-	    (GdkBitmap *)0,	    /* mask_opened */
-	    is_leaf,  	    	    /* is_leaf */
-	    TRUE);  	    	    /* expanded*/
-    if (data != 0)
-    	gtk_ctree_node_set_row_data(ctree, node, data);
-    if (color != 0)
-    	gtk_ctree_node_set_foreground(ctree, node, color);
-    return node;
-}
-
 void
-fileswin_t::update()
+fileswin_t::add_node(
+    file_rec_t *fr,
+    file_rec_t *parent,
+    gboolean percent_flag,
+    gboolean tree_flag)
 {
-    GList *iter;
-    gboolean percent_flag;
-    gboolean tree_flag;
     GdkColor *color;
     char *text[NUM_COLS];
     char lines_pc_buf[16];
     char calls_pc_buf[16];
     char branches_pc_buf[16];
+    gboolean is_leaf;
+    list_iterator_t<file_rec_t> friter;
+
+    is_leaf = (fr->children.head() == 0);
+    if (tree_flag || is_leaf)
+    {
+	text[COL_FILE] = fr->name;
+
+	format_stat(lines_pc_buf, sizeof(lines_pc_buf), percent_flag,
+	    	    fr->stats.lines_executed, fr->stats.lines);
+	text[COL_LINES] = lines_pc_buf;
+
+	format_stat(calls_pc_buf, sizeof(calls_pc_buf), percent_flag,
+	    	    fr->stats.calls_executed, fr->stats.calls);
+	text[COL_CALLS] = calls_pc_buf;
+
+	format_stat(branches_pc_buf, sizeof(branches_pc_buf), percent_flag,
+	    	    fr->stats.branches_executed, fr->stats.branches);
+	text[COL_BRANCHES] = branches_pc_buf;
+
+	if (fr->stats.lines == 0)
+	    color = &prefs.uninstrumented_foreground;
+	else if (fr->stats.lines_executed == 0)
+	    color = &prefs.uncovered_foreground;
+	else if (fr->stats.lines_executed < fr->stats.lines)
+	    color = &prefs.partcovered_foreground;
+	else
+	    color = &prefs.covered_foreground;
+
+
+	fr->node = gtk_ctree_insert_node(
+		GTK_CTREE(ctree_),
+		(parent == 0 || !tree_flag ? 0 : parent->node),
+		(GtkCTreeNode *)0,	    /* sibling */
+		text,
+		4,     	    	    /* spacing */
+		(GdkPixmap *)0,	    /* pixmap_closed */
+		(GdkBitmap *)0,	    /* mask_closed */
+		(GdkPixmap *)0,	    /* pixmap_opened */
+		(GdkBitmap *)0,	    /* mask_opened */
+		is_leaf,  	    	    /* is_leaf */
+		TRUE);  	    	    /* expanded*/
+    	gtk_ctree_node_set_row_data(GTK_CTREE(ctree_), fr->node, fr);
+	if (color != 0)
+    	    gtk_ctree_node_set_foreground(GTK_CTREE(ctree_), fr->node, color);
+    }
+    
+    for (friter = fr->children.first() ; friter != (file_rec_t *)0 ; ++friter)
+    	add_node((*friter), fr, percent_flag, tree_flag);
+}
+
+
+void
+fileswin_t::update()
+{
+    gboolean percent_flag;
+    gboolean tree_flag;
     
 #if DEBUG
     fprintf(stderr, "fileswin_t::update\n");
@@ -234,116 +332,12 @@ fileswin_t::update()
 
     gtk_clist_freeze(GTK_CLIST(ctree_));
     gtk_clist_clear(GTK_CLIST(ctree_));
-    root_ = 0;
     
     gtk_ctree_set_line_style(GTK_CTREE(ctree_),
     	    tree_flag ? GTK_CTREE_LINES_SOLID : GTK_CTREE_LINES_NONE);
     
-    for (iter = files_ ; iter != 0 ; iter = iter->next)
-    {
-    	file_rec_t *fr = (file_rec_t *)iter->data;
-	GtkCTreeNode *node;
+    add_node(root_, 0, percent_flag, tree_flag);
 
-    	format_stat(lines_pc_buf, sizeof(lines_pc_buf), percent_flag,
-	    	    fr->stats.lines_executed, fr->stats.lines);
-	text[COL_LINES] = lines_pc_buf;
-	
-    	format_stat(calls_pc_buf, sizeof(calls_pc_buf), percent_flag,
-	    	    fr->stats.calls_executed, fr->stats.calls);
-	text[COL_CALLS] = calls_pc_buf;
-	
-    	format_stat(branches_pc_buf, sizeof(branches_pc_buf), percent_flag,
-	    	    fr->stats.branches_executed, fr->stats.branches);
-	text[COL_BRANCHES] = branches_pc_buf;
-		
-	if (fr->stats.lines == 0)
-	    color = &prefs.uninstrumented_foreground;
-	else if (fr->stats.lines_executed == 0)
-	    color = &prefs.uncovered_foreground;
-	else if (fr->stats.lines_executed < fr->stats.lines)
-	    color = &prefs.partcovered_foreground;
-	else
-	    color = &prefs.covered_foreground;
-
-    	if (tree_flag)
-	{
-	    GtkCTreeNode *parent;
-	    char *buf = g_strdup(fr->file->minimal_name());
-	    char *end = buf + strlen(buf);
-	    char *part;
-	    char *text2[NUM_COLS];
-
-	    memset(text2, 0, sizeof(text2));
-
-    	    if (root_ == 0)
-	    {
-		text2[COL_FILE] = (char *)cov_file_t::common_path();
-    		root_ = add_node(
-				GTK_CTREE(ctree_),
-				(GtkCTreeNode *)0,  /* parent */
-				text2,
-				FALSE,	    	    /* is_leaf */
-				0,  	    	    /* data */
-				0); 	    	    /* color */
-	    }
-    	    parent = root_;
-
-	    for (part = strtok(buf, "/") ; 
-		 part != 0 ; 
-		 part = strtok(0, "/"))
-	    {
-		if (part + strlen(part) == end)
-		{
-	    	    text[COL_FILE] = part;
-    		    node = add_node(
-				    GTK_CTREE(ctree_),
-				    parent,
-				    text,
-				    TRUE,  	    	/* is_leaf */
-				    fr,	    	    	/* data */
-				    color);     	/* color */
-		}
-		else
-		{
-	    	    for (node = GTK_CTREE_ROW(parent)->children ;
-			 node != 0 ;
-			 node = GTK_CTREE_NODE_NEXT(node))
-		    {
-			char *name = ((GtkCellText *)GTK_CTREE_ROW(node)->row.cell)->text;
-
-			if (!strcmp(name, part))
-		    	    break;
-		    }
-		    if (node == 0)
-		    {
-			text2[COL_FILE] = part;
-    			node = add_node(
-					GTK_CTREE(ctree_),
-					parent,
-					text2,
-					FALSE,	    	/* is_leaf */
-					0,	    	/* data */
-					0);     	/* color */
-		    }
-
-		}
-		parent = node;
-	    }
-	    g_free(buf);
-	}
-	else
-	{
-	    text[COL_FILE] = (char *)fr->file->minimal_name();
-    	    add_node(
-		    GTK_CTREE(ctree_),
-		    (GtkCTreeNode *)0,	/* parent */
-		    text,
-		    TRUE,  	    	/* is_leaf */
-		    fr,	    	    	/* data */
-		    color);     	/* color */
-	}
-    }
-    
     gtk_clist_columns_autosize(GTK_CLIST(ctree_));
     gtk_clist_sort(GTK_CLIST(ctree_));
     gtk_clist_thaw(GTK_CLIST(ctree_));
@@ -427,8 +421,8 @@ on_files_collapse_all_activate(GtkWidget *w, gpointer data)
 {
     fileswin_t *fw = fileswin_t::from_widget(w);
 
-    gtk_ctree_collapse_recursive(GTK_CTREE(fw->ctree_), fw->root_);
-    gtk_ctree_expand(GTK_CTREE(fw->ctree_), fw->root_);
+    gtk_ctree_collapse_recursive(GTK_CTREE(fw->ctree_), fw->root_->node);
+    gtk_ctree_expand(GTK_CTREE(fw->ctree_), fw->root_->node);
 }
 
 GLADE_CALLBACK void
@@ -436,7 +430,7 @@ on_files_expand_all_activate(GtkWidget *w, gpointer data)
 {
     fileswin_t *fw = fileswin_t::from_widget(w);
 
-    gtk_ctree_expand_recursive(GTK_CTREE(fw->ctree_), fw->root_);
+    gtk_ctree_expand_recursive(GTK_CTREE(fw->ctree_), fw->root_->node);
 }
 
 GLADE_CALLBACK void
