@@ -17,13 +17,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "confsection.H"
-#if HAVE_LIBGNOME
 #include <libgnome/libgnome.h>
-#endif
+#include "confsection.H"
 #include "estring.H"
 
-CVSID("$Id: confsection.C,v 1.5 2003-06-01 09:49:13 gnb Exp $");
+CVSID("$Id: confsection.C,v 1.6 2003-07-21 13:45:26 gnb Exp $");
 
 hashtable_t<const char*, confsection_t> *confsection_t::all_;
 static const char filename[] = "ggcov";
@@ -71,7 +69,6 @@ confsection_t::make_key(const char *name) const
 const char *
 confsection_t::get_string(const char *name, const char *deflt)
 {
-#if HAVE_LIBGNOME
     gboolean defaulted = FALSE;
     const char *val;
     estring key = make_key(name);
@@ -82,19 +79,14 @@ confsection_t::get_string(const char *name, const char *deflt)
     if (defaulted)
     	val = deflt;
     return val;
-#else
-    return deflt;
-#endif
 }
 
 void
 confsection_t::set_string(const char *name, const char *value)
 {
-#if HAVE_LIBGNOME
     estring key = make_key(name);
 
     gnome_config_set_string(key.data(), value);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -102,7 +94,6 @@ confsection_t::set_string(const char *name, const char *value)
 int
 confsection_t::get_enum(const char *name, const confenum_t *tbl, int deflt)
 {
-#if HAVE_LIBGNOME
     gboolean defaulted = FALSE;
     const char *val;
     estring key = make_key(name);
@@ -124,14 +115,12 @@ confsection_t::get_enum(const char *name, const confenum_t *tbl, int deflt)
 	if (end != 0 && end != val && *end == '\0')
 	    return ival;
     }
-#endif
     return deflt;
 }
 
 void
 confsection_t::set_enum(const char *name, const confenum_t *tbl, int value)
 {
-#if HAVE_LIBGNOME
     estring key = make_key(name);
     char buf[32];
 
@@ -146,7 +135,6 @@ confsection_t::set_enum(const char *name, const confenum_t *tbl, int value)
     
     snprintf(buf, sizeof(buf), "%d", value);
     gnome_config_set_string(key.data(), buf);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -154,7 +142,6 @@ confsection_t::set_enum(const char *name, const confenum_t *tbl, int value)
 gboolean
 confsection_t::get_bool(const char *name, gboolean deflt)
 {
-#if HAVE_LIBGNOME
     gboolean defaulted = FALSE;
     gboolean val;
     estring key = make_key(name);
@@ -163,19 +150,14 @@ confsection_t::get_bool(const char *name, gboolean deflt)
     if (defaulted)
     	val = deflt;
     return val;
-#else
-    return deflt;
-#endif
 }
 
 void
 confsection_t::set_bool(const char *name, gboolean value)
 {
-#if HAVE_LIBGNOME
     estring key = make_key(name);
 
     gnome_config_set_bool(key.data(), value);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -183,7 +165,6 @@ confsection_t::set_bool(const char *name, gboolean value)
 int
 confsection_t::get_int(const char *name, int deflt)
 {
-#if HAVE_LIBGNOME
     gboolean defaulted = FALSE;
     int val;
     estring key = make_key(name);
@@ -192,19 +173,14 @@ confsection_t::get_int(const char *name, int deflt)
     if (defaulted)
     	val = deflt;
     return val;
-#else
-    return deflt;
-#endif
 }
 
 void
 confsection_t::set_int(const char *name, int value)
 {
-#if HAVE_LIBGNOME
     estring key = make_key(name);
 
     gnome_config_set_int(key.data(), value);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -212,7 +188,6 @@ confsection_t::set_int(const char *name, int value)
 float
 confsection_t::get_float(const char *name, float deflt)
 {
-#if HAVE_LIBGNOME
     gboolean defaulted = FALSE;
     float val;
     estring key = make_key(name);
@@ -221,19 +196,14 @@ confsection_t::get_float(const char *name, float deflt)
     if (defaulted)
     	val = deflt;
     return val;
-#else
-    return deflt;
-#endif
 }
 
 void
 confsection_t::set_float(const char *name, float value)
 {
-#if HAVE_LIBGNOME
     estring key = make_key(name);
 
     gnome_config_set_float(key.data(), value);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -241,9 +211,7 @@ confsection_t::set_float(const char *name, float value)
 void
 confsection_t::sync()
 {
-#if HAVE_LIBGNOME
     gnome_config_sync_file((char *)filename);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
