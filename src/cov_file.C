@@ -20,17 +20,19 @@
 #include "cov.H"
 #include "covio.h"
 #include "estring.H"
+#include "string_var.H"
 #include "filename.h"
 
 #include <bfd.h>
 #include <elf.h>
 
 
-CVSID("$Id: cov_file.C,v 1.5 2003-03-30 04:47:56 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.6 2003-05-11 00:27:22 gnb Exp $");
 
 
 GHashTable *cov_file_t::files_;
 list_t<cov_file_t> cov_file_t::files_list_;
+list_t<char> cov_file_t::search_path_;
 char *cov_file_t::common_path_;
 int cov_file_t::common_len_;
 
@@ -402,9 +404,9 @@ cov_file_t::read_bbg_function(FILE *fp)
 	    covio_read_u32(fp, &flags);
 
 #if DEBUG > 1
-    	    fprintf(stderr, "BBG     arc %ld: %ld->%ld flags %s,%s,%s\n",
+    	    fprintf(stderr, "BBG     arc %ld: %ld->%ld flags %x(%s,%s,%s)\n",
 	    	    	    aidx,
-			    bidx, dest,
+			    bidx, dest, flags,
 			    (flags & 0x1 ? "on_tree" : ""),
 			    (flags & 0x2 ? "fake" : ""),
 			    (flags & 0x4 ? "fall_through" : ""));
@@ -848,6 +850,91 @@ cov_file_t::read_o_file(const char *ofilename)
     	nth_function(fnidx)->reconcile_calls();
     
     return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cov_file_t::search_path_append(const char *dir)
+{
+    search_path_.append(g_strdup(dir));
+}
+
+char *
+cov_file_t::try_file(const char *dir, const char *ext) const
+{
+    string_var ofilename, dfilename;
+    
+    if (dir == 0)
+    	ofilename = name();
+    else
+    	ofilename = g_strconcat(dir, "/", file_basename_c(name()), (char *)0);
+    
+    dfilename = file_change_extension(ofilename, 0, ext);
+
+    return (file_is_regular(dfilename) < 0 ? 0 : dfilename.take());
+}
+
+char *
+cov_file_t::find_file(const char *ext, gboolean quiet) const
+{
+    list_iterator_t<char> iter;
+    char *file;
+    
+    /*
+     * First try the same directory as the source file.
+     */
+    if ((file = try_file(0, ext)) != 0)
+    	return file;
+	
+    /*
+     * Now look in the search path.
+     */
+    for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
+    {
+	if ((file = try_file(*iter, ext)) != 0)
+    	    return file;
+    }
+    
+    if (!quiet)
+    {
+    	string_var dir = file_dirname(name());
+
+    	fprintf(stderr, "Couldn't find %s file for %s in path:\n",
+	    	    ext, file_basename_c(name()));
+	fprintf(stderr, "   %s\n", dir.data());
+	for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
+	    fprintf(stderr, "   %s\n", *iter);
+    }
+    
+    return 0;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_file_t::read(gboolean quiet)
+{
+    string_var filename;
+
+    if ((filename = find_file(".bbg", quiet)) == 0 ||
+	 !read_bbg_file(filename))
+	return FALSE;
+
+    if ((filename = find_file(".bb", quiet)) == 0 ||
+	 !read_bb_file(filename))
+	return FALSE;
+
+    /* TODO: read multiple .da files from the search path & accumulate */
+    if ((filename = find_file(".da", quiet)) == 0 ||
+	 !read_da_file(filename))
+	return FALSE;
+
+    if ((filename = find_file(".o", quiet)) == 0 ||
+	 !read_o_file(filename))
+	return FALSE;
+
+    return solve();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
