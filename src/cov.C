@@ -28,7 +28,7 @@
 #include <bfd.h>
 #include <elf.h>
 
-CVSID("$Id: cov.C,v 1.3 2002-12-31 14:53:56 gnb Exp $");
+CVSID("$Id: cov.C,v 1.4 2003-01-01 03:13:38 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -40,16 +40,32 @@ cov_location_t::make_key() const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-cov_get_count_by_location(
-    const cov_location_t *loc,
-    count_t *countp,
-    gboolean *existsp)
+cov_status_t
+cov_get_count_by_location(const cov_location_t *loc, count_t *countp)
 {
     const GList *blocks = cov_block_t::find_by_location(loc);
+    count_t minc = COV_COUNT_MAX, maxc = 0;
+    int len = 0;
     
-    *existsp = (blocks != 0);
-    *countp = cov_block_t::total(blocks);
+    for ( ; blocks != 0 ; blocks = blocks->next)
+    {
+    	cov_block_t *b = (cov_block_t *)blocks->data;
+	
+	if (b->count() > maxc)
+	    maxc = b->count();
+	if (b->count() < minc)
+	    minc = b->count();
+	len++;
+    }
+    
+    if (countp != 0)
+	*countp = maxc;
+
+    if (len == 0)
+    	return CS_UNINSTRUMENTED;
+    if (maxc == 0)
+    	return CS_UNCOVERED;
+    return (minc == 0 ? CS_PARTCOVERED : CS_COVERED);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
