@@ -18,10 +18,9 @@
  */
 
 #include "uix.h"
-#include "estring.h"
 #include <gdk/gdkx.h>	/* This is what we want to avoid in the main code */
 
-CVSID("$Id: uix.c,v 1.3 2002-12-15 15:47:00 gnb Exp $");
+CVSID("$Id: uix.c,v 1.4 2002-12-22 02:50:29 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
