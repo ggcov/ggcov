@@ -27,7 +27,7 @@ GLADE_CALLBACK void on_functions_lines_check_activate(GtkWidget *w, gpointer dat
 GLADE_CALLBACK void on_functions_calls_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_functions_branches_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_functions_percent_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_functions_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
+GLADE_CALLBACK gboolean on_functions_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
 
 class functionswin_t : public window_t
 {
@@ -51,12 +51,15 @@ private:
     GtkWidget *branches_check_;
     GtkWidget *percent_check_;
     GtkWidget *clist_;
+#if GTK2
+    GtkListStore *store_;
+#endif
 
     friend void on_functions_lines_check_activate(GtkWidget *w, gpointer data);
     friend void on_functions_calls_check_activate(GtkWidget *w, gpointer data);
     friend void on_functions_branches_check_activate(GtkWidget *w, gpointer data);
     friend void on_functions_percent_check_activate(GtkWidget *w, gpointer data);
-    friend void on_functions_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
+    friend gboolean on_functions_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
 };
 
 #endif /* _ggcov_functionswin_H_ */
