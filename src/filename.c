@@ -19,11 +19,13 @@
 
 #include "filename.h"
 #include "estring.H"
+#include "string_var.H"
+#include "tok.H"
 #include <sys/stat.h>
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.6 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: filename.c,v 1.7 2003-05-11 00:28:20 gnb Exp $");
 
 #ifndef __set_errno
 #define __set_errno(v)	 errno = (v)
@@ -129,21 +131,47 @@ file_open_mode(const char *filename, const char *rw, mode_t mode)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+/*
+ * Return a new string which is a normalised absolute filename.
+ */
 
 char *
 file_make_absolute(const char *filename)
 {
-    char *abs;
-    char *curr;
+    estring abs;
+    tok_t tok(filename, "/");
+    const char *part;
     
-    if (filename[0] == '/')
-    	return g_strdup(filename);
+    if (*filename == '/')
+    {
+    	abs.append_string("/");
+    }
+    else
+    {
+    	string_var curr = g_get_current_dir();
+    	abs.append_string(curr);
+    }
+
+    while ((part = tok.next()) != 0)
+    {
+    	if (!strcmp(part, "."))
+	{
+	    continue;
+	}
+	if (!strcmp(part, ".."))
+	{
+	    char *p = strrchr(abs.data(), '/');
+	    
+	    if (p != abs.data())
+	    	abs.truncate_to(p - abs.data());
+	    continue;
+	}
+	if (abs.length() > 1)
+	    abs.append_char('/');
+	abs.append_string(part);
+    }
     
-    curr = g_get_current_dir();
-    abs = g_strconcat(curr, "/", filename, 0);
-    g_free(curr);
-    
-    return abs;
+    return abs.take();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
