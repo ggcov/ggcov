@@ -21,7 +21,7 @@
 
 #define ISBLANK(c)  	((c) == ' ' || (c) == '\t')
 
-CVSID("$Id: cpp_parser.C,v 1.2 2004-02-22 10:58:24 gnb Exp $");
+CVSID("$Id: cpp_parser.C,v 1.3 2005-02-13 09:04:21 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -37,13 +37,13 @@ cpp_parser_t::~cpp_parser_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 int
-cpp_parser_t::getc()
+cpp_parser_t::xgetc()
 {
     return data_[index_++];
 }
 
 void
-cpp_parser_t::ungetc(int c)
+cpp_parser_t::xungetc(int c)
 {
     assert(index_ > 0);
     assert(data_[index_-1] == c);
@@ -57,21 +57,21 @@ cpp_parser_t::getc_commentless()
 {
     while (index_ < length_)
     {
-    	int c = getc();
+    	int c = xgetc();
 
     	if (!in_comment_)
     	{
 	    /* scanning for start of comment */
 	    if (c == '/')
 	    {
-	    	c = getc();
+	    	c = xgetc();
 		if (c == '*')
 	    	    in_comment_ = TRUE;
 		else if (c == '/')  /* // C++ style comment */
 		    return EOF;
 		else
 		{
-		    ungetc(c);
+		    xungetc(c);
 	    	    return '/';
 		}
 	    }
@@ -83,7 +83,7 @@ cpp_parser_t::getc_commentless()
 	    /* scanning for '*' at end of C comment */
 	    if (c == '*')
 	    {
-	    	c = getc();
+	    	c = xgetc();
 		if (c == '/')
 	    	    in_comment_ = FALSE;
 	    }
@@ -119,7 +119,7 @@ cpp_parser_t::get_token()
 	       len < sizeof(tokenbuf_));
 	tokenbuf_[len] = '\0';
 	if (c != EOF)
-	    ungetc(c);
+	    xungetc(c);
     	return T_NUMBER;
     }
     else if (isalpha(c) || (c) == '_')
@@ -133,7 +133,7 @@ cpp_parser_t::get_token()
 	       len < sizeof(tokenbuf_));
 	tokenbuf_[len] = '\0';
 	if (c != EOF)
-	    ungetc(c);
+	    xungetc(c);
 
 	if (!strcmp(tokenbuf_, "include"))
 	    return T_INCLUDE;
@@ -159,16 +159,16 @@ cpp_parser_t::get_token()
     }
     else if (c == '&')
     {
-    	if ((c = getc()) == '&')
+    	if ((c = xgetc()) == '&')
 	    return T_LOG_AND;
-	ungetc(c);
+	xungetc(c);
 	return '&';
     }
     else if (c == '|')
     {
-    	if ((c = getc()) == '|')
+    	if ((c = xgetc()) == '|')
 	    return T_LOG_OR;
-	ungetc(c);
+	xungetc(c);
 	return '|';
     }
     return c;

@@ -79,8 +79,8 @@ private:
 	T_MAX_TOKEN
     };
 
-    int getc();
-    void ungetc(int c);
+    int xgetc();
+    void xungetc(int c);
     int getc_commentless();
     int get_token();
     const char *token_as_string(int tok) const;
