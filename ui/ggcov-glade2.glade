@@ -38,6 +38,17 @@
                     <property name="visible">yes</property>
 
                     <child>
+                      <widget class="GtkImageMenuItem" id="open1">
+                        <property name="visible">yes</property>
+                        <property name="label">gtk-open</property>
+                        <property name="use_stock">yes</property>
+                        <property name="use_underline">yes</property>
+
+                        <signal name="activate" handler="on_file_open_activate" />
+                      </widget>
+                    </child>
+
+                    <child>
                       <widget class="GtkImageMenuItem" id="source_save_as">
                         <property name="visible">yes</property>
                         <property name="label">gtk-save-as</property>
@@ -659,6 +670,17 @@
                 <child>
                   <widget class="GtkMenu" id="file1_menu">
                     <property name="visible">yes</property>
+
+                    <child>
+                      <widget class="GtkImageMenuItem" id="open2">
+                        <property name="visible">yes</property>
+                        <property name="label">gtk-open</property>
+                        <property name="use_stock">yes</property>
+                        <property name="use_underline">yes</property>
+
+                        <signal name="activate" handler="on_file_open_activate" />
+                      </widget>
+                    </child>
 
                     <child>
                       <widget class="GtkImageMenuItem" id="summary_close">
@@ -1492,6 +1514,17 @@
                     <property name="visible">yes</property>
 
                     <child>
+                      <widget class="GtkImageMenuItem" id="open3">
+                        <property name="visible">yes</property>
+                        <property name="label">gtk-open</property>
+                        <property name="use_stock">yes</property>
+                        <property name="use_underline">yes</property>
+
+                        <signal name="activate" handler="on_file_open_activate" />
+                      </widget>
+                    </child>
+
+                    <child>
                       <widget class="GtkImageMenuItem" id="functions_close">
                         <property name="visible">yes</property>
                         <property name="label">gtk-close</property>
@@ -1790,6 +1823,17 @@
                 <child>
                   <widget class="GtkMenu" id="menuitem1_menu">
                     <property name="visible">yes</property>
+
+                    <child>
+                      <widget class="GtkImageMenuItem" id="open4">
+                        <property name="visible">yes</property>
+                        <property name="label">gtk-open</property>
+                        <property name="use_stock">yes</property>
+                        <property name="use_underline">yes</property>
+
+                        <signal name="activate" handler="on_file_open_activate" />
+                      </widget>
+                    </child>
 
                     <child>
                       <widget class="GtkImageMenuItem" id="files_close">
@@ -2126,6 +2170,17 @@
                 <child>
                   <widget class="GtkMenu" id="menuitem3_menu">
                     <property name="visible">yes</property>
+
+                    <child>
+                      <widget class="GtkImageMenuItem" id="open5">
+                        <property name="visible">yes</property>
+                        <property name="label">gtk-open</property>
+                        <property name="use_stock">yes</property>
+                        <property name="use_underline">yes</property>
+
+                        <signal name="activate" handler="on_file_open_activate" />
+                      </widget>
+                    </child>
 
                     <child>
                       <widget class="GtkImageMenuItem" id="calls_close">
@@ -2665,6 +2720,17 @@
                 <child>
                   <widget class="GtkMenu" id="menuitem5_menu">
                     <property name="visible">yes</property>
+
+                    <child>
+                      <widget class="GtkImageMenuItem" id="open6">
+                        <property name="visible">yes</property>
+                        <property name="label">gtk-open</property>
+                        <property name="use_stock">yes</property>
+                        <property name="use_underline">yes</property>
+
+                        <signal name="activate" handler="on_file_open_activate" />
+                      </widget>
+                    </child>
 
                     <child>
                       <widget class="GtkImageMenuItem" id="callgraph_close">
@@ -3311,6 +3377,17 @@ C programs built with the GNU C Compiler.
                     <child>
                       <widget class="GtkMenu" id="file2_menu">
                         <property name="visible">yes</property>
+
+                        <child>
+                          <widget class="GtkImageMenuItem" id="open7">
+                            <property name="visible">yes</property>
+                            <property name="label">gtk-open</property>
+                            <property name="use_stock">yes</property>
+                            <property name="use_underline">yes</property>
+
+                            <signal name="activate" handler="on_file_open_activate" />
+                          </widget>
+                        </child>
 
                         <child>
                           <widget class="GtkImageMenuItem" id="close1">
@@ -4062,6 +4139,41 @@ C programs built with the GNU C Compiler.
         <property name="visible">yes</property>
 
         <signal name="clicked" handler="on_source_saveas_cancel_button_clicked" />
+      </widget>
+    </child>
+  </widget>
+  <widget class="GtkFileSelection" id="open">
+    <property name="border_width">10</property>
+    <property name="title" translatable="yes">GGCov: Select Source, Executable, or Directory</property>
+    <property name="type">GTK_WINDOW_DIALOG</property>
+    <property name="modal">yes</property>
+    <property name="allow_shrink">no</property>
+    <property name="allow_grow">yes</property>
+    <property name="show-fileops">no</property>
+    <property name="visible">yes</property>
+    <property name="window-position">GTK_WIN_POS_MOUSE</property>
+
+    <child internal-child="ok_button">
+      <widget class="GtkButton" id="ok_button2">
+        <property name="can_default">yes</property>
+        <property name="can_focus">yes</property>
+        <property name="label" translatable="yes">OK</property>
+        <property name="relief">GTK_RELIEF_NORMAL</property>
+        <property name="visible">yes</property>
+
+        <signal name="clicked" handler="on_open_ok_button_clicked" />
+      </widget>
+    </child>
+
+    <child internal-child="cancel_button">
+      <widget class="GtkButton" id="cancel_button2">
+        <property name="can_default">yes</property>
+        <property name="can_focus">yes</property>
+        <property name="label" translatable="yes">Cancel</property>
+        <property name="relief">GTK_RELIEF_NORMAL</property>
+        <property name="visible">yes</property>
+
+        <signal name="clicked" handler="on_open_cancel_button_clicked" />
       </widget>
     </child>
   </widget>
