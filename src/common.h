@@ -74,6 +74,8 @@
 
 #define boolstr(b)  	((b) ? "true" : "false")
 
+#define safestr(s)  ((s) == 0 ? "" : (s))
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #if defined(__ELF__) && defined(__GNUC__)
@@ -92,8 +94,11 @@ __attribute__ (( format(printf,1,2) ))
 #endif
 ;
 
-extern void *xmalloc(size_t sz);
-#define new(ty)     	((ty *)xmalloc(sizeof(ty)))
+extern void *gnb_xmalloc(size_t sz);
+#define new(ty)     	((ty *)gnb_xmalloc(sizeof(ty)))
+
+extern int ulcmp(unsigned long ul1, unsigned long ul2);
+extern int ullcmp(unsigned long long ull1, unsigned long long ull2);
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.2 2001-11-23 09:04:01 gnb Exp $");
+CVSID("$Id: common.c,v 1.3 2001-12-02 07:22:06 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -43,7 +43,7 @@ fatal(const char *fmt, ...)
 extern char *argv0;
 
 void *
-xmalloc(size_t sz)
+gnb_xmalloc(size_t sz)
 {
     void *x;
     
@@ -57,6 +57,28 @@ xmalloc(size_t sz)
     }
     
     return x;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+int
+ulcmp(unsigned long ul1, unsigned long ul2)
+{
+    if (ul1 > ul2)
+    	return 1;
+    if (ul1 < ul2)
+    	return -1;
+    return 0;
+}
+
+int
+ullcmp(unsigned long long ull1, unsigned long long ull2)
+{
+    if (ull1 > ull2)
+    	return 1;
+    if (ull1 < ull2)
+    	return -1;
+    return 0;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
