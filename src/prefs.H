@@ -48,4 +48,7 @@ struct prefs_t
 
 extern prefs_t prefs;
 
+extern GdkColor *foregrounds_by_status[];
+extern GdkColor *backgrounds_by_status[];
+
 #endif /* _ggcov_prefs_H_ */

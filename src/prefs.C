@@ -20,9 +20,30 @@
 #include "confsection.H"
 #include "prefs.H"
 
-CVSID("$Id: prefs.C,v 1.5 2004-02-08 11:05:07 gnb Exp $");
+CVSID("$Id: prefs.C,v 1.6 2004-02-18 11:23:08 gnb Exp $");
 
 prefs_t prefs;
+
+/*
+ * Note: depends implicitly on order of declarations in cov::status_t
+ */
+GdkColor *foregrounds_by_status[] =
+{
+    &prefs.covered_foreground,
+    &prefs.partcovered_foreground,
+    &prefs.uncovered_foreground,
+    &prefs.uninstrumented_foreground,
+    &prefs.suppressed_foreground
+
+};
+GdkColor *backgrounds_by_status[] = 
+{
+    &prefs.covered_background,
+    &prefs.partcovered_background,
+    &prefs.uncovered_background,
+    &prefs.uninstrumented_background,
+    &prefs.suppressed_background
+};
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
