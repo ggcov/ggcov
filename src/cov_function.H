@@ -29,7 +29,7 @@ class cov_function_t
 public:
 
     const char *
-    name()
+    name() const
     {
     	return name_;
     }
