@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.9 2002-12-15 15:42:07 gnb Exp $
+dnl $Id: configure.in,v 1.10 2003-01-01 03:04:57 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -74,7 +74,7 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(malloc.h sys/ioctl.h sys/time.h unistd.h memory.h)
-AC_CHECK_HEADERS(signal.h sys/filio.h)
+AC_CHECK_HEADERS(signal.h sys/filio.h stdint.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

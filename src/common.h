@@ -23,6 +23,15 @@
 /* Include autoconf defines */
 #include <config.h>
 
+#if HAVE_STDINT_H
+/*
+ * Glibc <stdint.h> says:
+ * The ISO C 9X standard specifies that in C++ implementations these
+ * macros [UINT64_MAX et al] should only be defined if explicitly requested.
+ */
+#define __STDC_LIMIT_MACROS 1
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -32,6 +41,9 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <ctype.h>
+#if HAVE_STDINT_H
+#include <stdint.h>
+#endif
 
 #include <glib.h>
 
