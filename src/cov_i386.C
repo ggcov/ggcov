@@ -22,7 +22,7 @@
 
 #if defined(HAVE_LIBBFD) && defined(COV_I386)
 
-CVSID("$Id: cov_i386.C,v 1.4 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: cov_i386.C,v 1.5 2005-04-03 09:01:31 gnb Exp $");
 
 /*
  * Machine-specific code to scan i386 object code for function calls.
@@ -179,15 +179,16 @@ cov_i386_call_scanner_t::next(cov_call_scanner_t::calldata_t *calld)
     	    if (debug_enabled(D_CGRAPH|D_VERBOSE))
     		cov_bfd_t::dump_reloc(reloc_, rel);
 
-    	    /*
-	     * Experiment shows that functions calls result in an R_386_PC32
-	     * reloc and external data references in an R_386_32 reloc.
-	     * Haven't yet seen any others -- so give a warning if we do.
-	     */
-	    if (rel->howto->type == R_386_32)
-	    	continue;
-	    else if (rel->howto->type != R_386_PC32)
+	    switch (rel->howto->type)
 	    {
+	    case R_386_32:  	/* external data reference from static code */
+    	    case R_386_GOTPC:	/* external data reference from PIC code */
+	    case R_386_GOTOFF:	/* external data reference from PIC code */
+	    	continue;
+	    case R_386_PC32:	/* function call from static code */
+	    case R_386_PLT32:	/* function call from PIC code */
+	    	break;
+	    default:
 	    	fprintf(stderr, "%s: Warning unexpected 386 reloc howto type %d\n",
 		    	    	    cbfd_->filename(), rel->howto->type);
 	    	continue;
