@@ -71,13 +71,26 @@ case "$BUILDHOST" in
     ;;
 esac
 
-set `sed -n -e 's|^AM_INIT_AUTOMAKE(\([^,]\+\),\([^)]\+\))|\1 \2|p' < configure.in`
-PACKAGE=$1
-VERSION=$2
+set -- `sed -n -e 's|^AM_INIT_AUTOMAKE(\([^,]\+\),\([^)]\+\))|\1 \2|p' < configure.in` notfound
+if [ "$1" = notfound ]; then
+    AUTOMAKE=no
+    eval `egrep '^(PACKAGE|VERSION)=' < configure.in`
+else
+    AUTOMAKE=yes
+    PACKAGE=$1
+    VERSION=$2
+fi
 
 SPECFILE=${PACKAGE}.spec
-TARBALL=${PACKAGE}-${VERSION}.tar.gz
 RPMDIR=rpm.d
+
+TARBALL=`awk '/^Source:/{print $2}' < $SPECFILE.in`
+case "$TARBALL" in
+*.tar.gz) TARBALL=${PACKAGE}-${VERSION}.tar.gz ;;
+*.tgz) TARBALL=${PACKAGE}-${VERSION}.tgz ;;
+*.tar.bz2) TARBALL=${PACKAGE}-${VERSION}.tar.bz2 ;;
+*) fatal "cannot calculate tarball extension from $SPECFILE" ;;
+esac
 
 if [ -x /usr/bin/rpmbuild ] ; then
     RPMBUILD=rpmbuild
@@ -133,7 +146,7 @@ if [ ! -f $SPECFILE ]; then
 	aclocal
 	autoconf
 	autoheader
-	automake -a
+	test "$AUTOMAKE" = yes && automake -a
 	./configure
     )
     [ -f $SPECFILE ] || fatal "Can't build $SPECFILE, giving up"
