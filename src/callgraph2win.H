@@ -53,6 +53,7 @@ private:
     struct node_t
     {
     	cov_callnode_t *callnode_;
+	cov_scope_t *scope_;
 	unsigned int rank_;
 	unsigned int file_;
 	unsigned long generation_;

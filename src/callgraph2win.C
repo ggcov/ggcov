@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: callgraph2win.C,v 1.9 2003-04-05 23:53:20 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.10 2003-05-31 14:51:02 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -36,11 +36,14 @@ CVSID("$Id: callgraph2win.C,v 1.9 2003-04-05 23:53:20 gnb Exp $");
 callgraph2win_t::node_t::node_t(cov_callnode_t *cn)
 {
     callnode_ = cn;
+    if (cn->function != 0)
+	scope_ = new cov_function_scope_t(cn->function);
     cn->userdata = (void *)this;
 }
 
 callgraph2win_t::node_t::~node_t()
 {
+    delete scope_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -99,7 +102,6 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
     GList *iter;
     double ny, yperspread;
     GnomeCanvasPoints *points;
-    cov_stats_t stats;
     char *label;
     const GdkColor *fn_color = 0;
     GnomeCanvasGroup *root = gnome_canvas_root(GNOME_CANVAS(canvas_));
@@ -117,20 +119,21 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
 
     if (cn->function != 0)
     {
+    	const cov_stats_t *stats;
     	double lines_pc;
 	
-	cn->function->calc_stats(&stats);
-    	lines_pc = (stats.lines ? 
-	    	    100.0 *(double)stats.lines_executed / (double)stats.lines : 
+	stats = n->scope_->get_stats();
+    	lines_pc = (stats->lines ? 
+	    	    100.0 *(double)stats->lines_executed / (double)stats->lines : 
 		    0.0);
 	
 	label = g_strdup_printf("%s\n%s\n%g%%",
 	    cn->name,
     	    cn->function->file()->minimal_name(),
 	    lines_pc);
-	if (stats.lines_executed == stats.lines)
+	if (stats->lines_executed == stats->lines)
 	    fn_color = &prefs.covered_background;
-	else if (stats.lines_executed > 0)
+	else if (stats->lines_executed > 0)
 	    fn_color = &prefs.partcovered_background;
 	else
 	    fn_color = &prefs.uncovered_background;
