@@ -21,7 +21,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 
-CVSID("$Id: estring.c,v 1.1 2001-11-23 03:47:48 gnb Exp $");
+CVSID("$Id: estring.c,v 1.2 2001-11-23 09:07:13 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -41,6 +41,8 @@ estring_init(estring *e)
    	(e)->data = ((e)->data == 0 ? g_new(char, (e)->available) : g_renew(char, (e)->data, (e)->available)); \
    }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 void
 estring_append_string(estring *e, const char *str)
 {
@@ -57,11 +59,11 @@ estring_append_char(estring *e, char c)
 }
 
 void
-estring_append_chars(estring *e, const char *buf, int len)
+estring_append_chars(estring *e, const char *buf, unsigned int buflen)
 {
-    _estring_expand_by(e, len);
-    memcpy(&e->data[e->length], buf, len);
-    e->length += len;
+    _estring_expand_by(e, buflen);
+    memcpy(&e->data[e->length], buf, buflen);
+    e->length += buflen;
     e->data[e->length] = '\0';
 }
 
@@ -84,6 +86,134 @@ estring_append_printf(estring *e, const char *fmt, ...)
     e->length += strlen(e->data+e->length);
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+estring_replace_string(
+    estring *e,
+    unsigned int start,
+    unsigned int len,
+    const char *str)
+{
+    if (str == 0)
+    	str = "";
+    estring_replace_chars(e, start, len, str, strlen(str));
+}
+
+void
+estring_replace_char(
+    estring *e,
+    unsigned int start,
+    unsigned int len,
+    char c)
+{
+    estring_replace_chars(e, start, len, &c, 1);
+}
+
+void
+estring_replace_chars(
+    estring *e,
+    unsigned int start,
+    unsigned int len,
+    const char *buf,
+    unsigned int buflen)
+{
+    unsigned int remain;
+    
+#if DEBUG > 40
+    fputs("estring_replace_chars: replacing \"", stderr);
+    if (e->data != 0)
+	fwrite(e->data+start, 1, len, stderr);
+    fputs("\" -> \"", stderr);    
+    if (buf != 0)
+	fwrite(buf, 1, buflen, stderr);
+    fputs("\"\n", stderr);    
+#endif
+
+    if (buflen > len)
+    {
+	_estring_expand_by(e, buflen-len);
+    }
+
+    if ((remain = e->length - (start+len)) > 0)
+    {
+    	/* have to move some chars at the end, up or down */
+	memmove(e->data+start+buflen, e->data+start+len, remain);
+    }
+    
+    /* insert new chars */
+    if (buflen > 0)
+	memmove(e->data+start, (char*)buf, buflen);
+
+    /* update e->length */
+    if (buflen >= len)
+	e->length += (buflen - len);
+    else
+	e->length -= (len - buflen);
+    /* ensure there's a nul char at the right place */
+    e->data[e->length] = '\0';
+}
+
+static void
+estring_replace_vprintf(
+    estring *e,
+    unsigned int start,
+    unsigned int len,
+    const char *fmt, va_list args)
+{
+    char *str;
+
+    str = g_strdup_printf(fmt, args);
+    estring_replace_chars(e, start, len, str, strlen(str));
+    g_free(str);
+}
+
+void
+estring_replace_printf(
+    estring *e,
+    unsigned int start,
+    unsigned int len,
+    const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    estring_replace_vprintf(e, start, len, fmt, args);
+    va_end(args);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+estring_insert_string(estring *e, unsigned int start, const char *str)
+{
+    estring_replace_string(e, start, 0, str);
+}
+
+void
+estring_insert_char(estring *e, unsigned int start, char c)
+{
+    estring_replace_char(e, start, 0, c);
+}
+
+void
+estring_insert_chars(estring *e, unsigned int start, const char *buf, int buflen)
+{
+    estring_replace_chars(e, start, 0, buf, buflen);
+}
+
+void
+estring_insert_printf(estring *e, unsigned int start, const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    estring_replace_vprintf(e, start, 0, fmt, args);
+    va_end(args);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 void
 estring_truncate(estring *e)
 {
@@ -91,6 +221,19 @@ estring_truncate(estring *e)
     if (e->data != 0)
 	e->data[0] = '\0';
 }
+
+void
+estring_truncate_to(estring *e, unsigned int len)
+{
+    if (len < e->length)
+    {
+	e->length = len;
+	if (e->data != 0)
+	    e->data[e->length] = '\0';
+    }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
 estring_free(estring *e)

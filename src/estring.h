@@ -24,6 +24,14 @@
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+#ifdef __GNUC__
+#define _printf_fmt(fmtidx,firsta) \
+    __attribute (( format(printf, fmtidx, firsta) ))
+#else
+#define _printf_fmt(fmtidx,firsta)
+#endif
+
+
 typedef struct
 {
     char *data;
@@ -32,15 +40,37 @@ typedef struct
 } estring;
 
 void estring_init(estring *e);
+
 void estring_append_string(estring *e, const char *str);
 void estring_append_char(estring *e, char c);
-void estring_append_chars(estring *e, const char *buf, int len);
-void estring_append_printf(estring *e, const char *fmt, ...);
+void estring_append_chars(estring *e, const char *buf, unsigned int buflen);
+void estring_append_printf(estring *e, const char *fmt, ...) _printf_fmt(2,3);
+
+void estring_replace_string(estring *e, unsigned int start, unsigned int len,
+    	    	    	    const char *str);
+void estring_replace_char(estring *e, unsigned int start, unsigned int len,
+    	    	    	    char c);
+void estring_replace_chars(estring *e, unsigned int start, unsigned int len,
+    	    	    	    const char *buf, unsigned int buflen);
+void estring_replace_printf(estring *e, unsigned int start, unsigned int len,
+    	    	    	    const char *fmt, ...) _printf_fmt(4,5);
+
+void estring_insert_string(estring *e, unsigned int start, const char *str);
+void estring_insert_char(estring *e, unsigned int start, char c);
+void estring_insert_chars(estring *e, unsigned int start, const char *buf, int len);
+void estring_insert_printf(estring *e, unsigned int start, const char *fmt, ...)
+    	    	    	    _printf_fmt(3,4);
+
+void estring_remove(estring *e, unsigned int start, unsigned int len);
+
 void estring_truncate(estring *e);
+void estring_truncate_to(estring *e, unsigned int len);
 void estring_free(estring *e);
 
 #define ESTRING_STATIC_INIT \
 	{ 0, 0, 0 }
+
+#undef _printf_fmt
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
