@@ -19,8 +19,10 @@
 
 #include "ui.h"
 #include "estring.H"
+#include "string_var.H"
+#include "tok.H"
 
-CVSID("$Id: ui.c,v 1.15 2003-03-28 07:17:07 gnb Exp $");
+CVSID("$Id: ui.c,v 1.16 2003-05-11 00:52:39 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -99,24 +101,19 @@ PKGDATADIR;
 static char *
 find_file(const char *path, const char *base)
 {
-    char *path_save, *dir, *buf, *file;
+    tok_t tok(path, ":");
+    string_var file;
+    const char *dir;
     struct stat sb;
     
-    buf = path_save = g_strdup(path);
-    while ((dir = strtok(buf, ":")) != 0)
+    while ((dir = tok.next()) != 0)
     {
-    	buf = 0;
 	file = g_strconcat(dir, "/", base, 0);
 
 	if (stat(file, &sb) == 0 && S_ISREG(sb.st_mode))
-	{
-	    g_free(path_save);
-	    return file;
-	}
-	g_free(file);
+	    return file.take();
     }
     
-    g_free(path_save);
     return 0;
 }
 
