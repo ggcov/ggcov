@@ -40,6 +40,7 @@ void gtk_combo_set_current(GtkCombo *combo, int n);
 /* combobox add/get current item using data */
 void ui_combo_add_data(GtkCombo *combo, const char *label, gpointer data);
 gpointer ui_combo_get_current_data(GtkCombo *combo);
+void ui_combo_set_current_data(GtkCombo *combo, gpointer data);
 
 /* Get the nearest enclosing dialog or toplevel window */
 GtkWidget *ui_get_window(GtkWidget *w);

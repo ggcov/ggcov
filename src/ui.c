@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.h"
 
-CVSID("$Id: ui.c,v 1.6 2001-11-30 01:07:59 gnb Exp $");
+CVSID("$Id: ui.c,v 1.7 2001-12-03 01:03:13 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -64,6 +64,24 @@ ui_combo_get_current_data(GtkCombo *combo)
     	return 0;
     return gtk_object_get_data(GTK_OBJECT(listw->selection->data),
     	    	    	       ui_combo_item_key);
+}
+
+void
+ui_combo_set_current_data(GtkCombo *combo, gpointer data)
+{
+    GtkList *listw = GTK_LIST(combo->list);
+    GList *iter;
+    
+    for (iter = listw->children ; iter != 0 ; iter = iter->next)
+    {
+    	GtkWidget *item = (GtkWidget *)iter->data;
+	
+	if (gtk_object_get_data(GTK_OBJECT(item), ui_combo_item_key) == data)
+	{
+	    gtk_list_select_child(listw, item);
+	    return;
+	}
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
