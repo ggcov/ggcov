@@ -18,9 +18,10 @@
  */
 
 #include "common.h"
-#include "cov.h"
+#include "cov.H"
 #include "ui.h"
 #include "filename.h"
+#include "estring.H"
 #include "sourcewin.H"
 #include "summarywin.H"
 #include "callswin.H"
@@ -30,7 +31,7 @@
 #include "fileswin.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.12 2002-12-22 02:22:47 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.13 2002-12-29 13:20:35 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -69,7 +70,7 @@ static void summarise(void);
 static void
 append_one_filename(cov_file_t *f, void *userdata)
 {
-    filenames = g_list_append(filenames, (void *)cov_file_minimal_name(f));
+    filenames = g_list_append(filenames, (void *)f->minimal_name());
 }
 
 static int
@@ -96,7 +97,6 @@ read_gcov_files(void)
 	for (iter = files ; iter != 0 ; iter = iter->next)
 	{
 	    const char *filename = (const char *)iter->data;
-	    const char *ext;
 	    
 	    if (file_is_directory(filename) == 0)
 	    {
@@ -125,7 +125,7 @@ read_gcov_files(void)
 	}
     }
     
-    cov_file_foreach(append_one_filename, 0);
+    cov_file_t::foreach(append_one_filename, 0);
     filenames = g_list_sort(filenames, compare_filenames);
     
     cov_post_read();
@@ -219,8 +219,8 @@ dump_callnode(cov_callnode_t *cn, void *userdata)
     if (cn->function == 0)
 	fprintf(stderr, "    FUNCTION=null\n");
     else
-	fprintf(stderr, "    FUNCTION=%s:%s\n", cn->function->file->name,
-	    	    	    	    	    	cn->function->name);
+	fprintf(stderr, "    FUNCTION=%s:%s\n", cn->function->file()->name(),
+	    	    	    	    	    	cn->function->name());
     fprintf(stderr, "    COUNT=%llu\n", cn->count);
     fprintf(stderr, "    OUT_ARCS={\n");
     dump_callarcs(cn->out_arcs);
@@ -232,47 +232,49 @@ dump_callnode(cov_callnode_t *cn, void *userdata)
     
 }
 
-static void
+/* TODO: move this into class cov_arc_t */
+void
 dump_arc(cov_arc_t *a)
 {
+    estring fromdesc = a->from()->describe();
+    estring todesc = a->to()->describe();
+
     fprintf(stderr, "                    ARC {\n");
-    fprintf(stderr, "                        FROM=%s:%u\n",
-    	    	    	    	a->from->function->name,
-				a->from->idx);
-    fprintf(stderr, "                        TO=%s:%u\n",
-    	    	    	    	a->to->function->name,
-				a->to->idx);
-    fprintf(stderr, "                        COUNT=%lld\n", a->count);
-    fprintf(stderr, "                        NAME=%s\n", a->name);
-    fprintf(stderr, "                        ON_TREE=%s\n", boolstr(a->on_tree));
-    fprintf(stderr, "                        FAKE=%s\n", boolstr(a->fake));
-    fprintf(stderr, "                        FALL_THROUGH=%s\n", boolstr(a->fall_through));
+    fprintf(stderr, "                        FROM=%s\n", fromdesc.data());
+    fprintf(stderr, "                        TO=%s\n", todesc.data());
+    fprintf(stderr, "                        COUNT=%lld\n", a->count());
+    fprintf(stderr, "                        NAME=%s\n", a->name());
+    fprintf(stderr, "                        ON_TREE=%s\n", boolstr(a->on_tree_));
+    fprintf(stderr, "                        FAKE=%s\n", boolstr(a->fake_));
+    fprintf(stderr, "                        FALL_THROUGH=%s\n", boolstr(a->fall_through_));
     fprintf(stderr, "                    }\n");
 }
 
-static void
+void
 dump_block(cov_block_t *b)
 {
-    GList *iter;
+    list_iterator_t<cov_arc_t> aiter;
+    list_iterator_t<cov_location_t>liter;
+    estring desc = b->describe();
     
     fprintf(stderr, "            BLOCK {\n");
-    fprintf(stderr, "                IDX=%s:%u\n", b->function->name, b->idx);
-    fprintf(stderr, "                COUNT=%lld\n",b->count);
+    fprintf(stderr, "                IDX=%s\n", desc.data());
+    fprintf(stderr, "                COUNT=%lld\n", b->count());
 
     fprintf(stderr, "                OUT_ARCS {\n");
-    for (iter = b->out_arcs ; iter != 0 ; iter = iter->next)
-    	dump_arc((cov_arc_t *)iter->data);
+    for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+    	dump_arc(*aiter);
     fprintf(stderr, "                }\n");
 
     fprintf(stderr, "                IN_ARCS {\n");
-    for (iter = b->in_arcs ; iter != 0 ; iter = iter->next)
-    	dump_arc((cov_arc_t *)iter->data);
+    for (aiter = b->in_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+    	dump_arc(*aiter);
     fprintf(stderr, "                }\n");
     
     fprintf(stderr, "                LOCATIONS {\n");
-    for (iter = b->locations ; iter != 0 ; iter = iter->next)
+    for (liter = b->location_iterator() ; liter != (cov_location_t *)0 ; ++liter)
     {
-    	cov_location_t *loc = (cov_location_t *)iter->data;
+    	cov_location_t *loc = *liter;
 	fprintf(stderr, "                    %s:%ld\n", loc->filename, loc->lineno);
     }
     fprintf(stderr, "                }\n");
@@ -282,32 +284,32 @@ dump_block(cov_block_t *b)
 static void
 dump_function(cov_function_t *fn)
 {
-    int i;
+    unsigned int i;
     
     fprintf(stderr, "        FUNCTION {\n");
-    fprintf(stderr, "            NAME=\"%s\"\n", fn->name);
-    for (i = 0 ; i < fn->blocks->len ; i++)
-    	dump_block((cov_block_t *)g_ptr_array_index(fn->blocks, i));
+    fprintf(stderr, "            NAME=\"%s\"\n", fn->name());
+    for (i = 0 ; i < fn->num_blocks() ; i++)
+    	dump_block(fn->nth_block(i));
     fprintf(stderr, "    }\n");
 }
 
 static void
 dump_file(cov_file_t *f, void *userdata)
 {
-    int i;
+    unsigned int i;
     
     fprintf(stderr, "FILE {\n");
-    fprintf(stderr, "    NAME=\"%s\"\n", f->name);
-    fprintf(stderr, "    MINIMAL_NAME=\"%s\"\n", cov_file_minimal_name(f));
-    for (i = 0 ; i < cov_file_num_functions(f) ; i++)
-    	dump_function(cov_file_nth_function(f, i));
+    fprintf(stderr, "    NAME=\"%s\"\n", f->name());
+    fprintf(stderr, "    MINIMAL_NAME=\"%s\"\n", f->minimal_name());
+    for (i = 0 ; i < f->num_functions() ; i++)
+    	dump_function(f->nth_function(i));
     fprintf(stderr, "}\n");
 }
 
 static void
 summarise(void)
 {
-    cov_file_foreach(dump_file, 0);
+    cov_file_t::foreach(dump_file, 0);
     cov_callnode_foreach(dump_callnode, 0);
 }
 
@@ -389,7 +391,7 @@ on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
     const char *filename = (const char *)filenames->data;
 
     srcw = new sourcewin_t();
-    srcw->set_filename(cov_unminimise_filename(filename), filename);
+    srcw->set_filename(cov_file_t::unminimise_name(filename), filename);
     srcw->show();
 }
 
