@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.48 2005-02-27 06:06:00 gnb Exp $
+dnl $Id: configure.in,v 1.49 2005-02-27 06:14:35 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -135,11 +135,17 @@ if test x$gui = xyes ; then
 	AC_CHECK_LIB(popt,poptGetContext,
     	    	     [ libpopt=yes ;  LIBS="$LIBS -lpopt" ],,
 		     $GGCOV_GUI_CFLAGS $GGCOV_GUI_LIBS)
-	AC_CHECK_LIB(gnome,gnome_program_init,
-		  AC_DEFINE(HAVE_GNOME_PROGRAM_INIT,1,[
+
+    	gprog=no
+	AC_CHECK_LIB(gnome,gnome_program_init,[gprog=yes],,[$GGCOV_GUI_LIBS])
+	if test $gprog = no ; then
+	    AC_CHECK_LIB(gnome-2,gnome_program_init,[gprog=yes],,[$GGCOV_GUI_LIBS])
+	fi
+	if test $gprog = yes ; then
+	      AC_DEFINE(HAVE_GNOME_PROGRAM_INIT,1,[
     Whether to use the GnomeProgram feature to initialise GNOME.
-    ]),,
-		  [$GGCOV_GUI_LIBS])
+    ])
+	fi
     else
 ifdef(`AM_PATH_LIBGLADE',[
 	# fall back to gtk 1.2
