@@ -23,7 +23,14 @@
 #include "common.h"
 #include "list.H"
 
-typedef unsigned long long  	count_t;
+#if HAVE_STDINT_H
+typedef uint64_t  	    	count_t;
+#define COV_COUNT_MAX	    	UINT64_MAX
+#else
+typedef unsigned long long int  count_t;
+#define COV_COUNT_MAX	    	18446744073709551615ULL
+#endif
+
 class cov_file_t;
 class cov_function_t;
 class cov_block_t;
@@ -66,6 +73,14 @@ struct cov_stats_t
     {
     	memset(this, 0, sizeof(*this));
     }
+};
+
+enum cov_status_t
+{
+    CS_COVERED,
+    CS_PARTCOVERED,
+    CS_UNCOVERED,
+    CS_UNINSTRUMENTED
 };
 
 #endif /* _ggcov_cov_types_H_ */
