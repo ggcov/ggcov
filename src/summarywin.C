@@ -25,7 +25,7 @@
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.3 2002-12-29 13:22:40 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.4 2002-12-29 13:23:46 gnb Exp $");
 
 extern GList *filenames;
 
@@ -139,7 +139,7 @@ populate_function_combo(GtkCombo *combo)
     	cov_function_t *fn = (cov_function_t *)iter->data;
 
     	label.truncate();
-	label.append_string(fn->name);
+	label.append_string(fn->name());
 
     	/* see if we need to present some more scope to uniquify the name */
 	if ((iter->next != 0 &&
