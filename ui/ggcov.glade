@@ -2419,7 +2419,7 @@
       <widget>
 	<class>GtkFrame</class>
 	<name>frame6</name>
-	<label>Distribution to Ancestors</label>
+	<label>Called from</label>
 	<label_xalign>0</label_xalign>
 	<shadow_type>GTK_SHADOW_NONE</shadow_type>
 	<child>
@@ -2483,7 +2483,7 @@
       <widget>
 	<class>GtkFrame</class>
 	<name>frame5</name>
-	<label>Distribution to Descendants</label>
+	<label>Calls to</label>
 	<label_xalign>0</label_xalign>
 	<shadow_type>GTK_SHADOW_NONE</shadow_type>
 	<child>

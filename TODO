@@ -101,11 +101,11 @@ x  ??? Minimise filenames only within the context of a program or library?
 
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
+--- CLOSED ---
+
 x   Callgraphwin should label the two lists something easier to
     understand.  Instead of "Distibution to Ancestors" something like
     "Called From".
-
---- CLOSED ---
 
 x  Colour code red/green the entries in the Function List, Calls List
    etc windows.
