@@ -1,6 +1,6 @@
 #
 # ggcov - A GTK frontend for exploring gcov coverage data
-# Copyright (c) 2001-2004 Greg Banks <gnb@alphalink.com.au>
+# Copyright (c) 2001-2005 Greg Banks <gnb@alphalink.com.au>
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,18 +16,22 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.12 2005-03-14 08:10:42 gnb Exp $
+# $Id: Makefile.am,v 1.13 2005-03-14 08:54:36 gnb Exp $
 #
 
 desktopdir=	$(datadir)/gnome/apps/Development
 pixmapsdir=	$(datadir)/pixmaps
+schemasdir=	$(sysconfdir)/gconf/schemas
 
 EXTRA_DIST=	ggcov.glade ggcov-glade2.glade \
 		ggcov64.png ggcov32.png ggcov32.xpm \
-		ggcov.desktop
+		ggcov.desktop ggcov.schemas
 
 if GUI
 pixmaps_DATA=	ggcov64.png
 pkgdata_DATA=	@GGCOV_GLADE_FILE@ ggcov64.png
 desktop_DATA=	ggcov.desktop
+endif
+if GCONF
+schemas_DATA=	ggcov.schemas
 endif

@@ -32,6 +32,10 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %clean
 rm -rf $RPM_BUILD_ROOT
 
+@GCONF@%post
+@GCONF@export GCONF_CONFIG_SOURCE=`gconftool-2 --get-default-source`
+@GCONF@gconftool-2 --makefile-install-rule %{_sysconfdir}/gconf/schemas/ggcov.schemas > /dev/null
+
 %files
 %defattr(-,root,root)
 %{_bindir}/ggcov
@@ -39,11 +43,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ggcov/
 %{_datadir}/gnome/apps/Development/ggcov.desktop
 %{_datadir}/pixmaps/ggcov64.png
+@GCONF@%{_sysconfdir}/gconf/schemas/ggcov.schemas
 %doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
 %docdir %{_mandir}
 %{_mandir}/man1/ggcov.1*
 
 %changelog
+* Mon Mar 14 2005 Greg Banks <gnb@alphalink.com.au>
+- Added gconf schema
 * Thu Jul 17 2003 Greg Banks <gnb@alphalink.com.au>
 - Full GTK2 features, GNOME desktop file.
 * Sat Nov 24 2001 Greg Banks <gnb@alphalink.com.au>

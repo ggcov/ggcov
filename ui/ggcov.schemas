@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE gconfschemafile SYSTEM "/usr/share/sgml/gconf/gconf-1.0.dtd">
+<!--
+  ggcov - A GTK frontend for exploring gcov coverage data
+  Copyright (c) 2005 Greg Banks <gnb@alphalink.com.au>
+
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+  $Id: ggcov.schemas,v 1.1 2005-03-14 08:54:36 gnb Exp $
+
+  Note: this schema is not necessary for ggcov's correct operation,
+  it merely provides textual comments for users of gconf-editor.
+  In particular, the default values are also implemented by the
+  C++ source.
+  -->
+<gconfschemafile>
+  <schemalist>
+
+    <schema>
+      <key>/schemas/apps/ggcov/colors/covered_background</key>
+      <applyto>/apps/ggcov/colors/covered_background</applyto>
+      <owner>ggcov</owner>
+      <type>string</type>
+      <default>#8080d0d08080</default>
+      <locale name="C">
+	<short>Covered backgound color</short>
+	<long>Color used to draw the backgound of boxes in the
+	Call Graph window to show that the corresponding object
+	is completely covered, i.e. all parts have been executed
+	at least once.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/colors/covered_foreground</key>
+      <applyto>/apps/ggcov/colors/covered_foreground</applyto>
+      <owner>ggcov</owner>
+      <type>string</type>
+      <default>#0000c0c00000</default>
+      <locale name="C">
+	<short>Covered foregound color</short>
+	<long>Color used to draw the foreground of source text
+	lines and list entries to show that the corresponding
+	object is completely covered, i.e. all parts have been
+	executed at least once.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/colors/partcovered_background</key>
+      <applyto>/apps/ggcov/colors/partcovered_background</applyto>
+      <owner>ggcov</owner>
+      <type>string</type>
+      <default>#d0d0d0d08080</default>
+      <locale name="C">
+	<short>Partially covered backgound color</short>
+	<long>Color used to draw the backgound of boxes in the
+	Call Graph window to show that the corresponding object
+	is partially covered, i.e. some but not all parts have 
+	been executed at least once.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/colors/partcovered_foreground</key>
+      <applyto>/apps/ggcov/colors/partcovered_foreground</applyto>
+      <owner>ggcov</owner>
+      <type>string</type>
+      <default>#a0a0a0a00000</default>
+      <locale name="C">
+	<short>Partially covered foregound color</short>
+	<long>Color used to draw the foreground of source text
+	lines and list entries to show that the corresponding
+	object is partially covered, i.e. some but not all parts
+	have been executed at least once.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/colors/suppressed_background</key>
+      <applyto>/apps/ggcov/colors/suppressed_background</applyto>
+      <owner>ggcov</owner>
+      <type>string</type>
+      <default>#80808080d0d0</default>
+      <locale name="C">
+	<short>Suppressed backgound color</short>
+	<long>Color used to draw the backgound of boxes in the
+	Call Graph window to show that the corresponding object
+	is suppressed, e.g. inside an #ifdef which is mentioned
+	in the global ifdef suppression list.  Suppressed objects
+	are normally hidden from view.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/colors/suppressed_foreground</key>
+      <applyto>/apps/ggcov/colors/suppressed_foreground</applyto>
+      <owner>ggcov</owner>
+      <type>string</type>
+      <default>#000000008080</default>
+      <locale name="C">
+	<short>Suppressed foregound color</short>
+	<long>Color used to draw the foreground of source text
+	lines and list entries to show that the corresponding
+	object is suppressed, e.g. inside an #ifdef which is
+	mentioned in the global ifdef suppression list.  Suppressed
+	objects are normally hidden from view.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/colors/uncovered_background</key>
+      <applyto>/apps/ggcov/colors/uncovered_background</applyto>
+      <owner>ggcov</owner>
+      <type>string</type>
+      <default>#d0d080808080</default>
+      <locale name="C">
+	<short>Uncovered backgound color</short>
+	<long>Color used to draw the backgound of boxes in the
+	Call Graph window to show that the corresponding object
+	is uncovered, i.e. no parts have been executed.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/colors/uncovered_foreground</key>
+      <applyto>/apps/ggcov/colors/uncovered_foreground</applyto>
+      <owner>ggcov</owner>
+      <type>string</type>
+      <default>#c0c000000000</default>
+      <locale name="C">
+	<short>Uncovered foregound color</short>
+	<long>Color used to draw the foreground of source text
+	lines and list entries to show that the corresponding
+	object is uncovered, i.e. no parts have been executed.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/colors/uninstrumented_background</key>
+      <applyto>/apps/ggcov/colors/uninstrumented_background</applyto>
+      <owner>ggcov</owner>
+      <type>string</type>
+      <default>#a0a0a0a0a0a0</default>
+      <locale name="C">
+	<short>Uninstrumented backgound color</short>
+	<long>Color used to draw the backgound of boxes in the
+	Call Graph window to show that the corresponding object
+	is uninstrumented, i.e. no execution counts are available.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/colors/uninstrumented_foreground</key>
+      <applyto>/apps/ggcov/colors/uninstrumented_foreground</applyto>
+      <owner>ggcov</owner>
+      <type>string</type>
+      <default>#000000000000</default>
+      <locale name="C">
+	<short>Uninstrumented foregound color</short>
+	<long>Color used to draw the foreground of source text
+	lines and list entries to show that the corresponding
+	object is uninstrumented, i.e. no execution counts are
+	available.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/general/reuse_srcwin</key>
+      <applyto>/apps/ggcov/general/reuse_srcwin</applyto>
+      <owner>ggcov</owner>
+      <type>bool</type>
+      <default>false</default>
+      <locale name="C">
+	<short>Reuse Source window</short>
+	<long>If true then the same Source window is used to show
+	source every time a View button is clicked, otherwise a
+	new Source window is opened.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/general/reuse_summwin</key>
+      <applyto>/apps/ggcov/general/reuse_summwin</applyto>
+      <owner>ggcov</owner>
+      <type>bool</type>
+      <default>false</default>
+      <locale name="C">
+	<short>Reuse Summary window</short>
+	<long>If true then the same Source window is used to show
+	source every time a Summarise menu item is selected, otherwise
+	a new Summary window is opened.</long>
+      </locale>
+    </schema>
+
+  </schemalist>
+</gconfschemafile>
