@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.10 2004-10-24 06:48:57 gnb Exp $
+# $Id: Makefile.am,v 1.11 2004-11-20 09:02:48 gnb Exp $
 #
 
 desktopdir=	$(datadir)/gnome/apps/Development
@@ -26,6 +26,8 @@ EXTRA_DIST=	ggcov.glade ggcov-glade2.glade \
 		ggcov64.png ggcov32.png ggcov32.xpm \
 		ggcov.desktop
 
+if GUI
 pixmaps_DATA=	ggcov64.png
 pkgdata_DATA=	@GGCOV_GLADE_FILE@ ggcov64.png
 desktop_DATA=	ggcov.desktop
+endif
