@@ -139,9 +139,11 @@ public:
     /* dtor */
     ~list_t()
     {
+#if 0
     	// User must clear out list first
     	assert(head_ == 0);
     	assert(tail_ == 0);
+#endif
     }
 
     void append(T *item)
@@ -163,6 +165,14 @@ public:
     void insert_sorted(T *item, gint (*compare)(const T*, const T*))
     {
     	head_ = g_list_insert_sorted(head_, (gpointer)item, (GCompareFunc)compare);
+	// update tail_ pointer only if its no longer valid 
+	if (tail_ == 0 || tail_->next != 0)
+	    tail_ = g_list_last(head_);
+    }
+    
+    void sort(gint (*compare)(const T*, const T*))
+    {
+    	head_ = g_list_sort(head_, (GCompareFunc)compare);
 	// update tail_ pointer only if its no longer valid 
 	if (tail_ == 0 || tail_->next != 0)
 	    tail_ = g_list_last(head_);
