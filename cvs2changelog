@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: cvs2changelog,v 1.5.2.1 2003-08-03 09:55:18 gnb Exp $
+# $Id: cvs2changelog,v 1.5.2.2 2003-08-03 09:56:16 gnb Exp $
 #
 # Shell script to build a change log for a new release
 # from CVS logs. The change log will still need some
@@ -211,7 +211,7 @@ function same_branch(r1, r2,     a1, a2, n1, n2, i) {
 {
 #    printf "197: state=%d inattic=%d rev=\"%s\" tag1rev=\"%s\"\n", state, inattic, rev, tag1rev;
     if (state == 1 && !inattic && rev != tag1rev && same_branch(rev, tag2rev)) {
-    	printf "229: using rev=%s\n", rev >"/dev/stderr";
+#    	printf "229: using rev=%s\n", rev >"/dev/stderr";
 	lines[nlines++] = $0;
     } else if (state == 2 && $1 == TAG1":") {
     	tag1rev = $2;
