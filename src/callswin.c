@@ -22,14 +22,17 @@
 #include "cov.h"
 #include "estring.h"
 
-CVSID("$Id: callswin.c,v 1.1 2001-12-02 07:28:05 gnb Exp $");
+CVSID("$Id: callswin.c,v 1.2 2002-09-28 00:13:01 gnb Exp $");
 
-#define COL_COUNT   0
-#define COL_ARC     1
-#define COL_NAME    2
-#define COL_MAX     3
+#define COL_FROM    0
+#define COL_TO	    1
+#define COL_LINE    2
+#define COL_ARC     3
+#define COL_COUNT   4
+#define COL_NUM     5
 
 static const char callswin_window_key[] = "callswin_key";
+static const char all_functions[] = N_("All Functions");
 
 static void callswin_populate(callswin_t*);
 static void callswin_update(callswin_t*);
@@ -53,8 +56,12 @@ callswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
     	return ulcmp(arcno(a1), arcno(a2));
 #undef arcno
 	
-    case COL_NAME:
+    case COL_TO:
     	return strcmp(safestr(a1->name), safestr(a2->name));
+	
+    case COL_FROM:
+    	return strcmp(safestr(a1->from->function->name),
+	    	      safestr(a2->from->function->name));
 	
     default:
 	return 0;
@@ -77,14 +84,18 @@ callswin_new(void)
     cw->window = glade_xml_get_widget(xml, "calls");
     ui_register_window(cw->window);
     
-    cw->function_combo = glade_xml_get_widget(xml, "calls_function_combo");
-    cw->function_view = glade_xml_get_widget(xml, "calls_function_view");
+    cw->from_function_combo = glade_xml_get_widget(xml, "calls_from_function_combo");
+    cw->from_function_view = glade_xml_get_widget(xml, "calls_from_function_view");
+
+    cw->to_function_combo = glade_xml_get_widget(xml, "calls_to_function_combo");
+    cw->to_function_view = glade_xml_get_widget(xml, "calls_to_function_view");
 
     cw->clist = glade_xml_get_widget(xml, "calls_clist");
     gtk_clist_column_titles_passive(GTK_CLIST(cw->clist));
-    ui_clist_init_column_arrow(GTK_CLIST(cw->clist), COL_COUNT);
+    ui_clist_init_column_arrow(GTK_CLIST(cw->clist), COL_FROM);
+    ui_clist_init_column_arrow(GTK_CLIST(cw->clist), COL_TO);
     ui_clist_init_column_arrow(GTK_CLIST(cw->clist), COL_ARC);
-    ui_clist_init_column_arrow(GTK_CLIST(cw->clist), COL_NAME);
+    ui_clist_init_column_arrow(GTK_CLIST(cw->clist), COL_COUNT);
     gtk_clist_set_compare_func(GTK_CLIST(cw->clist), callswin_compare);
     ui_clist_set_sort_column(GTK_CLIST(cw->clist), COL_ARC);
     ui_clist_set_sort_type(GTK_CLIST(cw->clist), GTK_SORT_ASCENDING);
@@ -124,49 +135,16 @@ callswin_from_widget(GtkWidget *w)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-/* 
- * TODO: this needs to be common code, it's used in at least 2 places
- */
-static int
-compare_functions(const void *a, const void *b)
-{
-    const cov_function_t *fa = (const cov_function_t *)a;
-    const cov_function_t *fb = (const cov_function_t *)b;
-    int ret;
-    
-    ret = strcmp(fa->name, fb->name);
-    if (ret == 0)
-    	ret = strcmp(fa->file->name, fb->file->name);
-    return ret;
-}
-
 static void
-add_functions(cov_file_t *f, void *userdata)
+calls_populate_function_combo(callswin_t *cw, GtkCombo *combo)
 {
-    GList **listp = (GList **)userdata;
-    unsigned fnidx;
-    
-    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
-    {
-    	cov_function_t *fn = cov_file_nth_function(f, fnidx);
-	
-	if (!strncmp(fn->name, "_GLOBAL_", 8))
-	    continue;
-	*listp = g_list_prepend(*listp, fn);
-    }
-}
-
-static void
-calls_populate_function_combo(GtkCombo *combo)
-{
-    GList *list = 0, *iter;
+    GList *iter;
     estring label;
     
-    cov_file_foreach(add_functions, &list);
-    list = g_list_sort(list, compare_functions);
-    
+    ui_combo_add_data(combo, _(all_functions), 0);
+
     estring_init(&label);
-    for (iter = list ; iter != 0 ; iter = iter->next)
+    for (iter = cw->functions ; iter != 0 ; iter = iter->next)
     {
     	cov_function_t *fn = (cov_function_t *)iter->data;
 
@@ -187,9 +165,6 @@ calls_populate_function_combo(GtkCombo *combo)
     	ui_combo_add_data(combo, label.data, fn);
     }
     estring_free(&label);
-    
-    while (list != 0)
-	list = g_list_remove_link(list, list);
 }
 
 static void
@@ -198,41 +173,39 @@ callswin_populate(callswin_t *cw)
 #if DEBUG
     fprintf(stderr, "callswin_populate\n");
 #endif
-    
-    calls_populate_function_combo(GTK_COMBO(cw->function_combo));
+    cw->functions = cov_list_functions();
+    calls_populate_function_combo(cw, GTK_COMBO(cw->from_function_combo));
+    calls_populate_function_combo(cw, GTK_COMBO(cw->to_function_combo));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-callswin_update(callswin_t *cw)
+callswin_update_for_func(
+    callswin_t *cw,
+    cov_function_t *from_fn,
+    cov_function_t *to_fn)
 {
-    cov_function_t *fn = ui_combo_get_current_data(
-	    	    	    	GTK_COMBO(cw->function_combo));
     unsigned int bidx;
     int row;
     GList *aiter;
-    char *text[COL_MAX];
+    char *text[COL_NUM];
     char countbuf[32];
     char arcbuf[64];
-    
-#if DEBUG
-    fprintf(stderr, "callswin_update\n");
-#endif
-    ui_window_set_title(cw->window, fn->name);
+    char linebuf[32];
 
-    gtk_clist_freeze(GTK_CLIST(cw->clist));
-    gtk_clist_clear(GTK_CLIST(cw->clist));
-    
-    for (bidx = 0 ; bidx < fn->blocks->len-2 ; bidx++)
+    for (bidx = 0 ; bidx < from_fn->blocks->len-2 ; bidx++)
     {
-    	cov_block_t *b = cov_function_nth_block(fn, bidx);
+    	cov_block_t *b = cov_function_nth_block(from_fn, bidx);
 
 	for (aiter = b->out_arcs ; aiter != 0 ; aiter = aiter->next)
 	{
 	    cov_arc_t *a = (cov_arc_t *)aiter->data;
     	    
 	    if (!a->fake)
+	    	continue;
+	    if (to_fn != 0 &&
+	    	(a->name == 0 || strcmp(to_fn->name, a->name)))
 	    	continue;
 		
 	    snprintf(countbuf, sizeof(countbuf), "%llu", a->from->count);
@@ -241,11 +214,69 @@ callswin_update(callswin_t *cw)
 	    snprintf(arcbuf, sizeof(arcbuf), "B%u A%u", b->idx, a->idx);
 	    text[COL_ARC] = arcbuf;
 	    
-	    if ((text[COL_NAME] = a->name) == 0)
-	    	text[COL_NAME] = "(unknown)";
+	    snprintf(linebuf, sizeof(linebuf), "%u",
+	    	    cov_arc_get_from_location(a)->lineno);
+	    text[COL_LINE] = linebuf;
+	    
+	    text[COL_FROM] = a->from->function->name;
+	    if ((text[COL_TO] = a->name) == 0)
+	    	text[COL_TO] = "(unknown)";
 		
 	    row = gtk_clist_append(GTK_CLIST(cw->clist), text);
 	    gtk_clist_set_row_data(GTK_CLIST(cw->clist), row, a);
+	}
+    }
+}
+
+static void
+callswin_update(callswin_t *cw)
+{
+    cov_function_t *from_fn = ui_combo_get_current_data(
+	    	    	    	GTK_COMBO(cw->from_function_combo));
+    cov_function_t *to_fn = ui_combo_get_current_data(
+	    	    	    	GTK_COMBO(cw->to_function_combo));
+    estring title;
+    
+#if DEBUG
+    fprintf(stderr, "callswin_update\n");
+#endif
+    estring_init(&title);
+    switch ((from_fn == 0 ? 0 : 2)|(to_fn == 0 ? 0 : 1))
+    {
+    case 0:
+	break;
+    case 1:
+    	estring_append_printf(&title, _("to %s"), to_fn->name);
+	break;
+    case 2:
+    	estring_append_printf(&title, _("from %s"), from_fn->name);
+	break;
+    case 3:
+    	estring_append_printf(&title, _("from %s to %s"),
+	    	    	      from_fn->name, to_fn->name);
+	break;
+    }
+    ui_window_set_title(cw->window, title.data);
+    estring_free(&title);
+
+
+    gtk_clist_freeze(GTK_CLIST(cw->clist));
+    gtk_clist_clear(GTK_CLIST(cw->clist));
+
+    if (from_fn != 0)
+    {
+    	callswin_update_for_func(cw, from_fn, to_fn);
+    }
+    else
+    {
+    	/* all functions */
+	GList *iter;
+	
+	for (iter = cw->functions ; iter != 0 ; iter = iter->next)
+	{
+	    from_fn = (cov_function_t *)iter->data;
+	    
+	    callswin_update_for_func(cw, from_fn, to_fn);
 	}
     }
     
@@ -257,19 +288,30 @@ callswin_update(callswin_t *cw)
 
 /* TODO: this needs to be common code too */
 static void
-callswin_show_source(
-    const char *filename,
-    unsigned long startline,
-    unsigned long endline)
+callswin_show_range(
+    const cov_location_t *start,
+    const cov_location_t *end)
 {
     sourcewin_t *srcw = sourcewin_new();
     
-    sourcewin_set_filename(srcw, filename);
-    if (startline > 0)
+    if (end == 0)
+    	end = start;
+
+    sourcewin_set_filename(srcw, start->filename);
+    if (start->lineno > 0)
     {
-	sourcewin_ensure_visible(srcw, startline);
-	sourcewin_select_region(srcw, startline, endline);
+	sourcewin_ensure_visible(srcw, start->lineno);
+	sourcewin_select_region(srcw, start->lineno, end->lineno);
     }
+}
+
+static void
+callswin_show_function(cov_function_t *fn)
+{
+    if (fn != 0)
+	callswin_show_range(
+    	    cov_function_get_first_location(fn),
+    	    cov_function_get_last_location(fn));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -290,7 +332,7 @@ on_calls_exit_activate(GtkWidget *w, gpointer data)
 }
 
 GLADE_CALLBACK void
-on_calls_function_entry_changed(GtkWidget *w, gpointer data)
+on_calls_from_function_entry_changed(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_from_widget(w);
 
@@ -298,17 +340,54 @@ on_calls_function_entry_changed(GtkWidget *w, gpointer data)
 }
 
 GLADE_CALLBACK void
-on_calls_function_view_clicked(GtkWidget *w, gpointer data)
+on_calls_to_function_entry_changed(GtkWidget *w, gpointer data)
+{
+    callswin_t *cw = callswin_from_widget(w);
+
+    callswin_update(cw);    
+}
+
+GLADE_CALLBACK void
+on_calls_from_function_view_clicked(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_from_widget(w);
     cov_function_t *fn = ui_combo_get_current_data(
-	    	    	    	GTK_COMBO(cw->function_combo));
-    const cov_location_t *start, *end;
+	    	    	    	GTK_COMBO(cw->from_function_combo));
+    callswin_show_function(fn);
+}
 
-    start = cov_function_get_first_location(fn);
-    end = cov_function_get_last_location(fn);
+GLADE_CALLBACK void
+on_calls_to_function_view_clicked(GtkWidget *w, gpointer data)
+{
+    callswin_t *cw = callswin_from_widget(w);
+    cov_function_t *fn = ui_combo_get_current_data(
+	    	    	    	GTK_COMBO(cw->to_function_combo));
+    callswin_show_function(fn);
+}
 
-    callswin_show_source(start->filename, start->lineno, end->lineno);
+GLADE_CALLBACK void
+on_calls_clist_button_press_event(
+    GtkWidget *w,
+    GdkEvent *event,
+    gpointer data)
+{
+    callswin_t *cw = callswin_from_widget(w);
+    int row, col;
+    cov_arc_t *a;
+
+    if (event->type == GDK_2BUTTON_PRESS &&
+	gtk_clist_get_selection_info(GTK_CLIST(w),
+	    	    	    	     event->button.x, event->button.y,
+				     &row, &col))
+    {
+#if DEBUG
+    	fprintf(stderr, "on_calls_clist_button_press_event: row=%d col=%d\n",
+	    	    	row, col);
+#endif
+	a = gtk_clist_get_row_data(GTK_CLIST(w), row);
+	
+	callswin_show_range(cov_arc_get_from_location(a), 0);
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

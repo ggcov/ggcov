@@ -27,10 +27,14 @@ typedef struct
     GtkWidget *window;
     gboolean deleting:1;    /* handle possible GUI recursion crap */
 
-    GtkWidget *function_combo;
-    GtkWidget *function_view;
+    GtkWidget *from_function_combo;
+    GtkWidget *from_function_view;
+
+    GtkWidget *to_function_combo;
+    GtkWidget *to_function_view;
 
     GtkWidget *clist;
+    GList *functions;
 } callswin_t;
 
 
