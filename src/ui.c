@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.23 2005-03-05 14:56:33 gnb Exp $");
+CVSID("$Id: ui.c,v 1.24 2005-03-05 14:59:30 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -694,6 +694,19 @@ ui_text_on_destroy(GtkWidget *w, gpointer closure)
     }
     g_array_free(td->offsets_by_line, /*free_segment*/TRUE);
     g_free(td);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+ui_list_set_column_visibility(GtkWidget *w, int col, gboolean vis)
+{
+#if !GTK2
+    gtk_clist_set_column_visibility(GTK_CLIST(w), col, vis);
+#else
+    gtk_tree_view_column_set_visible(
+    	    gtk_tree_view_get_column(GTK_TREE_VIEW(w), col),
+	    vis);
 }
 
 static void

@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.13 2005-03-05 14:56:32 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.14 2005-03-05 14:59:30 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -362,14 +362,8 @@ on_calls_call_from_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
     
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_FROM,
-    	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(cw->clist_), COL_FROM),
-    	    GTK_CHECK_MENU_ITEM(w)->active);
-#endif
+    ui_list_set_column_visibility(cw->clist_, COL_FROM,
+    	    	    	          GTK_CHECK_MENU_ITEM(w)->active);
 }
 
 GLADE_CALLBACK void
@@ -377,14 +371,8 @@ on_calls_call_to_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
     
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_TO,
-    	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(cw->clist_), COL_TO),
-    	    GTK_CHECK_MENU_ITEM(w)->active);
-#endif
+    ui_list_set_column_visibility(cw->clist_, COL_TO,
+    	    	    	          GTK_CHECK_MENU_ITEM(w)->active);
 }
 
 GLADE_CALLBACK void
@@ -392,14 +380,8 @@ on_calls_line_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
     
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_LINE,
-    	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(cw->clist_), COL_LINE),
-    	    GTK_CHECK_MENU_ITEM(w)->active);
-#endif
+    ui_list_set_column_visibility(cw->clist_, COL_LINE,
+    	    	    	          GTK_CHECK_MENU_ITEM(w)->active);
 }
 
 GLADE_CALLBACK void
@@ -407,14 +389,8 @@ on_calls_arc_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
     
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_ARC,
-    	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(cw->clist_), COL_ARC),
-    	    GTK_CHECK_MENU_ITEM(w)->active);
-#endif
+    ui_list_set_column_visibility(cw->clist_, COL_ARC,
+    	    	    	          GTK_CHECK_MENU_ITEM(w)->active);
 }
 
 GLADE_CALLBACK void
@@ -422,14 +398,8 @@ on_calls_count_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
     
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_COUNT,
-    	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(cw->clist_), COL_COUNT),
-    	    GTK_CHECK_MENU_ITEM(w)->active);
-#endif
+    ui_list_set_column_visibility(cw->clist_, COL_COUNT,
+    	    	    	          GTK_CHECK_MENU_ITEM(w)->active);
 }
 
 GLADE_CALLBACK void

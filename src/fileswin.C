@@ -25,7 +25,7 @@
 #include "prefs.H"
 #include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.24 2005-03-05 14:56:32 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.25 2005-03-05 14:59:30 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -513,14 +513,8 @@ on_files_blocks_check_activate(GtkWidget *w, gpointer data)
 
     dprintf0(D_FILESWIN, "on_files_blocks_check_activate\n");
 
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(fw->ctree_), COL_BLOCKS,
+    ui_list_set_column_visibility(fw->ctree_, COL_BLOCKS,
     	    	    GTK_CHECK_MENU_ITEM(fw->blocks_check_)->active);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(fw->ctree_), COL_BLOCKS),
-    	    GTK_CHECK_MENU_ITEM(fw->blocks_check_)->active);
-#endif
 }
 
 GLADE_CALLBACK void
@@ -530,14 +524,8 @@ on_files_lines_check_activate(GtkWidget *w, gpointer data)
 
     dprintf0(D_FILESWIN, "on_files_lines_check_activate\n");
 
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(fw->ctree_), COL_LINES,
+    ui_list_set_column_visibility(fw->ctree_, COL_LINES,
     	    	    GTK_CHECK_MENU_ITEM(fw->lines_check_)->active);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(fw->ctree_), COL_LINES),
-    	    GTK_CHECK_MENU_ITEM(fw->lines_check_)->active);
-#endif
 }
 
 GLADE_CALLBACK void
@@ -547,14 +535,8 @@ on_files_functions_check_activate(GtkWidget *w, gpointer data)
 
     dprintf0(D_FILESWIN, "on_files_functions_check_activate\n");
 
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(fw->ctree_), COL_FUNCTIONS,
+    ui_list_set_column_visibility(fw->ctree_, COL_FUNCTIONS,
     	    	    GTK_CHECK_MENU_ITEM(fw->lines_check_)->active);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(fw->ctree_), COL_FUNCTIONS),
-    	    GTK_CHECK_MENU_ITEM(fw->lines_check_)->active);
-#endif
 }
 
 GLADE_CALLBACK void
@@ -564,14 +546,8 @@ on_files_calls_check_activate(GtkWidget *w, gpointer data)
 
     dprintf0(D_FILESWIN, "on_files_calls_check_activate\n");
 
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(fw->ctree_), COL_CALLS,
+    ui_list_set_column_visibility(fw->ctree_, COL_CALLS,
     	    	    GTK_CHECK_MENU_ITEM(fw->calls_check_)->active);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(fw->ctree_), COL_CALLS),
-    	    GTK_CHECK_MENU_ITEM(fw->calls_check_)->active);
-#endif
 }
 
 GLADE_CALLBACK void
@@ -581,14 +557,8 @@ on_files_branches_check_activate(GtkWidget *w, gpointer data)
 
     dprintf0(D_FILESWIN, "on_files_branches_check_activate\n");
 
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(fw->ctree_), COL_BRANCHES,
+    ui_list_set_column_visibility(fw->ctree_, COL_BRANCHES,
     	    	    GTK_CHECK_MENU_ITEM(fw->branches_check_)->active);
-#else
-    gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(fw->ctree_), COL_BRANCHES),
-    	    GTK_CHECK_MENU_ITEM(fw->branches_check_)->active);
-#endif
 }
 
 GLADE_CALLBACK void
