@@ -23,8 +23,9 @@
 #include "cov.H"
 #include "list.H"
 #include "prefs.H"
+#include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.11 2003-05-31 14:38:42 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.12 2003-05-31 15:01:57 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -200,13 +201,12 @@ fileswin_t::populate()
 	file_rec_t *parent, *fr;
 	char *buf = g_strdup((*iter)->minimal_name());
 	char *end = buf + strlen(buf);
-	char *part;
+	tok_t tok(buf, "/");
+	const char *part;
 
     	parent = root_;
 
-	for (part = strtok(buf, "/") ; 
-	     part != 0 ; 
-	     part = strtok(0, "/"))
+    	while ((part = tok.next()) != 0)
 	{
 	    if (part + strlen(part) == end)
 	    {
@@ -231,7 +231,6 @@ fileswin_t::populate()
 	    }
 	    parent = fr;
 	}
-	g_free(buf);
     }
 
 #if DEBUG > 2
