@@ -44,7 +44,7 @@ private:
     }
 
 
-    GList *functions_;	    /* list of func_rec_t */
+    list_t<cov_function_scope_t> functions_;
     
     GtkWidget *lines_check_;
     GtkWidget *calls_check_;

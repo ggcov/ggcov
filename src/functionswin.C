@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: functionswin.C,v 1.7 2003-04-05 23:53:21 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.8 2003-05-31 14:39:22 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -31,24 +31,6 @@ CVSID("$Id: functionswin.C,v 1.7 2003-04-05 23:53:21 gnb Exp $");
 #define COL_BRANCHES	2
 #define COL_FUNCTION	3
 #define NUM_COLS    	4
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-struct func_rec_t
-{
-    cov_function_t *function;
-    cov_stats_t stats;
-
-    func_rec_t(cov_function_t *fn)
-    {
-	function = fn;
-	fn->calc_stats(&stats);
-    }
-    
-    ~func_rec_t()
-    {
-    }
-};
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -64,28 +46,30 @@ ratiocmp(double r1, double r2)
 static int
 functionswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
 {
-    func_rec_t *fr1 = (func_rec_t *)((GtkCListRow *)ptr1)->data;
-    func_rec_t *fr2 = (func_rec_t *)((GtkCListRow *)ptr2)->data;
+    cov_function_scope_t *fs1 = (cov_function_scope_t *)((GtkCListRow *)ptr1)->data;
+    cov_function_scope_t *fs2 = (cov_function_scope_t *)((GtkCListRow *)ptr2)->data;
+    const cov_stats_t *s1 = fs1->get_stats();
+    const cov_stats_t *s2 = fs2->get_stats();
 
     switch (clist->sort_column)
     {
     case COL_LINES:
     	return ratiocmp(
-    	    	    ratio(fr1->stats.lines_executed, fr1->stats.lines),
-    	    	    ratio(fr2->stats.lines_executed, fr2->stats.lines));
+    	    	    ratio(s1->lines_executed, s1->lines),
+    	    	    ratio(s2->lines_executed, s2->lines));
 	
     case COL_CALLS:
     	return ratiocmp(
-    	    	    ratio(fr1->stats.calls_executed, fr1->stats.calls),
-    	    	    ratio(fr2->stats.calls_executed, fr2->stats.calls));
+    	    	    ratio(s1->calls_executed, s1->calls),
+    	    	    ratio(s2->calls_executed, s2->calls));
 	
     case COL_BRANCHES:
     	return ratiocmp(
-    	    	    ratio(fr1->stats.branches_executed, fr1->stats.branches),
-    	    	    ratio(fr2->stats.branches_executed, fr2->stats.branches));
+    	    	    ratio(s1->branches_executed, s1->branches),
+    	    	    ratio(s2->branches_executed, s2->branches));
 	
     case COL_FUNCTION:
-    	return strcmp(fr1->function->name(), fr2->function->name());
+    	return strcmp(fs1->function()->name(), fs2->function()->name());
 	
     default:
 	return 0;
@@ -131,7 +115,7 @@ functionswin_t::functionswin_t()
 
 functionswin_t::~functionswin_t()
 {
-    listdelete(functions_, func_rec_t, delete);
+    functions_.delete_all();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -155,7 +139,7 @@ functionswin_t::populate()
     	    cov_function_t *fn = f->nth_function(fnidx);
 
 	    if (!fn->is_suppressed())
-		functions_ = g_list_prepend(functions_, new func_rec_t(fn));
+		functions_.prepend(new cov_function_scope_t(fn));
 	}
     }
 
@@ -184,7 +168,7 @@ format_stat(
 void
 functionswin_t::update()
 {
-    GList *iter;
+    list_iterator_t<cov_function_scope_t> iter;
     gboolean percent_flag;
     GdkColor *color;
     char *text[NUM_COLS];
@@ -201,36 +185,36 @@ functionswin_t::update()
     gtk_clist_freeze(GTK_CLIST(clist_));
     gtk_clist_clear(GTK_CLIST(clist_));
     
-    for (iter = functions_ ; iter != 0 ; iter = iter->next)
+    for (iter = functions_.first() ; iter != (cov_function_scope_t *)0 ; ++iter)
     {
-    	func_rec_t *fr = (func_rec_t *)iter->data;
+	const cov_stats_t *stats = (*iter)->get_stats();
 	int row;
 
     	format_stat(lines_pc_buf, sizeof(lines_pc_buf), percent_flag,
-	    	       fr->stats.lines_executed, fr->stats.lines);
+	    	       stats->lines_executed, stats->lines);
 	text[COL_LINES] = lines_pc_buf;
 	
     	format_stat(calls_pc_buf, sizeof(calls_pc_buf), percent_flag,
-	    	       fr->stats.calls_executed, fr->stats.calls);
+	    	       stats->calls_executed, stats->calls);
 	text[COL_CALLS] = calls_pc_buf;
 	
     	format_stat(branches_pc_buf, sizeof(branches_pc_buf), percent_flag,
-	    	       fr->stats.branches_executed, fr->stats.branches);
+	    	       stats->branches_executed, stats->branches);
 	text[COL_BRANCHES] = branches_pc_buf;
 	
-	text[COL_FUNCTION] = (char *)fr->function->name();
+	text[COL_FUNCTION] = (char *)(*iter)->function()->name();
 	
-	if (fr->stats.lines == 0)
+	if (stats->lines == 0)
 	    color = &prefs.uninstrumented_foreground;
-	else if (fr->stats.lines_executed == 0)
+	else if (stats->lines_executed == 0)
 	    color = &prefs.uncovered_foreground;
-	else if (fr->stats.lines_executed < fr->stats.lines)
+	else if (stats->lines_executed < stats->lines)
 	    color = &prefs.partcovered_foreground;
 	else
 	    color = &prefs.covered_foreground;
 	
 	row = gtk_clist_prepend(GTK_CLIST(clist_), text);
-	gtk_clist_set_row_data(GTK_CLIST(clist_), row, fr);
+	gtk_clist_set_row_data(GTK_CLIST(clist_), row, (*iter));
 	gtk_clist_set_foreground(GTK_CLIST(clist_), row, color);
     }
     
@@ -283,7 +267,7 @@ on_functions_clist_button_press_event(
     gpointer data)
 {
     int row, col;
-    func_rec_t *fr;
+    cov_function_scope_t *fs;
 
     if (event->type == GDK_2BUTTON_PRESS &&
 	gtk_clist_get_selection_info(GTK_CLIST(w),
@@ -295,9 +279,9 @@ on_functions_clist_button_press_event(
     	fprintf(stderr, "on_functions_clist_button_press_event: row=%d col=%d\n",
 	    	    	row, col);
 #endif
-	fr = (func_rec_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
+	fs = (cov_function_scope_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
 	
-	sourcewin_t::show_function(fr->function);
+	sourcewin_t::show_function(fs->function());
     }
 }
 
