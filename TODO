@@ -3,6 +3,9 @@
 
 x  Support new gcc 3.2 .bbg file format.
 
+x  Make cov_file_t::read_bbg_function() more robust in the face
+   of bad data (e.g. the new .bbg file format).
+
 x  Get libgnome stuff (config, canvas, color picker) working in
    the gtk2 build.
 
