@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.22 2003-05-31 13:42:57 gnb Exp $
+# $Id: Makefile.am,v 1.23 2003-06-01 09:30:24 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
@@ -25,6 +25,7 @@ ggcov_SOURCES=	common.h common.c \
 		estring.H estring.C string_var.H tok.H tok.C \
 		filename.h filename.c \
 		list.H \
+		hashtable.H hashtable.C \
 		covio.h covio.c \
 		cov_file.H cov_file.C \
 		cov_function.H cov_function.C \

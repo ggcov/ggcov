@@ -28,10 +28,10 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.10 2003-06-01 08:49:59 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.11 2003-06-01 09:30:24 gnb Exp $");
 
 
-GHashTable *cov_file_t::files_;
+hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
 list_t<cov_file_t> cov_file_t::files_list_;
 list_t<char> cov_file_t::search_path_;
 char *cov_file_t::common_path_;
@@ -46,14 +46,14 @@ cov_file_t::cov_file_t(const char *name)
     functions_ = g_ptr_array_new();
     functions_by_name_ = g_hash_table_new(g_str_hash, g_str_equal);
     
-    g_hash_table_insert(files_, (void *)name_.data(), this);
+    files_->insert(name_, this);
     add_name(name_);
 }
 
 cov_file_t::~cov_file_t()
 {
 #if 0
-    g_hash_table_remove(files_, name_.data());
+    files_->remove(name_);
 
     g_ptr_array_free(functions_, /*free_seg*/TRUE);
     g_ptr_array_free(blocks_, /*free_seg*/TRUE);
@@ -68,7 +68,7 @@ cov_file_t::~cov_file_t()
 void
 cov_file_t::init()
 {
-    files_ = g_hash_table_new(g_str_hash, g_str_equal);
+    files_ = new hashtable_t<const char*, cov_file_t>;
     common_path_ = 0;
     common_len_ = 0;
 }
@@ -82,18 +82,17 @@ compare_files(const cov_file_t *fa, const cov_file_t *fb)
 }
 
 static void
-cov_file_add(gpointer key, gpointer value, gpointer userdata)
+cov_file_add(const char *name, cov_file_t *f, gpointer userdata)
 {
-    cov_file_t *f = (cov_file_t *)value;
     list_t<cov_file_t> *listp = (list_t<cov_file_t> *)userdata;
     
-    listp->append(f);
+    listp->prepend(f);
 }
 
 void
 cov_file_t::post_read()
 {
-    g_hash_table_foreach(files_, cov_file_add, &files_list_);
+    files_->foreach(cov_file_add, &files_list_);
     files_list_.sort(compare_files);
 }
 
@@ -111,8 +110,8 @@ cov_file_t *
 cov_file_t::find(const char *name)
 {
     assert(files_ != 0);
-    estring fullname = unminimise_name(name);
-    return (cov_file_t *)g_hash_table_lookup(files_, fullname.data());
+    string_var fullname = unminimise_name(name);
+    return files_->lookup(fullname);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

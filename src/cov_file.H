@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "list.H"
+#include "hashtable.H"
 #include "string_var.H"
 
 class cov_function_t;
@@ -111,7 +112,7 @@ private:
 
     void calc_stats(cov_stats_t *stats) const;
 
-    static GHashTable *files_;
+    static hashtable_t<const char*, cov_file_t> *files_;
     static list_t<cov_file_t> files_list_;
     static list_t<char> search_path_;
     static char *common_path_;
