@@ -20,9 +20,9 @@
 #include "callgraphwin.H"
 #include "sourcewin.H"
 #include "cov.h"
-#include "estring.h"
+#include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.1 2002-12-15 15:53:23 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.2 2002-12-22 01:41:22 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -133,6 +133,11 @@ add_callnode(cov_callnode_t *cn, void *userdata)
     *listp = g_list_prepend(*listp, cn);
 }
 
+
+/*
+ * TODO: invert this function and make the loop with the unambiguous
+ * label building a library function which calls a callback.
+ */
 void
 callgraphwin_t::populate_function_combo(GtkCombo *combo)
 {
@@ -142,13 +147,12 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
     cov_callnode_foreach(add_callnode, &list);
     list = g_list_sort(list, compare_callnodes);
     
-    estring_init(&label);
     for (iter = list ; iter != 0 ; iter = iter->next)
     {
     	cov_callnode_t *cn = (cov_callnode_t *)iter->data;
 
-    	estring_truncate(&label);
-	estring_append_string(&label, cn->name);
+    	label.truncate();
+	label.append_string(cn->name);
 
     	/* see if we need to present some more scope to uniquify the name */
 	if ((iter->next != 0 &&
@@ -156,17 +160,16 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
 	    (iter->prev != 0 &&
 	     !strcmp(((cov_callnode_t *)iter->prev->data)->name, cn->name)))
 	{
-	    estring_append_string(&label, " (");
+	    label.append_string(" (");
 	    if (cn->function != 0)
-		estring_append_string(&label, cn->function->file->name);
+		label.append_string(cov_file_minimal_name(cn->function->file));
 	    else
-		estring_append_string(&label, "library");
-	    estring_append_string(&label, ")");
+		label.append_string("library");
+	    label.append_string(")");
 	}
 	
-    	ui_combo_add_data(combo, label.data, cn);
+    	ui_combo_add_data(combo, label.data(), cn);
     }
-    estring_free(&label);
     
     while (list != 0)
 	list = g_list_remove_link(list, list);
