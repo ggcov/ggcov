@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_arc.C,v 1.4 2003-06-06 15:21:30 gnb Exp $");
+CVSID("$Id: cov_arc.C,v 1.5 2004-02-08 10:50:36 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -68,6 +68,24 @@ cov_arc_t::is_call() const
 #else
     return (to_->bindex() == to_->function()->num_blocks()-1);
 #endif
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_arc_t::is_suppressed()
+{
+    if (!suppressed_valid_)
+    {
+    	const cov_location_t *loc;
+	cov_line_t *ln;
+
+	suppressed_ = ((loc = get_from_location()) != 0 &&
+		       (ln = cov_line_t::find(loc)) != 0 &&
+		       ln->is_suppressed());
+    	suppressed_valid_ = TRUE;
+    }
+    return suppressed_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

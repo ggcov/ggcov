@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.11 2003-11-03 23:11:00 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.12 2004-02-08 10:48:15 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -257,6 +257,8 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 	    cov_arc_t *a = *aiter;
     	    
 	    if (!a->is_call())
+	    	continue;
+	    if (a->is_suppressed())
 	    	continue;
 	    if (to_fn != 0 &&
 	    	(a->name() == 0 || strcmp(to_fn->name(), a->name())))

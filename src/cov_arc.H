@@ -70,6 +70,8 @@ public:
 	return from_->get_first_location();
     }
 
+    gboolean is_suppressed();
+
 private:
     cov_arc_t(cov_block_t *from, cov_block_t *to);
     ~cov_arc_t();
@@ -92,6 +94,8 @@ private:
 #endif
     gboolean fall_through_:1;
     gboolean count_valid_:1;
+    gboolean suppressed_valid_:1;
+    gboolean suppressed_:1;
     
     friend class cov_file_t;
     friend class cov_function_t;
