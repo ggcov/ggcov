@@ -106,8 +106,12 @@ private:
     gboolean read(gboolean quiet);
 
     gboolean read_bb_file(const char *filename);
-    gboolean read_bbg_function(FILE *fp);
+    gboolean read_old_bbg_function(FILE *fp);
+    gboolean read_old_bbg_file(const char *filename, FILE *fp);
+    gboolean read_new_bbg_file(const char *filename, FILE *fp);
     gboolean read_bbg_file(const char *filename);
+    gboolean read_old_da_file(const char *filename);
+    gboolean read_new_da_file(const char *filename);
     gboolean read_da_file(const char *filename);
     gboolean read_o_file_relocs(const char *filename);
     gboolean read_o_file(const char *filename);
@@ -124,6 +128,7 @@ private:
 
     string_var name_;
     gboolean finalised_;    /* data read & `this' inserted into files_ */
+    gnb_u32_t format_version_;	/* file format version */
     GPtrArray *functions_;
     hashtable_t<const char*, cov_function_t> *functions_by_name_;
     const cov_location_t *last_location_;

@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.15 2003-06-15 04:31:49 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.16 2003-06-28 10:43:53 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -359,7 +359,7 @@ cov_file_t::read_bb_file(const char *bbfilename)
     funcidx = 0;
     line = 0;
     nlines = 0;
-    while (covio_read_u32(fp, &tag))
+    while (covio_read_lu32(fp, &tag))
     {
     	switch (tag)
 	{
@@ -461,7 +461,7 @@ cov_file_t::read_bb_file(const char *bbfilename)
 
 
 gboolean
-cov_file_t::read_bbg_function(FILE *fp)
+cov_file_t::read_old_bbg_function(FILE *fp)
 {
     gnb_u32_t nblocks, totnarcs, narcs;
     gnb_u32_t bidx, aidx;
@@ -475,10 +475,10 @@ cov_file_t::read_bbg_function(FILE *fp)
     fprintf(stderr, "BBG reading function\n");
 #endif
     
-    if (!covio_read_u32(fp, &nblocks))
+    if (!covio_read_lu32(fp, &nblocks))
     	return TRUE;	/* end of file */
 
-    if (!covio_read_u32(fp, &totnarcs))
+    if (!covio_read_lu32(fp, &totnarcs))
     	bbg_failed0("short file");
     
     if (nblocks > BBG_MAX_BLOCKS)
@@ -496,7 +496,7 @@ cov_file_t::read_bbg_function(FILE *fp)
     	fprintf(stderr, "BBG   block %d\n", bidx);
 #endif
 	b = fn->nth_block(bidx);
-	if (!covio_read_u32(fp, &narcs))
+	if (!covio_read_lu32(fp, &narcs))
     	    bbg_failed0("short file");
 
 	if (narcs > BBG_MAX_ARCS)
@@ -504,8 +504,8 @@ cov_file_t::read_bbg_function(FILE *fp)
 
 	for (aidx = 0 ; aidx < narcs ; aidx++)
 	{
-	    covio_read_u32(fp, &dest);
-	    if (!covio_read_u32(fp, &flags))
+	    covio_read_lu32(fp, &dest);
+	    if (!covio_read_lu32(fp, &flags))
 	    	bbg_failed0("short file");
 
 #if DEBUG > 1
@@ -534,18 +534,259 @@ cov_file_t::read_bbg_function(FILE *fp)
 	}
     }
 
-    covio_read_u32(fp, &sep);
+    covio_read_lu32(fp, &sep);
     if (sep != BBG_SEPARATOR)
     	bbg_failed2("sep=0x%08x != 0x%08x", sep, BBG_SEPARATOR);
 	
     return TRUE;
 }
 
+gboolean
+cov_file_t::read_old_bbg_file(const char *bbgfilename, FILE *fp)
+{
+#if DEBUG > 1
+    fprintf(stderr, "Reading old format .bbg file \"%s\"\n", bbgfilename);
+#endif
+    format_version_ = 0;
+
+    /*
+     * Rewind to the start of the file, because the FILE* passed in has
+     * been seeked past the magic number, which we need to read again
+     * as a function block count.
+     */
+    fseek(fp, 0L, SEEK_SET);
+    
+    while (!feof(fp))
+    {
+    	if (!read_old_bbg_function(fp))
+	{
+	    /* TODO */
+	    fprintf(stderr, "%s: file is corrupted or in a bad file format.\n",
+	    	    bbgfilename);
+	    fclose(fp);
+	    return FALSE;
+	}
+    }
+
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+/*
+ * GCOV_TAG_* defines copied from gcc/gcc/gcov-io.h (cvs 20030615)
+ */
+/* The record tags.  Values [1..3f] are for tags which may be in either
+   file.  Values [41..9f] for those in the bbg file and [a1..ff] for
+   the data file.  */
+
+#define GCOV_TAG_FUNCTION	 ((gnb_u32_t)0x01000000)
+#define GCOV_TAG_BLOCKS		 ((gnb_u32_t)0x01410000)
+#define GCOV_TAG_ARCS		 ((gnb_u32_t)0x01430000)
+#define GCOV_TAG_LINES		 ((gnb_u32_t)0x01450000)
+#define GCOV_TAG_COUNTER_BASE 	 ((gnb_u32_t)0x01a10000)
+#define GCOV_TAG_OBJECT_SUMMARY  ((gnb_u32_t)0xa1000000)
+#define GCOV_TAG_PROGRAM_SUMMARY ((gnb_u32_t)0xa3000000)
+
+#if DEBUG > 1
+static const struct 
+{
+    const char *name;
+    gnb_u32_t value;
+}
+gcov_tags[] = 
+{
+{"GCOV_TAG_FUNCTION",		GCOV_TAG_FUNCTION},
+{"GCOV_TAG_BLOCKS",		GCOV_TAG_BLOCKS},
+{"GCOV_TAG_ARCS",		GCOV_TAG_ARCS},
+{"GCOV_TAG_LINES",		GCOV_TAG_LINES},
+{"GCOV_TAG_COUNTER_BASE",	GCOV_TAG_COUNTER_BASE},
+{"GCOV_TAG_OBJECT_SUMMARY",	GCOV_TAG_OBJECT_SUMMARY},
+{"GCOV_TAG_PROGRAM_SUMMARY",	GCOV_TAG_PROGRAM_SUMMARY},
+{0, 0}
+};
+
+static const char *
+gcov_tag_as_string(gnb_u32_t tag)
+{
+    int i;
+    
+    for (i = 0 ; gcov_tags[i].name != 0 ; i++)
+    {
+    	if (gcov_tags[i].value == tag)
+	    return gcov_tags[i].name;
+    }
+    return "unknown";
+}
+
+#endif
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#define BBG_VERSION_3_3p \
+     	(((gnb_u32_t)'3'<<24)| \
+	 ((gnb_u32_t)'0'<<16)| \
+	 ((gnb_u32_t)'3'<<8)| \
+	 ((gnb_u32_t)'p'))
+
+gboolean
+cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
+{
+    gnb_u32_t tag, length;
+    cov_function_t *fn = 0;
+    string_var filename, funcname;
+    gnb_u32_t tmp;
+    unsigned int nblocks = 0;
+    unsigned int bidx;
+    cov_arc_t *a;
+    gnb_u32_t dest, flags;
+    gnb_u32_t line;
+
+#if DEBUG > 1
+    fprintf(stderr, "Reading new format .bbg file \"%s\"\n", bbgfilename);
+#endif
+
+    if (!covio_read_bu32(fp, &format_version_))
+    	bbg_failed0("short file");
+    if (format_version_ != BBG_VERSION_3_3p)
+    	bbg_failed2("bad version=0x%08x != 0x%08x",
+	    	    format_version_, BBG_VERSION_3_3p);
+
+    while (covio_read_bu32(fp, &tag))
+    {
+	if (!covio_read_bu32(fp, &length))
+    	    bbg_failed0("short file");
+	
+#if DEBUG
+    	fprintf(stderr, "tag=0x%08x (%s) length=%u\n",
+	    	tag, gcov_tag_as_string(tag), length);
+#endif
+    	switch (tag)
+	{
+	case GCOV_TAG_FUNCTION:
+	    funcname = covio_read_string(fp);
+	    funcname = normalise_mangled(funcname);
+    	    fn = add_function();
+	    fn->set_name(funcname);
+	    covio_read_bu32(fp, &tmp);	/* ignore the checksum */
+	    nblocks = 0;
+	    break;
+
+	case GCOV_TAG_BLOCKS:
+	    if (fn == 0)
+	    	bbg_failed0("no FUNCTION tag seen");
+	    if (nblocks > 0)
+	    	bbg_failed0("duplicate BLOCKS tag");
+	    nblocks = length/4;
+	    for (bidx = 0 ; bidx < nblocks ; bidx++)
+    		fn->add_block();
+	    /* skip the per-block flags */
+	    for ( ; length ; length--)
+		fgetc(fp);
+	    break;
+
+	case GCOV_TAG_ARCS:
+	    if (!covio_read_bu32(fp, &bidx))
+	    	bbg_failed0("short file");
+	    for (length -= 4 ; length > 0 ; length -= 8)
+	    {
+		if (!covio_read_bu32(fp, &dest) ||
+		    !covio_read_bu32(fp, &flags))
+	    	    bbg_failed0("short file");
+
+#if DEBUG > 1
+    		fprintf(stderr, "BBG     arc %u->%u flags %x(%s,%s,%s)\n",
+			    bidx, dest, flags,
+			    (flags & BBG_ON_TREE ? "on_tree" : ""),
+			    (flags & BBG_FAKE ? "fake" : ""),
+			    (flags & BBG_FALL_THROUGH ? "fall_through" : ""));
+#endif
+		if (dest >= nblocks)
+    	    	    bbg_failed2("dest=%u > nblocks=%u", dest, nblocks);
+		    
+	    	if (dest == nblocks -1 &&
+		    bidx == nblocks - 2 &&
+		    (flags & (BBG_FAKE|BBG_FALL_THROUGH)) == BBG_FALL_THROUGH)
+		{
+    		    /* HACK HACK HACK */
+		    fprintf(stderr, "Hacking %d->%d to %d->%d\n",
+		    	bidx, dest, nblocks-1, 0);
+		    a = new cov_arc_t(fn->nth_block(nblocks-1), fn->nth_block(0));
+#ifdef HAVE_BBG_FAKE_FLAG
+		    a->fake_ = TRUE;
+#endif
+		    a->fall_through_ = FALSE;
+		}
+		else
+		{
+		    a = new cov_arc_t(fn->nth_block(bidx), fn->nth_block(dest));
+#ifdef HAVE_BBG_FAKE_FLAG
+		    a->fake_ = !!(flags & BBG_FAKE);
+#endif
+		    a->fall_through_ = !!(flags & BBG_FALL_THROUGH);
+		}
+		a->on_tree_ = (flags & BBG_ON_TREE);
+
+    		if (nblocks >= 2 && dest == nblocks-1)
+		{
+	    	    num_expected_fake_++;
+    		    if (!(flags & BBG_FAKE))
+	    		num_missing_fake_++;
+		}
+	    }
+	    break;
+
+	case GCOV_TAG_LINES:
+	    if (!covio_read_bu32(fp, &bidx))
+	    	bbg_failed0("short file");
+    	    while (covio_read_bu32(fp, &line))
+	    {
+		if (line == 0)
+		{
+		    char *s = covio_read_string(fp);
+		    if (s == 0)
+		    	bbg_failed0("short file");
+		    if (*s == '\0')
+		    {
+			/* end of LINES block */
+			g_free(s);
+			break;
+		    }
+
+		    filename = s;
+		    if (strchr(filename, '/') == 0 &&
+	    		!strcmp(filename, file_basename_c(name_)))
+			filename = name_.data();
+		}
+		else
+		{
+		    fn->nth_block(bidx)->add_location(filename, line);
+		}
+	    }
+	    break;
+
+	default:
+	    fprintf(stderr, "%s: skipping unknown tag 0x%08x\n",
+	    	    bbgfilename, tag);
+	    for ( ; length ; length--)
+		fgetc(fp);
+	    break;
+	}
+    }    
+
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#define BBG_NEW_MAGIC	    	"gbbg"
+#define BBG_NEW_MAGIC_LEN	4
 
 gboolean
 cov_file_t::read_bbg_file(const char *bbgfilename)
 {
     FILE *fp;
+    char magic[BBG_NEW_MAGIC_LEN];
+    gboolean ret;
     
 #if DEBUG > 1
     fprintf(stderr, "Reading .bbg file \"%s\"\n", bbgfilename);
@@ -557,26 +798,27 @@ cov_file_t::read_bbg_file(const char *bbgfilename)
 	return FALSE;
     }
     
-    while (!feof(fp))
+    if (fread(magic, 1, BBG_NEW_MAGIC_LEN, fp) != BBG_NEW_MAGIC_LEN)
     {
-    	if (!read_bbg_function(fp))
-	{
-	    /* TODO */
-	    fprintf(stderr, "%s: file is corrupted or in a bad file format.\n",
-	    	    bbgfilename);
-	    fclose(fp);
-	    return FALSE;
-	}
+    	/* TODO */
+    	fprintf(stderr, "%s: short file while reading magic number\n",
+	    	bbgfilename);
+	return FALSE;
     }
-
+    
+    if (!memcmp(magic, BBG_NEW_MAGIC, BBG_NEW_MAGIC_LEN))
+	ret = read_new_bbg_file(bbgfilename, fp);
+    else
+	ret = read_old_bbg_file(bbgfilename, fp);
+    
     fclose(fp);
-    return TRUE;
+    return ret;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
-cov_file_t::read_da_file(const char *dafilename)
+cov_file_t::read_old_da_file(const char *dafilename)
 {
     FILE *fp;
     gnb_u64_t nents;
@@ -586,7 +828,7 @@ cov_file_t::read_da_file(const char *dafilename)
     list_iterator_t<cov_arc_t> aiter;
     
 #if DEBUG > 1
-    fprintf(stderr, "Reading .da file \"%s\"\n", dafilename);
+    fprintf(stderr, "Reading old format .da file \"%s\"\n", dafilename);
 #endif
     
     if ((fp = fopen(dafilename, "r")) == 0)
@@ -595,12 +837,12 @@ cov_file_t::read_da_file(const char *dafilename)
 	return FALSE;
     }
 
-    covio_read_u64(fp, &nents);
+    covio_read_lu64(fp, &nents);
     
     for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
     {
     	cov_function_t *fn = nth_function(fnidx);
-	
+
 	for (bidx = 0 ; bidx < fn->num_blocks() ; bidx++)
 	{
     	    cov_block_t *b = fn->nth_block(bidx);
@@ -613,7 +855,7 @@ cov_file_t::read_da_file(const char *dafilename)
 		    continue;
 
     	    	/* TODO: check that nents is correct */
-    		if (!covio_read_u64(fp, &ent))
+    		if (!covio_read_lu64(fp, &ent))
 		{
 		    fprintf(stderr, "%s: short file\n", dafilename);
 		    return FALSE;
@@ -635,6 +877,179 @@ cov_file_t::read_da_file(const char *dafilename)
     
     fclose(fp);
     return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#define DA_NEW_MAGIC	\
+     	(((gnb_u32_t)'g'<<24)| \
+	 ((gnb_u32_t)'c'<<16)| \
+	 ((gnb_u32_t)'o'<<8)| \
+	 ((gnb_u32_t)'v'))
+
+/*
+ * The da_failed*() macros are for debugging problems with .da files.
+ */
+#if DEBUG > 1
+/* I can't wait for C99 variadic macros to become common */
+#define da_failed0(fmt) \
+    { \
+	fprintf(stderr, "da:%d, " fmt "\n", __LINE__); \
+	fclose(fp); \
+    	return FALSE; \
+    }
+#define da_failed1(fmt, a1) \
+    { \
+	fprintf(stderr, "da:%d, " fmt "\n", __LINE__, a1); \
+	fclose(fp); \
+    	return FALSE; \
+    }
+#define da_failed2(fmt, a1, a2) \
+    { \
+	fprintf(stderr, "da:%d, " fmt "\n", __LINE__, a1, a2); \
+	fclose(fp); \
+    	return FALSE; \
+    }
+#else
+#define da_failed0(fmt) \
+    { \
+	fclose(fp); \
+    	return FALSE; \
+    }
+#define da_failed1(fmt, a1) \
+    { \
+	fclose(fp); \
+    	return FALSE; \
+    }
+#define da_failed2(fmt, a1, a2) \
+    { \
+	fclose(fp); \
+    	return FALSE; \
+    }
+#endif
+
+gboolean
+cov_file_t::read_new_da_file(const char *dafilename)
+{
+    FILE *fp;
+    gnb_u32_t magic, version;
+    gnb_u32_t tag, length;
+    string_var funcname;
+    cov_function_t *fn = 0;
+    gnb_u64_t count;
+    gnb_u32_t tmp;
+    unsigned int bidx;
+    list_iterator_t<cov_arc_t> aiter;
+
+
+#if DEBUG > 1
+    fprintf(stderr, "Reading new format .da file \"%s\"\n", dafilename);
+#endif
+    
+    if ((fp = fopen(dafilename, "r")) == 0)
+    {
+    	perror(dafilename);
+	return FALSE;
+    }
+
+    if (!covio_read_bu32(fp, &magic) ||
+        !covio_read_bu32(fp, &version))
+    	da_failed0("short file");
+
+    if (magic != DA_NEW_MAGIC)
+    	da_failed2("bad magic=0x%08x != 0x%08x",
+	    	    magic, DA_NEW_MAGIC);
+    
+    if (version != format_version_)
+    	da_failed2("bad version=0x%08x != 0x%08x",
+	    	    version, format_version_);
+
+    while (covio_read_bu32(fp, &tag))
+    {
+	if (!covio_read_bu32(fp, &length))
+    	    da_failed0("short file");
+	
+#if DEBUG
+    	fprintf(stderr, "tag=0x%08x (%s) length=%u\n",
+	    	tag, gcov_tag_as_string(tag), length);
+#endif
+    	switch (tag)
+	{
+	case GCOV_TAG_FUNCTION:
+	    funcname = covio_read_string(fp);
+	    funcname = normalise_mangled(funcname);
+    	    fn = find_function(funcname);
+	    if (fn == 0)
+	    	da_failed1("unexpected function name \"%s\"", funcname.data());
+	    covio_read_bu32(fp, &tmp);	/* ignore the checksum */
+	    break;
+
+    	case GCOV_TAG_COUNTER_BASE:
+	    if (fn == 0)
+	    	da_failed0("missing FUNCTION or duplicate COUNTER_BASE tags");
+	    for (bidx = 0 ; bidx < fn->num_blocks() ; bidx++)
+	    {
+    		cov_block_t *b = fn->nth_block(bidx);
+
+		for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+		{
+	    	    cov_arc_t *a = *aiter;
+
+		    if (a->on_tree_)
+			continue;
+
+		    if (!covio_read_bu64(fp, &count))
+		    	da_failed0("short file");
+#if DEBUG > 1
+    	    	    string_var fromdesc = a->from()->describe();
+    	    	    string_var todesc = a->to()->describe();
+    	    	    fprintf(stderr, "DA arc {from=%s to=%s} count=%llu\n",
+		    		fromdesc.data(),
+		    		todesc.data(),
+				count);
+#endif
+    	    	    a->set_count(count);
+		}
+	    }
+	    fn = 0;
+	    break;
+
+	default:
+	    fprintf(stderr, "%s: skipping unknown tag 0x%08x\n",
+	    	    dafilename, tag);
+	    /* fall through */
+    	case GCOV_TAG_OBJECT_SUMMARY:
+    	case GCOV_TAG_PROGRAM_SUMMARY:
+	    for ( ; length ; length--)
+		fgetc(fp);
+	    break;
+	}
+    }    
+
+    fclose(fp);
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_file_t::read_da_file(const char *dafilename)
+{
+#if DEBUG > 1
+    fprintf(stderr, "Reading .da file \"%s\"\n", dafilename);
+#endif
+    
+    switch (format_version_)
+    {
+    case BBG_VERSION_3_3p:
+    	return read_new_da_file(dafilename);
+    case 0:
+    	return read_old_da_file(dafilename);
+    default:
+    	fprintf(stderr, "%s: unknown format version 0x%08x\n",
+	    	dafilename, format_version_);
+	return FALSE;
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1085,9 +1500,16 @@ cov_file_t::read(gboolean quiet)
 	 !read_bbg_file(filename))
 	return FALSE;
 
-    if ((filename = find_file(".bb", quiet)) == 0 ||
-	 !read_bb_file(filename))
-	return FALSE;
+    /* 
+     * In the new formats, the information from the .bb file has been
+     * merged into the .bbg file, so only read the .bb for the old format.
+     */
+    if (format_version_ == 0)
+    {
+	if ((filename = find_file(".bb", quiet)) == 0 ||
+	    !read_bb_file(filename))
+	    return FALSE;
+    }
 
     /* TODO: read multiple .da files from the search path & accumulate */
     if ((filename = find_file(".da", quiet)) == 0 ||

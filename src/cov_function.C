@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.8 2003-06-06 15:21:30 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.9 2003-06-28 10:43:53 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -212,6 +212,10 @@ cov_function_t::solve()
 
        This takes an average of slightly more than 3 passes.  */
 
+#if DEBUG > 5
+    fprintf(stderr, "solve: ---> %s\n", name_.data());
+#endif
+
     changes = 1;
     passes = 0;
     while (changes)
@@ -219,21 +223,43 @@ cov_function_t::solve()
 	passes++;
 	changes = 0;
 
+#if DEBUG > 5
+    	fprintf(stderr, "solve:%d pass %d\n", __LINE__, passes);
+#endif
+
 	for (i = num_blocks() - 1; i >= 0; i--)
 	{
 	    b = nth_block(i);
+#if DEBUG > 5
+    	    fprintf(stderr, "solve:%d[%d]\n", __LINE__, b->bindex());
+#endif
 	    
 	    if (!b->count_valid_)
 	    {
+#if DEBUG > 5
+    		fprintf(stderr, "solve:%d[%d] out_ninvalid_=%u in_ninvalid_=%u\n",
+		    	    	__LINE__, b->bindex(),
+				b->out_ninvalid_, b->in_ninvalid_);
+#endif
 		if (b->out_ninvalid_ == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->out_arcs_));
 		    changes++;
+#if DEBUG > 5
+    	    	    fprintf(stderr, "solve:%d[%d] count=%llu\n",
+		    	    	__LINE__,
+		    	    b->bindex(), b->count());
+#endif
 		}
 		else if (b->in_ninvalid_ == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->in_arcs_));
 		    changes++;
+#if DEBUG > 5
+    	    	    fprintf(stderr, "solve:%d[%d] count=%llu\n",
+		    	    	__LINE__,
+		    	    b->bindex(), b->count());
+#endif
 		}
 	    }
 	    
@@ -249,6 +275,12 @@ cov_function_t::solve()
 		       so adding it in also doesn't hurt.  */
 		    a->set_count(b->count_ - cov_arc_t::total(b->out_arcs_));
 		    changes++;
+#if DEBUG > 5
+    	    	    fprintf(stderr, "solve:%d[%d->%d] count=%llu\n",
+		    	    	__LINE__,
+		    		a->from()->bindex(), a->to()->bindex(),
+				a->count());
+#endif
 		}
 		if (b->in_ninvalid_ == 1)
 		{
@@ -260,6 +292,12 @@ cov_function_t::solve()
 		       so adding it in also doesn't hurt.  */
 		    a->set_count(b->count_ - cov_arc_t::total(b->in_arcs_));
 		    changes++;
+#if DEBUG > 5
+    	    	    fprintf(stderr, "solve:%d[%d->%d] count=%llu\n",
+		    	    	__LINE__,
+		    		a->from()->bindex(), a->to()->bindex(),
+				a->count());
+#endif
 		}
 	    }
 	}
