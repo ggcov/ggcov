@@ -61,6 +61,7 @@ typedef enum
     D_CGRAPH,
     D_SOLVE,
     D_STABS,
+    D_DWARF,
     D_DUMP,
     D_REPORT,
     /* gui related features */
