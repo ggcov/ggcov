@@ -1,3 +1,14 @@
+Fri Nov 30 12:26:55 2001  Greg Banks <gnb@alphalink.com.au>
+
+	* Release 0.0.6
+	* Added a Files List window analagous to the Function List window.
+	* Added fixed Windows menu items to create new Summary, Source, File
+	List and Function List windows.
+	* Initial window population is now just an overall summary.
+	* Sortable column support now handles the case where not every column
+	is sortable (backport from ggui).
+	* Added a TODO list of some ideas.
+
 Tue Nov 27 11:53:14 2001  Greg Banks <gnb@alphalink.com.au>
 
 	* Release 0.0.5
