@@ -35,6 +35,7 @@ typedef struct
     char *title_string;
     char *filename;
     unsigned int max_lineno;	/* the largest linenumber */
+    GArray *offsets_by_line;
     gboolean deleting:1;    /* handle possible GUI recursion crap */
 } sourcewin_t;
 

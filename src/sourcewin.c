@@ -22,7 +22,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.2 2001-11-23 10:38:14 gnb Exp $");
+CVSID("$Id: sourcewin.c,v 1.3 2001-11-23 11:48:12 gnb Exp $");
 
 extern GList *filenames;
 
@@ -87,6 +87,10 @@ sourcewin_new(void)
     GladeXML *xml;
     
     sw = new(sourcewin_t);
+
+    sw->offsets_by_line = g_array_new(/*zero_terminated*/TRUE,
+				      /*clear*/TRUE,
+				      sizeof(unsigned int));
     
     /* load the interface & connect signals */
     xml = ui_load_tree("source");
@@ -122,6 +126,8 @@ sourcewin_delete(sourcewin_t *sw)
     gtk_widget_destroy(sw->window);
     strdelete(sw->filename);
     strdelete(sw->title_string);
+    g_array_free(sw->offsets_by_line, /*free_segment*/TRUE);
+
     g_free(sw);
 }
 
@@ -197,31 +203,77 @@ sourcewin_populate_filenames(sourcewin_t *sw)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void
-on_source_function_activate(GtkWidget *w, gpointer userdata)
+/*
+ * Sadly, this godawful hack is necessary to delay the
+ * select/scroll code until after the Functions menu has
+ * popped down, there being some sort of display bug
+ * in GTK 1.2.7.
+ */
+typedef struct
 {
-    sourcewin_t *sw = sourcewin_from_widget(w);
-    cov_function_t *fn = (cov_function_t *)userdata;
-    const cov_location_t *loc;
+    sourcewin_t *sourcewin;
+    cov_function_t *function;
+} sourcewin_hacky_rec_t;
+
+static int
+sourcewin_delayed_function_activate(gpointer userdata)
+{
+    sourcewin_hacky_rec_t *rec = (sourcewin_hacky_rec_t *)userdata;
+    sourcewin_t *sw = rec->sourcewin;
+    cov_function_t *fn = rec->function;
+    const cov_location_t *first;
+    const cov_location_t *last;
     GtkAdjustment *adj = GTK_TEXT(sw->text)->vadj;
 
-    loc = cov_function_get_first_location(fn);
+    first = cov_function_get_first_location(fn);
+    last = cov_function_get_last_location(fn);
 #if DEBUG
-    fprintf(stderr, "Function %s -> %s:%d\n",
-    	    	    	fn->name, loc->filename, loc->lineno);
+    fprintf(stderr, "Function %s -> %s:%d to %s:%d\n",
+    	    	    	fn->name,
+			first->filename, first->lineno,
+			last->filename, last->lineno);
 #endif
     
-    if (strcmp(loc->filename, sw->filename))
+    /* Check for weirdness like functions spanning files */
+    if (strcmp(first->filename, sw->filename))
     {
-    	fprintf(stderr, "WTF?  Wrong filename: %s vs %s\n",
-	    	    	loc->filename, sw->filename);
-	return;
+    	fprintf(stderr, "WTF?  Wrong filename for first loc: %s vs %s\n",
+	    	    	first->filename, sw->filename);
+	g_free(rec);
+	return FALSE;
+    }
+    if (strcmp(last->filename, sw->filename))
+    {
+    	fprintf(stderr, "WTF?  Wrong filename for last loc: %s vs %s\n",
+	    	    	last->filename, sw->filename);
+	g_free(rec);
+	return FALSE;
     }
     
     /* This mostly works.  Not totally predictable but good enough for now */
     gtk_adjustment_set_value(adj,
-	    	adj->upper * (float)loc->lineno / (float)sw->max_lineno
+	    	adj->upper * (float)first->lineno / (float)sw->max_lineno
 		    - adj->page_size/2.0);
+
+    /* This only selects the span of the lines which contain executable code */		    
+    gtk_editable_select_region(GTK_EDITABLE(sw->text),
+    	    g_array_index(sw->offsets_by_line, unsigned int, first->lineno-1),
+    	    g_array_index(sw->offsets_by_line, unsigned int, last->lineno)-1);
+
+    g_free(rec);
+    return FALSE;   /* and don't call me again! */
+}
+
+static void
+on_source_function_activate(GtkWidget *w, gpointer userdata)
+{
+    sourcewin_hacky_rec_t *rec;
+    
+    rec = new(sourcewin_hacky_rec_t);
+    rec->sourcewin = sourcewin_from_widget(w);
+    rec->function = (cov_function_t *)userdata;
+
+    gtk_idle_add(sourcewin_delayed_function_activate, rec);
 }
 
 static int
@@ -314,11 +366,28 @@ sourcewin_update_source(sourcewin_t *sw)
     gtk_editable_delete_text(GTK_EDITABLE(text), 0, -1);
     
     sw->max_lineno = 0;
+    g_array_set_size(sw->offsets_by_line, 0);
 
     lineno = 0;
     while (fgets(linebuf, sizeof(linebuf), fp) != 0)
     {
     	++lineno;
+	
+	/*
+	 * Stash the offset of this (file) line number.
+	 *
+	 * Felching text widget does this internally, wish we could
+	 * get a hold of that...TODO: not if we start inserting
+	 * phantom lines, then the correspondence between file lineno
+	 * and text widget lineno goes away.
+	 */
+	{
+	    unsigned int offset = gtk_text_get_length(text);
+	    g_array_append_val(sw->offsets_by_line, offset);
+#if DEBUG > 10
+	    fprintf(stderr, "line=%d offset=%d\n", lineno, offset);
+#endif
+	}
 	
     	/* setup `count', `have_count' */
 	{
@@ -352,14 +421,14 @@ sourcewin_update_source(sourcewin_t *sw)
 	    {
 		if (count)
 		{
-		    snprintf(countbuf, sizeof(countbuf), "%12lld    ", count);
+		    snprintf(countbuf, sizeof(countbuf), "%7lu ", (unsigned long)count);
 		    strs[nstrs++] = countbuf;
 		}
 		else
-		    strs[nstrs++] = "      ######    ";
+		    strs[nstrs++] = " ###### ";
 	    }
 	    else
-		strs[nstrs++] = "                ";
+		strs[nstrs++] = "        ";
     	}
 
 	if (GTK_CHECK_MENU_ITEM(sw->source_check)->active)
@@ -376,6 +445,8 @@ sourcewin_update_source(sourcewin_t *sw)
     }
     
     sw->max_lineno = lineno;
+    assert(sw->offsets_by_line->len == sw->max_lineno);
+    
     fclose(fp);
     gtk_text_thaw(text);
 }
