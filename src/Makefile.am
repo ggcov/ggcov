@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.32 2003-08-04 10:42:05 gnb Exp $
+# $Id: Makefile.am,v 1.33 2003-11-04 00:42:31 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -37,6 +37,7 @@ libcommon_a_SOURCES= \
 libcov_a_SOURCES= \
 		covio.h covio.c \
 		cov_specific.H cov_specific.C \
+		cov_bfd.H cov_bfd.C \
 		cov_file.H cov_file.C \
 		cov_line.H cov_line.C \
 		cov_function.H cov_function.C \
@@ -49,7 +50,7 @@ libcov_a_SOURCES= \
 # objects need to be unconditionally linked instead of pulled
 # in from libcov.a on demand.
 LIBCOV_STATIC_SOURCES= \
-		cov_stab32.C
+		cov_stab32.C cov_i386.C
 		
 
 bin_PROGRAMS=	ggcov
