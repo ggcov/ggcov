@@ -22,13 +22,14 @@
 #include "estring.H"
 #include "filename.h"
 #include "estring.H"
+#include "string_var.H"
 #include <dirent.h>
 
 
 #include <bfd.h>
 #include <elf.h>
 
-CVSID("$Id: cov.C,v 1.6 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: cov.C,v 1.7 2003-05-11 00:25:20 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -70,6 +71,12 @@ cov_get_count_by_location(const cov_location_t *loc, count_t *countp)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+void
+cov_add_search_directory(const char *dir)
+{
+    cov_file_t::search_path_append(dir);
+}
+
 gboolean
 cov_is_source_filename(const char *filename)
 {
@@ -87,65 +94,33 @@ cov_is_source_filename(const char *filename)
     return FALSE;
 }
 
-#define FN_BB	0
-#define FN_BBG	1
-#define FN_DA	2
-#define FN_O	3
-#define FN_MAX	4
-
 gboolean
 cov_read_source_file_2(const char *fname, gboolean quiet)
 {
     cov_file_t *f;
-    gboolean res;
-    int i;
-    char *filename, *filenames[FN_MAX];
-    static const char *extensions[FN_MAX] = { ".bb", ".bbg", ".da", ".o" };
-
+    string_var filename;
 
     filename = file_make_absolute(fname);
 #if DEBUG    
-    fprintf(stderr, "Handling source file %s\n", filename);
+    fprintf(stderr, "Handling source file %s\n", filename.data());
 #endif
 
     if ((f = cov_file_t::find(filename)) != 0)
     {
     	if (!quiet)
-    	    fprintf(stderr, "Internal error: handling %s twice\n", filename);
-    	g_free(filename);
+    	    fprintf(stderr, "Internal error: handling %s twice\n", filename.data());
     	return FALSE;
     }
 
-    memset(filenames, 0, sizeof(filenames));
-    
-    for (i = 0 ; i < FN_MAX ; i++)
-    {
-	filenames[i] = file_change_extension(filename, 0, extensions[i]);
-	if (file_is_regular(filenames[i]) < 0)
-	{
-    	    if (!quiet)
-    		perror(filenames[i]);
-	    for (i = 0 ; i < FN_MAX ; i++)
-	    	strdelete(filenames[i]);
-    	    g_free(filename);
-	    return FALSE;
-	}
-    }
-        
     f = new cov_file_t(filename);
 
-    res = TRUE;
-    if (!f->read_bbg_file(filenames[FN_BBG]) ||
-	!f->read_bb_file(filenames[FN_BB]) ||
-	!f->read_da_file(filenames[FN_DA]) ||
-	!f->read_o_file(filenames[FN_O]) ||
-    	!f->solve())
-	res = FALSE;
-
-    for (i = 0 ; i < FN_MAX ; i++)
-	strdelete(filenames[i]);
-    g_free(filename);
-    return res;
+    if (!f->read(quiet))
+    {
+	delete f;
+	return FALSE;
+    }
+    
+    return TRUE;
 }
 
 gboolean
