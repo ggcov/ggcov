@@ -293,12 +293,13 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
 
     widget = GTK_WIDGET(sbar);
 
+    /* The style [xy]thickness need to be halved for SHADOW_IN */
 #if GTK2
-    xthick = widget->style->xthickness;
-    ythick = widget->style->ythickness;
+    xthick = widget->style->xthickness/2;
+    ythick = widget->style->ythickness/2;
 #else
-    xthick = widget->style->klass->xthickness;
-    ythick = widget->style->klass->ythickness;
+    xthick = widget->style->klass->xthickness/2;
+    ythick = widget->style->klass->ythickness/2;
 #endif
     space = widget->allocation.width - 2 * xthick;
 
@@ -307,7 +308,8 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
     	total += sbar->metrics[i].value;
 
 #if STACKEDBAR_DEBUG
-    fprintf(stderr, "%s: total=%lu\n", widget->name, total);
+    fprintf(stderr, "%s: total=%lu xthick=%d ythick=%d\n",
+    	    	widget->name, total, xthick, ythick);
 #endif
 
     /* divide screen space up proportionally */
@@ -322,16 +324,30 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
     {
     	x = 0;
 	for (i = 0 ; i < sbar->nmetrics ; i++)
-    	    x += sbar->metrics[i].length = sbar->metrics[i].value * space / total;
-
+	{
+    	    x += sbar->metrics[i].length =
+	    	    (sbar->metrics[i].value * space + total/2) / total;
+    	}
+	
     	/* add the roundoff error to the last nonzero metric */
     	x = space - x;
-	for (i = sbar->nmetrics-1 ; i >= 0 ; --i)
+	if (x)
 	{
-	    if (sbar->metrics[i].length > 0)
+#if STACKEDBAR_DEBUG
+	    fprintf(stderr, "%s: cumulative rounding error %d\n",
+	    	    widget->name, x);
+#endif
+	    for (i = sbar->nmetrics-1 ; i >= 0 ; --i)
 	    {
-	    	sbar->metrics[i].length += x;
-	    	break;
+		if (sbar->metrics[i].length > 0)
+		{
+#if STACKEDBAR_DEBUG
+		    fprintf(stderr, "%s:   applied to metric %d\n",
+	    		    widget->name, i);
+#endif
+	    	    sbar->metrics[i].length += x;
+	    	    break;
+		}
 	    }
 	}
     }
@@ -360,6 +376,9 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
     for (i = 0 ; i < sbar->nmetrics ; i++)
     {
     	metric = &sbar->metrics[i];
+	
+	if (!metric->length)
+	    continue;
 
 	if (!metric->color_allocated)
 	{
@@ -380,9 +399,9 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
 	}
 
 #if STACKEDBAR_DEBUG
-    	fprintf(stderr, "%s: FILLRECT(metric%d, %u, %u, %u, %u)\n",
+    	fprintf(stderr, "%s: metric[%d]length=%d fillrect(%u, %u, %u, %u)\n",
     	    		widget->name,
-	    	    	i,
+	    	    	i, metric->length,
 			x, ythick,
 			metric->length,
 			widget->allocation.height - 2*ythick);
@@ -391,9 +410,9 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
 	    	    sbar->offscreen_pixmap,
 		    metric->gc,
 		    /*filled*/TRUE,
-		    x-1, ythick-1,
-		    metric->length+2,
-		    widget->allocation.height - 2*ythick+2);
+		    x, ythick,
+		    metric->length,
+		    widget->allocation.height - 2*ythick);
 	x += metric->length;
     }
 }
