@@ -24,7 +24,7 @@
 #include "list.H"
 #include "prefs.H"
 
-CVSID("$Id: fileswin.C,v 1.10 2003-04-05 23:53:21 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.11 2003-05-31 14:38:42 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -39,7 +39,7 @@ struct file_rec_t
 {
     char *name; 	    	/* partial name */
     cov_file_t *file;
-    cov_stats_t stats;
+    cov_scope_t *scope;
     GtkCTreeNode *node;
     list_t<file_rec_t> children;
     /* directory file_rec_t's have children and no file */
@@ -55,11 +55,14 @@ struct file_rec_t
 	if (nm != 0)
 	    name = g_strdup(nm);
 	if ((file = f) != 0)
-	    f->calc_stats(&stats);
+	    scope = new cov_file_scope_t(file);
+	else
+	    scope = new cov_compound_scope_t();
     }
 
     ~file_rec_t()
     {
+	delete scope;
     	children.delete_all();
     }
 
@@ -67,7 +70,7 @@ struct file_rec_t
     add_child(file_rec_t *child)
     {
     	children.append(child);
-	stats.accumulate(&child->stats);
+	((cov_compound_scope_t *)scope)->add_child(child->scope);
     }
 };
 
@@ -88,23 +91,25 @@ fileswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
 {
     file_rec_t *fr1 = (file_rec_t *)((GtkCListRow *)ptr1)->data;
     file_rec_t *fr2 = (file_rec_t *)((GtkCListRow *)ptr2)->data;
+    const cov_stats_t *s1 = fr1->scope->get_stats();
+    const cov_stats_t *s2 = fr2->scope->get_stats();
 
     switch (clist->sort_column)
     {
     case COL_LINES:
     	return ratiocmp(
-    	    	    ratio(fr1->stats.lines_executed, fr1->stats.lines),
-    	    	    ratio(fr2->stats.lines_executed, fr2->stats.lines));
+    	    	    ratio(s1->lines_executed, s1->lines),
+    	    	    ratio(s2->lines_executed, s2->lines));
 	
     case COL_CALLS:
     	return ratiocmp(
-    	    	    ratio(fr1->stats.calls_executed, fr1->stats.calls),
-    	    	    ratio(fr2->stats.calls_executed, fr2->stats.calls));
+    	    	    ratio(s1->calls_executed, s1->calls),
+    	    	    ratio(s2->calls_executed, s2->calls));
 	
     case COL_BRANCHES:
     	return ratiocmp(
-    	    	    ratio(fr1->stats.branches_executed, fr1->stats.branches),
-    	    	    ratio(fr2->stats.branches_executed, fr2->stats.branches));
+    	    	    ratio(s1->branches_executed, s1->branches),
+    	    	    ratio(s2->branches_executed, s2->branches));
 	
     case COL_FILE:
     	return strcmp(fr1->name, fr2->name);
@@ -156,6 +161,7 @@ fileswin_t::fileswin_t()
 
 fileswin_t::~fileswin_t()
 {
+    delete root_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -271,25 +277,27 @@ fileswin_t::add_node(
     is_leaf = (fr->children.head() == 0);
     if (tree_flag || is_leaf)
     {
+    	const cov_stats_t *stats = fr->scope->get_stats();
+
 	text[COL_FILE] = fr->name;
 
 	format_stat(lines_pc_buf, sizeof(lines_pc_buf), percent_flag,
-	    	    fr->stats.lines_executed, fr->stats.lines);
+	    	    stats->lines_executed, stats->lines);
 	text[COL_LINES] = lines_pc_buf;
 
 	format_stat(calls_pc_buf, sizeof(calls_pc_buf), percent_flag,
-	    	    fr->stats.calls_executed, fr->stats.calls);
+	    	    stats->calls_executed, stats->calls);
 	text[COL_CALLS] = calls_pc_buf;
 
 	format_stat(branches_pc_buf, sizeof(branches_pc_buf), percent_flag,
-	    	    fr->stats.branches_executed, fr->stats.branches);
+	    	    stats->branches_executed, stats->branches);
 	text[COL_BRANCHES] = branches_pc_buf;
 
-	if (fr->stats.lines == 0)
+	if (stats->lines == 0)
 	    color = &prefs.uninstrumented_foreground;
-	else if (fr->stats.lines_executed == 0)
+	else if (stats->lines_executed == 0)
 	    color = &prefs.uncovered_foreground;
-	else if (fr->stats.lines_executed < fr->stats.lines)
+	else if (stats->lines_executed < stats->lines)
 	    color = &prefs.partcovered_foreground;
 	else
 	    color = &prefs.covered_foreground;
