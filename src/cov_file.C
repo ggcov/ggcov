@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.41 2005-03-14 07:49:15 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.42 2005-04-03 08:51:21 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -42,7 +42,7 @@ void *cov_file_t::files_model_;
 	 ((gnb_u32_t)('0'+(minor)/10)<<16)| \
 	 ((gnb_u32_t)('0'+(minor)%10)<<8)| \
 	 ((gnb_u32_t)(release)))
-#define BBG_VERSION_GCC34    	_NEW_VERSION(3,4,'p')
+#define BBG_VERSION_GCC34    	_NEW_VERSION(3,4,'*')
 #define BBG_VERSION_GCC34_RH	_NEW_VERSION(3,4,'R')   /* RedHat crud */
 #define BBG_VERSION_GCC33   	_NEW_VERSION(3,3,'p')
 #define BBG_VERSION_OLD     	0
