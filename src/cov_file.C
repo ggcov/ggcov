@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.29 2004-02-09 10:01:07 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.30 2004-02-09 10:02:13 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -39,16 +39,16 @@ void *cov_file_t::files_model_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static hashtable_t<char*, char> *suppressed = 0;
+static hashtable_t<char*, char> *suppressed_ifdefs = 0;
 
 void
 cov_suppress_ifdef(const char *variable)
 {
     char *v = g_strdup(variable);
 
-    if (suppressed == 0)
-    	suppressed = new hashtable_t<char*, char>;
-    suppressed->insert(v, v);
+    if (suppressed_ifdefs == 0)
+    	suppressed_ifdefs = new hashtable_t<char*, char>;
+    suppressed_ifdefs->insert(v, v);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1244,7 +1244,7 @@ private:
 	    return;
 
 	is_suppressed_ = FALSE;
-	suppressed->foreach(check_one_suppressed, this);
+	suppressed_ifdefs->foreach(check_one_suppressed, this);
     	dprintf3(D_CPP, "depends_changed start=%ld end=%ld suppressed=%d\n",
 	    	    start, end, is_suppressed_);
 	if (is_suppressed_)
@@ -1369,7 +1369,7 @@ cov_file_t::read(gboolean quiet)
 	 !read_da_file(filename))
 	return FALSE;
 
-    if (suppressed != 0 && !read_src_file())
+    if (suppressed_ifdefs != 0 && !read_src_file())
     {
 	static const char warnmsg[] = 
 	"could not scan source file for cpp conditionals, "
