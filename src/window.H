@@ -43,6 +43,7 @@ protected:
     virtual void populate();
     static window_t *from_widget(GtkWidget *);
     virtual void grey_items();
+    void attach(GtkWidget *);
     void set_window(GtkWidget *);
     void set_title(const char *);
 

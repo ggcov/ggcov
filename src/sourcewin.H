@@ -23,6 +23,9 @@
 #include "window.H"
 #include "cov.H"
 
+GLADE_CALLBACK void on_source_saveas_ok_button_clicked(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_saveas_cancel_button_clicked(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_save_as_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_column_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_colors_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_toolbar_check_activate(GtkWidget *w, gpointer data);
@@ -78,6 +81,7 @@ private:
     unsigned long offset_to_lineno(unsigned int offset);
     void update_title_buttons();
 #endif
+    gboolean save_with_annotations(const char *filename);
     static int delayed_function_activate(gpointer userdata);
     static void on_source_filename_activate(GtkWidget *w, gpointer userdata);
     static void on_source_function_activate(GtkWidget *w, gpointer userdata);
@@ -93,8 +97,9 @@ private:
 #else
     static GdkFont *font_;
     static int font_width_, font_height_;
-    static const int column_widths_[NUM_COLS];
 #endif
+    static const int column_widths_[NUM_COLS];
+    static const char *column_names_[NUM_COLS];
     static list_t<sourcewin_t> instances_;
     
 #if GTK2
@@ -122,6 +127,11 @@ private:
     GtkWidget *right_pad_label_;
 #endif
 
+    GtkWidget *saveas_dialog_;
+
+    friend void on_source_saveas_ok_button_clicked(GtkWidget *w, gpointer data);
+    friend void on_source_saveas_cancel_button_clicked(GtkWidget *w, gpointer data);
+    friend void on_source_save_as_activate(GtkWidget *w, gpointer data);
     friend void on_source_column_check_activate(GtkWidget *w, gpointer data);
     friend void on_source_colors_check_activate(GtkWidget *w, gpointer data);
     friend void on_source_toolbar_check_activate(GtkWidget *w, gpointer data);

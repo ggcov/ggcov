@@ -129,3 +129,6 @@ gchar *s = N_("Uncovered:");
 gchar *s = N_("Partially Covered:");
 gchar *s = N_("Covered:");
 gchar *s = N_("Colors");
+gchar *s = N_("GGCov: Save Annotated Source");
+gchar *s = N_("OK");
+gchar *s = N_("Cancel");

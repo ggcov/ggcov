@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.11 2003-04-21 14:14:47 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.12 2003-04-26 14:50:13 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -37,6 +37,9 @@ list_t<sourcewin_t> sourcewin_t::instances_;
 
 /* column widths, in *characters* */
 const int sourcewin_t::column_widths_[sourcewin_t::NUM_COLS] = { 7, 16, 7, -1 };
+const char *sourcewin_t::column_names_[sourcewin_t::NUM_COLS] = {
+    "Line", "Blocks", "Count", "Source"
+};
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -142,6 +145,10 @@ sourcewin_t::sourcewin_t()
     	    SOURCE_COLUMNS * font_width_ + MAGIC_MARGINX,
     	    SOURCE_ROWS * font_height_ + MAGIC_MARGINY);
 #endif
+
+    xml = ui_load_tree("source_saveas");
+    saveas_dialog_ = glade_xml_get_widget(xml, "source_saveas");
+    attach(saveas_dialog_);
 
     instances_.append(this);
 }
@@ -897,6 +904,122 @@ on_source_summarise_range_activate(GtkWidget *w, gpointer data)
     sw->get_selected_lines(&start, &end);
     if (start != 0)
 	summarywin_t::show_lines(sw->filename_, start, end);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+sourcewin_t::save_with_annotations(const char *filename)
+{
+    int i;
+    FILE *fp;
+    char *contents;
+    guint length;
+
+    if ((fp = fopen(filename, "w")) == 0)
+    {
+    	perror(filename);
+	return FALSE;
+    }
+    
+    /* Generate header line */
+    for (i = 0 ; i < NUM_COLS ; i++)
+    {
+	if (GTK_CHECK_MENU_ITEM(column_checks_[i])->active)
+	{
+	    if (column_widths_[i] > 0)
+	    	fprintf(fp, "%-*s ", column_widths_[i]-1, column_names_[i]);
+	    else
+	    	fprintf(fp, "%s", column_names_[i]);
+	}
+    }
+    fputc('\n', fp);
+
+    /* Generate separator line */
+    for (i = 0 ; i < NUM_COLS ; i++)
+    {
+	if (GTK_CHECK_MENU_ITEM(column_checks_[i])->active)
+	{
+	    int j, n = column_widths_[i];
+	    if (n < 0)
+	    	n = 20;
+	    else
+	    	n--;
+	    for (j = 0 ; j < n ; j++)
+	    	fputc('-', fp);
+	    fputc(' ', fp);
+	}
+    }
+    fputc('\n', fp);
+
+
+    /*
+     * Get the contents of the text window, including all visible columns
+     */
+#if GTK2
+    {
+	GtkTextBuffer *buffer;
+    	GtkTextIter start, end;
+	
+	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
+    	gtk_text_buffer_get_bounds(buffer, &start, &end);
+    	contents = gtk_text_buffer_get_text(buffer, &start, &end,
+                                           /*include_hidden_chars*/FALSE);
+    }
+#else
+    contents = gtk_editable_get_chars(GTK_EDITABLE(text_), 0, -1);
+#endif
+    length = strlen(contents);
+
+    /*
+     * Write out the contents.
+     */
+    if (fwrite(contents, 1, length, fp) < length)
+    {
+    	perror("fwrite");
+	g_free(contents);
+	fclose(fp);
+	return FALSE;
+    }
+
+    g_free(contents);
+    fclose(fp);
+    return TRUE;
+}
+
+GLADE_CALLBACK void
+on_source_saveas_ok_button_clicked(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    char *filename;
+
+    filename = gtk_file_selection_get_filename(
+    	    	    GTK_FILE_SELECTION(sw->saveas_dialog_));
+
+    sw->save_with_annotations(filename);
+    gtk_widget_hide(sw->saveas_dialog_);
+}
+
+GLADE_CALLBACK void
+on_source_saveas_cancel_button_clicked(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+
+    gtk_widget_hide(sw->saveas_dialog_);
+}
+
+GLADE_CALLBACK void
+on_source_save_as_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    char *txt_filename;
+    
+    txt_filename = g_strconcat(sw->filename_, ".cov.txt", (char *)0);
+    gtk_file_selection_set_filename(GTK_FILE_SELECTION(sw->saveas_dialog_),
+    	    	    	    	    txt_filename);
+    g_free(txt_filename);
+    
+    gtk_widget_show(sw->saveas_dialog_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

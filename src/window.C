@@ -20,7 +20,7 @@
 #include "window.H"
 #include "cov.H"
 
-CVSID("$Id: window.C,v 1.7 2003-04-05 23:53:21 gnb Exp $");
+CVSID("$Id: window.C,v 1.8 2003-04-26 14:50:13 gnb Exp $");
 
 static const char window_key[] = "ggcov_window_key";
 
@@ -43,11 +43,17 @@ window_t::~window_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
+window_t::attach(GtkWidget *w)
+{
+    gtk_object_set_data(GTK_OBJECT(w), window_key, this);
+}
+
+void
 window_t::set_window(GtkWidget *w)
 {
     assert(GTK_IS_WINDOW(w));
     window_ = w;
-    gtk_object_set_data(GTK_OBJECT(window_), window_key, this);
+    attach(window_);
     ui_register_window(window_);
 }
 
