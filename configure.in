@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.1 2001-11-23 03:47:48 gnb Exp $
+dnl $Id: configure.in,v 1.2 2001-11-23 09:09:45 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -30,8 +30,7 @@ sinclude(/usr/share/aclocal/progtest.m4)dnl
 sinclude(/usr/share/aclocal/missing.m4)dnl
 sinclude(/usr/share/aclocal/sanity.m4)dnl
 sinclude(/usr/share/aclocal/cond.m4)dnl
-dnl sinclude(/usr/share/aclocal/glib.m4)dnl
-sinclude(/usr/share/aclocal/gtk.m4)dnl
+sinclude(/usr/share/aclocal/libglade.m4)dnl
 AM_INIT_AUTOMAKE(ggcov,0.0.1)
 AM_CONFIG_HEADER(config.h)
 
@@ -77,8 +76,8 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_PID_T
 
-dnl Check for the GTK libraries
-AM_PATH_GTK(1.2.7)
+dnl Check for the libglade, libxml, and GTK libraries
+AM_PATH_LIBGLADE(,AC_MSG_ERROR(ggcov requires the libglade library),gnome)
 
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
