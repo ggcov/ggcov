@@ -21,8 +21,9 @@
 #include <math.h>
 #include "sourcewin.H"
 #include "cov.H"
+#include "prefs.H"
 
-CVSID("$Id: fileswin.C,v 1.4 2002-12-31 14:48:52 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.5 2003-01-01 04:22:07 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -174,6 +175,7 @@ fileswin_t::update()
 {
     GList *iter;
     gboolean percent_flag;
+    GdkColor *color;
     char *text[NUM_COLS];
     char lines_pc_buf[16];
     char calls_pc_buf[16];
@@ -207,8 +209,18 @@ fileswin_t::update()
 	
 	text[COL_FILE] = (char *)fr->file->minimal_name();
 	
+	if (fr->stats.lines == 0)
+	    color = &prefs.uninstrumented_foreground;
+	else if (fr->stats.lines_executed == 0)
+	    color = &prefs.uncovered_foreground;
+	else if (fr->stats.lines_executed < fr->stats.lines)
+	    color = &prefs.partcovered_foreground;
+	else
+	    color = &prefs.covered_foreground;
+
 	row = gtk_clist_prepend(GTK_CLIST(clist_), text);
 	gtk_clist_set_row_data(GTK_CLIST(clist_), row, fr);
+	gtk_clist_set_foreground(GTK_CLIST(clist_), row, color);
     }
     
     gtk_clist_columns_autosize(GTK_CLIST(clist_));
