@@ -38,6 +38,7 @@ public:
 
 protected:
     virtual gboolean calc_stats(cov_stats_t *) = 0;
+    void dirty();
 
 private:
     gboolean dirty_;
@@ -80,6 +81,11 @@ public:
     cov_function_scope_t(const cov_function_t *);
     ~cov_function_scope_t();
 
+    const cov_function_t *function() const
+    {
+    	return function_;
+    }
+    
 private:
     virtual const char *describe() const;
     virtual gboolean calc_stats(cov_stats_t *);
@@ -105,6 +111,23 @@ private:
     unsigned long start_;
     unsigned long end_;
     char *description_;
+};
+
+class cov_compound_scope_t : public cov_scope_t
+{
+public:
+    cov_compound_scope_t();
+    cov_compound_scope_t(list_t<cov_scope_t> *);
+    ~cov_compound_scope_t();
+    
+    void add_child(cov_scope_t *);
+    void remove_child(cov_scope_t *);
+
+private:
+    virtual const char *describe() const;
+    virtual gboolean calc_stats(cov_stats_t *);
+
+    list_t<cov_scope_t> children_;
 };
 
 #endif /* _ggcov_cov_scope_H_ */

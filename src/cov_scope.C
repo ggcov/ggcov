@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "filename.h"
 
-CVSID("$Id: cov_scope.C,v 1.1 2003-05-31 13:42:57 gnb Exp $");
+CVSID("$Id: cov_scope.C,v 1.2 2003-05-31 14:35:41 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -47,6 +47,12 @@ cov_scope_t::get_stats()
 	dirty_ = FALSE;
     }
     return &stats_;
+}
+
+void
+cov_scope_t::dirty()
+{
+    dirty_ = TRUE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -246,6 +252,59 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
 	    ++fnidx;
 	}
     } while (b != (cov_block_t *)endblocks->data);
+
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+cov_compound_scope_t::cov_compound_scope_t()
+{
+}
+
+cov_compound_scope_t::cov_compound_scope_t(list_t<cov_scope_t> *children)
+{
+    children_.take(children);
+}
+
+cov_compound_scope_t::~cov_compound_scope_t()
+{
+    children_.remove_all();
+}
+
+void
+cov_compound_scope_t::add_child(cov_scope_t *sc)
+{
+    /* caller's responsibility to avoid adding twice if so desired */
+    children_.prepend(sc);
+    dirty();
+}
+
+void
+cov_compound_scope_t::remove_child(cov_scope_t *sc)
+{
+    children_.remove(sc);
+    dirty();
+}
+
+const char *
+cov_compound_scope_t::describe() const
+{
+    return "compound";
+}
+
+gboolean
+cov_compound_scope_t::calc_stats(cov_stats_t *stats)
+{
+    list_iterator_t<cov_scope_t> iter;
+    const cov_stats_t *cstats;
+    
+    for (iter = children_.first() ; iter != (cov_scope_t *)0 ; ++iter)
+    {
+    	// accumulate stats with caching
+    	if ((cstats = (*iter)->get_stats()) != 0)
+	    stats->accumulate(cstats);
+    }
 
     return TRUE;
 }
