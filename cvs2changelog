@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: cvs2changelog,v 1.6 2003-08-04 10:41:58 gnb Exp $
+# $Id: cvs2changelog,v 1.7 2003-08-04 13:14:18 gnb Exp $
 #
 # Shell script to build a change log for a new release
 # from CVS logs. The change log will still need some
@@ -20,6 +20,7 @@ CHECKFILE="configure.in"
 IGNOREDIRS="www doc po"
 LOG=ChangeLog
 OLDLOG=ChangeLog.$$
+RAWMODE=no
 
 canon_tag ()
 {
@@ -81,6 +82,7 @@ while [ $# -gt 0 ]; do
     --package=*) PACKAGE=`echo "$1"|sed -e 's|^[^=]*=||g'` ;;
     --package) PACKAGE="$2" ; shift ;;
     --dryrun) DRYRUN=yes ;;
+    --raw) RAWMODE=yes ;;
     --help) usage ;;
     -*) usage "bad option \"$1\"" ;;
     [0-9]*.[0-9]*.[0-9]*|[0-9]*.[0-9]*)
@@ -299,6 +301,53 @@ END {
 }'
 }
 
+# Rawmode isn't quite raw; we remove empty lines and duplicate messages.
+rawuniquify ()
+{
+    sed -e 's/^[ \t]*$//' | awk '
+BEGIN {
+    line = "";
+    mode = 0;
+}
+function emit_line () {
+    if (++ulines[line] == 1) {
+    	print line;
+    }
+}
+{
+#    print ">>>\""$0"\"";
+    if ($0 == "") {
+    	if (line != "") emit_line();
+    	line = "";
+	mode = 0;
+    } else if (match($0, "^[*x](  +|\t+)")) {
+    	if (line != "") emit_line();
+	mode = 1;
+	line = $0;
+    } else if (match($0, "^(   +|\t+)")) {
+    	if (mode != 1 && line != "") {
+	    emit_line();
+	    line = "";
+	}
+	mode = 1;
+	line = line"\n"$0;
+    } else {
+    	if (mode != 2 && line != "") {
+	    emit_line();
+	    line = "";
+	}
+	mode = 2;
+	if (line == "")
+	    line = $0;
+	else
+	    line = line"\n"$0;
+    }
+}
+END {
+    if (line != "") emit_line();
+}'
+}
+
 getDirs ()
 {
     IGNOREEXP=`echo "$IGNOREDIRS" | sed -e 's:[ 	][  ]*:|:g'`
@@ -307,7 +356,7 @@ getDirs ()
 	egrep -v '^('$IGNOREEXP')$'
 }
 
-gatherChanges ()
+cookedGatherChanges ()
 {
     echo "$DATE  $ME <$EMAIL>"
     test -z "$RELEASE" || echo "	* Release $RELEASE"
@@ -318,6 +367,22 @@ gatherChanges ()
     echo ""
 }
 
+rawGatherChanges ()
+{
+    if [ -z "$FILES" ]; then
+    	FILES="-l . "`getDirs`
+    fi
+    cvs log -r${TAG1}:${TAG2} $FILES 2>&1 | extract | rawuniquify
+}
+
+gatherChanges ()
+{
+    if [ $RAWMODE = yes ]; then
+    	rawGatherChanges
+    else
+    	cookedGatherChanges
+    fi
+}
 
 if [ "$DRYRUN" = yes ] ; then
     gatherChanges
