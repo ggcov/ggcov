@@ -37,7 +37,7 @@ public:
     sourcewin_t();
     ~sourcewin_t();
 
-    void set_filename(const char *filename);
+    void set_filename(const char *filename, const char *display_fname);
     void select_region(unsigned long start, unsigned long end);
     void ensure_visible(unsigned long line);
 
