@@ -23,15 +23,30 @@
 #include "filename.h"
 #include "estring.h"
 #include "sourcewin.h"
+#include "summarywin.h"
 #include <dirent.h>
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.2 2001-11-23 09:09:25 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.3 2001-11-25 05:51:41 gnb Exp $");
 
 char *argv0;
-int verbose;
 GList *files;	    /* incoming specification from commandline */
 GList *filenames;   /* filenames of all .c files which have .bb etc read */
+
+static poptContext popt_context;
+static struct poptOption popt_options[] =
+{
+    {
+    	"glade-path",	    	    	    	/* longname */
+	0,  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&ui_glade_path,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"where to locate ggcov.glade",	    	/* descrip */
+	"colon-seperated list of directories"	/* argDescrip */
+    },
+    { 0, 0, 0, 0, 0, 0, 0 }
+};
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -120,23 +135,15 @@ read_gcov_files(void)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #if 0
-static count_t
-block_list_total(const GList *list)
-{
-    count_t total = 0;
-    
-    for ( ; list != 0 ; list = list->next)
-    	total += ((cov_block_t *)list->data)->count;
-    return total;
-}
 
 static void
 annotate_file(cov_file_t *f, void *userdata)
 {
     const char *cfilename = f->name;
     FILE *infp, *outfp;
-    unsigned lineno;
-    const GList *blocks;
+    cov_location_t loc;
+    count_t count;
+    gboolean have_count;
     char *ggcov_filename;
     char buf[1024];
     
@@ -157,18 +164,17 @@ annotate_file(cov_file_t *f, void *userdata)
     }
     g_free(ggcov_filename);
     
-    
-    lineno = 0;
+    loc.filename = cfilename;
+    loc.lineno = 0;
     while (fgets(buf, sizeof(buf), infp) != 0)
     {
-    	++lineno;
+    	++loc.lineno;
 	
-	blocks = cov_blocks_find_by_location(cfilename, lineno);
-	if (blocks != 0)
+	cov_get_count_by_location(&loc, &count, &have_count);
+	if (have_count)
 	{
-	    count_t total = block_list_total(blocks);
-	    if (total)
-		fprintf(outfp, "%12lld    ", total);
+	    if (count)
+		fprintf(outfp, "%12lld    ", count);
 	    else
 		fputs("      ######    ", outfp);
 	}
@@ -271,9 +277,11 @@ summarise(void)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-ui_init(int *argcp, char ***argvp)
+ui_init(int argc, char **argv)
 {
-    gnome_init(PACKAGE, VERSION, *argcp, *argvp);
+    gnome_init_with_popt_table(PACKAGE, VERSION, argc, argv,
+			       popt_options, /*popt flags*/0,
+			       &popt_context);
 
     /* initialise libGlade */
     glade_gnome_init();
@@ -281,86 +289,33 @@ ui_init(int *argcp, char ***argvp)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-
-#define get_widget(nm) \
-    nm = glade_xml_get_widget(xml, #nm); \
-    assert(nm != 0)
-
 static void
 ui_create(void)
 {
-    sourcewin_t *sw;
+    sourcewin_t *srcw;
+    summarywin_t *sumw;
         
-    sw = sourcewin_new();
-    sourcewin_set_filename(sw, (const char *)filenames->data);
+    srcw = sourcewin_new();
+    sourcewin_set_filename(srcw, (const char *)filenames->data);
+    
+    sumw = summarywin_new();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static const char usage_str[] = 
-"Usage: ggcov [directory...]\n"
-" options are:\n"
-"--help             print this message and exit\n"
-"--version          print version and exit\n"
-"--verbose          print more messages\n"
-;
-
-static void
-usage(int ec)
-{
-    fputs(usage_str, stderr);
-    fflush(stderr); /* JIC */
-    
-    exit(ec);
-}
-
-static void
-usagef(int ec, const char *fmt, ...)
-{
-    va_list args;
-    
-    va_start(args, fmt);
-    fprintf(stderr, "%s: ", argv0);
-    vfprintf(stderr, fmt, args);
-    va_end(args);
-    
-    usage(ec);
-}
-
 static void
 parse_args(int argc, char **argv)
 {
-    int i;
+    int rc;
+    const char *file;
     
     argv0 = argv[0];
     
-    for (i = 1 ; i < argc ; i++)
-    {
-    	if (argv[i][0] == '-')
-	{
-	    if (!strcmp(argv[i], "--version"))
-	    {
-	    	printf("%s version %s\n", PACKAGE, VERSION);
-	    	exit(0);
-	    }
-	    else if (!strcmp(argv[i], "--verbose"))
-	    {
-	    	verbose++;
-	    }
-	    else if (!strcmp(argv[i], "--help"))
-	    {
-	    	usage(0);
-	    }
-	    else
-	    {
-	    	usagef(1, "unknown option \"%s\"\n", argv[i]);
-	    }
-	}
-	else
-	{
-	    files = g_list_append(files, argv[i]);
-	}
-    }
+    while ((rc = poptGetNextOpt(popt_context)) > 0)
+    	;
+    
+    while ((file = poptGetArg(popt_context)) != 0)
+	files = g_list_append(files, (gpointer)file);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -368,7 +323,7 @@ parse_args(int argc, char **argv)
 int
 main(int argc, char **argv)
 {
-    ui_init(&argc, &argv);
+    ui_init(argc, argv);
     parse_args(argc, argv);
     read_gcov_files();
 
