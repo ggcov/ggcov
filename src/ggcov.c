@@ -1,13 +1,37 @@
+/*
+ * ggcov - A GTK frontend for exploring gcov coverage data
+ * Copyright (c) 2001 Greg Banks <gnb@alphalink.com.au>
+ * 
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
 #include "common.h"
 #include "cov.h"
+#include "ui.h"
 #include "filename.h"
 #include "estring.h"
+#include "sourcewin.h"
 #include <dirent.h>
+#include <libgnomeui/libgnomeui.h>
 
+CVSID("$Id: ggcov.c,v 1.2 2001-11-23 09:09:25 gnb Exp $");
 
 char *argv0;
 int verbose;
-GList *files;
+GList *files;	    /* incoming specification from commandline */
+GList *filenames;   /* filenames of all .c files which have .bb etc read */
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -55,6 +79,18 @@ read_gcov_directory(const char *dirname)
 
 
 static void
+append_one_filename(cov_file_t *f, void *userdata)
+{
+    filenames = g_list_append(filenames, f->name);
+}
+
+static int
+compare_filenames(gconstpointer a, gconstpointer b)
+{
+    return strcmp((const char *)a, (const char *)b);
+}
+
+static void
 read_gcov_files(void)
 {
     GList *iter;
@@ -76,10 +112,14 @@ read_gcov_files(void)
 		exit(1);
 	}
     }
+    
+    cov_file_foreach(append_one_filename, 0);
+    filenames = g_list_sort(filenames, compare_filenames);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+#if 0
 static count_t
 block_list_total(const GList *list)
 {
@@ -146,7 +186,7 @@ annotate(void)
 {
     cov_file_foreach(annotate_file, 0);
 }
-
+#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #if DEBUG
@@ -230,6 +270,33 @@ summarise(void)
 #endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static void
+ui_init(int *argcp, char ***argvp)
+{
+    gnome_init(PACKAGE, VERSION, *argcp, *argvp);
+
+    /* initialise libGlade */
+    glade_gnome_init();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+
+#define get_widget(nm) \
+    nm = glade_xml_get_widget(xml, #nm); \
+    assert(nm != 0)
+
+static void
+ui_create(void)
+{
+    sourcewin_t *sw;
+        
+    sw = sourcewin_new();
+    sourcewin_set_filename(sw, (const char *)filenames->data);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 static const char usage_str[] = 
 "Usage: ggcov [directory...]\n"
 " options are:\n"
@@ -301,13 +368,20 @@ parse_args(int argc, char **argv)
 int
 main(int argc, char **argv)
 {
+    ui_init(&argc, &argv);
     parse_args(argc, argv);
     read_gcov_files();
 
 #if DEBUG
     summarise();
 #endif
+#if 0
     annotate();
+#endif
+    ui_create();
+    gtk_main();
+    
+    return 0;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

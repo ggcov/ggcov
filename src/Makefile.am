@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.1 2001-11-23 03:47:48 gnb Exp $
+# $Id: Makefile.am,v 1.2 2001-11-23 09:09:25 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
@@ -26,9 +26,11 @@ ggcov_SOURCES=	common.h common.c \
 		filename.h filename.c \
 		covio.h covio.c \
 		cov.h cov.c \
+		ui.h ui.c \
+		sourcewin.h sourcewin.c \
 		ggcov.c
-INCLUDES=	$(GTK_CFLAGS)
-ggcov_LDADD=	$(GTK_LIBS)
+INCLUDES=	$(LIBGLADE_CFLAGS)
+ggcov_LDADD=	$(LIBGLADE_LIBS)
 CPPFLAGS=	-DPKGDATADIR="\"$(pkgdatadir)\"" -DDEBUG=$(DEBUG)
 
 # Note this is an automake conditional *not* a gmake conditional
