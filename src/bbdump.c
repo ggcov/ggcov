@@ -17,7 +17,7 @@ hexdump(FILE *fp, off_t lastoff)
     for ( ; lastoff < here ; lastoff += 4)
     {
     	covio_read_u32(fp, &d);
-	printf(COVIO_U32_XFMT" ", d);
+	printf(GNB_U32_XFMT" ", d);
     }
     assert(here == lastoff);
     assert(lastoff == ftell(fp));
@@ -61,7 +61,7 @@ do_tags(const char *filename, FILE *fp)
 
 	default:
 	    hexdump(fp, lastoff);
-	    printf("line "COVIO_U32_DFMT"\n", tag);
+	    printf("line "GNB_U32_DFMT"\n", tag);
 	    break;
 	}
 	lastoff = ftell(fp);
