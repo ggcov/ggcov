@@ -28,6 +28,7 @@ typedef struct cov_function_s	cov_function_t;
 typedef struct cov_arc_s	cov_arc_t;
 typedef struct cov_block_s	cov_block_t;
 typedef struct cov_location_s	cov_location_t;
+typedef struct cov_stats_s	cov_stats_t;
 
 
 struct cov_file_s
@@ -40,6 +41,7 @@ struct cov_file_s
 struct cov_function_s
 {
     char *name;
+    unsigned idx; 	    /* serial number in file */
     cov_file_t *file;
     GPtrArray *blocks;
 };
@@ -74,16 +76,42 @@ struct cov_block_s
 struct cov_location_s
 {
     char *filename;
-    unsigned lineno;
+    unsigned long lineno;
 };
+
+
+struct cov_stats_s
+{
+    unsigned long lines;
+    unsigned long lines_executed;
+    unsigned long calls;
+    unsigned long calls_executed;
+    unsigned long branches;
+    unsigned long branches_executed;
+    unsigned long branches_taken;
+};
+
+#define cov_file_nth_function(f, n) \
+    	    ((cov_function_t *)(f)->functions->pdata[(n)])
+#define cov_function_nth_block(fn, n) \
+    	    ((cov_block_t *)(fn)->blocks->pdata[(n)])
 
 
 gboolean cov_handle_c_file(const char *cfilename);
 cov_file_t *cov_file_find(const char *name);
-const GList *cov_blocks_find_by_location(const char *filename, unsigned lineno);
+void cov_get_count_by_location(const cov_location_t *loc,
+			       count_t *countp, gboolean *existsp);
 void cov_file_foreach(void (*func)(cov_file_t*, void *userdata), void *userdata);
 
 const cov_location_t *cov_function_get_first_location(const cov_function_t *fn);
 const cov_location_t *cov_function_get_last_location(const cov_function_t *fn);
+const cov_location_t *cov_file_get_last_location(const cov_file_t *f);
+
+#define cov_stats_init(sp)  memset((sp), 0, sizeof(cov_stats_t))
+void cov_function_calc_stats(const cov_function_t *, cov_stats_t *);
+void cov_file_calc_stats(const cov_file_t *f, cov_stats_t *stats);
+void cov_overall_calc_stats(cov_stats_t *stats);
+void cov_range_calc_stats(const cov_location_t *start,
+    	    	    	  const cov_location_t *end, cov_stats_t *stats);
 
 #endif /* _ggcov_cov_h_ */

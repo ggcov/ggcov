@@ -22,7 +22,7 @@
 #include "filename.h"
 #include "estring.h"
 
-CVSID("$Id: cov.c,v 1.3 2001-11-23 11:46:00 gnb Exp $");
+CVSID("$Id: cov.c,v 1.4 2001-11-25 05:42:10 gnb Exp $");
 
 GHashTable *cov_files;
 /* TODO: ? reorg this */
@@ -95,6 +95,21 @@ cov_function_get_last_location(const cov_function_t *fn)
 	
 	for (iter = g_list_last(b->locations) ; iter != 0 ; iter = iter->prev)
 	    return (const cov_location_t *)iter->data;
+    }
+    return 0;
+}
+
+const cov_location_t *
+cov_file_get_last_location(const cov_file_t *f)
+{
+    int fnidx;
+    const cov_location_t *loc;
+    
+    for (fnidx = f->functions->len-1 ; fnidx >= 0 ; fnidx--)
+    {
+    	cov_function_t *fn = (cov_function_t *)f->functions->pdata[fnidx];
+    	if ((loc = cov_function_get_last_location(fn)) != 0)
+	    return loc;
     }
     return 0;
 }
@@ -179,6 +194,7 @@ cov_file_add_function(cov_file_t *f)
     
     fn = cov_function_new();
     
+    fn->idx = f->functions->len;
     g_ptr_array_add(f->functions, fn);    
     fn->file = f;
     
@@ -266,15 +282,41 @@ cov_block_add_location(cov_block_t *b, const char *filename, unsigned lineno)
     }
 }
 
-const GList *
-cov_blocks_find_by_location(const char *filename, unsigned lineno)
+static const GList *
+cov_blocks_find_by_location(const cov_location_t *loc)
 {
     GList *list;
-    char *key = cov_location_make_key(filename, lineno);
+    char *key = cov_location_make_key(loc->filename, loc->lineno);
 
     list = g_hash_table_lookup(cov_blocks_by_location, key);
     g_free(key);
     return list;
+}
+
+static count_t
+cov_blocks_total(const GList *list)
+{
+    count_t total = 0;
+
+    for ( ; list != 0 ; list = list->next)
+    {
+    	cov_block_t *b = (cov_block_t *)list->data;
+	
+	total += b->count;
+    }
+    return total;
+}
+
+void
+cov_get_count_by_location(
+    const cov_location_t *loc,
+    count_t *countp,
+    gboolean *existsp)
+{
+    const GList *blocks = cov_blocks_find_by_location(loc);
+    
+    *existsp = (blocks != 0);
+    *countp = cov_blocks_total(blocks);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -292,7 +334,7 @@ cov_arc_set_count(cov_arc_t *a, count_t count)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static count_t
-arc_list_total(GList *list)
+cov_arcs_total(GList *list)
 {
     count_t total = 0;
     
@@ -308,7 +350,7 @@ arc_list_total(GList *list)
 }
 
 static cov_arc_t *
-arc_list_find_invalid(GList *list)
+cov_arcs_find_invalid(GList *list)
 {
     for ( ; list != 0 ; list = list->next)
     {
@@ -372,12 +414,12 @@ cov_function_solve(cov_function_t *fn)
 	    {
 		if (b->out_ninvalid == 0)
 		{
-		    cov_block_set_count(b, arc_list_total(b->out_arcs));
+		    cov_block_set_count(b, cov_arcs_total(b->out_arcs));
 		    changes++;
 		}
 		else if (b->in_ninvalid == 0)
 		{
-		    cov_block_set_count(b, arc_list_total(b->in_arcs));
+		    cov_block_set_count(b, cov_arcs_total(b->in_arcs));
 		    changes++;
 		}
 	    }
@@ -387,23 +429,23 @@ cov_function_solve(cov_function_t *fn)
 		if (b->out_ninvalid == 1)
 		{
 		    /* Search for the invalid arc, and set its count.  */
-		    if ((a = arc_list_find_invalid(b->out_arcs)) == 0)
+		    if ((a = cov_arcs_find_invalid(b->out_arcs)) == 0)
 			return FALSE;	/* ERROR */
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
-		    cov_arc_set_count(a, b->count - arc_list_total(b->out_arcs));
+		    cov_arc_set_count(a, b->count - cov_arcs_total(b->out_arcs));
 		    changes++;
 		}
 		if (b->in_ninvalid == 1)
 		{
 		    /* Search for the invalid arc, and set its count.  */
-		    if ((a = arc_list_find_invalid(b->in_arcs)) == 0)
+		    if ((a = cov_arcs_find_invalid(b->in_arcs)) == 0)
 			return FALSE;	/* ERROR */
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
-		    cov_arc_set_count(a, b->count - arc_list_total(b->in_arcs));
+		    cov_arc_set_count(a, b->count - cov_arcs_total(b->in_arcs));
 		    changes++;
 		}
 	    }
@@ -731,6 +773,173 @@ cov_handle_c_file(const char *cfilename)
     g_free(bbgfilename);
     g_free(dafilename);
     return res;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+/*
+ * Calculate stats on a block.  I don't really understand
+ * the meaning of the arc bits, but copied the implications
+ * from gcov.c.
+ */
+static void
+cov_block_calc_stats(const cov_block_t *b, cov_stats_t *stats)
+{
+    GList *iter;
+
+    /*
+     * Calculate call and branches coverage.
+     */
+    for (iter = b->out_arcs ; iter != 0 ; iter = iter->next)
+    {
+	cov_arc_t *a = (cov_arc_t *)iter->data;
+
+    	if (a->fall_through/*these are not branches apparently*/)
+	    continue;
+
+	if (a->fake/*is a function call*/)
+	{
+	    stats->calls++;
+	    if (b->count)
+		stats->calls_executed++;
+	}
+	else
+	{
+	    stats->branches++;
+	    if (b->count)
+		stats->branches_executed++;
+	    if (a->count)
+		stats->branches_taken++;
+	}
+    }
+
+    /*
+     * Calculate line coverage.
+     */
+    for (iter = b->locations ; iter != 0 ; iter = iter->next)
+    {
+	cov_location_t *loc = (cov_location_t *)iter->data;
+	const GList *blocks = cov_blocks_find_by_location(loc);
+
+	/*
+	 * Compensate for multiple blocks on a line by
+	 * only counting when we hit the first block.
+	 * This will lead to anomalies when there are
+	 * multiple functions on the same line, but code
+	 * like that *deserves* anomalies.
+	 */
+	if (blocks->data != b)
+	    continue;
+
+	stats->lines++;
+	if (cov_blocks_total(blocks))
+	    /* any blocks on this line were executed */
+	    stats->lines_executed++;
+    }
+}
+
+void
+cov_function_calc_stats(const cov_function_t *fn, cov_stats_t *stats)
+{
+    unsigned int bidx;
+    
+    for (bidx = 0 ; bidx < fn->blocks->len ; bidx++)
+    {
+    	cov_block_t *b = fn->blocks->pdata[bidx];
+	
+	cov_block_calc_stats(b, stats);
+    }
+}
+
+void
+cov_file_calc_stats(const cov_file_t *f, cov_stats_t *stats)
+{
+    unsigned int fnidx;
+    
+    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    {
+    	cov_function_t *fn = f->functions->pdata[fnidx];
+	
+	cov_function_calc_stats(fn, stats);
+    }
+}
+
+void
+cov_overall_calc_stats(cov_stats_t *stats)
+{
+    cov_file_foreach((void (*)(cov_file_t*, void*))cov_file_calc_stats, stats);
+}
+
+
+void
+cov_range_calc_stats(
+    const cov_location_t *startp,
+    const cov_location_t *endp,
+    cov_stats_t *stats)
+{
+    cov_file_t *f;
+    cov_location_t start = *startp, end = *endp;
+    cov_block_t *b;
+    unsigned fnidx, bidx;
+    unsigned long lastline;
+    const GList *startblocks, *endblocks;
+
+    /*
+     * Check inputs
+     */
+    if ((f = cov_file_find(start.filename)) == 0)
+    	return;     /* nonexistant filename */
+    if (strcmp(start.filename, end.filename))
+    	return;     /* invalid range */
+    if (start.lineno > end.lineno)
+    	return;     	/* invalid range */
+    if (start.lineno == 0 || end.lineno == 0)
+    	return;     	/* invalid range */
+    lastline = cov_file_get_last_location(f)->lineno;
+    if (start.lineno > lastline)
+    	return;     	/* range is outside file */
+    if (end.lineno > lastline)
+    	end.lineno = lastline;     /* clamp range to file */
+    
+    /*
+     * Get blocklists for start and end.
+     */
+    do
+    {
+    	startblocks = cov_blocks_find_by_location(&start);
+    } while (startblocks == 0 && ++start.lineno <= end.lineno);
+    
+    if (startblocks == 0)
+    	return;     	/* no executable lines in the given range */
+
+    do
+    {
+    	endblocks = cov_blocks_find_by_location(&end);
+    } while (endblocks == 0 && --end.lineno > start.lineno-1);
+    
+    assert(endblocks != 0);
+    assert(start.lineno <= end.lineno);
+    
+
+    /*
+     * Iterate over the blocks between start and end,
+     * gathering stats as we go.  Note that this can
+     * span functions.
+     */    
+    b = (cov_block_t *)startblocks->data;
+    bidx = b->idx;
+    fnidx = b->function->idx;
+    
+    do
+    {
+	b = cov_function_nth_block(cov_file_nth_function(f, fnidx), bidx);
+    	cov_block_calc_stats(b, stats);
+	if (++bidx == cov_file_nth_function(f, fnidx)->blocks->len)
+	{
+	    bidx = 0;
+	    ++fnidx;
+	}
+    } while (b != (cov_block_t *)endblocks->data);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
