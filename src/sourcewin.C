@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.10 2003-04-05 23:53:21 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.11 2003-04-21 14:14:47 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -34,6 +34,9 @@ GdkFont *sourcewin_t::font_;
 int sourcewin_t::font_width_, sourcewin_t::font_height_;
 #endif
 list_t<sourcewin_t> sourcewin_t::instances_;
+
+/* column widths, in *characters* */
+const int sourcewin_t::column_widths_[sourcewin_t::NUM_COLS] = { 7, 16, 7, -1 };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -110,14 +113,23 @@ sourcewin_t::sourcewin_t()
 #else
     text_ = glade_xml_get_widget(xml, "source_text");
 #endif
-    number_check_ = glade_xml_get_widget(xml, "source_number_check");
-    block_check_ = glade_xml_get_widget(xml, "source_block_check");
-    count_check_ = glade_xml_get_widget(xml, "source_count_check");
-    source_check_ = glade_xml_get_widget(xml, "source_source_check");
+    column_checks_[COL_LINE] = glade_xml_get_widget(xml, "source_line_check");
+    column_checks_[COL_BLOCK] = glade_xml_get_widget(xml, "source_block_check");
+    column_checks_[COL_COUNT] = glade_xml_get_widget(xml, "source_count_check");
+    column_checks_[COL_SOURCE] = glade_xml_get_widget(xml, "source_source_check");
     colors_check_ = glade_xml_get_widget(xml, "source_colors_check");
     toolbar_ = glade_xml_get_widget(xml, "source_toolbar");
     filenames_combo_ = glade_xml_get_widget(xml, "source_filenames_combo");
     functions_combo_ = glade_xml_get_widget(xml, "source_functions_combo");
+#if !GTK2
+    titles_hbox_ = glade_xml_get_widget(xml, "source_titles_hbox");
+    left_pad_label_ = glade_xml_get_widget(xml, "source_left_pad_label");
+    title_buttons_[COL_LINE] = glade_xml_get_widget(xml, "source_col_line_button");
+    title_buttons_[COL_BLOCK] = glade_xml_get_widget(xml, "source_col_block_button");
+    title_buttons_[COL_COUNT] = glade_xml_get_widget(xml, "source_col_count_button");
+    title_buttons_[COL_SOURCE] = glade_xml_get_widget(xml, "source_col_source_button");
+    right_pad_label_ = glade_xml_get_widget(xml, "source_right_pad_label");
+#endif
     ui_register_windows_menu(ui_get_dummy_menu(xml, "source_windows_dummy"));
         
     init(window_);
@@ -259,6 +271,7 @@ sourcewin_t::populate()
     populate_filenames();
     populate_functions();
     update();
+    update_title_buttons();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -375,18 +388,22 @@ sourcewin_t::update()
 #else
     GtkText *text = GTK_TEXT(text_);
     GdkColor *color;
-    static GdkColor *scolors[4] =
+    static GdkColor *scolors[CS_NUM_STATUS] =
     {
     	&prefs.covered_foreground, &prefs.partcovered_foreground,
 	&prefs.uncovered_foreground, &prefs.uninstrumented_foreground
     };
 #endif
-    const char *strs[5];
+    const char *strs[NUM_COLS];
     char linenobuf[32];
     char blockbuf[32];
     char countbuf[32];
     char linebuf[1024];
     
+#if !GTK2
+    update_title_buttons();
+#endif
+
     if ((fp = fopen(filename_, "r")) == 0)
     {
     	/* TODO: gui error report */
@@ -444,37 +461,40 @@ sourcewin_t::update()
 	
 	nstrs = 0;
 	
-	if (GTK_CHECK_MENU_ITEM(number_check_)->active)
+	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_LINE])->active)
 	{
-	    snprintf(linenobuf, sizeof(linenobuf), "%7lu ", loc.lineno);
+	    snprintf(linenobuf, sizeof(linenobuf), "%*lu ",
+	    	      column_widths_[COL_LINE], loc.lineno);
 	    strs[nstrs++] = linenobuf;
 	}
 	
-	if (GTK_CHECK_MENU_ITEM(block_check_)->active)
+	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_BLOCK])->active)
 	{
-	    format_blocks(blockbuf, 16, &loc);
+	    format_blocks(blockbuf, column_widths_[COL_BLOCK], &loc);
 	    strs[nstrs++] = blockbuf;
 	}
 	
-	if (GTK_CHECK_MENU_ITEM(count_check_)->active)
+	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_COUNT])->active)
 	{
 	    switch (status)
 	    {
 	    case CS_COVERED:
 	    case CS_PARTCOVERED:
-		snprintf(countbuf, sizeof(countbuf), "%7lu ", (unsigned long)count);
-		strs[nstrs++] = countbuf;
+		snprintf(countbuf, sizeof(countbuf), "%*lu ",
+		    	 column_widths_[COL_COUNT], (unsigned long)count);
 		break;
 	    case CS_UNCOVERED:
-		strs[nstrs++] = " ###### ";
+		strncpy(countbuf, " ###### ", sizeof(countbuf));
 		break;
 	    case CS_UNINSTRUMENTED:
-		strs[nstrs++] = "        ";
+		strncpy(countbuf, "        ", sizeof(countbuf));
 		break;
 	    }
+	    strs[nstrs++] = countbuf;
     	}
 
-	if (GTK_CHECK_MENU_ITEM(source_check_)->active)
+
+	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_SOURCE])->active)
 	    strs[nstrs++] = linebuf;
 	else
 	    strs[nstrs++] = "\n";
@@ -505,6 +525,71 @@ sourcewin_t::update()
     gtk_text_thaw(text);
 #endif
 }
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#if !GTK2
+void
+sourcewin_t::update_title_buttons()
+{
+    GtkWidget *scrollw;
+    int lpad, rpad, sbwidth;
+    int i;
+    
+    /*
+     * Need the window to be realized so that the scrollbar has
+     * its final width for our calculations.
+     */
+    if (!GTK_WIDGET_REALIZED(window_))
+    	gtk_widget_realize(window_);
+    
+    /*
+     * Set the left and right padding labels to just the right values
+     * to align the title buttons with the main text window body.
+     */
+    scrollw = text_->parent;
+    lpad = rpad = GTK_CONTAINER(scrollw)->border_width;
+    sbwidth = GTK_SCROLLED_WINDOW(scrollw)->vscrollbar->allocation.width + 
+    	      GTK_SCROLLED_WINDOW_CLASS(GTK_OBJECT(scrollw)->klass)->scrollbar_spacing;
+    switch (GTK_SCROLLED_WINDOW(scrollw)->window_placement)
+    {
+    case GTK_CORNER_TOP_LEFT:
+    case GTK_CORNER_BOTTOM_LEFT:
+    	rpad += sbwidth;
+	break;
+    case GTK_CORNER_TOP_RIGHT:
+    case GTK_CORNER_BOTTOM_RIGHT:
+    	lpad += sbwidth;
+	break;
+    }
+    
+    gtk_widget_set_usize(left_pad_label_, lpad, /*height=whatever*/5);
+    gtk_widget_set_usize(right_pad_label_, rpad, /*height=whatever*/5);
+
+    /*
+     * Size each title button to match the size of each column in
+     * the text window.  Note the Source column takes up all the slack.
+     */
+    for (i = 0 ; i < NUM_COLS ; i++)
+    {
+    	if (column_widths_[i] > 0)
+	    gtk_widget_set_usize(title_buttons_[i],
+	    	    	         column_widths_[i] * font_width_,
+				 /*height=whatever*/5);
+    }
+
+    /*
+     * Show or hide the title buttons.
+     */
+    for (i = 0 ; i < NUM_COLS ; i++)
+    {
+	if (GTK_CHECK_MENU_ITEM(column_checks_[i])->active)
+	    gtk_widget_show(title_buttons_[i]);
+	else
+	    gtk_widget_hide(title_buttons_[i]);
+    }
+}
+#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -739,31 +824,7 @@ sourcewin_t::get_selected_lines(unsigned long *startp, unsigned long *endp)
 
 
 GLADE_CALLBACK void
-on_source_count_check_activate(GtkWidget *w, gpointer data)
-{
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    
-    sw->update();
-}
-
-GLADE_CALLBACK void
-on_source_number_check_activate(GtkWidget *w, gpointer data)
-{
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    
-    sw->update();
-}
-
-GLADE_CALLBACK void
-on_source_block_check_activate(GtkWidget *w, gpointer data)
-{
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    
-    sw->update();
-}
-
-GLADE_CALLBACK void
-on_source_source_check_activate(GtkWidget *w, gpointer data)
+on_source_column_check_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     
@@ -789,6 +850,19 @@ on_source_toolbar_check_activate(GtkWidget *w, gpointer data)
     	gtk_widget_hide(sw->toolbar_);
 }
 
+GLADE_CALLBACK void
+on_source_titles_check_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    
+    if (GTK_CHECK_MENU_ITEM(w)->active)
+    {
+    	sw->update_title_buttons();
+    	gtk_widget_show(sw->titles_hbox_);
+    }
+    else
+    	gtk_widget_hide(sw->titles_hbox_);
+}
 
 GLADE_CALLBACK void
 on_source_summarise_file_activate(GtkWidget *w, gpointer data)

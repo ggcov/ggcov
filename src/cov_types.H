@@ -94,5 +94,6 @@ enum cov_status_t
     CS_UNCOVERED,
     CS_UNINSTRUMENTED
 };
+#define CS_NUM_STATUS	4
 
 #endif /* _ggcov_cov_types_H_ */
