@@ -103,7 +103,11 @@ __attribute__ (( format(printf,1,2) ))
 ;
 
 extern void *gnb_xmalloc(size_t sz);
+#ifdef __cplusplus
+void *operator new(size_t sz);
+#else
 #define new(ty)     	((ty *)gnb_xmalloc(sizeof(ty)))
+#endif
 
 extern int ulcmp(unsigned long ul1, unsigned long ul2);
 extern int ullcmp(unsigned long long ull1, unsigned long long ull2);

@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.h"
 
-CVSID("$Id: ui.c,v 1.9 2002-01-21 08:29:06 gnb Exp $");
+CVSID("$Id: ui.c,v 1.10 2002-12-15 15:47:24 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -384,7 +384,7 @@ ui_window_set_title(GtkWidget *w, const char *filename)
     estring title;
 
     /* Grab the original title, derived from the glade file */
-    if ((proto = gtk_object_get_data(GTK_OBJECT(w), ui_title_key)) == 0)
+    if ((proto = (char *)gtk_object_get_data(GTK_OBJECT(w), ui_title_key)) == 0)
     {
     	proto = g_strdup(GTK_WINDOW(w)->title);
 	gtk_object_set_data_full(GTK_OBJECT(w), ui_title_key, proto,
@@ -468,7 +468,7 @@ ui_clist_is_sortable_column(GtkCList *clist, int col)
     GArray *sortables;
     int i;
 
-    sortables = gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
+    sortables = (GArray *)gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
     assert(sortables != 0);
     
     for (i = 0 ; i < sortables->len ; i++)
@@ -535,7 +535,7 @@ ui_clist_init_column_arrow(GtkCList *clist, int col)
     gtk_clist_column_title_active(clist, col);
     
     /* Setup signal handler and update sortables array */
-    sortables = gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
+    sortables = (GArray *)gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
     if (sortables == 0)
     {
     	sortables = g_array_new(/*zero_terminated*/FALSE, /*clear*/FALSE, sizeof(int));
@@ -552,7 +552,7 @@ ui_clist_get_column_arrow(GtkCList *clist, int col)
 {
     GtkWidget *button = clist->column[col].button;
     GtkWidget *hbox = GTK_BUTTON(button)->child;
-    GtkBoxChild *boxchild = g_list_nth_data(GTK_BOX(hbox)->children, 1);
+    GtkBoxChild *boxchild = (GtkBoxChild *)g_list_nth_data(GTK_BOX(hbox)->children, 1);
     return boxchild->widget;
 }
 

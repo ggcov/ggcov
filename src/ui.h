@@ -26,7 +26,11 @@
 #include <gdk/gdkkeysyms.h>
 #include <gdk_imlib.h>
 
+#ifdef __cplusplus
+#define GLADE_CALLBACK extern "C"
+#else
 #define GLADE_CALLBACK
+#endif
 
 GladeXML *ui_load_tree(const char *root);
 extern const char *ui_glade_path;

@@ -75,13 +75,13 @@ gnb_progress_bar_get_type (void)
 }
 
 static void
-gnb_progress_bar_class_init (GnbProgressBarClass *class)
+gnb_progress_bar_class_init (GnbProgressBarClass *klass)
 {
     GtkObjectClass *object_class;
     GtkProgressClass *progress_class;
 
-    object_class = (GtkObjectClass *) class;
-    progress_class = (GtkProgressClass *) class;
+    object_class = (GtkObjectClass *) klass;
+    progress_class = (GtkProgressClass *) klass;
 
     object_class->finalize = gnb_progress_bar_finalize;
     progress_class->paint = gnb_progress_bar_paint;
@@ -207,13 +207,14 @@ gnb_progress_bar_paint (GtkProgress *progress)
 	    if (pbar->trough_gc == NULL)
 	    {
 	    	GdkGCValues gcvals;
-		GdkGCValuesMask gcmask = 0;
+		unsigned long gcmask = 0;
 		
 		gcvals.foreground = pbar->trough_color;
 		gcmask |= GDK_GC_FOREGROUND;
 		pbar->trough_gc = gtk_gc_get(widget->style->depth,
 		    	    	    	     widget->style->colormap,
-					     &gcvals, gcmask);
+					     &gcvals,
+					     (GdkGCValuesMask)gcmask);
 	    }
 	    
 #if DEBUG
@@ -231,7 +232,7 @@ gnb_progress_bar_paint (GtkProgress *progress)
     	}
 
     	/* draw the thumb */	
-	amount = percentage * space;
+	amount = (int)(percentage * space + 0.5);
 
 	if (amount > 0)
 	{
@@ -284,13 +285,14 @@ gnb_progress_bar_paint (GtkProgress *progress)
 		if (pbar->thumb_gc == NULL)
 		{
 	    	    GdkGCValues gcvals;
-		    GdkGCValuesMask gcmask = 0;
+		    unsigned long gcmask = 0;
 
 		    gcvals.foreground = pbar->thumb_color;
 		    gcmask |= GDK_GC_FOREGROUND;
 		    pbar->thumb_gc = gtk_gc_get(widget->style->depth,
 		    	    	    		 widget->style->colormap,
-						 &gcvals, gcmask);
+						 &gcvals,
+						 (GdkGCValuesMask)gcmask);
 		}
 
 #if DEBUG

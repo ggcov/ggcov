@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.3 2001-12-02 07:22:06 gnb Exp $");
+CVSID("$Id: common.c,v 1.4 2002-12-15 15:47:44 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -57,6 +57,12 @@ gnb_xmalloc(size_t sz)
     }
     
     return x;
+}
+
+void *
+operator new(size_t sz)
+{
+    return gnb_xmalloc(sz);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
