@@ -18,19 +18,30 @@
  */
 
 #include "callgraph2win.H"
+#if CALLGRAPH2
 #include "cov.H"
 #include "prefs.H"
-#include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: callgraph2win.C,v 1.5 2002-12-31 14:39:28 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.6 2003-03-11 21:48:27 gnb Exp $");
 
-#define CANVAS_WIDTH	    30.0
-#define CANVAS_HEIGHT	    30.0
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
-#define CHILD_STEP  	    5.0
+#define RANK_GAP 	    2.0
+#define FILE_GAP  	    0.1
 #define ARROW_SIZE	    0.5
 #define HUGE    	    1.0e8
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+callgraph2win_t::node_t::node_t(cov_callnode_t *cn)
+{
+    callnode_ = cn;
+    cn->userdata = (void *)this;
+}
+
+callgraph2win_t::node_t::~node_t()
+{
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -81,47 +92,27 @@ callgraph2win_t::zoom_all()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 
-static void
-dbounds_update(
-    dbounds_t *b,
-    double x1,
-    double y1,
-    double x2,
-    double y2)
-{
-    if (x1 < b->x1)
-    	b->x1 = x1;
-    if (y1 < b->y1)
-    	b->y1 = y1;
-    if (x2 > b->x2)
-    	b->x2 = x2;
-    if (y2 > b->y2)
-    	b->y2 = y2;
-}
-
-
 void
-callgraph2win_t::add_callnode(
-    cov_callnode_t *cn,
-    double x,
-    double ystart,
-    double yend)
+callgraph2win_t::show_box(node_t *n, double ystart, double yend)
 {
-    GnomeCanvasItem *ctext, *cline;
+    cov_callnode_t *cn = n->callnode_;
     GList *iter;
-    double y;
-    double ystep;
-    double nx, ny;
+    double ny, yperspread;
     GnomeCanvasPoints *points;
     cov_stats_t stats;
     char *label;
     const GdkColor *fn_color = 0;
     GnomeCanvasGroup *root = gnome_canvas_root(GNOME_CANVAS(canvas_));
 
+    if (n->rect_item_ != 0)
+    	return;     /* already been here */
+
 #if DEBUG
-    fprintf(stderr, "callgraph2win_t::add_callnode: %s:%s\n",
+    fprintf(stderr, "callgraph2win_t::show_box: %s:%s y={%g,%g} spread_=%d\n",
     	(cn->function == 0 ? "library" : cn->function->file()->minimal_name()),
-	cn->name);
+	cn->name,
+	ystart, yend,
+	n->spread_);
 #endif
 
     if (cn->function != 0)
@@ -150,60 +141,61 @@ callgraph2win_t::add_callnode(
     	fn_color = &prefs.uninstrumented_background;
     }
 
-    y = (ystart + yend)/2.0;
-    gnome_canvas_item_new(
+    n->x_ = RANK_GAP + n->rank_ * (BOX_WIDTH + RANK_GAP);
+    n->y_ = (ystart + yend)/2.0;
+
+    n->rect_item_ = gnome_canvas_item_new(
     	    	root,
     	    	GNOME_TYPE_CANVAS_RECT,
-		"x1", 	    	x,
-		"y1",	    	y,
-		"x2", 	    	x+BOX_WIDTH,
-		"y2",	    	y+BOX_HEIGHT,
+		"x1", 	    	n->x_,
+		"y1",	    	n->y_,
+		"x2", 	    	n->x_+BOX_WIDTH,
+		"y2",	    	n->y_+BOX_HEIGHT,
 		"fill_color_gdk",fn_color,
 		"outline_color","black",
 		0);
-    ctext = gnome_canvas_item_new(
+    n->text_item_ = gnome_canvas_item_new(
     	    	root,
     	    	GNOME_TYPE_CANVAS_TEXT,
 		"text",     	label,
 		"font",     	"fixed",
 		"fill_color",	"black",
-		"x", 	    	x,
-		"y",	    	y,
+		"x", 	    	n->x_,
+		"y",	    	n->y_,
 		"clip",     	TRUE,
 		"clip_width",	BOX_WIDTH,
 		"clip_height",	BOX_HEIGHT,
 		"anchor",   	GTK_ANCHOR_NORTH_WEST,
 		0);
-    cn->userdata = ctext;
+
     g_free(label);
 
-    dbounds_update(&bounds_, x, y, x+BOX_WIDTH, y+BOX_HEIGHT);    
+
+    ny = ystart + FILE_GAP;
+    yperspread = (n->spread_ == 0 ? 0.0 : (yend-ystart-FILE_GAP)/n->spread_);
     
-    nx = x + CHILD_STEP;
-    ny = ystart;
-    ystep = (cn->out_arcs == 0 ?
-    	    	0.0 :
-		(yend-ystart)/(double)g_list_length(cn->out_arcs));
     for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)
     {
     	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
+	node_t *child = node_t::from_callnode(ca->to);
+	double nyend;
 
-    	assert(ca->from == cn);
-	if (ca->to->userdata != 0)
-	    continue;
+    	nyend = ny + child->spread_ * yperspread;
+    	show_box(child, ny, nyend);
+	ny = nyend;
 
     	points = gnome_canvas_points_new(2);
-	points->coords[0] = x+BOX_WIDTH;
-	points->coords[1] = y + BOX_HEIGHT/2.0;
-	points->coords[2] = nx,
-	points->coords[3] = ny + ystep/2.0 + BOX_HEIGHT/2.0;
+	points->coords[0] = n->x_+ BOX_WIDTH;
+	points->coords[1] = n->y_ + BOX_HEIGHT/2.0;
+	points->coords[2] = child->x_,
+	points->coords[3] = child->y_ + BOX_HEIGHT/2.0;
 
 	if (ca->count)
 	    fn_color = &prefs.covered_foreground;
 	else
 	    fn_color = &prefs.uncovered_foreground;
 
-	cline = gnome_canvas_item_new(
+	gnome_canvas_item_new(
     	    	    root,
     	    	    GNOME_TYPE_CANVAS_LINE,
 		    "points", 	    	points,
@@ -213,12 +205,147 @@ callgraph2win_t::add_callnode(
 		    "arrow_shape_c",	ARROW_SIZE/4.0,
 		    "fill_color_gdk",	fn_color,
 		    0);
-
-    	add_callnode(ca->to, nx, ny, ny+ystep);
-
-	ny += ystep;
     }
 }
+
+
+void
+callgraph2win_t::adjust_rank(callgraph2win_t::node_t *n, int delta)
+{
+    GList *iter;
+
+    if (n->generation_ == generation_)
+    {
+#if DEBUG
+    	fprintf(stderr, "callgraph2win_t::adjust_rank: avoiding loop at \"%s\"\n",
+	    	    n->callnode_->name);
+#endif
+    	return;
+    }
+
+    n->generation_ = generation_;
+    n->rank_ += delta;
+    
+    for (iter = n->callnode_->out_arcs ; iter != 0 ; iter = iter->next)
+    {
+    	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+
+    	adjust_rank(node_t::from_callnode(a->to), delta);	
+    }
+}
+
+/* 
+ * Recursive descent from the main() node, building node_t's
+ * and calculating of node rank (which can be O(N^2) as we may
+ * have to adjust the ranks of subtrees up to the entire tree).
+ */
+callgraph2win_t::node_t *
+callgraph2win_t::build_node(cov_callnode_t *cn, int rank)
+{
+    node_t *n;
+    GList *iter;
+
+#if DEBUG
+    fprintf(stderr, "callgraph2win_t::build_node(\"%s\")\n", cn->name);
+#endif
+
+    if ((n = node_t::from_callnode(cn)) != 0)
+    {
+    	/* already seen at an earlier rank...demote to this rank */
+	++generation_;
+	adjust_rank(n, (rank - n->rank_));
+    }
+    else
+    {
+    	n = new node_t(cn);
+	n->rank_ = rank;
+    }
+    
+    for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)
+    {
+    	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+
+    	build_node(a->to, rank+1);	
+    }
+    
+    return n;
+}
+
+void
+callgraph2win_t::add_spread(callgraph2win_t::node_t *n)
+{
+    GList *iter;
+    gboolean first;
+
+    if (n->generation_ == generation_)
+    	return; /* been here this time */
+
+    first = (n->spread_ == 0);
+    n->spread_++;
+    n->generation_ = generation_;
+
+#if DEBUG
+    fprintf(stderr, "callgraph2win_t::add_spread(\"%s\") => spread_=%d generation_=%lu\n",
+    	    n->callnode_->name, n->spread_, n->generation_);
+#endif
+
+    for (iter = n->callnode_->in_arcs ; iter != 0 ; iter = iter->next)
+    {
+    	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	node_t *parent = node_t::from_callnode(a->from);
+	
+	if (first && parent->rank_ == n->rank_-1)
+    	    add_spread(parent);
+    }
+}
+
+void
+callgraph2win_t::build_ranks(callgraph2win_t::node_t *n, GPtrArray *ranks)
+{
+    GList *iter;
+    GList **rlp;
+    int ndirect = 0;
+
+    if (n->file_)
+    	return;     /* already been here on another branch in the graph */
+
+#if DEBUG
+    fprintf(stderr, "callgraph2win_t::build_ranks(\"%s\")\n",
+    	    	n->callnode_->name);
+#endif
+
+    if (n->rank_ >= ranks->len)
+    {
+#if DEBUG
+	fprintf(stderr, "callgraph2win_t::build_ranks: expanding ranks to %d\n",
+	    	    n->rank_);
+#endif
+    	g_ptr_array_set_size(ranks, n->rank_+1);
+    }
+    rlp = (GList **)&g_ptr_array_index(ranks, n->rank_);
+    *rlp = g_list_append(*rlp, n);
+    n->file_ = g_list_length(*rlp);
+    if (n->file_ > max_file_)
+    	max_file_ = n->file_;
+    
+    for (iter = n->callnode_->out_arcs ; iter != 0 ; iter = iter->next)
+    {
+    	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	node_t *child = node_t::from_callnode(a->to);
+
+    	build_ranks(child, ranks);
+	
+	if (child->rank_ == n->rank_+1)
+	    ndirect++;
+    }
+
+    if (ndirect == 0)
+    {
+	++generation_;
+	add_spread(n);
+    }
+}
+
 
 void
 callgraph2win_t::populate()
@@ -226,23 +353,27 @@ callgraph2win_t::populate()
 #if DEBUG
     fprintf(stderr, "callgraph2win_t::populate\n");
 #endif
-    main_node_ = cov_callnode_t::find("main");
+    main_node_ = build_node(cov_callnode_t::find("main"), 0);
     
-    gnome_canvas_set_scroll_region(GNOME_CANVAS(canvas_),
-    				   0.0, 0.0, CANVAS_WIDTH, CANVAS_HEIGHT);
-
-    bounds_.x1 = HUGE;
-    bounds_.y1 = HUGE;
-    bounds_.x2 = -HUGE;
-    bounds_.y2 = -HUGE;
-
-    add_callnode(main_node_, 0.0, 0.0, CANVAS_HEIGHT);
+    GPtrArray *ranks = g_ptr_array_new();
+    max_file_ = 0;
+    build_ranks(main_node_, ranks);
+    
+    bounds_.x1 = 0.0;
+    bounds_.y1 = 0.0;
+    bounds_.x2 = (BOX_WIDTH + RANK_GAP) * (ranks->len+1) + RANK_GAP;
+    bounds_.y2 = (BOX_HEIGHT + FILE_GAP) * (max_file_+1) + FILE_GAP;
+#if DEBUG
     fprintf(stderr, "callgraph2win_t::populate: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
     	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
-    
+#endif
+
     gnome_canvas_set_scroll_region(GNOME_CANVAS(canvas_),
 				   bounds_.x1, bounds_.y1,
 				   bounds_.x2, bounds_.y2);
+
+    show_box(main_node_, bounds_.y1+FILE_GAP, bounds_.y2-FILE_GAP);
+
     zoom_all();
 }
 
@@ -303,5 +434,6 @@ on_callgraph2_show_all_activate(GtkWidget *w, gpointer data)
 }
 
 
+#endif /* CALLGRAPH2 */
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

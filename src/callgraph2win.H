@@ -21,7 +21,18 @@
 #define _ggcov_callgraph2win_H_ 1
 
 #include "window.H"
+
+#if GTK2
+/*
+ * TODO: someone with access to a RH 8.0 box needs to
+ * port this feature to GTK2/libgnomecanvas.
+ */
+#define CALLGRAPH2 0
+#else
+#define CALLGRAPH2 1
+
 #include "cov.H"
+#include <libgnomeui/libgnomeui.h>
 
 typedef struct
 {
@@ -40,6 +51,25 @@ public:
     ~callgraph2win_t();
 
 private:
+    struct node_t
+    {
+    	cov_callnode_t *callnode_;
+	unsigned int rank_;
+	unsigned int file_;
+	unsigned long generation_;
+	unsigned int spread_;
+	double x_, y_;
+	GnomeCanvasItem *rect_item_;
+	GnomeCanvasItem *text_item_;
+
+    	static node_t *from_callnode(cov_callnode_t *cn)
+	{
+	    return (node_t *)cn->userdata;
+	}
+    	node_t(cov_callnode_t *);
+	~node_t();
+    };
+
     void populate();
     void zoom_all();
     void zoom_to(double factor);
@@ -47,18 +77,25 @@ private:
     {
     	return (callgraph2win_t *)window_t::from_widget(w);
     }
-    void add_callnode(cov_callnode_t *cn, double x, double ystart, double yend);
+    void adjust_rank(node_t *n, int delta);
+    node_t *build_node(cov_callnode_t*, int rank);
+    void add_spread(node_t *n);
+    void build_ranks(node_t *, GPtrArray *ranks);
+    void show_box(node_t *, double ystart, double yend);
 
 
     GtkWidget *canvas_;
-    cov_callnode_t *main_node_;
+    node_t *main_node_;
     double zoom_;
     dbounds_t bounds_;
-    
+    unsigned long generation_;
+    unsigned int max_file_;
+
     friend void on_callgraph2_close_activate(GtkWidget*, gpointer);
     friend void on_callgraph2_zoom_in_activate(GtkWidget*, gpointer);
     friend void on_callgraph2_zoom_out_activate(GtkWidget*, gpointer);
     friend void on_callgraph2_show_all_activate(GtkWidget*, gpointer);
 };
 
+#endif /* !GTK2 */
 #endif /* _ggcov_callgraph2win_H_ */
