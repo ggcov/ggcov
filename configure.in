@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.46 2005-02-13 09:01:52 gnb Exp $
+dnl $Id: configure.in,v 1.47 2005-02-13 09:03:00 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -183,6 +183,23 @@ dnl Compile C and C++ with the same (C++) compiler.
 CXXFLAGS="$CFLAGS"
 CC="$CXX"
 
+AC_CANONICAL_HOST
+
+AC_MSG_CHECKING(for cpu-specific defines)
+CPU_DEFINES=
+case "$host_cpu" in
+i?86|i86pc) CPU_DEFINES=-DCOV_I386 ;;
+esac
+AC_MSG_RESULT($CPU_DEFINES)
+AC_SUBST(CPU_DEFINES)
+
+AC_MSG_CHECKING(for OS-specific defines)
+OS_DEFINES=
+case "$host_os" in
+solaris*) OS_DEFINES=-DELF_TARGET_ALL ;;
+esac
+AC_MSG_RESULT($OS_DEFINES)
+AC_SUBST(OS_DEFINES)
 
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL

@@ -20,9 +20,9 @@
 #include "cov_specific.H"
 #include "string_var.H"
 
-#ifdef HAVE_LIBBFD
+#if defined(HAVE_LIBBFD) && defined(COV_I386)
 
-CVSID("$Id: cov_i386.C,v 1.1 2003-11-04 00:43:02 gnb Exp $");
+CVSID("$Id: cov_i386.C,v 1.2 2005-02-13 09:03:00 gnb Exp $");
 
 /*
  * Machine-specific code to scan i386 object code for function calls.
@@ -231,6 +231,6 @@ cov_i386_call_scanner_t::next(cov_call_scanner_t::calldata_t *calld)
     return 0;	/* end of scan */
 }
 
-#endif /*HAVE_LIBBFD*/
+#endif /*HAVE_LIBBFD && COV_I386 */
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
