@@ -26,7 +26,7 @@
 #include <elf.h>
 
 
-CVSID("$Id: cov_file.C,v 1.2 2002-12-31 14:53:56 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.3 2003-03-11 21:25:49 gnb Exp $");
 
 
 GHashTable *cov_file_t::files_;
@@ -149,7 +149,7 @@ cov_file_t::add_name(const char *name)
 	*cs = '\0';
     }
     common_len_ = strlen(common_path_);
-#if DEBUG
+#if DEBUG > 1
     fprintf(stderr, "cov_file_t::add_name: name=\"%s\" => common=\"%s\"\n",
     	    	name, common_path_);
 #endif
@@ -191,24 +191,19 @@ cov_file_t::unminimise_name(const char *name)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-/*
- * TODO: there is a bug here, the last function in the list is not
- *       necessarily the last in the source file.  We need to keep
- *       a member variable to track to largest linenumber seen in
- *       a function at function add time, and just report that here.
- */
+
 const cov_location_t *
 cov_file_t::get_last_location() const
 {
-    int fnidx;
-    const cov_location_t *loc;
-    
-    for (fnidx = num_functions()-1 ; fnidx >= 0 ; fnidx--)
-    {
-    	if ((loc = nth_function(fnidx)->get_last_location()) != 0)
-	    return loc;
-    }
-    return 0;
+    return last_location_;
+}
+
+void
+cov_file_t::add_location(const cov_location_t *loc)
+{
+    if (!strcmp(name_, loc->filename) &&
+    	(last_location_ == 0 || last_location_->lineno < loc->lineno))
+	last_location_ = loc;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -274,16 +269,16 @@ gboolean
 cov_file_t::read_bb_file(const char *bbfilename)
 {
     FILE *fp;
-    covio_u32_t tag;
+    gnb_u32_t tag;
     char *funcname = 0;
     char *filename = 0;
     cov_function_t *fn = 0;
     int funcidx;
-    int bidx;
+    int bidx = 0;
     int line;
     int nlines;
     
-#if DEBUG    
+#if DEBUG > 1
     fprintf(stderr, "Reading .bb file \"%s\"\n", bbfilename);
 #endif
 
@@ -311,14 +306,14 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	    	g_free(filename);
 		filename = g_strdup(name_);
 	    }
-#if DEBUG    
+#if DEBUG > 1
 	    fprintf(stderr, "BB filename = \"%s\"\n", filename);
 #endif
 	    break;
 	    
 	case BB_FUNCTION:
 	    funcname = covio_read_bbstring(fp, tag);
-#if DEBUG    
+#if DEBUG > 1
 	    fprintf(stderr, "BB function = \"%s\"\n", funcname);
 #endif
 	    fn = nth_function(funcidx);
@@ -343,7 +338,7 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	    break;
 	    
 	default:
-#if DEBUG    
+#if DEBUG > 1
 	    fprintf(stderr, "BB line = %d\n", (int)tag);
 #endif
 	    assert(fn != 0);
@@ -367,15 +362,15 @@ cov_file_t::read_bb_file(const char *bbfilename)
 gboolean
 cov_file_t::read_bbg_function(FILE *fp)
 {
-    covio_u32_t nblocks, totnarcs, narcs;
-    covio_u32_t bidx, aidx;
-    covio_u32_t dest, flags;
-    covio_u32_t sep;
+    gnb_u32_t nblocks, totnarcs, narcs;
+    gnb_u32_t bidx, aidx;
+    gnb_u32_t dest, flags;
+    gnb_u32_t sep;
     cov_block_t *b;
     cov_arc_t *a;
     cov_function_t *fn;
     
-#if DEBUG    
+#if DEBUG > 1
     fprintf(stderr, "BBG reading function\n");
 #endif
     
@@ -389,7 +384,7 @@ cov_file_t::read_bbg_function(FILE *fp)
 	
     for (bidx = 0 ; bidx < nblocks ; bidx++)
     {
-#if DEBUG    
+#if DEBUG > 1
     	fprintf(stderr, "BBG   block %ld\n", bidx);
 #endif
 	b = fn->nth_block(bidx);
@@ -400,7 +395,7 @@ cov_file_t::read_bbg_function(FILE *fp)
 	    covio_read_u32(fp, &dest);
 	    covio_read_u32(fp, &flags);
 
-#if DEBUG    
+#if DEBUG > 1
     	    fprintf(stderr, "BBG     arc %ld: %ld->%ld flags %s,%s,%s\n",
 	    	    	    aidx,
 			    bidx, dest,
@@ -429,7 +424,7 @@ cov_file_t::read_bbg_file(const char *bbgfilename)
 {
     FILE *fp;
     
-#if DEBUG    
+#if DEBUG > 1
     fprintf(stderr, "Reading .bbg file \"%s\"\n", bbgfilename);
 #endif
     
@@ -452,13 +447,13 @@ gboolean
 cov_file_t::read_da_file(const char *dafilename)
 {
     FILE *fp;
-    covio_u64_t nents;
-    covio_u64_t ent;
+    gnb_u64_t nents;
+    gnb_u64_t ent;
     unsigned int fnidx;
     unsigned int bidx;
     list_iterator_t<cov_arc_t> aiter;
     
-#if DEBUG    
+#if DEBUG > 1
     fprintf(stderr, "Reading .da file \"%s\"\n", dafilename);
 #endif
     
@@ -492,7 +487,7 @@ cov_file_t::read_da_file(const char *dafilename)
 		    return FALSE;
 		}
 
-#if DEBUG
+#if DEBUG > 1
     	    	estring fromdesc = a->from()->describe();
     	    	estring todesc = a->to()->describe();
     	    	fprintf(stderr, "DA arc {from=%s to=%s} count=%llu\n",
@@ -535,7 +530,7 @@ cov_o_file_add_call(
     if (!bfd_find_nearest_line(rs->abfd, rs->section, rs->symbols, address,
 		    	       &filename, &function, &lineno))
 	return;
-#if DEBUG
+#if DEBUG > 1
     fprintf(stderr, "%s:%d: %s calls %s\n",
 		file_basename_c(filename), lineno, function, callname);
 #endif
@@ -555,7 +550,7 @@ cov_o_file_add_call(
     	for (iter = blocks ; iter != 0 ; iter = iter->next)
 	{
 	    cov_block_t *b = (cov_block_t *)iter->data;
-#if DEBUG
+#if DEBUG > 1
     	    estring desc = b->describe();
 #endif
 
@@ -571,13 +566,13 @@ cov_o_file_add_call(
 	     */
     	    if (b->needs_call())
 	    {
-#if DEBUG
+#if DEBUG > 1
     	        fprintf(stderr, "    block %s\n", desc.data());
 #endif
 		b->add_call(callname);
 		return;
 	    }
-#if DEBUG
+#if DEBUG > 1
 	    fprintf(stderr, "    skipping block %s\n", desc.data());
 #endif
 
@@ -640,7 +635,7 @@ cov_o_file_scan_static_calls(
 	    	(rs->symbols[i]->flags & (BSF_LOCAL|BSF_GLOBAL|BSF_FUNCTION)) == 
 		    	    	         (BSF_LOCAL|           BSF_FUNCTION))
 	    {
-#if DEBUG
+#if DEBUG > 1
     	    	fprintf(stderr, "Scanned static call\n");
 #endif
 		cov_o_file_add_call(rs, callfrom, rs->symbols[i]->name);
@@ -676,7 +671,7 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
     long i;
     unsigned codesectype = (SEC_ALLOC|SEC_HAS_CONTENTS|SEC_RELOC|SEC_CODE|SEC_READONLY);
     
-#if DEBUG
+#if DEBUG > 1
     fprintf(stderr, "Reading .o file \"%s\"\n", ofilename);
 #endif
     
@@ -694,7 +689,7 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
 	return FALSE;
     }
 
-#if DEBUG
+#if DEBUG > 1
     fprintf(stderr, "%s: reading symbols...\n", ofilename);
 #endif
     rs.nsymbols = bfd_get_symtab_upper_bound(rs.abfd);
@@ -723,19 +718,19 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
 	arelent **relocs, *rel;
 	long nrelocs;
 
-#if DEBUG
+#if DEBUG > 1
 	fprintf(stderr, "%s[%d %s]: ", ofilename, sec->index, sec->name);
 #endif
 
 	if ((sec->flags & codesectype) != codesectype)
 	{
-#if DEBUG
+#if DEBUG > 1
 	    fprintf(stderr, "skipping\n");
 #endif
     	    continue;
 	}
 
-#if DEBUG
+#if DEBUG > 1
 	fprintf(stderr, "reading relocs...\n");
 #endif
 
@@ -755,7 +750,7 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
 	    rel = relocs[i];
 	    sym = *rel->sym_ptr_ptr;
 	    
-#if DEBUG
+#if DEBUG > 1
     	    {
 		char *type;
 
