@@ -21,6 +21,7 @@
 #include "cov.H"
 #include "ui.h"
 #include "filename.h"
+#include "prefs.H"
 #include "estring.H"
 #include "sourcewin.H"
 #include "summarywin.H"
@@ -31,11 +32,10 @@
 #include "fileswin.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.14 2002-12-29 14:08:33 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.15 2002-12-31 14:52:56 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
-GList *filenames;   /* filenames of all .c files which have .bb etc read */
 int screenshot_mode = 0;
 
 static poptContext popt_context;
@@ -65,19 +65,6 @@ static struct poptOption popt_options[] =
 static void summarise(void);
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-
-static void
-append_one_filename(cov_file_t *f, void *userdata)
-{
-    filenames = g_list_append(filenames, (void *)f->minimal_name());
-}
-
-static int
-compare_filenames(gconstpointer a, gconstpointer b)
-{
-    return strcmp((const char *)a, (const char *)b);
-}
 
 static void
 read_gcov_files(void)
@@ -125,9 +112,6 @@ read_gcov_files(void)
 	}
     }
     
-    cov_file_t::foreach(append_one_filename, 0);
-    filenames = g_list_sort(filenames, compare_filenames);
-    
     cov_post_read();
 }
 
@@ -136,7 +120,7 @@ read_gcov_files(void)
 #if 0
 
 static void
-annotate_file(cov_file_t *f, void *userdata)
+annotate_file(cov_file_t *f)
 {
     const char *cfilename = f->name;
     FILE *infp, *outfp;
@@ -189,7 +173,10 @@ annotate_file(cov_file_t *f, void *userdata)
 static void
 annotate(void)
 {
-    cov_file_foreach(annotate_file, 0);
+    list_iterator_t<cov_file_t> iter;
+    
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    	annotate_file(*iter);
 }
 #endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -294,7 +281,7 @@ dump_function(cov_function_t *fn)
 }
 
 static void
-dump_file(cov_file_t *f, void *userdata)
+dump_file(cov_file_t *f)
 {
     unsigned int i;
     
@@ -309,7 +296,11 @@ dump_file(cov_file_t *f, void *userdata)
 static void
 summarise(void)
 {
-    cov_file_t::foreach(dump_file, 0);
+    list_iterator_t<cov_file_t> iter;
+    
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    	dump_file(*iter);
+
     cov_callnode_t::foreach(dump_callnode, 0);
 }
 
@@ -388,10 +379,11 @@ static void
 on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *srcw;
-    const char *filename = (const char *)filenames->data;
+    list_iterator_t<cov_file_t> iter = cov_file_t::first();
+    cov_file_t *f = *iter;
 
     srcw = new sourcewin_t();
-    srcw->set_filename(cov_file_t::unminimise_name(filename), filename);
+    srcw->set_filename(f->name(), f->minimal_name());
     srcw->show();
 }
 
@@ -410,15 +402,17 @@ ui_create(void)
     			      on_windows_new_callswin_activated, 0);
     ui_register_windows_entry("New Call Butterfly...",
     			      on_windows_new_callgraphwin_activated, 0);
-    ui_register_windows_entry("New Call Tree...",
+    ui_register_windows_entry("New Call Graph...",
     			      on_windows_new_callgraph2win_activated, 0);
     ui_register_windows_entry("New Source...",
     			      on_windows_new_sourcewin_activated, 0);
 
     ui_set_default_icon(icon_xpm);
 
+    prefs.load();
     summarywin_t *sw = new summarywin_t();
     sw->show();
+    prefs.post_load(sw->get_window());
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -455,7 +449,7 @@ main(int argc, char **argv)
 #endif
     ui_create();
     gtk_main();
-    
+
     return 0;
 }
 
