@@ -21,7 +21,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: callgraph2win.C,v 1.14 2003-11-03 23:10:20 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.15 2004-02-23 11:08:43 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -116,29 +116,16 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
 
     if (cn->function != 0)
     {
-    	const cov_stats_t *stats;
-    	double lines_pc;
-	
-	stats = n->scope_->get_stats();
-    	lines_pc = (stats->lines ? 
-	    	    100.0 *(double)stats->lines_executed / (double)stats->lines : 
-		    0.0);
-	
-	label = g_strdup_printf("%s\n%s\n%g%%",
+	label = g_strdup_printf("%s\n%s\n%4.2f%%",
 	    cn->name.data(),
     	    cn->function->file()->minimal_name(),
-	    lines_pc);
-	if (stats->lines_executed == stats->lines)
-	    fn_color = &prefs.covered_background;
-	else if (stats->lines_executed > 0)
-	    fn_color = &prefs.partcovered_background;
-	else
-	    fn_color = &prefs.uncovered_background;
+	    100.0 * n->scope_->get_stats()->blocks_fraction());
+	fn_color = backgrounds_by_status[n->scope_->status()];
     }
     else
     {
 	label = g_strdup_printf("%s", cn->name.data());
-    	fn_color = &prefs.uninstrumented_background;
+	fn_color = backgrounds_by_status[cov::UNINSTRUMENTED];
     }
 
     n->x_ = RANK_GAP + n->rank_ * (BOX_WIDTH + RANK_GAP);
@@ -210,10 +197,8 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
 	points->coords[2] = child->x_,
 	points->coords[3] = child->y_ + BOX_HEIGHT/2.0;
 
-	if (ca->count)
-	    fn_color = &prefs.covered_foreground;
-	else
-	    fn_color = &prefs.uncovered_foreground;
+    	fn_color = foregrounds_by_status[ca->count ? cov::COVERED :
+	    	    	    	    	    	     cov::UNCOVERED];
 
 	gnome_canvas_item_new(
     	    	    root,
