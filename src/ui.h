@@ -78,10 +78,12 @@ GtkWidget *ui_menu_add_simple_item(GtkWidget *menu, const char *label,
 	       void (*callback)(GtkWidget*, gpointer), gpointer calldata);
 GtkWidget *ui_menu_add_seperator(GtkWidget *menu);
 
+#if !GTK2
 /* Functions for making the column labels in a clist have sort arrows */
 void ui_clist_init_column_arrow(GtkCList *, int col);
 void ui_clist_set_sort_column(GtkCList *, int col);
 void ui_clist_set_sort_type(GtkCList *, GtkSortType ty);
+#endif
 
 /*
  * Functions to abstract some of the differences between

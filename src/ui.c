@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.24 2005-03-05 14:59:30 gnb Exp $");
+CVSID("$Id: ui.c,v 1.25 2005-03-05 15:16:21 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -467,6 +467,7 @@ ui_menu_add_seperator(GtkWidget *menu)
 }
      
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+#if !GTK2
 
 static const char ui_clist_arrow_key[] = "ui_clist_arrow_key";
 
@@ -605,6 +606,7 @@ ui_clist_set_sort_type(GtkCList *clist, GtkSortType type)
       GTK_SHADOW_OUT);
 }
 
+#endif /* !GTK2 */
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gpointer
