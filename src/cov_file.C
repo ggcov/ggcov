@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.30 2004-02-09 10:02:13 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.31 2004-02-09 10:07:02 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -1252,7 +1252,11 @@ private:
 	    if (start > 1)
 	    	start--;    /* include the leading #ifdef */
 	    for (l = start ; l <= end ; l++)
-		file_->get_nth_line(l)->suppress();
+	    {
+	    	cov_line_t *ln = file_->lines_->nth(l-1);
+		if (ln != 0)
+		    ln->suppress();
+	    }
 	}
     }
 
