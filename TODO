@@ -1,12 +1,13 @@
 
 --- OPEN ---
 
-x  Add a scaled down and rounded GNOME desktop icon.
+x  File->Open dialog needs to allow user to select a directory
+   recursively like the --recursive commandline option.
 
-x  Ggcov should start empty when given no arguments rather than
-   attempt to read the directory ".", so it can be started by
-   double-clicking on the GNOME desktop icon or from the GNOME
-   applications menu.
+x  Need a menu command to spawn a new ggcov, and/or one to forget
+   all data.
+
+x  Add a scaled down and rounded GNOME desktop icon.
 
 x  New gcc 3.3 code is much smarter (or at least more complex)
    about calculating a "line coverage" number for lines which
@@ -26,11 +27,6 @@ x  New gcc 3.3 code is much smarter (or at least more complex)
    will require a calculate-and-store approach, which means a
    data structure re-design.
 
-x  Provide a menu command and window(s) which allows the user to 
-   lose the current set of coverage data and read a new set, in
-   any of the ways possible from the commandline, i.e. 1) exe
-   2) dir 3) dir+recursion 4) set of source.
-   
 x  Split out the i386 and DWARF specific code into separate source
    files chosen from configure.in so that multiple targets can be
    supported.  Use the full autoconf magic to allow for cross-ggcov.
@@ -126,6 +122,16 @@ x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
 
+x  Ggcov should start empty when given no arguments rather than
+   attempt to read the directory ".", so it can be started by
+   double-clicking on the GNOME desktop icon or from the GNOME
+   applications menu.
+
+x  Provide a menu command and window(s) which allows the user to 
+   lose the current set of coverage data and read a new set, in
+   any of the ways possible from the commandline, i.e. 1) exe
+   2) dir 3) dir+recursion 4) set of source.
+   
 x  Get libgnome stuff (config, canvas, color picker) working in
    the gtk2 build.
 

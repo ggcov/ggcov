@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.24 2003-07-13 00:21:16 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.25 2003-07-17 15:50:47 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -125,6 +125,7 @@ cov_file_add(const char *name, cov_file_t *f, gpointer userdata)
 void
 cov_file_t::post_read()
 {
+    files_list_.remove_all();
     files_->foreach(cov_file_add, &files_list_);
     files_list_.sort(compare_files);
 }

@@ -19,7 +19,7 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_callgraph.C,v 1.5 2003-06-01 09:49:13 gnb Exp $");
+CVSID("$Id: cov_callgraph.C,v 1.6 2003-07-17 15:50:47 gnb Exp $");
 
 hashtable_t<const char*, cov_callnode_t> *cov_callnode_t::all_;
 
@@ -166,10 +166,14 @@ cov_add_callnodes(cov_file_t *f)
 	    continue;
 
 	if ((cn = cov_callnode_t::find(fn->name())) == 0)
-	{
 	    cn = new cov_callnode_t(fn->name());
+
+	if (cn->function != 0 && cn->function != fn)
+	    fprintf(stderr, "Callgraph name collision: %s:%s and %s:%s\n",
+	    	fn->file()->name(), fn->name(),
+	    	cn->function->file()->name(), cn->function->name());
+	if (cn->function == 0)
 	    cn->function = fn;
-	}
     }
 }
 
@@ -210,6 +214,7 @@ cov_add_callarcs(cov_file_t *f)
 		if ((ca = from->find_arc_to(to)) == 0)
 		    ca = new cov_callarc_t(from, to);
 		    
+    	    	/* TODO: when new files are opened, old counts are double-counted */		    
 		ca->add_count(a->from()->count());
 	    }
 	}

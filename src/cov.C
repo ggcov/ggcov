@@ -26,7 +26,7 @@
 #include "string_var.H"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.17 2003-07-13 00:21:16 gnb Exp $");
+CVSID("$Id: cov.C,v 1.18 2003-07-17 15:50:47 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -182,7 +182,6 @@ cov_init(void)
 void
 cov_pre_read(void)
 {
-    /* TODO: clear out all the previous data structures */
 }
 
 void
@@ -194,6 +193,7 @@ cov_post_read(void)
     cov_file_t::post_read();
 
     /* Build the callgraph */
+    /* TODO: only do this to newly read files */
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     	cov_add_callnodes(*iter);
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
@@ -203,6 +203,8 @@ cov_post_read(void)
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     	cov_check_fakeness(*iter);
 #endif
+
+    /* TODO: emit an MVC notification */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

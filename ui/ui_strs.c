@@ -132,3 +132,6 @@ gchar *s = N_("Colors");
 gchar *s = N_("GGCov: Save Annotated Source");
 gchar *s = N_("OK");
 gchar *s = N_("Cancel");
+gchar *s = N_("GGCov: Select Source, Executable, or Directory");
+gchar *s = N_("OK");
+gchar *s = N_("Cancel");

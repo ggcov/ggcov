@@ -35,7 +35,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.32 2003-07-16 15:17:06 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.33 2003-07-17 15:50:47 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -52,55 +52,148 @@ read_gcov_files(void)
     GList *iter;
     
     cov_init();
+    if (files == 0)
+    	return;
+
     cov_pre_read();
     
-    if (files == 0)
+    for (iter = files ; iter != 0 ; iter = iter->next)
     {
-    	if (!cov_read_directory(".", recursive))
-	    exit(1);
-    }
-    else
-    {
-	for (iter = files ; iter != 0 ; iter = iter->next)
-	{
-	    const char *filename = (const char *)iter->data;
-	    
-	    if (file_is_directory(filename) == 0)
-	    	cov_add_search_directory(filename);
-    	}
+	const char *filename = (const char *)iter->data;
 
-	for (iter = files ; iter != 0 ; iter = iter->next)
+	if (file_is_directory(filename) == 0)
+	    cov_add_search_directory(filename);
+    }
+
+    for (iter = files ; iter != 0 ; iter = iter->next)
+    {
+	const char *filename = (const char *)iter->data;
+
+	if (file_is_directory(filename) == 0)
 	{
-	    const char *filename = (const char *)iter->data;
-	    
-	    if (file_is_directory(filename) == 0)
+	    if (!cov_read_directory(filename, recursive))
+		exit(1);
+	}
+	else if (file_is_regular(filename) == 0)
+	{
+	    if (cov_is_source_filename(filename))
 	    {
-	    	if (!cov_read_directory(filename, recursive))
+		if (!cov_read_source_file(filename))
 		    exit(1);
-	    }
-	    else if (file_is_regular(filename) == 0)
-	    {
-	    	if (cov_is_source_filename(filename))
-		{
-		    if (!cov_read_source_file(filename))
-			exit(1);
-		}
-		else
-		{
-		    if (!cov_read_object_file(filename))
-			exit(1);
-		}
 	    }
 	    else
 	    {
-	    	fprintf(stderr, "%s: don't know how to handle this filename\n",
-		    	filename);
-		exit(1);
+		if (!cov_read_object_file(filename))
+		    exit(1);
 	    }
+	}
+	else
+	{
+	    fprintf(stderr, "%s: don't know how to handle this filename\n",
+		    filename);
+	    exit(1);
 	}
     }
     
     cov_post_read();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static gboolean
+ggcov_read_file(const char *filename)
+{
+    cov_pre_read();
+
+    if (file_is_directory(filename) == 0)
+    {
+	if (!cov_read_directory(filename, recursive))
+	    return FALSE;
+    }
+    else if (file_is_regular(filename) == 0)
+    {
+	if (cov_is_source_filename(filename))
+	{
+	    if (!cov_read_source_file(filename))
+		return FALSE;
+	}
+	else
+	{
+	    if (!cov_read_object_file(filename))
+		return FALSE;
+	}
+    }
+    else
+    {
+    	/* TODO: gui alert to user */
+	fprintf(stderr, "%s: don't know how to handle this filename\n",
+		filename);
+	return FALSE;
+    }
+
+    cov_post_read();
+    return TRUE;
+}
+
+static GtkWidget *open_window = 0;
+
+GLADE_CALLBACK void
+on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
+{
+    const char *filename;
+
+#if DEBUG
+    fprintf(stderr, "on_open_ok_button_clicked\n");
+#endif
+
+    filename = gtk_file_selection_get_filename(
+    	    	    GTK_FILE_SELECTION(open_window));
+
+    if (filename != 0 && *filename != '\0')
+    	ggcov_read_file(filename);
+
+    gtk_widget_hide(open_window);
+
+    /*
+     * No files loaded: user started ggcov without a commandline
+     * argument and failed to load a file in the Open dialog.
+     */
+    if (!*cov_file_t::first())
+    	exit(1);
+}
+
+GLADE_CALLBACK void
+on_open_cancel_button_clicked(GtkWidget *w, gpointer userdata)
+{
+#if DEBUG
+    fprintf(stderr, "on_open_cancel_button_clicked\n");
+#endif
+    gtk_widget_hide(open_window);
+
+    /*
+     * No files loaded: user started ggcov without a commandline
+     * argument and cancelled the Open dialog.
+     */
+    if (!*cov_file_t::first())
+    	exit(1);
+}
+
+GLADE_CALLBACK void
+on_file_open_activate(GtkWidget *w, gpointer userdata)
+{
+#if DEBUG
+    fprintf(stderr, "on_file_open_activate\n");
+#endif
+
+    if (open_window == 0)
+    {
+    	GladeXML *xml;
+	
+	xml = ui_load_tree("open");
+	open_window = glade_xml_get_widget(xml, "open");
+    }
+    
+    gtk_widget_show(open_window);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -199,6 +292,9 @@ ui_create(void)
     summarywin_t *sw = new summarywin_t();
     sw->show();
     prefs.post_load(sw->get_window());
+    
+    if (files == 0)
+    	on_file_open_activate(0, 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
