@@ -1374,7 +1374,7 @@
 	  </child>
 
 	  <child>
-	    <widget class="Custom" id="summary_branches_taken_bar">
+	    <widget class="Custom" id="summary_branches_bar">
 	      <property name="visible">True</property>
 	      <property name="creation_function">gnb_stacked_bar_new</property>
 	      <property name="int1">0</property>
@@ -1390,7 +1390,7 @@
 	  </child>
 
 	  <child>
-	    <widget class="Custom" id="summary_calls_executed_bar">
+	    <widget class="Custom" id="summary_calls_bar">
 	      <property name="visible">True</property>
 	      <property name="creation_function">gnb_stacked_bar_new</property>
 	      <property name="int1">0</property>
