@@ -20,11 +20,12 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.12 2003-11-04 00:43:30 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.13 2004-02-08 11:01:04 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_function_t::cov_function_t()
+ :  suppressed_(-1)
 {
     blocks_ = new ptrarray_t<cov_block_t>();
 }
@@ -62,10 +63,32 @@ cov_function_t::add_block()
 }
 
 gboolean
-cov_function_t::is_suppressed() const
+cov_function_t::is_suppressed()
+{
+    if (suppressed_ < 0)
+    	suppressed_ = (name_is_suppressed() ||
+	    	       !contains_unsuppressed_lines());
+    return suppressed_;
+}
+
+gboolean
+cov_function_t::name_is_suppressed() const
 {
     if (!strncmp(name_, "_GLOBAL_", 8))
     	return TRUE;
+    return FALSE;
+}
+
+gboolean
+cov_function_t::contains_unsuppressed_lines() const
+{
+    unsigned int bidx;
+    
+    for (bidx = 0 ; bidx < num_blocks() ; bidx++)
+    {
+    	if (nth_block(bidx)->contains_unsuppressed_lines())
+	    return TRUE;
+    }
     return FALSE;
 }
 
