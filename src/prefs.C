@@ -20,7 +20,7 @@
 #include "confsection.H"
 #include "prefs.H"
 
-CVSID("$Id: prefs.C,v 1.4 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: prefs.C,v 1.5 2004-02-08 11:05:07 gnb Exp $");
 
 prefs_t prefs;
 
@@ -62,6 +62,10 @@ prefs_t::load()
     	     &uninstrumented_foreground, "#000000");
     colorstr(cs->get_string("uninstrumented_background", 0),
     	     &uninstrumented_background, "#a0a0a0");
+    colorstr(cs->get_string("suppressed_foreground", 0),
+    	     &suppressed_foreground, "#000080");
+    colorstr(cs->get_string("suppressed_background", 0),
+    	     &suppressed_background, "#8080d0");
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -90,6 +94,10 @@ prefs_t::post_load(GtkWidget *w)
     gdk_colormap_alloc_color(cmap, &uninstrumented_foreground,
     	    	    	     /*writeable*/FALSE, /*best_match*/TRUE);
     gdk_colormap_alloc_color(cmap, &uninstrumented_background,
+    	    	    	     /*writeable*/FALSE, /*best_match*/TRUE);
+    gdk_colormap_alloc_color(cmap, &suppressed_foreground,
+    	    	    	     /*writeable*/FALSE, /*best_match*/TRUE);
+    gdk_colormap_alloc_color(cmap, &suppressed_background,
     	    	    	     /*writeable*/FALSE, /*best_match*/TRUE);
 }
 
@@ -125,6 +133,8 @@ prefs_t::save()
     cs->set_string("uncovered_background", strcolor(&uncovered_background));
     cs->set_string("uninstrumented_foreground", strcolor(&uninstrumented_foreground));
     cs->set_string("uninstrumented_background", strcolor(&uninstrumented_background));
+    cs->set_string("suppressed_foreground", strcolor(&suppressed_foreground));
+    cs->set_string("suppressed_background", strcolor(&suppressed_background));
 
     confsection_t::sync();
 }

@@ -52,7 +52,7 @@ private:
     GtkWidget *reuse_srcwin_check_;
     GtkWidget *reuse_summwin_check_;
 
-    GtkWidget *color_pickers_[8];
+    GtkWidget *color_pickers_[10];
 
     friend void on_preferences_ok_clicked(GtkWidget *w, gpointer data);
     friend void on_preferences_apply_clicked(GtkWidget *w, gpointer data);

@@ -23,7 +23,7 @@
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.23 2003-11-03 23:03:35 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.24 2004-02-08 11:06:00 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -58,6 +58,9 @@ sourcewin_t::setup_text()
     
     text_tags_[cov_line_t::UNINSTRUMENTED] =
 	ui_text_create_tag(text_, "uninstrumented", &prefs.uninstrumented_foreground);
+
+    text_tags_[cov_line_t::SUPPRESSED] =
+	ui_text_create_tag(text_, "suppressed", &prefs.suppressed_foreground);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -359,6 +362,7 @@ sourcewin_t::update()
 		strncpy(countbuf, " ######", sizeof(countbuf));
 		break;
 	    case cov_line_t::UNINSTRUMENTED:
+	    case cov_line_t::SUPPRESSED:
 	    	countbuf[0] = '\0';
 		break;
 	    }

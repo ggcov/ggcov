@@ -22,7 +22,7 @@
 #include "prefs.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: prefswin.C,v 1.5 2003-11-03 23:04:17 gnb Exp $");
+CVSID("$Id: prefswin.C,v 1.6 2004-02-08 11:05:26 gnb Exp $");
 
 prefswin_t *prefswin_t::instance_ = 0;
 
@@ -60,6 +60,10 @@ prefswin_t::prefswin_t()
     	    	    	    	"preferences_colors_uninstrumented_foreground");
     color_pickers_[7] = glade_xml_get_widget(xml,
     	    	    	    	"preferences_colors_uninstrumented_background");
+    color_pickers_[8] = glade_xml_get_widget(xml,
+    	    	    	    	"preferences_colors_suppressed_foreground");
+    color_pickers_[9] = glade_xml_get_widget(xml,
+    	    	    	    	"preferences_colors_suppressed_background");
 }
 
 
@@ -105,6 +109,8 @@ prefswin_t::update()
     update_picker(5, &prefs.uncovered_background);
     update_picker(6, &prefs.uninstrumented_foreground);
     update_picker(7, &prefs.uninstrumented_background);
+    update_picker(8, &prefs.suppressed_foreground);
+    update_picker(9, &prefs.suppressed_background);
 }
 
 void
@@ -148,6 +154,8 @@ prefswin_t::apply()
     apply_picker(5, &prefs.uncovered_background);
     apply_picker(6, &prefs.uninstrumented_foreground);
     apply_picker(7, &prefs.uninstrumented_background);
+    apply_picker(8, &prefs.suppressed_foreground);
+    apply_picker(9, &prefs.suppressed_background);
     
     prefs.save();
 }

@@ -38,6 +38,8 @@ struct prefs_t
     GdkColor uncovered_background;
     GdkColor uninstrumented_foreground;
     GdkColor uninstrumented_background;
+    GdkColor suppressed_foreground;
+    GdkColor suppressed_background;
 
     void load();
     void post_load(GtkWidget *w);
