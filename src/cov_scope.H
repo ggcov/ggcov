@@ -35,14 +35,16 @@ public:
 
     const cov_stats_t *get_stats();
     virtual const char *describe() const = 0;
+    cov::status_t status();
 
 protected:
-    virtual gboolean calc_stats(cov_stats_t *) = 0;
+    virtual cov::status_t calc_stats(cov_stats_t *) = 0;
     void dirty();
-
+    
 private:
     gboolean dirty_;
     cov_stats_t stats_;
+    cov::status_t status_;
 };
 
 
@@ -54,7 +56,7 @@ public:
 
     virtual const char *describe() const;
 private:
-    virtual gboolean calc_stats(cov_stats_t *);
+    virtual cov::status_t calc_stats(cov_stats_t *);
 };
 
 
@@ -68,7 +70,7 @@ public:
 
     virtual const char *describe() const;
 private:
-    virtual gboolean calc_stats(cov_stats_t *);
+    virtual cov::status_t calc_stats(cov_stats_t *);
 
     const cov_file_t *file_;
 };
@@ -89,7 +91,7 @@ public:
     
     virtual const char *describe() const;
 private:
-    virtual gboolean calc_stats(cov_stats_t *);
+    virtual cov::status_t calc_stats(cov_stats_t *);
 
     const cov_function_t *function_;
 };
@@ -105,7 +107,7 @@ public:
 
     virtual const char *describe() const;
 private:
-    virtual gboolean calc_stats(cov_stats_t *);
+    virtual cov::status_t calc_stats(cov_stats_t *);
     void set_description();
 
     const cov_file_t *file_;
@@ -126,7 +128,7 @@ public:
 
     virtual const char *describe() const;
 private:
-    virtual gboolean calc_stats(cov_stats_t *);
+    virtual cov::status_t calc_stats(cov_stats_t *);
 
     list_t<cov_scope_t> children_;
 };

@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "filename.h"
 
-CVSID("$Id: cov_scope.C,v 1.5 2003-07-19 07:32:34 gnb Exp $");
+CVSID("$Id: cov_scope.C,v 1.6 2004-02-16 23:28:29 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -42,11 +42,17 @@ cov_scope_t::get_stats()
     if (dirty_)
     {
     	stats_.clear();
-    	if (!calc_stats(&stats_))
-	    return 0;
+    	status_ = calc_stats(&stats_);
 	dirty_ = FALSE;
     }
     return &stats_;
+}
+
+cov::status_t
+cov_scope_t::status()
+{
+    get_stats();
+    return status_;
 }
 
 void
@@ -71,7 +77,7 @@ cov_overall_scope_t::describe() const
     return _("Overall");
 }
 
-gboolean
+cov::status_t
 cov_overall_scope_t::calc_stats(cov_stats_t *stats)
 {
     list_iterator_t<cov_file_t> iter;
@@ -79,7 +85,7 @@ cov_overall_scope_t::calc_stats(cov_stats_t *stats)
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     	(*iter)->calc_stats(stats);
 
-    return TRUE;
+    return stats->status_by_blocks();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -104,13 +110,11 @@ cov_file_scope_t::describe() const
     return (file_ == 0 ? 0 : file_->minimal_name());
 }
 
-gboolean
+cov::status_t
 cov_file_scope_t::calc_stats(cov_stats_t *stats)
 {
-    if (!file_)
-    	return FALSE;
-    file_->calc_stats(stats);
-    return TRUE;
+    assert(file_ != 0);
+    return file_->calc_stats(stats);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -130,13 +134,11 @@ cov_function_scope_t::describe() const
     return (function_ == 0 ? 0 : function_->name());
 }
 
-gboolean
+cov::status_t
 cov_function_scope_t::calc_stats(cov_stats_t *stats)
 {
-    if (!function_)
-    	return FALSE;
-    function_->calc_stats(stats);
-    return TRUE;
+    assert(function_ != 0);
+    return function_->calc_stats(stats);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -191,7 +193,7 @@ cov_range_scope_t::describe() const
  * properly.  Now that we have per-line records stored in an
  * array on the cov_file_t we should use that instead.
  */
-gboolean
+cov::status_t
 cov_range_scope_t::calc_stats(cov_stats_t *stats)
 {
     cov_location_t start, end;
@@ -200,8 +202,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
     unsigned long lastline;
     cov_line_t *startln, *endln;
 
-    if (!file_)
-    	return FALSE;
+    assert(file_ != 0);
 
     start.lineno = start_;
     end.lineno = end_;
@@ -211,12 +212,12 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
      * Check inputs
      */
     if (start.lineno > end.lineno)
-    	return FALSE;     	/* invalid range */
+    	return cov::SUPPRESSED;     	/* invalid range */
     if (start.lineno == 0 || end.lineno == 0)
-    	return FALSE;     	/* invalid range */
+    	return cov::SUPPRESSED;     	/* invalid range */
     lastline = file_->num_lines();
     if (start.lineno > lastline)
-    	return FALSE;     	/* range is outside file */
+    	return cov::SUPPRESSED;     	/* range is outside file */
     if (end.lineno > lastline)
     	end.lineno = lastline;  /* clamp range to file */
     
@@ -230,7 +231,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
              ++start.lineno <= end.lineno);
     
     if (startln == 0 || startln->blocks() == 0)
-    	return TRUE;     	/* no executable lines in the given range */
+    	return cov::SUPPRESSED;     	/* no executable lines in the given range */
     assert(startln != 0);
     assert(startln->blocks() != 0);
 
@@ -265,7 +266,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
 	}
     } while (b != (cov_block_t *)endln->blocks()->data);
 
-    return TRUE;
+    return stats->status_by_blocks();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -305,7 +306,7 @@ cov_compound_scope_t::describe() const
     return "compound";
 }
 
-gboolean
+cov::status_t
 cov_compound_scope_t::calc_stats(cov_stats_t *stats)
 {
     list_iterator_t<cov_scope_t> iter;
@@ -318,7 +319,7 @@ cov_compound_scope_t::calc_stats(cov_stats_t *stats)
 	    stats->accumulate(cstats);
     }
 
-    return TRUE;
+    return stats->status_by_blocks();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
