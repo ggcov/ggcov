@@ -1,3 +1,151 @@
+Tue Mar 11 13:54:45 2003  Greg Banks <gnb@alphalink.com.au>
+
+	* Release 0.1
+
+	* Compile ggcov with the C++ compiler.
+	* Converted cov.[ch] to C++, split up into multiple source files.
+	* Added base class window_t and converted all the GUI windows to be
+	derived classes of window_t.
+	* Converted estring to C++.
+	* Added C++ list_t<> templated wrapper for GList.
+	* Added list_t::sort().
+	* Moved ggcov.c:read_gcov_directory() -> cov.c:cov_read_directory().
+	* In many different places the internals details of how cov_file_t's,
+	cov_function_t's, and cov_block_t's are related was unnecessarily
+	exposed.  Added cov_file_num_functions(), cov_function_num_blocks();
+	enforced use of cov_file_nth_function() & cov_function_nth_block().
+	* Separated cov_callnode_t and cov_callarc_t into their own files
+	and converted them to C++.
+	* cov_get_count_by_location() returns a 4-way enum instead of
+	of a boolean, indicating the coverage status of the line.  One
+	of the enum values indicates partially covered lines, i.e. multiple
+	blocks appear on the line and not all of them are executed.
+	* Renamed sourcewin_t::show_file() to show_filename() and added a new
+	show_file() which takes a cov_file_t.  Summarywin and fileswin use
+	the new function.
+	* Converted fileswin.C:file_rec_t to C++.
+	* Provided global operator delete which provides no value except
+	to shut up valgrind and Purify about mismatched frees.
+	* C++ compiler noticed that mode_t is unsigned so returning -1 through
+	it is a bug...so changed return type of file_mode() to int.
+	* Converted sourcewin.C:sourcewin_hacky_rec_t to C++.
+	* Removed the global filenames list and replaced with a list of
+	cov_file_t's iterated by cov_file_t::first().
+	* Converted functionswin.C:func_rec_t to C++.
+	* Extended file_change_extension() to allow the old extension to be
+	specified as NULL which uses any existing extension.
+
+	* Uses c99's uint64_t where available.
+	* Centralised definitions of unsigned 32 & 64 bit ints.
+	* Provided macros in covio.h for formatting covio_u{32,64}_t.
+	* Added define COV_COUNT_MAX which is maximum value of a count_t.
+	* Centralised 64-bit integer printf format strings.
+
+	* Partial gtk2 port derived from code contributed by Havoc Pennington.
+	* GNOME colour pickers disabled for gtk2.
+	* Canvas-based call graph window disabled for gtk2.
+	* Config file reading disabled for gtk2.
+	* Removed useless --glade-path option.
+
+	* Added cov_is_source_filename() to test whether a filename matches
+	the known source file extensions.
+	* Renamed cov_handle_c_file() -> cov_read_source_file().
+	* Added cov_read_object_file() which uses the .stab and .stabstr
+	ELF sections to extract a list of source filenames with full paths.
+	* Added cov_pre_read() by analogy with cov_post_read(); will be
+	useful one day.
+
+	* Added infrastructure for program preferences, saved and loaded
+	using gnome_config_*() routines.
+	* Added preferences dialog to edit preferences.
+	* Added to prefs foreground and background colours for colour coding
+	various items according to coverage status.
+	* Tweaked some default colours for better look.
+	* Summarywin uses colours from prefs.
+	* Functionswin colour codes list entries using colours from prefs.
+	* Fileswin colour codes list entries using colours from prefs.
+	* Sourcewin uses colours from prefs.
+	* Callgraph2win uses colours from prefs.
+
+	* Added a second Call Graph window which actually has a graphical
+	presentation rather than navigable distribution to callers/callees.
+	New window present calls as nodes in a call graph, with function
+	name, filename, and coverage show textually in the node.  Nodes
+	are colour coded red, yellow or green according to the function's
+	line coverage.  Nodes with no instrumented source lines are grey.
+	Arcs are colour coded according to arc coverage.  Layout is fixed
+	and very primitive.
+	* Changed the Windows menu names of the two call graph windows
+	to be more indicative and less ambiguous: callgraphwin announces
+	itself as "Call Butterfly" and callgraph2win as "Call Graph".
+	* Attempted to improve the call graph window layout algorithm.
+
+	* Callgraphwin list frame labels are easier to understand, e.g.
+	"Called from" instead of "Distribution to Ancestors".
+	* Sourcewin's block column collapses runs of consecutive blocks into
+	a range, e.g. "3-6" instead of "3,4,5,6".  Avoids a lot of column
+	overflow.
+	* Split Function combo box into From Function and To Function boxes,
+	both of which have an "All Functions" wildcard item which is the
+	default.
+	* Reorganised columns in Calls window, now has From To Line Arc Count.
+	* Moved list of filenames and functions in source window from menubar
+	to a new toolbar.
+	* Added View->Toolbar to the source window to control whether the toolbar
+	is visible (visible by default).
+	* Added to prefs a boolean controlling whether a new source window is
+	popped up every time or an old one is reused.
+	* Added preference to reuse the summary window.
+	* Added concept of minimal file names, where only the minimal
+	unique suffix of a filename is displayed to the user.
+	* Double-clicking on a row in the Calls list shows the `from' source line.
+	* Visual improvements to the About window.
+	* Added View menu to Calls window with a check menu item for each
+	column.  Arc column is off by default.
+	* Added icon for all toplevel windows derived from logo.xpm.
+	* Added ui.c infrastructure for app to select a default icon.
+	* Added infrastructure to debug GTK/Glib log messages.
+	* Added to source window menu items to summarise the source file,
+	the selected function, or the selected source lines.
+
+	* window_t::show() will also raise a window.
+	* Reduce unnecessary processing on windows that are reused by only
+	calling populate() the first time a window is shown.
+	* Added default definitions of _ and N_ in preparation for gettext.
+	* Dealt with stupid gnome header files redefining _ and N_.
+	* Made cov_function_t::name() const like it always should have been.
+
+	* Adding version.m4 for the website.
+	* Used aclocal.m4 the way it was intended.
+	* Install & distribute the logo pixmap.
+	* Removed autoconf stuff from .spec file setup section.
+	* For gcc, add a bunch of warning options to $CFLAGS.
+	* Added bbdump program to help debug .bb file problems.
+	* Ignored a couple more generated files.
+	* The .cvsignore and .gdbinit files are distributed.
+	* Various minor configure.in/Makefile.am updates from Havoc Pennington.
+
+	* Fixed bug which SEGVd when double-clicking on a function in the
+	functions window which has no executable lines.
+	* Fixed buffer overrun bug in sourcewin due to my misunderstanding
+	the return value of snprintf().
+	* Fixed bug which incorrectly assumed that the last function listed in
+	the coverage data file would contain the last source line in its source
+	file.  Now keep an explicit last location variable.
+	* Fixed bug found by valgrind where selecting the last line of
+	a source window overran the offsets_by_line_ array.
+	* Fixed bug where sourcewin_t::show_lines() didn't show the window.
+	* Worked around a bug where cov_arc_get_from_location()
+	sometimes returned 0 unexpectedly.
+
+	* Removed superfluous include of estring.h
+	* Added estring_replace_all() instead of the poorly implemented
+	attempt in ui.c.
+	* Fixed minor warnings.
+	* Made some debugging prints appear less frequently.
+	* Removed some asserts from list_t dtor, valgrind is a better
+	debugging tool.
+
 Mon Dec  3 12:07:12 2001  Greg Banks <gnb@alphalink.com.au>
 
 	* Release 0.0.7.
