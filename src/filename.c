@@ -23,7 +23,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.2 2001-11-23 09:07:53 gnb Exp $");
+CVSID("$Id: filename.c,v 1.3 2002-12-12 00:06:30 gnb Exp $");
 
 #ifndef __set_errno
 #define __set_errno(v)	 errno = (v)
@@ -66,6 +66,12 @@ file_change_extension(
     estring e;
     int oldlen;
     
+    if (oldext == 0)
+    {
+    	if ((oldext = file_extension_c(filename)) == 0)
+	    return 0;
+    }
+
     estring_init(&e);
     
     estring_append_string(&e, filename);
