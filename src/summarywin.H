@@ -91,14 +91,19 @@ private:
     gboolean populating_;
 
     GtkWidget *lines_label_;
+    GtkWidget *lines_pc_label_;
     GtkWidget *lines_bar_;
     GtkWidget *functions_label_;
+    GtkWidget *functions_pc_label_;
     GtkWidget *functions_bar_;
     GtkWidget *calls_label_;
+    GtkWidget *calls_pc_label_;
     GtkWidget *calls_bar_;
     GtkWidget *branches_label_;
+    GtkWidget *branches_pc_label_;
     GtkWidget *branches_bar_;
     GtkWidget *blocks_label_;
+    GtkWidget *blocks_pc_label_;
     GtkWidget *blocks_bar_;
 
     friend void on_summary_overall_radio_toggled(GtkWidget *w, gpointer data);

@@ -26,7 +26,7 @@
 #include "uix.h"
 #include "gnbstackedbar.h"
 
-CVSID("$Id: summarywin.C,v 1.17 2004-02-18 11:18:09 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.18 2004-03-08 10:22:41 gnb Exp $");
 
 list_t<summarywin_t> summarywin_t::instances_;
 
@@ -60,14 +60,19 @@ summarywin_t::summarywin_t()
     range_view_ = glade_xml_get_widget(xml, "summary_range_view");
 
     lines_label_ = glade_xml_get_widget(xml, "summary_lines_label");
+    lines_pc_label_ = glade_xml_get_widget(xml, "summary_lines_pc_label");
     lines_bar_ = glade_xml_get_widget(xml, "summary_lines_bar");
     functions_label_ = glade_xml_get_widget(xml, "summary_functions_label");
+    functions_pc_label_ = glade_xml_get_widget(xml, "summary_functions_pc_label");
     functions_bar_ = glade_xml_get_widget(xml, "summary_functions_bar");
     calls_label_ = glade_xml_get_widget(xml, "summary_calls_label");
+    calls_pc_label_ = glade_xml_get_widget(xml, "summary_calls_pc_label");
     calls_bar_ = glade_xml_get_widget(xml, "summary_calls_bar");
     branches_label_ = glade_xml_get_widget(xml, "summary_branches_label");
+    branches_pc_label_ = glade_xml_get_widget(xml, "summary_branches_pc_label");
     branches_bar_ = glade_xml_get_widget(xml, "summary_branches_bar");
     blocks_label_ = glade_xml_get_widget(xml, "summary_blocks_label");
+    blocks_pc_label_ = glade_xml_get_widget(xml, "summary_blocks_pc_label");
     blocks_bar_ = glade_xml_get_widget(xml, "summary_blocks_bar");
     
     ui_register_windows_menu(ui_get_dummy_menu(xml, "summary_windows_dummy"));
@@ -302,28 +307,42 @@ total(const unsigned long *values)
 
 
 static void
-set_label_values(GtkWidget *label, const unsigned long *values)
+set_label_values(
+    GtkWidget *label,
+    GtkWidget *pclabel,
+    const unsigned long *values)
 {
     unsigned long numerator, denominator;
     char buf[128];
+    char pcbuf[128];
 
     numerator = values[cov::COVERED] + values[cov::PARTCOVERED];
     denominator = total(values);
 
     if (denominator == 0)
+    {
 	snprintf(buf, sizeof(buf), "0/0");
+	pcbuf[0] = '\0';
+    }
     else if (values[cov::PARTCOVERED] == 0)
-	snprintf(buf, sizeof(buf), "%ld/%ld  %.1f%%",
-	    	numerator, denominator,
+    {
+	snprintf(buf, sizeof(buf), "%ld/%ld",
+	    	numerator, denominator);
+	snprintf(pcbuf, sizeof(pcbuf), "%.1f%%",
     	    	(double)numerator * 100.0 / (double)denominator);
+    }
     else
-	snprintf(buf, sizeof(buf), "%ld+%ld/%ld  %.1f+%.1f%%",
+    {
+	snprintf(buf, sizeof(buf), "%ld+%ld/%ld",
 	    	values[cov::COVERED],
 		values[cov::PARTCOVERED],
-		denominator,
+		denominator);
+	snprintf(pcbuf, sizeof(pcbuf), "%.1f+%.1f%%",
     	    	(double)values[cov::COVERED] * 100.0 / (double)denominator,
     	    	(double)values[cov::PARTCOVERED] * 100.0 / (double)denominator);
+    }
     gtk_label_set_text(GTK_LABEL(label), buf);
+    gtk_label_set_text(GTK_LABEL(pclabel), pcbuf);
 }
 
 static void
@@ -403,15 +422,15 @@ summarywin_t::update()
 	stats = &empty;
     }
 
-    set_label_values(lines_label_, stats->lines_by_status());
+    set_label_values(lines_label_, lines_pc_label_, stats->lines_by_status());
     set_bar_values(lines_bar_, stats->lines_by_status());
-    set_label_values(functions_label_, stats->functions_by_status());
+    set_label_values(functions_label_, functions_pc_label_, stats->functions_by_status());
     set_bar_values(functions_bar_, stats->functions_by_status());
-    set_label_values(calls_label_, stats->calls_by_status());
+    set_label_values(calls_label_, calls_pc_label_, stats->calls_by_status());
     set_bar_values(calls_bar_, stats->calls_by_status());
-    set_label_values(branches_label_, stats->branches_by_status());
+    set_label_values(branches_label_, branches_pc_label_, stats->branches_by_status());
     set_bar_values(branches_bar_, stats->branches_by_status());
-    set_label_values(blocks_label_, stats->blocks_by_status());
+    set_label_values(blocks_label_, blocks_pc_label_, stats->blocks_by_status());
     set_bar_values(blocks_bar_, stats->blocks_by_status());
 			 
     delete sc;
