@@ -191,6 +191,24 @@
 	  </widget>
 	</widget>
       </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>windows2</name>
+	<stock_item>GNOMEUIINFO_MENU_WINDOWS_TREE</stock_item>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>windows2_menu</name>
+
+	  <widget>
+	    <class>GtkMenuItem</class>
+	    <name>source_windows_dummy</name>
+	    <label>dummy</label>
+	    <right_justify>False</right_justify>
+	  </widget>
+	</widget>
+      </widget>
     </widget>
 
     <widget>
@@ -279,6 +297,24 @@
 	      <last_modification_time>Sun, 25 Nov 2001 04:33:32 GMT</last_modification_time>
 	    </signal>
 	    <stock_item>GNOMEUIINFO_MENU_EXIT_ITEM</stock_item>
+	  </widget>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>windows1</name>
+	<stock_item>GNOMEUIINFO_MENU_WINDOWS_TREE</stock_item>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>windows1_menu</name>
+
+	  <widget>
+	    <class>GtkMenuItem</class>
+	    <name>summary_windows_dummy</name>
+	    <label>dummy</label>
+	    <right_justify>False</right_justify>
 	  </widget>
 	</widget>
       </widget>
