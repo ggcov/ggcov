@@ -20,15 +20,15 @@
 #include "covio.h"
 #include "estring.H"
 
-CVSID("$Id: covio.c,v 1.2 2002-12-22 01:56:47 gnb Exp $");
+CVSID("$Id: covio.c,v 1.3 2003-03-11 21:27:23 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
     /* saved as 32 bit little-endian */
 gboolean
-covio_read_u32(FILE *fp, covio_u32_t *wp)
+covio_read_u32(FILE *fp, gnb_u32_t *wp)
 {
-    covio_u32_t w;
+    gnb_u32_t w;
     
     w = (unsigned int)fgetc(fp) & 0xff;
     w |= ((unsigned int)fgetc(fp) & 0xff) << 8;
@@ -45,19 +45,19 @@ covio_read_u32(FILE *fp, covio_u32_t *wp)
 
     /* saved as 64 bit little-endian */
 gboolean
-covio_read_u64(FILE *fp, covio_u64_t *wp)
+covio_read_u64(FILE *fp, gnb_u64_t *wp)
 {
-    covio_u64_t w;
+    gnb_u64_t w;
     
-    w = (covio_u64_t)fgetc(fp) & 0xff;
-    w |= ((covio_u64_t)fgetc(fp) & 0xff) << 8;
-    w |= ((covio_u64_t)fgetc(fp) & 0xff) << 16;
-    w |= ((covio_u64_t)fgetc(fp) & 0xff) << 24;
+    w = (gnb_u64_t)fgetc(fp) & 0xff;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 8;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 16;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 24;
     
-    w |= ((covio_u64_t)fgetc(fp) & 0xff) << 32;
-    w |= ((covio_u64_t)fgetc(fp) & 0xff) << 40;
-    w |= ((covio_u64_t)fgetc(fp) & 0xff) << 48;
-    w |= ((covio_u64_t)fgetc(fp) & 0xff) << 56;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 32;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 40;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 48;
+    w |= ((gnb_u64_t)fgetc(fp) & 0xff) << 56;
 
     *wp = w;
 
@@ -67,9 +67,9 @@ covio_read_u64(FILE *fp, covio_u64_t *wp)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 char *
-covio_read_bbstring(FILE *fp, covio_u32_t endtag)
+covio_read_bbstring(FILE *fp, gnb_u32_t endtag)
 {
-    covio_u32_t t;
+    gnb_u32_t t;
     estring buf;
     
     while (covio_read_u32(fp, &t))
