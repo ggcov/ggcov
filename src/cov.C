@@ -28,7 +28,7 @@
 #include <bfd.h>
 #include <elf.h>
 
-CVSID("$Id: cov.C,v 1.4 2003-01-01 03:13:38 gnb Exp $");
+CVSID("$Id: cov.C,v 1.5 2003-03-11 21:19:49 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -239,7 +239,7 @@ cov_range_calc_stats(
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-
+#if DEBUG > 1
 /*
  * For N blocks, 0..N-1,
  * block 0: in arcs are calls to the function => 1 arc 1 fake
@@ -300,7 +300,7 @@ cov_check_fakeness(cov_file_t *f)
     }
 }
 
-
+#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
@@ -344,8 +344,10 @@ cov_post_read(void)
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     	cov_add_callarcs(*iter);
 
+#if DEBUG > 1
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     	cov_check_fakeness(*iter);
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

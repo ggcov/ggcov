@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.1 2002-12-29 13:14:16 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.2 2003-03-11 21:20:16 gnb Exp $");
 
 GHashTable *cov_block_t::by_location_; 	/* GList of blocks keyed on "file:line" */
 
@@ -62,7 +62,7 @@ cov_block_t::add_location(const char *filename, unsigned lineno)
     char *key;
     GList *list;
 
-#if DEBUG    
+#if DEBUG > 1
     fprintf(stderr, "Block %s:%d adding location %s:%d\n",
     	    	function_->name(), idx_,
 		filename, lineno);
@@ -83,11 +83,13 @@ cov_block_t::add_location(const char *filename, unsigned lineno)
     {
     	g_list_append(list, this);
 	g_free(key);
-#if DEBUG    
+#if DEBUG > 1
     	fprintf(stderr, "%s:%ld: this line belongs to %d blocks\n",
 	    	    	    loc->filename, loc->lineno, g_list_length(list));
 #endif
     }
+    
+    function_->file()->add_location(loc);
 }
 
 const GList *
