@@ -59,6 +59,7 @@ private:
 	unsigned long generation_;
 	unsigned int spread_;
 	double x_, y_;
+	gboolean on_path_;
 	GnomeCanvasItem *rect_item_;
 	GnomeCanvasItem *text_item_;
 

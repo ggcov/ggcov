@@ -22,14 +22,14 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: callgraph2win.C,v 1.7 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.8 2003-04-01 10:31:34 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
 #define RANK_GAP 	    2.0
 #define FILE_GAP  	    0.1
 #define ARROW_SIZE	    0.5
-#define HUGE    	    1.0e8
+#define HUGE    	    1.0e10
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -144,6 +144,23 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
     n->x_ = RANK_GAP + n->rank_ * (BOX_WIDTH + RANK_GAP);
     n->y_ = (ystart + yend)/2.0;
 
+
+    /* adjust the bounds */
+    if (n->x_ < bounds_.x1)
+    	bounds_.x1 = n->x_;
+    if (n->y_ < bounds_.y1)
+    	bounds_.y1 = n->y_;
+    if (n->x_+BOX_WIDTH > bounds_.x2)
+    	bounds_.x2 = n->x_+BOX_WIDTH;
+    if (n->y_+BOX_HEIGHT > bounds_.y2)
+    	bounds_.y2 = n->y_+BOX_HEIGHT;
+#if DEBUG > 2
+    fprintf(stderr, "callgraph2win_t::show_box {x=%g, y=%g, w=%g, h=%g}\n",
+    	    n->x_, n->y_, n->x_+BOX_WIDTH, n->y_+BOX_HEIGHT);
+    fprintf(stderr, "callgraph2win_t::show_box: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
+    	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
+#endif
+
     n->rect_item_ = gnome_canvas_item_new(
     	    	root,
     	    	GNOME_TYPE_CANVAS_RECT,
@@ -229,8 +246,12 @@ callgraph2win_t::adjust_rank(callgraph2win_t::node_t *n, int delta)
     for (iter = n->callnode_->out_arcs ; iter != 0 ; iter = iter->next)
     {
     	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	node_t *nto = node_t::from_callnode(a->to);
 
-    	adjust_rank(node_t::from_callnode(a->to), delta);	
+    	if (nto != 0 &&
+	    nto != n &&
+	    nto->rank_ >= (n->rank_ - delta))
+    	    adjust_rank(nto, delta);
     }
 }
 
@@ -252,6 +273,13 @@ callgraph2win_t::build_node(cov_callnode_t *cn, int rank)
     if ((n = node_t::from_callnode(cn)) != 0)
     {
     	/* already seen at an earlier rank...demote to this rank */
+    	if (n->on_path_)
+	{
+	    /* loop avoidance */
+	    fprintf(stderr, "build_node: avoided loop at %s\n",
+	    	    	n->callnode_->name);
+	    return n;
+	}
 	++generation_;
 	adjust_rank(n, (rank - n->rank_));
     }
@@ -261,12 +289,14 @@ callgraph2win_t::build_node(cov_callnode_t *cn, int rank)
 	n->rank_ = rank;
     }
     
+    n->on_path_ = TRUE;
     for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)
     {
     	cov_callarc_t *a = (cov_callarc_t *)iter->data;
-
+    	
     	build_node(a->to, rank+1);	
     }
+    n->on_path_ = FALSE;
     
     return n;
 }
@@ -294,7 +324,7 @@ callgraph2win_t::add_spread(callgraph2win_t::node_t *n)
     	cov_callarc_t *a = (cov_callarc_t *)iter->data;
 	node_t *parent = node_t::from_callnode(a->from);
 	
-	if (first && parent->rank_ == n->rank_-1)
+	if (first && parent != 0 && parent->rank_ == n->rank_-1)
     	    add_spread(parent);
     }
 }
@@ -357,12 +387,19 @@ callgraph2win_t::populate()
     
     GPtrArray *ranks = g_ptr_array_new();
     max_file_ = 0;
+
+    bounds_.x1 = HUGE;
+    bounds_.y1 = HUGE;
+    bounds_.x2 = -HUGE;
+    bounds_.y2 = -HUGE;
+
     build_ranks(main_node_, ranks);
-    
-    bounds_.x1 = 0.0;
-    bounds_.y1 = 0.0;
-    bounds_.x2 = (BOX_WIDTH + RANK_GAP) * (ranks->len+1) + RANK_GAP;
-    bounds_.y2 = (BOX_HEIGHT + FILE_GAP) * (max_file_+1) + FILE_GAP;
+    show_box(main_node_, FILE_GAP, (BOX_HEIGHT + FILE_GAP) * (max_file_+1));
+
+    bounds_.x1 -= FILE_GAP;
+    bounds_.x2 += FILE_GAP;
+    bounds_.y1 -= RANK_GAP;
+    bounds_.y2 += RANK_GAP;
 #if DEBUG
     fprintf(stderr, "callgraph2win_t::populate: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
     	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
@@ -370,10 +407,7 @@ callgraph2win_t::populate()
 
     gnome_canvas_set_scroll_region(GNOME_CANVAS(canvas_),
 				   bounds_.x1, bounds_.y1,
-				   bounds_.x2, bounds_.y2);
-
-    show_box(main_node_, bounds_.y1+FILE_GAP, bounds_.y2-FILE_GAP);
-
+				   bounds_.x2, bounds_.y2+RANK_GAP);
     zoom_all();
 }
 
