@@ -22,7 +22,7 @@
 #include "filename.h"
 #include "demangle.h"
 
-CVSID("$Id: cov_specific.C,v 1.2 2003-11-04 00:31:57 gnb Exp $");
+CVSID("$Id: cov_specific.C,v 1.3 2005-03-05 15:13:54 gnb Exp $");
 
  
 cov_factory_item_t *cov_factory_item_t::all_;
@@ -102,6 +102,31 @@ cov_call_scanner_t::setup_calldata(
 
     calld->callname = callname_dem.take();
     return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_call_scanner_t::symbol_is_ignored(const char *name) const
+{
+    static const char * const ignored[] =
+    {
+    	"__bb_init_func",   	    /* code inserted by gcc to instrument blocks */
+    	"__gcov_init",	    	    /* a more modern version of the same */
+	"_Unwind_Resume",   	    /* gcc 3.4 exception handling */
+	"__cxa_call_unexpected",    /* gcc 3.4 exception handling */
+	"__cxa_end_catch",   	    /* gcc 3.4 exception handling */
+    	0
+    };
+    const char * const *p;
+    
+    for (p = ignored ; *p != 0 ; p++)
+    {
+	if (!strcmp(name, *p))
+	    return TRUE;
+    }
+	
+    return FALSE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

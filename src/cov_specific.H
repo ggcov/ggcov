@@ -199,6 +199,8 @@ public:
 
     /* returns 1=have call, 0=end of scan, -1=error */    
     virtual int next(calldata_t *call/*return*/) = 0;
+    
+    virtual gboolean symbol_is_ignored(const char *name) const;
 
     static int factory_category();
 

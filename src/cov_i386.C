@@ -22,7 +22,7 @@
 
 #if defined(HAVE_LIBBFD) && defined(COV_I386)
 
-CVSID("$Id: cov_i386.C,v 1.2 2005-02-13 09:03:00 gnb Exp $");
+CVSID("$Id: cov_i386.C,v 1.3 2005-03-05 15:13:54 gnb Exp $");
 
 /*
  * Machine-specific code to scan i386 object code for function calls.
@@ -193,8 +193,7 @@ cov_i386_call_scanner_t::next(cov_call_scanner_t::calldata_t *calld)
 	    	continue;
 	    }
 
-    	    /* __bb_init_func is code inserted by gcc to instrument blocks */
-    	    if (!strcmp(sym->name, "__bb_init_func"))
+    	    if (symbol_is_ignored(sym->name))
 	    	continue;
     	    if ((sym->flags & BSF_FUNCTION) ||
 		(sym->flags & (BSF_LOCAL|BSF_GLOBAL|BSF_SECTION_SYM|BSF_OBJECT)) == 0)
