@@ -25,7 +25,7 @@
 #include "prefs.H"
 #include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.20 2003-07-20 11:49:08 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.20.2.1 2003-11-03 08:56:59 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -103,10 +103,9 @@ fileswin_compare(file_rec_t *fr1, file_rec_t *fr2, int column)
     const cov_stats_t *s1 = fr1->scope->get_stats();
     const cov_stats_t *s2 = fr2->scope->get_stats();
 
-#if DEBUG > 2
-    fprintf(stderr, "fileswin_compare: fr1=\"%s\" fr2=\"%s\"\n",
-    	    	    fr1->name.data(), fr2->name.data());
-#endif
+    dprintf2(D_FILESWIN|D_VERBOSE,
+    	    "fileswin_compare: fr1=\"%s\" fr2=\"%s\"\n",
+    	    fr1->name.data(), fr2->name.data());
     switch (column)
     {
     case COL_LINES:
@@ -257,7 +256,6 @@ fileswin_t::~fileswin_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if DEBUG > 2
 static void
 dump_file_tree(file_rec_t *fr, int indent)
 {
@@ -273,16 +271,13 @@ dump_file_tree(file_rec_t *fr, int indent)
 	 ++friter)
     	dump_file_tree((*friter), indent+4);
 }
-#endif
 
 void
 fileswin_t::populate()
 {
     list_iterator_t<cov_file_t> iter;
 
-#if DEBUG
-    fprintf(stderr, "fileswin_t::populate\n");
-#endif
+    dprintf0(D_FILESWIN, "fileswin_t::populate\n");
 
     if (root_ != 0)
     	delete root_;
@@ -325,9 +320,8 @@ fileswin_t::populate()
 	}
     }
 
-#if DEBUG > 2
-    dump_file_tree(root_, 0);
-#endif
+    if (debug_enabled(D_FILESWIN|D_VERBOSE))
+	dump_file_tree(root_, 0);
 
     update();
 }
@@ -434,9 +428,7 @@ fileswin_t::update()
     gboolean percent_flag;
     gboolean tree_flag;
     
-#if DEBUG
-    fprintf(stderr, "fileswin_t::update\n");
-#endif
+    dprintf0(D_FILESWIN, "fileswin_t::update\n");
 
     percent_flag = GTK_CHECK_MENU_ITEM(percent_check_)->active;
     tree_flag = GTK_CHECK_MENU_ITEM(tree_check_)->active;
@@ -482,9 +474,7 @@ on_files_lines_check_activate(GtkWidget *w, gpointer data)
 {
     fileswin_t *fw = fileswin_t::from_widget(w);
 
-#if DEBUG
-    fprintf(stderr, "on_files_lines_check_activate\n");
-#endif
+    dprintf0(D_FILESWIN, "on_files_lines_check_activate\n");
 
 #if !GTK2
     gtk_clist_set_column_visibility(GTK_CLIST(fw->ctree_), COL_LINES,
@@ -501,9 +491,7 @@ on_files_calls_check_activate(GtkWidget *w, gpointer data)
 {
     fileswin_t *fw = fileswin_t::from_widget(w);
 
-#if DEBUG
-    fprintf(stderr, "on_files_calls_check_activate\n");
-#endif
+    dprintf0(D_FILESWIN, "on_files_calls_check_activate\n");
 
 #if !GTK2
     gtk_clist_set_column_visibility(GTK_CLIST(fw->ctree_), COL_CALLS,
@@ -520,9 +508,7 @@ on_files_branches_check_activate(GtkWidget *w, gpointer data)
 {
     fileswin_t *fw = fileswin_t::from_widget(w);
 
-#if DEBUG
-    fprintf(stderr, "on_files_branches_check_activate\n");
-#endif
+    dprintf0(D_FILESWIN, "on_files_branches_check_activate\n");
 
 #if !GTK2
     gtk_clist_set_column_visibility(GTK_CLIST(fw->ctree_), COL_BRANCHES,

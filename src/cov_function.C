@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.11 2003-07-11 14:14:32 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.11.2.1 2003-11-03 08:56:58 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -167,10 +167,8 @@ cov_function_t::reconcile_calls()
     	    if (a->is_call())
 	    	a->name_ = b->pop_call();
     	}
-#if DEBUG > 1
-	fprintf(stderr, "Reconciled %d calls for %s\n",
+	dprintf2(D_CGRAPH, "Reconciled %d calls for %s\n",
 		    	    cov_arc_t::ncalls(b->out_arcs_), desc.data());
-#endif
     }
     return ret;
 }
@@ -186,22 +184,6 @@ cov_function_t::reconcile_calls()
  * of course ;-)
  */
 
-#if DEBUG > 5
-#define trace0(fmt) \
-    fprintf(stderr, "%s:%d: " fmt "\n", __FUNCTION__, __LINE__)
-#define trace1(fmt, a1) \
-    fprintf(stderr, "%s:%d: " fmt "\n", __FUNCTION__, __LINE__, a1)
-#define trace2(fmt, a1, a2) \
-    fprintf(stderr, "%s:%d: " fmt "\n", __FUNCTION__, __LINE__, a1, a2)
-#define trace3(fmt, a1, a2, a3) \
-    fprintf(stderr, "%s:%d: " fmt "\n", __FUNCTION__, __LINE__, a1, a2, a3)
-#else
-#define trace0(fmt)
-#define trace1(fmt, a1)
-#define trace2(fmt, a1, a2)
-#define trace3(fmt, a1, a2, a3)
-#endif    
- 
 gboolean
 cov_function_t::solve()
 {
@@ -227,7 +209,7 @@ cov_function_t::solve()
 
        This takes an average of slightly more than 3 passes.  */
 
-    trace1(" ---> %s", name_.data());
+    dprintf1(D_SOLVE, " ---> %s\n", name_.data());
     
     /*
      * In the new gcc 3.3 file format we cannot expect to get arcs into
@@ -241,13 +223,13 @@ cov_function_t::solve()
     {
     	assert(file_->format_version_ > 0);
 	b->in_ninvalid_ = ~0U;
-	trace0("entry block tweaked");
+	dprintf0(D_SOLVE, "entry block tweaked\n");
     }
     if ((b = nth_block(num_blocks()-1))->out_arcs_.head() == 0)
     {
     	assert(file_->format_version_ > 0);
 	b->out_ninvalid_ = ~0U;
-	trace0("exit block tweaked");
+	dprintf0(D_SOLVE, "exit block tweaked\n");
     }
 
     changes = 1;
@@ -257,28 +239,28 @@ cov_function_t::solve()
 	passes++;
 	changes = 0;
 
-    	trace1("pass %d", passes);
+    	dprintf1(D_SOLVE, "pass %d\n", passes);
 
 	for (i = num_blocks() - 1; i >= 0; i--)
 	{
 	    b = nth_block(i);
-    	    trace1("[%d]", b->bindex());
+    	    dprintf1(D_SOLVE, "[%d]\n", b->bindex());
 	    
 	    if (!b->count_valid_)
 	    {
-    		trace3("[%d] out_ninvalid_=%u in_ninvalid_=%u",
+    		dprintf3(D_SOLVE, "[%d] out_ninvalid_=%u in_ninvalid_=%u\n",
 		    	    b->bindex(), b->out_ninvalid_, b->in_ninvalid_);
 		if (b->out_ninvalid_ == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->out_arcs_));
 		    changes++;
-    	    	    trace2("[%d] count=%llu", b->bindex(), b->count());
+    	    	    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), b->count());
 		}
 		else if (b->in_ninvalid_ == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->in_arcs_));
 		    changes++;
-    	    	    trace2("[%d] count=%llu", b->bindex(), b->count());
+    	    	    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), b->count());
 		}
 	    }
 	    
@@ -295,7 +277,7 @@ cov_function_t::solve()
 		    assert(b->count_ >= cov_arc_t::total(b->out_arcs_));
 		    a->set_count(b->count_ - cov_arc_t::total(b->out_arcs_));
 		    changes++;
-    	    	    trace3("[%d->%d] count=%llu",
+    	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
 		    	    a->from()->bindex(), a->to()->bindex(), a->count());
 		}
 		if (b->in_ninvalid_ == 1)
@@ -309,7 +291,7 @@ cov_function_t::solve()
 		    assert(b->count_ >= cov_arc_t::total(b->in_arcs_));
 		    a->set_count(b->count_ - cov_arc_t::total(b->in_arcs_));
 		    changes++;
-    	    	    trace3("[%d->%d] count=%llu",
+    	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
 		    	    a->from()->bindex(), a->to()->bindex(), a->count());
 		}
 	    }
@@ -329,10 +311,8 @@ cov_function_t::solve()
 	    return FALSE;
     }
 
-#if DEBUG > 1
-    fprintf(stderr, "Solved flow graph for %s in %d passes\n",
+    dprintf2(D_SOLVE, "Solved flow graph for %s in %d passes\n",
     	    	    	name(), passes);
-#endif
     	
     return TRUE;
 }

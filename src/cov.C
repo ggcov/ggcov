@@ -27,13 +27,14 @@
 #include "mvc.h"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.19 2003-07-18 13:35:24 gnb Exp $");
+CVSID("$Id: cov.C,v 1.19.2.1 2003-11-03 08:56:58 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
 cov_add_search_directory(const char *dir)
 {
+    dprintf1(D_FILES, "Adding search directory \"%s\"\n", dir);
     cov_file_t::search_path_append(dir);
 }
 
@@ -61,9 +62,7 @@ cov_read_source_file_2(const char *fname, gboolean quiet)
     string_var filename;
 
     filename = file_make_absolute(fname);
-#if DEBUG    
-    fprintf(stderr, "Handling source file %s\n", filename.data());
-#endif
+    dprintf1(D_FILES, "Handling source file %s\n", filename.data());
 
     if ((f = cov_file_t::find(filename)) != 0)
     {
@@ -218,16 +217,12 @@ cov_read_object_file(const char *exefilename)
     string_var file;
     int successes = 0;
     
-#if DEBUG
-    fprintf(stderr, "Reading object or exe file \"%s\"\n", exefilename);
-#endif
+    dprintf1(D_FILES, "Scanning object or exe file \"%s\"\n", exefilename);
     
     cov_factory_t<cov_filename_scanner_t> factory;
     do
     {
-#if DEBUG > 1
-    	fprintf(stderr, "cov_read_object_file: trying scanner %s\n", factory.name());
-#endif
+    	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
     	if ((fs = factory.create()) != 0 && fs->open(exefilename))
 	    break;
 	delete fs;
@@ -244,10 +239,7 @@ cov_read_object_file(const char *exefilename)
      */
     while ((file = fs->next()) != 0)
     {
-#if DEBUG > 1
-    	fprintf(stderr, "cov_read_object_file: trying filename %s\n",
-	    	file.data());
-#endif
+    	dprintf1(D_FILES, "Trying filename %s\n", file.data());
 	if (cov_is_source_filename(file) &&
 	    file_is_regular(file) == 0 &&
 	    cov_read_source_file_2(file, /*quiet*/TRUE))
@@ -276,6 +268,7 @@ cov_read_directory_2(
     unsigned int successes = 0;
     
     estring child = file_make_absolute(dirname);
+    dprintf1(D_FILES, "Scanning directory \"%s\"\n", child.data());
 
     if ((dir = opendir(child.data())) == 0)
     {
@@ -323,7 +316,6 @@ cov_read_directory(const char *dirname, gboolean recursive)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-#if DEBUG > 1
 
 static void
 dump_callarcs(FILE *fp, GList *arcs)
@@ -446,26 +438,19 @@ dump_file(FILE *fp, cov_file_t *f)
 void
 cov_dump(FILE *fp)
 {
-    list_iterator_t<cov_file_t> iter;
+    if (debug_enabled(D_DUMP))
+    {
+	list_iterator_t<cov_file_t> iter;
 
-    if (fp == 0)
-    	fp = stderr;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	dump_file(fp, *iter);
+	if (fp == 0)
+    	    fp = stderr;
 
-    cov_callnode_t::foreach(dump_callnode, fp);
+	for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    	    dump_file(fp, *iter);
+
+	cov_callnode_t::foreach(dump_callnode, fp);
+    }
 }
-
-#else /* DEBUG */
-
-/*ARGSUSED*/
-void
-cov_dump(FILE *fp)
-{
-}
-
-#endif /* !DEBUG */
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

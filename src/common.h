@@ -47,12 +47,98 @@
 
 #include <glib.h>
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+typedef enum
+{
+    /* bit0 is the "verbose" bit -- the __debug_enabled macro relies on this */
+    /* cov library related features */
+    D_FILES=1,
+    D_BB,
+    D_BBG,
+    D_DA,
+    D_CGRAPH,
+    D_SOLVE,
+    D_STABS,
+    D_DUMP,
+    /* gui related features */
+    D_UICORE,
+    D_SUMMARYWIN,
+    D_SOURCEWIN,
+    D_PREFSWIN,
+    D_CALLSWIN,
+    D_FUNCSWIN,
+    D_FILESWIN,
+    D_GRAPHWIN,
+    D_GRAPH2WIN,
+    /* bitwise OR in D_VERBOSE to enable printing only when verbose */
+#define _D_VERBOSE_SHIFT    7
+    D_VERBOSE=(1<<_D_VERBOSE_SHIFT)
+} debug_features_t;
+extern unsigned long debug;
+void debug_set(const char *str);
+char *debug_enabled_tokens(void);
+
 /*
- * Define as non-zero to turn on debugging prints.
+ * The beauty of this arrangement is that `debug' is ANDed with
+ * a compile-time constant so the generated code is efficient.
  */
-#ifndef DEBUG 
-#define DEBUG 0
+#define __debug_mask(val) \
+    ((1UL << ((val) & ~D_VERBOSE)) | (((val) & D_VERBOSE) >> _D_VERBOSE_SHIFT))
+#define __debug_enabled(val) \
+    ((debug & __debug_mask(val)) == __debug_mask(val))
+
+#ifdef __GNUC__
+/*
+ * Give the compiler a frequency hint to hopefully move
+ * the debug code out of line where that helps.
+ */
+#define debug_enabled(val)  	__builtin_expect(__debug_enabled(val), 0)
+#else
+#define debug_enabled(val)	__debug_enabled(val)
 #endif
+
+/* I wish I could rely on variadic macros */
+/* Conditional debugging prints */
+#define dprintf0(val, fmt) \
+    if (debug_enabled(val)) fprintf(stderr, (fmt))
+#define dprintf1(val, fmt, a1) \
+    if (debug_enabled(val)) fprintf(stderr, (fmt), (a1))
+#define dprintf2(val, fmt, a1, a2) \
+    if (debug_enabled(val)) fprintf(stderr, (fmt), (a1), (a2))
+#define dprintf3(val, fmt, a1, a2, a3) \
+    if (debug_enabled(val)) fprintf(stderr, (fmt), (a1), (a2), (a3))
+#define dprintf4(val, fmt, a1, a2, a3, a4) \
+    if (debug_enabled(val)) fprintf(stderr, (fmt), (a1), (a2), (a3), (a4))
+#define dprintf5(val, fmt, a1, a2, a3, a4, a5) \
+    if (debug_enabled(val)) fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5))
+#define dprintf6(val, fmt, a1, a2, a3, a4, a5, a6) \
+    if (debug_enabled(val)) fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6))
+#define dprintf7(val, fmt, a1, a2, a3, a4, a5, a6, a7) \
+    if (debug_enabled(val)) fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6), (a7))
+#define dprintf8(val, fmt, a1, a2, a3, a4, a5, a6, a7, a8) \
+    if (debug_enabled(val)) fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6), (a7), (a8))
+/* Unconditional debugging prints, use inside if(debug_enabled()) */
+#define duprintf0(fmt) \
+    fprintf(stderr, (fmt))
+#define duprintf1(fmt, a1) \
+    fprintf(stderr, (fmt), (a1))
+#define duprintf2(fmt, a1, a2) \
+    fprintf(stderr, (fmt), (a1), (a2))
+#define duprintf3(fmt, a1, a2, a3) \
+    fprintf(stderr, (fmt), (a1), (a2), (a3))
+#define duprintf4(fmt, a1, a2, a3, a4) \
+    fprintf(stderr, (fmt), (a1), (a2), (a3), (a4))
+#define duprintf5(fmt, a1, a2, a3, a4, a5) \
+    fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5))
+#define duprintf6(fmt, a1, a2, a3, a4, a5, a6) \
+    fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6))
+#define duprintf7(fmt, a1, a2, a3, a4, a5, a6, a7) \
+    fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6), (a7))
+#define duprintf8(fmt, a1, a2, a3, a4, a5, a6, a7, a8) \
+    fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6), (a7), (a8))
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 /*
  * The fake flag used to be present in the .bbg file format, but

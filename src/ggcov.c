@@ -35,7 +35,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.35 2003-07-19 09:53:42 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.35.2.1 2003-11-03 08:56:59 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -43,6 +43,40 @@ char *argv0;
 GList *files;	    /* incoming specification from commandline */
 
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
+static const char *debug_str = 0;
+static const char ** debug_argv;
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+/*
+ * Construct and return a read-only copy of the given commandline
+ * argument vector.  It's read-only because the whole vector is
+ * collapsed into a single memory allocation for efficiency.
+ */
+
+static void
+stash_argv(int argc, char **argv)
+{
+    int i, len;
+    char **nargv, *p;
+    
+    len = 0;
+    for (i = 0 ; i < argc ; i++)
+    	len += sizeof(char*) + strlen(argv[i]) + 1/*trailing nul char*/;
+    len += sizeof(char*)/* trailing NULL ptr */ ;
+    
+    nargv = (char **)gnb_xmalloc(len);
+    p = (char *)(nargv + argc + 1);
+
+    for (i = 0 ; i < argc ; i++)
+    {
+    	nargv[i] = p;
+    	strcpy(p, argv[i]);
+	p += strlen(p) + 1;
+    }
+    nargv[i] = 0;
+    
+    debug_argv = (const char **)nargv;
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -145,9 +179,7 @@ on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
 {
     const char *filename;
 
-#if DEBUG
-    fprintf(stderr, "on_open_ok_button_clicked\n");
-#endif
+    dprintf0(D_UICORE, "on_open_ok_button_clicked\n");
 
     filename = gtk_file_selection_get_filename(
     	    	    GTK_FILE_SELECTION(open_window));
@@ -172,9 +204,7 @@ on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
 GLADE_CALLBACK void
 on_open_cancel_button_clicked(GtkWidget *w, gpointer userdata)
 {
-#if DEBUG
-    fprintf(stderr, "on_open_cancel_button_clicked\n");
-#endif
+    dprintf0(D_UICORE, "on_open_cancel_button_clicked\n");
     gtk_widget_hide(open_window);
 
     /*
@@ -188,9 +218,7 @@ on_open_cancel_button_clicked(GtkWidget *w, gpointer userdata)
 GLADE_CALLBACK void
 on_file_open_activate(GtkWidget *w, gpointer userdata)
 {
-#if DEBUG
-    fprintf(stderr, "on_file_open_activate\n");
-#endif
+    dprintf0(D_UICORE, "on_file_open_activate\n");
 
     if (open_window == 0)
     {
@@ -335,6 +363,15 @@ static struct poptOption popt_options[] =
 	"recursively scan directories for source", /* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
+    {
+    	"debug",	    	    	    	/* longname */
+	'D',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&debug_str,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"enable ggcov debugging features",  	/* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
     { 0, 0, 0, 0, 0, 0, 0 }
 };
 
@@ -371,20 +408,35 @@ parse_args(int argc, char **argv)
 	
     poptFreeContext(popt_context);
     
-#if 0
+    if (debug_str != 0)
+    	debug_set(debug_str);
+	
+
+    if (debug_enabled(D_DUMP|D_VERBOSE))
     {
     	GList *iter;
+	const char **p;
+	string_var token_str = debug_enabled_tokens();
 
-	fprintf(stderr, "parse_args: recursive=%d\n", recursive);
+	duprintf0("parse_args: argv[] = {");
+	for (p = debug_argv ; *p ; p++)
+	{
+	    if (strpbrk(*p, " \t\"'") == 0)
+	    	duprintf1(" %s", *p);
+	    else
+	    	duprintf1(" \"%s\"", *p);
+	}
+	duprintf0(" }\n");
 
-	fprintf(stderr, "parse_args: files = {\n");
+	duprintf1("parse_args: recursive = %d\n", recursive);
+
+	duprintf2("parse_args: debug = 0x%lx (%s)\n", debug, token_str.data());
+
+	duprintf0("parse_args: files = {");
 	for (iter = files ; iter != 0 ; iter = iter->next)
-	    fprintf(stderr, "parse_args:     %s\n", (char *)iter->data);
-	fprintf(stderr, "parse_args: }\n");
-
-	exit(1);
+	    duprintf1(" \"%s\"", (char *)iter->data);
+	duprintf0(" }\n");
     }
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -447,6 +499,9 @@ main(int argc, char **argv)
 #if DEBUG_GTK
     log_init();
 #endif
+
+    /* stash a copy of argv[] in case we want to dump it for debugging */
+    stash_argv(argc, argv);
 
 #if GTK2
     gtk_init(&argc, &argv);

@@ -20,7 +20,7 @@
 #include "uix.h"
 #include <gdk/gdkx.h>	/* This is what we want to avoid in the main code */
 
-CVSID("$Id: uix.c,v 1.5 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: uix.c,v 1.5.4.1 2003-11-03 08:56:59 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -139,9 +139,7 @@ uix_font_desc_load(const uix_font_desc_t *desc)
     
     fontname = g_strjoinv("-", (char **)fields);
 
-#if DEBUG
-    fprintf(stderr, "uix_font_desc_load: trying \"%s\"\n", fontname);
-#endif
+    dprintf1(D_UICORE, "uix_font_desc_load: trying \"%s\"\n", fontname);
 
     font = gdk_font_load(fontname);
     

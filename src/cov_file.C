@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.26 2003-07-18 13:35:24 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.26.2.1 2003-11-03 08:56:58 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -185,10 +185,8 @@ cov_file_t::add_name(const char *name)
 	*cs = '\0';
     }
     common_len_ = strlen(common_path_);
-#if DEBUG > 1
-    fprintf(stderr, "cov_file_t::add_name: name=\"%s\" => common=\"%s\"\n",
+    dprintf2(D_FILES, "cov_file_t::add_name: name=\"%s\" => common=\"%s\"\n",
     	    	name, common_path_);
-#endif
 }
 
 void
@@ -213,9 +211,7 @@ cov_file_t::check_common_path()
 {
     if (common_len_ < 0)
     {
-#if DEBUG > 1
-    	fprintf(stderr, "cov_file_t::check_common_path: recalculating common path\n");
-#endif
+    	dprintf0(D_FILES, "cov_file_t::check_common_path: recalculating common path\n");
     	common_len_ = 0;
 	files_->foreach(add_name_tramp, 0);
     }
@@ -323,14 +319,15 @@ cov_file_t::add_location(
     	(ln = f->lines_->nth(lineno-1)) == 0)
 	f->lines_->set(lineno-1, ln = new cov_line_t());
     
-#if DEBUG > 1
-    string_var desc = b->describe();
-    fprintf(stderr, "Block %s adding location %s:%lu\n",
-    	desc.data(), filename, lineno);
-    if (ln->blocks_ != 0)
-    	fprintf(stderr, "%s:%lu: this line belongs to %d blocks\n",
+    if (debug_enabled(D_BB))
+    {
+	string_var desc = b->describe();
+	dprintf3(D_BB, "Block %s adding location %s:%lu\n",
+    	    desc.data(), filename, lineno);
+	if (ln->blocks_ != 0)
+    	    dprintf3(D_BB, "%s:%lu: this line belongs to %d blocks\n",
 	    	    	    filename, lineno, g_list_length(ln->blocks_)+1);
-#endif
+    }
 
     ln->blocks_ = g_list_append(ln->blocks_, b);
     b->add_location(f->name_, lineno);
@@ -407,9 +404,7 @@ cov_file_t::read_bb_file(const char *bbfilename)
     int line;
     int nlines;
     
-#if DEBUG > 1
-    fprintf(stderr, "Reading .bb file \"%s\"\n", bbfilename);
-#endif
+    dprintf1(D_FILES, "Reading .bb file \"%s\"\n", bbfilename);
 
     if ((fp = fopen(bbfilename, "r")) == 0)
     {
@@ -428,17 +423,13 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	case BB_FILENAME:
 	    filename = covio_read_bbstring(fp, tag);
 	    filename = file_make_absolute_to(filename, name_);
-#if DEBUG > 1
-	    fprintf(stderr, "BB filename = \"%s\"\n", filename.data());
-#endif
+	    dprintf1(D_BB, "BB filename = \"%s\"\n", filename.data());
 	    break;
 	    
 	case BB_FUNCTION:
 	    funcname = covio_read_bbstring(fp, tag);
 	    funcname = normalise_mangled(funcname);
-#if DEBUG > 1
-	    fprintf(stderr, "BB function = \"%s\"\n", funcname.data());
-#endif
+	    dprintf1(D_BB, "BB function = \"%s\"\n", funcname.data());
 	    fn = nth_function(funcidx);
 	    funcidx++;
 	    bidx = 0;
@@ -460,9 +451,7 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	    break;
 	    
 	default:
-#if DEBUG > 1
-	    fprintf(stderr, "BB line = %d (block %d)\n", (int)tag, bidx);
-#endif
+	    dprintf2(D_BB, "BB line = %d (block %d)\n", (int)tag, bidx);
 	    assert(fn != 0);
 
     	    line = tag;
@@ -496,28 +485,21 @@ cov_file_t::read_bb_file(const char *bbfilename)
 /*
  * The bbg_failed*() macros are for debugging problems with .bbg files.
  */
-#if DEBUG > 1
-/* I can't wait for C99 variadic macros to become common */
 #define bbg_failed0(fmt) \
     { \
-	fprintf(stderr, "BBG:%d, " fmt "\n", __LINE__); \
+	dprintf1(D_BBG, "BBG:%d, " fmt "\n", __LINE__); \
     	return FALSE; \
     }
 #define bbg_failed1(fmt, a1) \
     { \
-	fprintf(stderr, "BBG:%d, " fmt "\n", __LINE__, a1); \
+	dprintf2(D_BBG, "BBG:%d, " fmt "\n", __LINE__, a1); \
     	return FALSE; \
     }
 #define bbg_failed2(fmt, a1, a2) \
     { \
-	fprintf(stderr, "BBG:%d, " fmt "\n", __LINE__, a1, a2); \
+	dprintf3(D_BBG, "BBG:%d, " fmt "\n", __LINE__, a1, a2); \
     	return FALSE; \
     }
-#else
-#define bbg_failed0(fmt)    	    	return FALSE;
-#define bbg_failed1(fmt, a1)    	return FALSE;
-#define bbg_failed2(fmt, a1, a2)    	return FALSE;
-#endif
 
 
 gboolean
@@ -531,9 +513,7 @@ cov_file_t::read_old_bbg_function(FILE *fp)
     cov_arc_t *a;
     cov_function_t *fn;
     
-#if DEBUG > 1
-    fprintf(stderr, "BBG reading function\n");
-#endif
+    dprintf0(D_BBG, "BBG reading function\n");
     
     if (!covio_read_lu32(fp, &nblocks))
     	return TRUE;	/* end of file */
@@ -552,9 +532,7 @@ cov_file_t::read_old_bbg_function(FILE *fp)
 	
     for (bidx = 0 ; bidx < nblocks ; bidx++)
     {
-#if DEBUG > 1
-    	fprintf(stderr, "BBG   block %d\n", bidx);
-#endif
+    	dprintf1(D_BBG, "BBG   block %d\n", bidx);
 	b = fn->nth_block(bidx);
 	if (!covio_read_lu32(fp, &narcs))
     	    bbg_failed0("short file");
@@ -568,14 +546,12 @@ cov_file_t::read_old_bbg_function(FILE *fp)
 	    if (!covio_read_lu32(fp, &flags))
 	    	bbg_failed0("short file");
 
-#if DEBUG > 1
-    	    fprintf(stderr, "BBG     arc %u: %u->%u flags %x(%s,%s,%s)\n",
+    	    dprintf7(D_BBG, "BBG     arc %u: %u->%u flags %x(%s,%s,%s)\n",
 	    	    	    aidx,
 			    bidx, dest, flags,
 			    (flags & BBG_ON_TREE ? "on_tree" : ""),
 			    (flags & BBG_FAKE ? "fake" : ""),
 			    (flags & BBG_FALL_THROUGH ? "fall_through" : ""));
-#endif
 	    if (dest >= nblocks)
     	    	bbg_failed2("dest=%u > nblocks=%u", dest, nblocks);
 			    
@@ -590,9 +566,7 @@ cov_file_t::read_old_bbg_function(FILE *fp)
     		if (!(flags & BBG_FAKE))
 		{
 	    	    num_missing_fake_++;
-#if DEBUG > 1
-    	    	    fprintf(stderr, "BBG     missing fake flag\n");
-#endif
+    	    	    dprintf0(D_BBG, "BBG     missing fake flag\n");
 		}
 	    }
 	    a->fall_through_ = !!(flags & BBG_FALL_THROUGH);
@@ -609,9 +583,7 @@ cov_file_t::read_old_bbg_function(FILE *fp)
 gboolean
 cov_file_t::read_old_bbg_file(const char *bbgfilename, FILE *fp)
 {
-#if DEBUG > 1
-    fprintf(stderr, "Reading old format .bbg file \"%s\"\n", bbgfilename);
-#endif
+    dprintf0(D_FILES, "Detected old .bbg format\n");
     format_version_ = 0;
 
     /*
@@ -653,7 +625,6 @@ cov_file_t::read_old_bbg_file(const char *bbgfilename, FILE *fp)
 #define GCOV_TAG_OBJECT_SUMMARY  ((gnb_u32_t)0xa1000000)
 #define GCOV_TAG_PROGRAM_SUMMARY ((gnb_u32_t)0xa3000000)
 
-#if DEBUG > 1
 static const struct 
 {
     const char *name;
@@ -684,7 +655,6 @@ gcov_tag_as_string(gnb_u32_t tag)
     return "unknown";
 }
 
-#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #define BBG_VERSION_3_3p \
@@ -707,9 +677,7 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
     gnb_u32_t dest, flags;
     gnb_u32_t line, last_line = 0;
 
-#if DEBUG > 1
-    fprintf(stderr, "Reading new format .bbg file \"%s\"\n", bbgfilename);
-#endif
+    dprintf0(D_FILES, "Detected new .bbg format\n");
 
     if (!covio_read_bu32(fp, &format_version_))
     	bbg_failed0("short file");
@@ -722,10 +690,8 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 	if (!covio_read_bu32(fp, &length))
     	    bbg_failed0("short file");
 	
-#if DEBUG
-    	fprintf(stderr, "tag=0x%08x (%s) length=%u\n",
+    	dprintf3(D_BBG, "tag=0x%08x (%s) length=%u\n",
 	    	tag, gcov_tag_as_string(tag), length);
-#endif
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
@@ -759,13 +725,11 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 		    !covio_read_bu32(fp, &flags))
 	    	    bbg_failed0("short file");
 
-#if DEBUG > 1
-    		fprintf(stderr, "BBG     arc %u->%u flags %x(%s,%s,%s)\n",
+    		dprintf6(D_BBG, "BBG     arc %u->%u flags %x(%s,%s,%s)\n",
 			    bidx, dest, flags,
 			    (flags & BBG_ON_TREE ? "on_tree" : ""),
 			    (flags & BBG_FAKE ? "fake" : ""),
 			    (flags & BBG_FALL_THROUGH ? "fall_through" : ""));
-#endif
 		if (dest >= nblocks)
     	    	    bbg_failed2("dest=%u > nblocks=%u", dest, nblocks);
 		    
@@ -784,9 +748,7 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
     		    if (!(flags & BBG_FAKE))
 		    {
 	    		num_missing_fake_++;
-#if DEBUG > 1
-    	    		fprintf(stderr, "BBG     missing fake flag\n");
-#endif
+    	    		dprintf0(D_BBG, "BBG     missing fake flag\n");
 		    }
 		}
 	    }
@@ -802,9 +764,7 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 	    	/* may need to interpolate some block->line assignments */
 		for (last_bidx++ ; last_bidx < bidx ; last_bidx++)
 		{
-#if DEBUG > 1
-    		    fprintf(stderr, "BBG     interpolating line:\n");
-#endif
+    		    dprintf0(D_BBG, "BBG     interpolating line:\n");
     	    	    add_location(fn->nth_block(last_bidx), filename, last_line);
 		}
 	    }
@@ -860,9 +820,7 @@ cov_file_t::read_bbg_file(const char *bbgfilename)
     char magic[BBG_NEW_MAGIC_LEN];
     gboolean ret;
     
-#if DEBUG > 1
-    fprintf(stderr, "Reading .bbg file \"%s\"\n", bbgfilename);
-#endif
+    dprintf1(D_FILES, "Reading .bbg file \"%s\"\n", bbgfilename);
     
     if ((fp = fopen(bbgfilename, "r")) == 0)
     {
@@ -899,9 +857,7 @@ cov_file_t::read_old_da_file(const char *dafilename)
     unsigned int bidx;
     list_iterator_t<cov_arc_t> aiter;
     
-#if DEBUG > 1
-    fprintf(stderr, "Reading old format .da file \"%s\"\n", dafilename);
-#endif
+    dprintf0(D_FILES, "Detected old .da format\n");
     
     if ((fp = fopen(dafilename, "r")) == 0)
     {
@@ -933,14 +889,15 @@ cov_file_t::read_old_da_file(const char *dafilename)
 		    return FALSE;
 		}
 
-#if DEBUG > 1
-    	    	estring fromdesc = a->from()->describe();
-    	    	estring todesc = a->to()->describe();
-    	    	fprintf(stderr, "DA arc {from=%s to=%s} count=%llu\n",
+    	    	if (debug_enabled(D_DA))
+		{
+    	    	    estring fromdesc = a->from()->describe();
+    	    	    estring todesc = a->to()->describe();
+    	    	    dprintf3(D_DA, "DA arc {from=%s to=%s} count=%llu\n",
 		    	    fromdesc.data(),
 		    	    todesc.data(),
 			    ent);
-#endif
+    	    	}
 
     	    	a->set_count(ent);
 	    }
@@ -962,43 +919,24 @@ cov_file_t::read_old_da_file(const char *dafilename)
 /*
  * The da_failed*() macros are for debugging problems with .da files.
  */
-#if DEBUG > 1
-/* I can't wait for C99 variadic macros to become common */
 #define da_failed0(fmt) \
     { \
-	fprintf(stderr, "da:%d, " fmt "\n", __LINE__); \
+	dprintf1(D_DA, "da:%d, " fmt "\n", __LINE__); \
 	fclose(fp); \
     	return FALSE; \
     }
 #define da_failed1(fmt, a1) \
     { \
-	fprintf(stderr, "da:%d, " fmt "\n", __LINE__, a1); \
+	dprintf2(D_DA, "da:%d, " fmt "\n", __LINE__, a1); \
 	fclose(fp); \
     	return FALSE; \
     }
 #define da_failed2(fmt, a1, a2) \
     { \
-	fprintf(stderr, "da:%d, " fmt "\n", __LINE__, a1, a2); \
+	dprintf3(D_DA, "da:%d, " fmt "\n", __LINE__, a1, a2); \
 	fclose(fp); \
     	return FALSE; \
     }
-#else
-#define da_failed0(fmt) \
-    { \
-	fclose(fp); \
-    	return FALSE; \
-    }
-#define da_failed1(fmt, a1) \
-    { \
-	fclose(fp); \
-    	return FALSE; \
-    }
-#define da_failed2(fmt, a1, a2) \
-    { \
-	fclose(fp); \
-    	return FALSE; \
-    }
-#endif
 
 gboolean
 cov_file_t::read_new_da_file(const char *dafilename)
@@ -1014,9 +952,7 @@ cov_file_t::read_new_da_file(const char *dafilename)
     list_iterator_t<cov_arc_t> aiter;
 
 
-#if DEBUG > 1
-    fprintf(stderr, "Reading new format .da file \"%s\"\n", dafilename);
-#endif
+    dprintf0(D_FILES, "Detected new .da format\n");
     
     if ((fp = fopen(dafilename, "r")) == 0)
     {
@@ -1041,10 +977,8 @@ cov_file_t::read_new_da_file(const char *dafilename)
 	if (!covio_read_bu32(fp, &length))
     	    da_failed0("short file");
 	
-#if DEBUG
-    	fprintf(stderr, "tag=0x%08x (%s) length=%u\n",
+    	dprintf3(D_DA, "tag=0x%08x (%s) length=%u\n",
 	    	tag, gcov_tag_as_string(tag), length);
-#endif
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
@@ -1072,14 +1006,15 @@ cov_file_t::read_new_da_file(const char *dafilename)
 
 		    if (!covio_read_bu64(fp, &count))
 		    	da_failed0("short file");
-#if DEBUG > 1
-    	    	    string_var fromdesc = a->from()->describe();
-    	    	    string_var todesc = a->to()->describe();
-    	    	    fprintf(stderr, "DA arc {from=%s to=%s} count=%llu\n",
+    	    	    if (debug_enabled(D_DA))
+		    {
+    	    		string_var fromdesc = a->from()->describe();
+    	    		string_var todesc = a->to()->describe();
+    	    		dprintf3(D_DA, "DA arc {from=%s to=%s} count=%llu\n",
 		    		fromdesc.data(),
 		    		todesc.data(),
 				count);
-#endif
+    	    	    }
     	    	    a->set_count(count);
 		}
 	    }
@@ -1107,9 +1042,7 @@ cov_file_t::read_new_da_file(const char *dafilename)
 gboolean
 cov_file_t::read_da_file(const char *dafilename)
 {
-#if DEBUG > 1
-    fprintf(stderr, "Reading .da file \"%s\"\n", dafilename);
-#endif
+    dprintf1(D_FILES, "Reading .da file \"%s\"\n", dafilename);
     
     switch (format_version_)
     {
@@ -1152,15 +1085,14 @@ cov_o_file_add_call(
     if (!bfd_find_nearest_line(rs->abfd, rs->section, rs->symbols, address,
 		    	       &filename, &function, &lineno))
 	return FALSE;
-#if DEBUG > 1
+    if (debug_enabled(D_CGRAPH))
     {
     	string_var function_dem = demangle(function);
-	fprintf(stderr, "%s:%d: %s calls %s\n",
+	dprintf4(D_CGRAPH, "%s:%d: %s calls %s\n",
 		file_basename_c(filename), lineno,
 		function_dem.data(),
 		callname_dem.data());
     }
-#endif
 
     loc.filename = (char *)filename;
     loc.lineno = lineno;
@@ -1178,9 +1110,6 @@ cov_o_file_add_call(
     	for (iter = ln->blocks() ; iter != 0 ; iter = iter->next)
 	{
 	    cov_block_t *b = (cov_block_t *)iter->data;
-#if DEBUG > 1
-    	    string_var desc = b->describe();
-#endif
 
     	    /*
 	     * Multiple blocks on the same line, the first doesn't
@@ -1194,15 +1123,20 @@ cov_o_file_add_call(
 	     */
     	    if (b->needs_call())
 	    {
-#if DEBUG > 1
-    	        fprintf(stderr, "    block %s\n", desc.data());
-#endif
+	    	if (debug_enabled(D_CGRAPH))
+		{
+    		    string_var desc = b->describe();
+    	            dprintf1(D_CGRAPH, "    block %s\n", desc.data());
+	    	}
 		b->add_call(callname_dem);
 		return TRUE;
 	    }
-#if DEBUG > 1
-	    fprintf(stderr, "    skipping block %s\n", desc.data());
-#endif
+	    
+	    if (debug_enabled(D_CGRAPH))
+	    {
+    		string_var desc = b->describe();
+		dprintf1(D_CGRAPH, "    skipping block %s\n", desc.data());
+	    }
 
 	}
 	/*
@@ -1271,9 +1205,7 @@ cov_o_file_scan_static_calls(
 	    	(rs->symbols[i]->flags & (BSF_LOCAL|BSF_GLOBAL|BSF_FUNCTION)) == 
 		    	    	         (BSF_LOCAL|           BSF_FUNCTION))
 	    {
-#if DEBUG > 1
-    	    	fprintf(stderr, "Scanned static call\n");
-#endif
+    	    	dprintf0(D_CGRAPH, "Scanned static call\n");
 		if (!cov_o_file_add_call(rs, callfrom, rs->symbols[i]->name))
 		{
 		    /* something is very wrong */
@@ -1301,6 +1233,80 @@ cov_o_file_scan_static_calls(
 #endif /* !__i386 */
 #endif /* HAVE_LIBBFD */
 
+
+#ifdef HAVE_LIBBFD
+
+static const char *
+symbol_type_as_string(const asymbol *sym)
+{
+    if (sym->flags & BSF_FILE)
+	return "file";
+    else if (sym->flags & BSF_SECTION_SYM)
+	return "sect";
+    else if (sym->flags & BSF_WEAK)
+	return (sym->flags & BSF_GLOBAL ? "WEAK" : "weak");
+    else if (sym->flags & BSF_FUNCTION)
+	return (sym->flags & BSF_GLOBAL ? "FUNC" : "func");
+    else if (sym->flags & BSF_OBJECT)
+	return (sym->flags & BSF_GLOBAL ? "DATA" : "data");
+    else if ((sym->flags & (BSF_LOCAL|BSF_GLOBAL)) == 0)
+	return "und";
+    return "";
+}
+
+static void
+dump_symbols(int nsymbols, asymbol **symbols)
+{
+    long i;
+    string_var dem;
+    asymbol *sym;
+
+    duprintf0("index|value   |flags|type|section   |name\n");
+    for (i = 0 ; i < nsymbols ; i++)
+    {
+    	sym = symbols[i];
+	dem = demangle(sym->name);
+
+	duprintf6("%5ld|%08lx|%5x|%-4s|%-10s|%s",
+	    	  i,
+		  sym->value,
+		  (unsigned)sym->flags,
+		  symbol_type_as_string(sym),
+		  sym->section->name,
+		  sym->name);
+	if (strcmp(dem, sym->name))
+	    duprintf1(" (%s)", dem.data());
+	duprintf0("\n");
+    }
+}
+
+static void
+dump_reloc(long i, arelent *rel)
+{
+    asymbol *sym = *rel->sym_ptr_ptr;
+    string_var name_dem = demangle(sym->name);
+    char reltype[32];
+
+    if (!i)
+    {
+    	duprintf0("relocation                              |symbol\n");
+    	duprintf0("index|address |addend  |type            |flags|type|name\n");
+    }
+    snprintf(reltype, sizeof(reltype), "%d(%s)",
+	    rel->howto->type,
+	    rel->howto->name);
+    duprintf7("%5ld|%08lx|%08lx|%-16s|%5x|%-4s|%s\n",
+	    i,
+	    rel->address,
+	    rel->addend,
+	    reltype,
+	    (unsigned)sym->flags,
+	    symbol_type_as_string(sym),
+	    name_dem.data());
+}
+
+#endif
+
 /*
  * Use the BFD library to scan relocation records in the .o file.
  */
@@ -1314,9 +1320,7 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
     long i;
     unsigned codesectype = (SEC_ALLOC|SEC_HAS_CONTENTS|SEC_RELOC|SEC_CODE|SEC_READONLY);
     
-#if DEBUG > 1
-    fprintf(stderr, "Reading .o file \"%s\"\n", ofilename);
-#endif
+    dprintf1(D_FILES, "Reading .o file \"%s\"\n", ofilename);
     
     if ((rs.abfd = bfd_openr(ofilename, 0)) == 0)
     {
@@ -1332,9 +1336,7 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
 	return FALSE;
     }
 
-#if DEBUG > 1
-    fprintf(stderr, "%s: reading symbols...\n", ofilename);
-#endif
+    dprintf1(D_CGRAPH, "%s: reading symbols...\n", ofilename);
     rs.nsymbols = bfd_get_symtab_upper_bound(rs.abfd);
     rs.symbols = g_new(asymbol*, rs.nsymbols);
     rs.nsymbols = bfd_canonicalize_symtab(rs.abfd, rs.symbols);
@@ -1346,18 +1348,8 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
 	return FALSE;
     }
 
-#if DEBUG > 5
-    for (i = 0 ; i < rs.nsymbols ; i++)
-    {
-    	sym = rs.symbols[i];
-	string_var dem = demangle(sym->name);
-	
-	if (!strcmp(dem, sym->name))
-	    fprintf(stderr, "%s\n", sym->name);
-	else
-	    fprintf(stderr, "%s (%s)\n", sym->name, dem.data());
-    }
-#endif
+    if (debug_enabled(D_CGRAPH|D_VERBOSE))
+    	dump_symbols(rs.nsymbols, rs.symbols);
 
     for (sec = rs.abfd->sections ; sec != 0 ; sec = sec->next)
     {
@@ -1365,21 +1357,15 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
 	arelent **relocs, *rel;
 	long nrelocs;
 
-#if DEBUG > 1
-	fprintf(stderr, "%s[%d %s]: ", ofilename, sec->index, sec->name);
-#endif
+	dprintf3(D_CGRAPH, "%s[%d %s]: ", ofilename, sec->index, sec->name);
 
 	if ((sec->flags & codesectype) != codesectype)
 	{
-#if DEBUG > 1
-	    fprintf(stderr, "skipping\n");
-#endif
+	    dprintf0(D_CGRAPH, "skipping\n");
     	    continue;
 	}
 
-#if DEBUG > 1
-	fprintf(stderr, "reading relocs...\n");
-#endif
+	dprintf0(D_CGRAPH, "reading relocs...\n");
 
     	nrelocs = bfd_get_reloc_upper_bound(rs.abfd, sec);
 	relocs = g_new(arelent*, nrelocs);
@@ -1393,33 +1379,11 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
     
     	for (i = 0 ; i < nrelocs ; i++)
 	{
-	    
 	    rel = relocs[i];
 	    sym = *rel->sym_ptr_ptr;
 	    
-#if DEBUG > 1
-    	    {
-		char *type;
-		string_var name_dem = demangle(sym->name);
-
-		if ((sym->flags & BSF_FUNCTION))
-	    	    type = "FUN";
-		else if ((sym->flags & BSF_OBJECT))
-	    	    type = "DAT";
-		else if (sym->flags & BSF_SECTION_SYM)
-	    	    type = "SEC";
-		else if ((sym->flags & (BSF_LOCAL|BSF_GLOBAL)) == 0)
-	    	    type = "UNK";
-		else
-	    	    type = "---";
-		fprintf(stderr, "%5ld %08lx %08lx %08lx %d(%s) %s %s\n",
-	    		i, rel->address, rel->addend,
-			(unsigned long)sym->flags,
-			rel->howto->type,
-			rel->howto->name,
-			type, name_dem.data());
-    	    }
-#endif
+    	    if (debug_enabled(D_CGRAPH|D_VERBOSE))
+	    	dump_reloc(i, rel);
 
 #ifdef __i386__
     	    /*
@@ -1522,6 +1486,8 @@ cov_file_t::try_file(const char *dir, const char *ext) const
     	ofilename = g_strconcat(dir, "/", file_basename_c(name()), (char *)0);
     
     dfilename = file_change_extension(ofilename, 0, ext);
+    
+    dprintf1(D_FILES|D_VERBOSE, "    try %s\n", dfilename.data());
 
     return (file_is_regular(dfilename) < 0 ? 0 : dfilename.take());
 }
@@ -1532,6 +1498,10 @@ cov_file_t::find_file(const char *ext, gboolean quiet) const
     list_iterator_t<char> iter;
     char *file;
     
+    dprintf2(D_FILES|D_VERBOSE,
+    	    "Searching for %s file matching %s\n",
+    	    ext, file_basename_c(name()));
+
     /*
      * First try the same directory as the source file.
      */

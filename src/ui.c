@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.21 2003-07-19 07:31:17 gnb Exp $");
+CVSID("$Id: ui.c,v 1.21.2.1 2003-11-03 08:56:59 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -143,9 +143,7 @@ ui_load_tree(const char *root)
 	filename = find_file(ui_glade_path, gladefile);
 	if (filename == 0)
 	    fatal("can't find %s in path %s\n", gladefile, ui_glade_path);
-#if DEBUG
-	fprintf(stderr, "Loading Glade UI from file \"%s\"\n", filename);
-#endif
+	dprintf1(D_UICORE, "Loading Glade UI from file \"%s\"\n", filename);
     }
 
 #if GTK2
@@ -268,10 +266,8 @@ ui_on_windows_menu_activate(GtkWidget *w, gpointer userdata)
 {
     GtkWidget *win = (GtkWidget *)userdata;
         
-#if DEBUG
-    fprintf(stderr, "ui_on_windows_menu_activate: %s\n",
+    dprintf1(D_UICORE, "ui_on_windows_menu_activate: %s\n",
     	    	    	GTK_WINDOW(win)->title);
-#endif
 			
     gdk_window_show(win->window);
     gdk_window_raise(win->window);
@@ -622,10 +618,7 @@ ui_clist_double_click_data(GtkCList *clist, GdkEvent *event)
 				     (int)event->button.y,
 				     &row, &col))
     {
-#if DEBUG
-    	fprintf(stderr, "ui_clist_double_click_data: row=%d col=%d\n",
-	    	    	row, col);
-#endif
+    	dprintf2(D_UICORE, "ui_clist_double_click_data: row=%d col=%d\n", row, col);
 	return gtk_clist_get_row_data(clist, row);
     }
     return 0;
@@ -647,11 +640,12 @@ ui_tree_view_double_click_data(GtkTreeView *tv, GdkEvent *event, int column)
 				     &path, (GtkTreeViewColumn **)0,
 				     (gint *)0, (gint *)0))
     {
-#if DEBUG
-    	string_var path_str = gtk_tree_path_to_string(path);
-    	fprintf(stderr, "ui_tree_view_double_click_data: path=\"%s\"\n",
-	    	    	path_str.data());
-#endif
+    	if (debug_enabled(D_UICORE))
+	{
+    	    string_var path_str = gtk_tree_path_to_string(path);
+    	    dprintf1(D_UICORE, "ui_tree_view_double_click_data: path=\"%s\"\n",
+	    	    	    path_str.data());
+    	}
     	model = gtk_tree_view_get_model(tv);
     	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_model_get(model, &iter, column, &data, -1);
@@ -707,10 +701,8 @@ static void
 ui_text_line_start(GtkText *text, ui_text_data *td)
 {
     unsigned int offset = gtk_text_get_length(text);
-#if DEBUG > 5
-    fprintf(stderr, "offsets_by_line[%d] = %d\n",
+    dprintf2(D_UICORE|D_VERBOSE, "offsets_by_line[%d] = %d\n",
     	td->offsets_by_line->len, offset);
-#endif
     g_array_append_val(td->offsets_by_line, offset);
 }
 
@@ -998,20 +990,18 @@ ui_text_offset_to_lineno(ui_text_data *td, unsigned int offset)
     top = td->offsets_by_line->len-1;
     bottom = 0;
     
-#if DEBUG > 5
-    fprintf(stderr, "ui_text_offset_to_lineno: { offset=%u top=%u bottom=%u\n",
+    dprintf3(D_UICORE|D_VERBOSE,
+    	    "ui_text_offset_to_lineno: { offset=%u top=%u bottom=%u\n",
     	    offset, top, bottom);
-#endif
 
     while (top - bottom > 1)
     {
     	unsigned int mid = (top + bottom)/2;
 	unsigned int midoff = g_array_index(td->offsets_by_line, unsigned int, mid);
 	
-#if DEBUG > 5
-    	fprintf(stderr, "ui_text_offset_to_lineno:     top=%d bottom=%d mid=%d midoff=%u\n",
-	    	    	 top, bottom, mid, midoff);
-#endif
+    	dprintf4(D_UICORE|D_VERBOSE,
+	    	"ui_text_offset_to_lineno:     top=%d bottom=%d mid=%d midoff=%u\n",
+	    	 top, bottom, mid, midoff);
 
 	if (midoff == offset)
 	    top = bottom = mid;
@@ -1021,10 +1011,9 @@ ui_text_offset_to_lineno(ui_text_data *td, unsigned int offset)
 	    top = mid;
     }
 
-#if DEBUG > 5
-    fprintf(stderr, "ui_text_offset_to_lineno: offset=%u line=%u }\n",
+    dprintf2(D_UICORE|D_VERBOSE,
+    	    "ui_text_offset_to_lineno: offset=%u line=%u }\n",
     	    offset, bottom);
-#endif
 
     return (unsigned long)bottom+1;
 }

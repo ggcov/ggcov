@@ -22,7 +22,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_stab32.C,v 1.2 2003-07-09 01:14:01 gnb Exp $");
+CVSID("$Id: cov_stab32.C,v 1.2.4.1 2003-11-03 08:56:59 gnb Exp $");
 
 /*
  * Machine-specific code to read 32-bit .stabs entries from an
@@ -111,6 +111,9 @@ cov_stab32_filename_scanner_t::open(const char *filename)
 char *
 cov_stab32_filename_scanner_t::next()
 {
+    if (!stabi_)
+	dprintf0(D_STABS|D_VERBOSE, "index|type|other|desc|value   |string\n");
+
     for ( ; stabi_ < num_stabs_ ; stabi_++)
     {
     	cov_stab32_t *st = &stabs_[stabi_];
@@ -137,10 +140,10 @@ cov_stab32_filename_scanner_t::next()
 	    
     	    const char *s = strings_ + stroff_ + st->strx;
 	    
-#if DEBUG > 5
-	    fprintf(stderr, "stab32:%5u|%02x|%02x|%04x|%08x|%s|\n",
-	    	stabi_, st->type, st->other, st->desc, st->value, s);
-#endif
+	    dprintf6(D_STABS|D_VERBOSE,
+	    	     "%5u|%4x|%5x|%04x|%08x|%s\n",
+		     stabi_, st->type, st->other, st->desc, st->value, s);
+
 	    if (s[0] == '\0')
 	    	continue;
 
@@ -149,7 +152,9 @@ cov_stab32_filename_scanner_t::next()
 	    else
 	    {
 	    	stabi_++;
-	    	return g_strconcat(dir_.data(), s, 0);
+		char *res = g_strconcat(dir_.data(), s, 0);
+		dprintf1(D_STABS, "Scanned source file \"%s\"\n", res);
+		return res;
 	    }
 	}
     }
