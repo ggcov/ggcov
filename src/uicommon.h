@@ -22,21 +22,10 @@
 
 #include <gtk/gtk.h>
 
-
 #if GTK_CHECK_VERSION(1,99,0)
 #define GTK2 1
 #else
 #define GTK2 0
 #endif
-
-/* TODO: do this properly in configure.in */
-#if GTK2
-#define HAVE_LIBGNOME	0
-#define HAVE_LIBGNOMEUI	0
-#else
-#define HAVE_LIBGNOME	1
-#define HAVE_LIBGNOMEUI	2
-#endif
-
 
 #endif /* _ggcov_ui_common_h_ */
