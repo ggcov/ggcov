@@ -24,7 +24,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.20 2005-03-14 07:49:15 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.21 2005-03-18 15:40:00 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -32,6 +32,7 @@ CVSID("$Id: callswin.C,v 1.20 2005-03-14 07:49:15 gnb Exp $");
 #define COL_ARC     3
 #define COL_COUNT   4
 #if !GTK2
+#define COL_CLOSURE	0
 #define NUM_COLS    	5
 #else
 #define COL_CLOSURE	5

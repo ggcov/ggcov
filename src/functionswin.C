@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: functionswin.C,v 1.17 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.18 2005-03-18 15:40:00 gnb Exp $");
 
 
 #define COL_BLOCKS   	0
@@ -32,6 +32,7 @@ CVSID("$Id: functionswin.C,v 1.17 2005-03-14 07:49:16 gnb Exp $");
 #define COL_BRANCHES	3
 #define COL_FUNCTION	4
 #if !GTK2
+#define COL_CLOSURE	0
 #define NUM_COLS    	5
 #else
 #define COL_CLOSURE	5

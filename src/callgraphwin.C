@@ -22,11 +22,12 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.15 2005-03-14 07:49:15 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.16 2005-03-18 15:40:00 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
 #if !GTK2
+#define COL_CLOSURE	0
 #define NUM_COLS    	2
 #else
 #define COL_CLOSURE	2
