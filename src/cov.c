@@ -20,19 +20,21 @@
 #include "cov.h"
 #include "covio.h"
 #include "filename.h"
-#include "estring.h"
+#include "estring.H"
 #include <dirent.h>
 
 
 #include <bfd.h>
 #include <elf.h>
 
-CVSID("$Id: cov.c,v 1.9 2002-12-15 15:51:54 gnb Exp $");
+CVSID("$Id: cov.c,v 1.10 2002-12-22 01:55:28 gnb Exp $");
 
 GHashTable *cov_files;
 /* TODO: ? reorg this */
 GHashTable *cov_blocks_by_location; 	/* GList of blocks keyed on "file:line" */
 GHashTable *cov_callnodes;
+char *cov_common_path;
+int cov_common_len;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -122,6 +124,46 @@ cov_file_get_last_location(const cov_file_t *f)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static void
+cov_file_add_name(const char *name)
+{
+    assert(name[0] == '/');
+    if (cov_common_path == 0)
+    {
+    	/* first filename: initialise the common path to the directory */
+	char *p;
+    	cov_common_path = g_strdup(name);
+	if ((p = strrchr(cov_common_path, '/')) != 0)
+	    p[1] = '\0';
+    }
+    else
+    {
+    	/* subsequent filenames: shrink common path as necessary */
+	char *cs, *ce, *ns, *ne;
+	cs = cov_common_path+1;
+	ns = (char *)name+1;
+	for (;;)
+	{
+	    if ((ne = strchr(ns, '/')) == 0)
+	    	break;
+	    if ((ce = strchr(cs, '/')) == 0)
+	    	break;
+	    if ((ce - cs) != (ne - ns))
+	    	break;
+	    if (memcmp(cs, ns, (ne - ns)))
+	    	break;
+	    cs = ce+1;
+	    ns = ne+1;
+	}
+	*cs = '\0';
+    }
+    cov_common_len = strlen(cov_common_path);
+#if 1 /*DEBUG*/
+    fprintf(stderr, "cov_file_add_name: name=\"%s\" => common=\"%s\"\n",
+    	    	name, cov_common_path);
+#endif
+}
+
 cov_file_t *
 cov_file_new(const char *name)
 {
@@ -136,7 +178,8 @@ cov_file_new(const char *name)
         cov_files = g_hash_table_new(g_str_hash, g_str_equal);
 
     g_hash_table_insert(cov_files, f->name, f);
-    
+    cov_file_add_name(f->name);
+
     return f;
 }
 
@@ -154,12 +197,59 @@ cov_file_delete(cov_file_t *f)
 }
 #endif
 
+
+const char *
+cov_file_minimal_name(const cov_file_t *f)
+{
+    return f->name + cov_common_len;
+}
+
+char *
+cov_minimise_filename(const char *name)
+{
+    if (!strncmp(name, cov_common_path, cov_common_len))
+    {
+    	return g_strdup(name + cov_common_len);
+    }
+    else
+    {
+	assert(name[0] == '/');
+	return g_strdup(name);
+    }
+}
+
+char *
+cov_unminimise_filename(const char *name)
+{
+    if (name[0] == '/')
+    {
+    	/* absolute name */
+    	return g_strdup(name);
+    }
+    else
+    {
+    	/* partial, presumably minimal, name */
+	return g_strconcat(cov_common_path, name, 0);
+    }
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+	/* TODO: handle names relative to $PWD ? */
 
 cov_file_t *
 cov_file_find(const char *name)
 {
-    return (cov_files == 0 ? 0 : (cov_file_t *)g_hash_table_lookup(cov_files, name));
+    char *fullname;
+    cov_file_t *f;
+    
+    if (cov_files == 0)
+    	return 0;
+    
+    fullname = cov_unminimise_filename(name);
+    f = (cov_file_t *)g_hash_table_lookup(cov_files, fullname);
+    g_free(fullname);
+
+    return f;
 }
 
 
@@ -888,8 +978,15 @@ cov_o_file_scan_static_calls(
     	g_free(buf);
     	return;
     }
+    
+    /*
+     * TODO: presumably it is more efficient to scan through the relocs
+     * looking for PCREL32 to static functions and double-check that the
+     * preceding byte is the CALL instruction.
+     */
 
-    for (p = buf ; p < buf+len ; p++)
+    /* CALL instruction is 5 bytes long so don't bother scanning last 5 bytes */
+    for (p = buf ; p < buf+len-4 ; p++)
     {
     	if (*p != 0xe8)
 	    continue;	    /* not a CALL instruction */
@@ -1201,15 +1298,16 @@ cov_is_source_filename(const char *filename)
 #define FN_MAX	4
 
 static gboolean
-cov_read_source_file_2(const char *filename, gboolean quiet)
+cov_read_source_file_2(const char *fname, gboolean quiet)
 {
     cov_file_t *f;
     gboolean res;
     int i;
-    char *filenames[FN_MAX];
+    char *filename, *filenames[FN_MAX];
     static const char *extensions[FN_MAX] = { ".bb", ".bbg", ".da", ".o" };
 
 
+    filename = file_make_absolute(fname);
 #if DEBUG    
     fprintf(stderr, "Handling source file %s\n", filename);
 #endif
@@ -1218,6 +1316,7 @@ cov_read_source_file_2(const char *filename, gboolean quiet)
     {
     	if (!quiet)
     	    fprintf(stderr, "Internal error: handling %s twice\n", filename);
+    	g_free(filename);
     	return FALSE;
     }
 
@@ -1232,6 +1331,7 @@ cov_read_source_file_2(const char *filename, gboolean quiet)
     		perror(filenames[i]);
 	    for (i = 0 ; i < FN_MAX ; i++)
 	    	strdelete(filenames[i]);
+    	    g_free(filename);
 	    return FALSE;
 	}
     }
@@ -1248,6 +1348,7 @@ cov_read_source_file_2(const char *filename, gboolean quiet)
 
     for (i = 0 ; i < FN_MAX ; i++)
 	strdelete(filenames[i]);
+    g_free(filename);
     return res;
 }
 
@@ -1627,6 +1728,8 @@ cov_init(void)
     bfd_set_error_handler(cov_bfd_error_handler);
 
     cov_callnodes = g_hash_table_new(g_str_hash, g_str_equal);
+    cov_common_path = 0;
+    cov_common_len = 0;
 }
 
 void
@@ -1801,37 +1904,35 @@ cov_read_directory(const char *dirname)
 {
     DIR *dir;
     struct dirent *de;
-    estring child;
+    int dirlen;
     int successes = 0;
     
-    if ((dir = opendir(dirname)) == 0)
+    estring child = file_make_absolute(dirname);
+
+    if ((dir = opendir(child.data())) == 0)
     {
-    	perror(dirname);
+    	perror(child.data());
     	return FALSE;
     }
     
-    estring_init(&child);
+    if (child.last() != '/')
+	child.append_char('/');
+    dirlen = child.length();
+    
     while ((de = readdir(dir)) != 0)
     {
     	if (!strcmp(de->d_name, ".") || 
 	    !strcmp(de->d_name, ".."))
 	    continue;
 	    
-	estring_truncate(&child);
-	if (strcmp(dirname, "."))
-	{
-	    estring_append_string(&child, dirname);
-	    if (child.data[child.length-1] != '/')
-		estring_append_char(&child, '/');
-	}
-	estring_append_string(&child, de->d_name);
+	child.truncate_to(dirlen);
+	child.append_string(de->d_name);
 	
-    	if (file_is_regular(child.data) == 0 &&
-	    cov_is_source_filename(child.data))
-	    successes += cov_read_source_file(child.data);
+    	if (file_is_regular(child.data()) == 0 &&
+	    cov_is_source_filename(child.data()))
+	    successes += cov_read_source_file(child.data());
     }
     
-    estring_free(&child);
     closedir(dir);
     if (successes == 0)
     	fprintf(stderr, "found no coveraged source files in directory \"%s\"\n",
