@@ -19,10 +19,9 @@
 
 #include "window.H"
 #include "cov.h"
-#include "estring.h"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: window.C,v 1.1 2002-12-15 15:53:24 gnb Exp $");
+CVSID("$Id: window.C,v 1.2 2002-12-22 02:56:10 gnb Exp $");
 
 static const char window_key[] = "callgraph2win_key";
 
