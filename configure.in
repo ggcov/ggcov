@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.21 2003-06-07 03:03:58 gnb Exp $
+dnl $Id: configure.in,v 1.22 2003-06-08 06:23:01 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -106,6 +106,12 @@ if test $gtk2 = yes ; then
     # v.1.99.9 shipped in RH 7.3
     PKG_CHECK_MODULES(GGCOV, libglade-2.0 >= 1.99.9)
     GGCOV_LIBS="$GGCOV_LIBS -lpopt"
+    if test "x$GCC" = "xyes"; then
+    	# The gtk2 build on RH7.3 seems to be missing an -rdynamic
+	# option, which causes global symbols to be exported by
+	# default, which is needed by libglade.
+    	GGCOV_LIBS="$GGCOV_LIBS -rdynamic"
+    fi
 else
     AM_PATH_LIBGLADE(,AC_MSG_ERROR(ggcov requires the libglade library),gnome)
     AM_PATH_IMLIB(,,AC_MSG_ERROR(ggcov requires the libgdk_imlib library))
