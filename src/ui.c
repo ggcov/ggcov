@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.H"
 
-CVSID("$Id: ui.c,v 1.11 2002-12-22 02:49:48 gnb Exp $");
+CVSID("$Id: ui.c,v 1.12 2002-12-29 12:49:49 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -462,7 +462,7 @@ static gboolean
 ui_clist_is_sortable_column(GtkCList *clist, int col)
 {
     GArray *sortables;
-    int i;
+    unsigned int i;
 
     sortables = (GArray *)gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
     assert(sortables != 0);
