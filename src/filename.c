@@ -18,12 +18,12 @@
  */
 
 #include "filename.h"
-#include "estring.h"
+#include "estring.H"
 #include <sys/stat.h>
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.4 2002-12-15 15:46:09 gnb Exp $");
+CVSID("$Id: filename.c,v 1.5 2002-12-22 01:57:13 gnb Exp $");
 
 #ifndef __set_errno
 #define __set_errno(v)	 errno = (v)
@@ -72,17 +72,15 @@ file_change_extension(
 	    return 0;
     }
 
-    estring_init(&e);
-    
-    estring_append_string(&e, filename);
+    e.append_string(filename);
     oldlen = strlen(oldext);
-    if (!strcmp(e.data+e.length-oldlen, oldext))
+    if (!strcmp(e.data()+e.length()-oldlen, oldext))
     {
-    	estring_truncate_to(&e, e.length-oldlen);
-	estring_append_string(&e, newext);
+    	e.truncate_to(e.length()-oldlen);
+	e.append_string(newext);
     }
     
-    return e.data;
+    return e.take();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -278,27 +276,25 @@ file_apply_children(
     if ((dir = opendir(filename)) == 0)
     	return -1;
 	
-    estring_init(&child);
     while ((de = readdir(dir)) != 0)
     {
     	if (!strcmp(de->d_name, ".") ||
 	    !strcmp(de->d_name, ".."))
 	    continue;
 	    
-	/* TODO: estring_truncate_to() */
-	estring_truncate(&child);
-	estring_append_string(&child, filename);
-	estring_append_char(&child, '/');
-	estring_append_string(&child, de->d_name);
+	/* TODO: truncate_to() */
+	child.truncate();
+	child.append_string(filename);
+	child.append_char('/');
+	child.append_string(de->d_name);
 	
-	if (!(*function)(child.data, userdata))
+	if (!(*function)(child.data(), userdata))
 	{
 	    ret = 0;
 	    break;
 	}
     }
     
-    estring_free(&child);
     closedir(dir);
     return ret;
 }

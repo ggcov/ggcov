@@ -18,9 +18,9 @@
  */
 
 #include "covio.h"
-#include "estring.h"
+#include "estring.H"
 
-CVSID("$Id: covio.c,v 1.1 2001-11-23 03:47:48 gnb Exp $");
+CVSID("$Id: covio.c,v 1.2 2002-12-22 01:56:47 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -72,21 +72,19 @@ covio_read_bbstring(FILE *fp, covio_u32_t endtag)
     covio_u32_t t;
     estring buf;
     
-    estring_init(&buf);
-    
     while (covio_read_u32(fp, &t))
     {
     	if (t == endtag)
 	    break;
 	    
 	/* pick apart tag as chars and add them to the buf */
-	estring_append_char(&buf, (t & 0xff));
-	estring_append_char(&buf, ((t>>8) & 0xff));
-	estring_append_char(&buf, ((t>>16) & 0xff));
-	estring_append_char(&buf, ((t>>24) & 0xff));
+	buf.append_char(t & 0xff);
+	buf.append_char((t>>8) & 0xff);
+	buf.append_char((t>>16) & 0xff);
+	buf.append_char((t>>24) & 0xff);
     }
     
-    return buf.data;
+    return buf.take();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
