@@ -19,9 +19,9 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_callgraph.C,v 1.6 2003-07-17 15:50:47 gnb Exp $");
+CVSID("$Id: cov_callgraph.C,v 1.7 2004-02-22 10:56:51 gnb Exp $");
 
-hashtable_t<const char*, cov_callnode_t> *cov_callnode_t::all_;
+hashtable_t<const char, cov_callnode_t> *cov_callnode_t::all_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -48,7 +48,7 @@ cov_callnode_t::~cov_callnode_t()
 void
 cov_callnode_t::init()
 {
-    all_ = new hashtable_t<const char*, cov_callnode_t>;
+    all_ = new hashtable_t<const char, cov_callnode_t>;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

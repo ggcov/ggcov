@@ -50,7 +50,7 @@ private:
 
     cov_callarc_t *find_arc_to(cov_callnode_t *to) const;
 
-    static hashtable_t<const char*, cov_callnode_t> *all_;
+    static hashtable_t<const char, cov_callnode_t> *all_;
     
     friend void cov_init(void);
     friend void cov_add_callnodes(cov_file_t*);

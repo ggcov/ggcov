@@ -21,7 +21,7 @@
 
 #define ISBLANK(c)  	((c) == ' ' || (c) == '\t')
 
-CVSID("$Id: cpp_parser.C,v 1.1 2004-02-08 11:08:17 gnb Exp $");
+CVSID("$Id: cpp_parser.C,v 1.2 2004-02-22 10:58:24 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -218,7 +218,7 @@ cpp_parser_t::token_as_string(int tok) const
 
 cpp_parser_t::depend_t::depend_t()
 {
-    deltas_ = new hashtable_t<const char *, int>;
+    deltas_ = new hashtable_t<const char, int>;
 }
 
 static gboolean

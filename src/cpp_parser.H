@@ -48,7 +48,7 @@ private:
 	~depend_t();
 
     	unsigned long lineno_;
-	hashtable_t<const char *, int> *deltas_;
+	hashtable_t<const char, int> *deltas_;
     };
             
     enum token_t

@@ -159,7 +159,7 @@ private:
 
     cov::status_t calc_stats(cov_stats_t *stats) const;
 
-    static hashtable_t<const char*, cov_file_t> *files_;
+    static hashtable_t<const char, cov_file_t> *files_;
     static list_t<cov_file_t> files_list_;
     static list_t<char> search_path_;
     static char *common_path_;
@@ -170,7 +170,7 @@ private:
     gboolean finalised_;    /* data read & `this' inserted into files_ */
     gnb_u32_t format_version_;	/* file format version */
     ptrarray_t<cov_function_t> *functions_;
-    hashtable_t<const char*, cov_function_t> *functions_by_name_;
+    hashtable_t<const char, cov_function_t> *functions_by_name_;
     ptrarray_t<cov_line_t> *lines_;
     cov_line_t *null_line_; /* returned for all uninstrumented lines */
 

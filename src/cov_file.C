@@ -27,10 +27,10 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.32 2004-02-16 23:00:17 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.33 2004-02-22 10:57:57 gnb Exp $");
 
 
-hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
+hashtable_t<const char, cov_file_t> *cov_file_t::files_;
 list_t<cov_file_t> cov_file_t::files_list_;
 list_t<char> cov_file_t::search_path_;
 char *cov_file_t::common_path_;
@@ -39,7 +39,7 @@ void *cov_file_t::files_model_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static hashtable_t<char*, char> *suppressed_ifdefs = 0;
+static hashtable_t<char, char> *suppressed_ifdefs = 0;
 
 void
 cov_suppress_ifdef(const char *variable)
@@ -47,7 +47,7 @@ cov_suppress_ifdef(const char *variable)
     char *v = g_strdup(variable);
 
     if (suppressed_ifdefs == 0)
-    	suppressed_ifdefs = new hashtable_t<char*, char>;
+    	suppressed_ifdefs = new hashtable_t<char, char>;
     suppressed_ifdefs->insert(v, v);
 }
 
@@ -65,7 +65,7 @@ cov_file_t::cov_file_t(const char *name)
     assert(find(name_) == 0);
 
     functions_ = new ptrarray_t<cov_function_t>();
-    functions_by_name_ = new hashtable_t<const char*, cov_function_t>;
+    functions_by_name_ = new hashtable_t<const char, cov_function_t>;
     lines_ = new ptrarray_t<cov_line_t>();
     null_line_ = new cov_line_t();
 
@@ -104,7 +104,7 @@ cov_file_t::~cov_file_t()
 void
 cov_file_t::init()
 {
-    files_ = new hashtable_t<const char*, cov_file_t>;
+    files_ = new hashtable_t<const char, cov_file_t>;
     common_path_ = 0;
     common_len_ = 0;
 }

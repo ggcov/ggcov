@@ -58,7 +58,7 @@ private:
 
     char *make_key(const char *name) const;
 
-    static hashtable_t<const char*, confsection_t> *all_;
+    static hashtable_t<const char, confsection_t> *all_;
 
     string_var secname_;
 };

@@ -21,9 +21,9 @@
 #include "confsection.H"
 #include "estring.H"
 
-CVSID("$Id: confsection.C,v 1.6 2003-07-21 13:45:26 gnb Exp $");
+CVSID("$Id: confsection.C,v 1.7 2004-02-22 10:56:20 gnb Exp $");
 
-hashtable_t<const char*, confsection_t> *confsection_t::all_;
+hashtable_t<const char, confsection_t> *confsection_t::all_;
 static const char filename[] = "ggcov";
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -32,7 +32,7 @@ confsection_t::confsection_t(const char *secname)
  :  secname_(secname)
 {
     if (all_ == 0)
-    	all_ = new hashtable_t<const char*, confsection_t>;
+    	all_ = new hashtable_t<const char, confsection_t>;
     all_->insert(secname_, this);
 }
 
