@@ -19,7 +19,7 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_line.C,v 1.2 2004-02-16 23:03:20 gnb Exp $");
+CVSID("$Id: cov_line.C,v 1.3 2005-03-05 15:12:28 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -112,7 +112,8 @@ cov_line_t::format_blocks(char *buf, unsigned int maxlen)
 	    continue;
 	}
 
-    	snprintf(buf, maxlen, "%u-%u,", start, end);
+    	snprintf(buf, maxlen, "%u%c%u,",
+	    	    start, (end == start+1 ? ',' : '-'), end);
 	len = strlen(buf);
 	buf += len;
 	maxlen -= len;
@@ -124,7 +125,8 @@ cov_line_t::format_blocks(char *buf, unsigned int maxlen)
 	if (start == end)
     	    snprintf(buf, maxlen, "%u", start);
 	else
-    	    snprintf(buf, maxlen, "%u-%u", start, end);
+    	    snprintf(buf, maxlen, "%u%c%u",
+	    		start, (end == start+1 ? ',' : '-'), end);
 	len = strlen(buf);
 	buf += len;
 	maxlen -= len;
@@ -134,10 +136,6 @@ cov_line_t::format_blocks(char *buf, unsigned int maxlen)
 
     return (buf - base);
 }
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
