@@ -23,7 +23,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_bfd.C,v 1.1 2003-11-04 00:41:27 gnb Exp $");
+CVSID("$Id: cov_bfd.C,v 1.2 2004-03-16 20:27:10 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -92,7 +92,7 @@ cov_bfd_t::find_section(const char *secname)
     if ((sec = bfd_get_section_by_name(abfd_, secname)) == 0)
     {
     	/* TODO */
-    	fprintf(stderr, "%s: no %s section\n", filename(), secname);
+//    	fprintf(stderr, "%s: no %s section\n", filename(), secname);
 	return 0;
     }
     return (cov_bfd_section_t *)sec;
