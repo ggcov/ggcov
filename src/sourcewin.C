@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.16 2003-07-05 03:08:34 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.17 2003-07-10 15:45:24 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -393,6 +393,7 @@ sourcewin_t::update()
     count_t count;
     cov_status_t status;
     int i, nstrs;
+    gfloat scrollval;
 #if GTK2
     GtkTextView *text_view = GTK_TEXT_VIEW(text_view_);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(text_view);
@@ -422,8 +423,10 @@ sourcewin_t::update()
     }
 
 #if GTK2
+    scrollval = text_view->vadjustment->value;
     gtk_text_buffer_set_text(buffer, "", -1);
 #else
+    scrollval = text->vadj->value;
     gtk_text_freeze(text);
     gtk_editable_delete_text(GTK_EDITABLE(text), 0, -1);
     
@@ -531,8 +534,16 @@ sourcewin_t::update()
 #endif
     
     fclose(fp);
-#if !GTK2
+
+    /* scroll back to the line we were at before futzing with the text */
+#if GTK2
+    /* Work around rounding bug in gtk 2.0.2 */
+    if (scrollval + text_view->vadjustment->page_size + 0.5 > text_view->vadjustment->upper)
+    	scrollval = text_view->vadjustment->upper - text_view->vadjustment->page_size - 0.5;
+    gtk_adjustment_set_value(text_view->vadjustment, scrollval);
+#else
     gtk_text_thaw(text);
+    gtk_adjustment_set_value(text->vadj, scrollval);
 #endif
 }
 
