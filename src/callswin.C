@@ -19,11 +19,12 @@
 
 #include "callswin.H"
 #include "sourcewin.H"
+#include "utils.H"
 #include "filename.h"
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.18 2005-03-14 07:43:25 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.19 2005-03-14 07:45:19 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -39,8 +40,6 @@ CVSID("$Id: callswin.C,v 1.18 2005-03-14 07:43:25 gnb Exp $");
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER
 #endif
-
-static const char all_functions[] = N_("All Functions");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -192,45 +191,14 @@ callswin_t::~callswin_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-callswin_t::populate_function_combo(GtkCombo *combo)
-{
-    list_iterator_t<cov_function_t> iter;
-    estring label;
-    
-    ui_combo_clear(combo);    /* stupid glade2 */
-    ui_combo_add_data(combo, _(all_functions), 0);
-
-    for (iter = functions_->first() ; iter != (cov_function_t *)0 ; ++iter)
-    {
-    	cov_function_t *fn = *iter;
-
-    	label.truncate();
-	label.append_string(fn->name());
-
-    	/* see if we need to present some more scope to uniquify the name */
-	list_iterator_t<cov_function_t> niter = iter.peek_next();
-	list_iterator_t<cov_function_t> piter = iter.peek_prev();
-	if ((niter != (cov_function_t *)0 &&
-	     !strcmp((*niter)->name(), fn->name())) ||
-	    (piter != (cov_function_t *)0 &&
-	     !strcmp((*piter)->name(), fn->name())))
-	{
-	    label.append_string(" (");
-	    label.append_string(fn->file()->minimal_name());
-	    label.append_string(")");
-	}
-	
-    	ui_combo_add_data(combo, label.data(), fn);
-    }
-}
-
-void
 callswin_t::populate()
 {
     dprintf0(D_CALLSWIN, "callswin_t::populate\n");
     functions_ = cov_function_t::list_all();
-    populate_function_combo(GTK_COMBO(from_function_combo_));
-    populate_function_combo(GTK_COMBO(to_function_combo_));
+    ::populate_function_combo(GTK_COMBO(from_function_combo_), functions_,
+    	    	    	      /*add_all_item*/TRUE, /*currentp*/0);
+    ::populate_function_combo(GTK_COMBO(to_function_combo_), functions_,
+    	    	    	      /*add_all_item*/TRUE, /*currentp*/0);
     update();
 }
 

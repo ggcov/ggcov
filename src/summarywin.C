@@ -19,6 +19,7 @@
 
 #include "summarywin.H"
 #include "sourcewin.H"
+#include "utils.H"
 #include "filename.h"
 #include "cov.H"
 #include "estring.H"
@@ -26,7 +27,7 @@
 #include "uix.h"
 #include "gnbstackedbar.h"
 
-CVSID("$Id: summarywin.C,v 1.19 2005-03-14 07:43:26 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.20 2005-03-14 07:45:19 gnb Exp $");
 
 list_t<summarywin_t> summarywin_t::instances_;
 
@@ -205,42 +206,13 @@ void
 summarywin_t::populate_function_combo(GtkCombo *combo)
 {
     list_t<cov_function_t> *list;
-    list_iterator_t<cov_function_t> iter;
-    estring label;
     
     list = cov_function_t::list_all();
-    
-    ui_combo_clear(GTK_COMBO(combo));    /* stupid glade2 */
-    for (iter = list->first() ; iter != (cov_function_t *)0 ; ++iter)
-    {
-    	cov_function_t *fn = *iter;
 
-	if (function_ == 0)
-	    function_ = fn;
+    ::populate_function_combo(combo, list, /*add_all_item*/FALSE, &function_);
 
-    	label.truncate();
-	label.append_string(fn->name());
-
-    	/* see if we need to present some more scope to uniquify the name */
-	list_iterator_t<cov_function_t> niter = iter.peek_next();
-	list_iterator_t<cov_function_t> piter = iter.peek_prev();
-	if ((niter != (cov_function_t *)0 &&
-	     !strcmp((*niter)->name(), fn->name())) ||
-	    (piter != (cov_function_t *)0 &&
-	     !strcmp((*piter)->name(), fn->name())))
-	{
-	    label.append_string(" (");
-	    label.append_string(fn->file()->minimal_name());
-	    label.append_string(")");
-	}
-	
-    	ui_combo_add_data(combo, label.data(), fn);
-    }
-    
     list->remove_all();
     delete list;
-
-    ui_combo_set_current_data(combo, (gpointer)function_);
 }
 
 void

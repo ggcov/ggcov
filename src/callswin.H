@@ -43,7 +43,6 @@ public:
 private:
     void populate();
     void update();
-    void populate_function_combo(GtkCombo *combo);
     void update_for_func(cov_function_t *from_fn, cov_function_t *to_fn);
     static callswin_t *from_widget(GtkWidget *w)
     {
