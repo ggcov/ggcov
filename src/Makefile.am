@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.38 2004-03-21 13:55:48 gnb Exp $
+# $Id: Makefile.am,v 1.39 2004-11-20 08:46:21 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -54,8 +54,15 @@ libcov_a_SOURCES= \
 LIBCOV_STATIC_SOURCES= \
 		cov_stab32.C cov_i386.C cov_dwarf2.C
 		
+if GUI
+GUIPROG=	ggcov
+BASEINCLUDES=	$(GGCOV_GUI_CFLAGS)
+else
+GUIPROG=	
+BASEINCLUDES=	$(GGCOV_CLI_CFLAGS)
+endif
 
-bin_PROGRAMS=	ggcov
+bin_PROGRAMS=	$(GUIPROG) tggcov
 
 ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		gnbstackedbar.h gnbstackedbar.c \
@@ -74,13 +81,15 @@ ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		$(LIBCOV_STATIC_SOURCES) \
 		help.c ggcov.c
 
-INCLUDES=	$(GGCOV_GUI_CFLAGS) -DPKGDATADIR="\"$(pkgdatadir)\"" \
+INCLUDES=	$(BASEINCLUDES) -DPKGDATADIR="\"$(pkgdatadir)\"" \
 		-DPREFIX="\"$(prefix)\"" -DDATADIR="\"$(datadir)\"" \
 		-DLIBDIR="\"$(libdir)\"" -DSYSCONFDIR="\"$(sysconfdir)\"" \
  		-DDEBUG=$(DEBUG) -DUI_DEBUG=$(UI_DEBUG)
 ggcov_LDADD=	libcov.a libcommon.a $(GGCOV_GUI_LIBS)
 CLI_LIBS=	libcov.a libcommon.a $(GGCOV_CLI_LIBS)
 
+tggcov_SOURCES= tggcov.c $(LIBCOV_STATIC_SOURCES)
+tggcov_LDADD=	$(CLI_LIBS)
 
 # Note this is an automake conditional *not* a gmake conditional
 if DEBUG
@@ -106,7 +115,7 @@ licence.c: $(top_srcdir)/COPYING
 EXTRA_CLEAN=		licence.c
 
 noinst_PROGRAMS=	bbdump filetest mangletest \
-			newbbgdump tggcov
+			newbbgdump
 
 bbdump_SOURCES= 	bbdump.c
 bbdump_LDADD=		$(CLI_LIBS)
@@ -119,6 +128,3 @@ mangletest_LDADD=	$(CLI_LIBS)
 
 newbbgdump_SOURCES=	newbbgdump.c
 newbbgdump_LDADD=	$(CLI_LIBS)
-
-tggcov_SOURCES= 	tggcov.c $(LIBCOV_STATIC_SOURCES)
-tggcov_LDADD=		$(CLI_LIBS)
