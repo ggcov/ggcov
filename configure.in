@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.26 2003-06-12 16:59:41 gnb Exp $
+dnl $Id: configure.in,v 1.27 2003-06-13 12:57:27 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -79,9 +79,9 @@ dnl Check for the libglade, libxml, and GTK libraries
 
 dnl A bunch of warning options for gcc
 dnl -Wshadow
-AC_GCC_ADD_CFLAGS([-Wall -Wchar-subscripts -Wmissing-declarations
-    -Wmissing-prototypes -Wnested-externs -Wpointer-arithmetic
-    -Wcast-align -Wsign-compare -pedantic -Wno-long-long])
+AC_GCC_ADD_CFLAGS([-Wall -Wchar-subscripts -Wmissing-prototypes 
+    	    	   -Wpointer-arithmetic -Wcast-align -Wsign-compare
+		   -pedantic -Wno-long-long])
 
 
 AC_MSG_CHECKING(whether to enable GTK2)

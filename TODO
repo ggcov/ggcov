@@ -1,10 +1,6 @@
 
 --- OPEN ---
 
-x  Fine tune -W* options for gcc 3.3.  Remove -Wmissing-declarations,
-   C++ won't compile if the declarations are missing.  Apparently
-   -Wnested-externs isn't for C++ either!?
-
 x  This is pretty ambitious: detect branches & lines which constitute
    memory allocation failure handling, and optionally don't count
    them in line coverage stats.  Heuristic would be: call to memory
@@ -95,6 +91,10 @@ x  ??? Minimise filenames only within the context of a program or library?
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
+
+x  Fine tune -W* options for gcc 3.3.  Remove -Wmissing-declarations,
+   C++ won't compile if the declarations are missing.  Apparently
+   -Wnested-externs isn't for C++ either!?
 
 x  The gtk2 version check at sourcewin.C:622 may be bogus...stay tuned.
    Hmm, the text buffer function is missing in gtk2-devel-2.2.1-29 on
