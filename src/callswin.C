@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.15 2005-03-05 15:02:48 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.16 2005-03-05 15:04:37 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -252,6 +252,9 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
     for (bidx = 0 ; bidx < from_fn->num_blocks()-2 ; bidx++)
     {
     	cov_block_t *b = from_fn->nth_block(bidx);
+	
+	if (b->get_first_location() == 0)
+	    continue;	/* no source => can't be interesting to the user */
 
 	for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
 	{
