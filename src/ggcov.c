@@ -23,6 +23,7 @@
 #include "filename.h"
 #include "prefs.H"
 #include "estring.H"
+#include "tok.H"
 #include "sourcewin.H"
 #include "summarywin.H"
 #include "callswin.H"
@@ -35,7 +36,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.36 2003-11-03 23:17:06 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.37 2004-02-08 11:03:41 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -43,6 +44,7 @@ char *argv0;
 GList *files;	    /* incoming specification from commandline */
 
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
+static char *suppressed_ifdefs = 0;
 static const char *debug_str = 0;
 static const char ** debug_argv;
 
@@ -91,6 +93,15 @@ read_gcov_files(void)
     cov_init();
     if (files == 0)
     	return;
+
+    if (suppressed_ifdefs != 0)
+    {
+    	tok_t tok(/*force copy*/(const char *)suppressed_ifdefs, ", \t");
+	const char *v;
+	
+	while ((v = tok.next()) != 0)
+    	    cov_suppress_conditional(v);
+    }
 
     cov_pre_read();
     
@@ -361,6 +372,15 @@ static struct poptOption popt_options[] =
 	&recursive,     	    	    	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"recursively scan directories for source", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"suppress-ifdef",	    	    	/* longname */
+	'X',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&suppressed_ifdefs,     	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"suppress source which is conditional on this cpp define", /* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {

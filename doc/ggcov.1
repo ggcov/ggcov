@@ -16,7 +16,7 @@
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 .\" 
-.\" $Id: ggcov.1,v 1.1 2003-11-02 04:48:45 gnb Exp $
+.\" $Id: ggcov.1,v 1.2 2004-02-08 11:07:30 gnb Exp $
 .\"
 .TH GGCOV "1" "November 2003" "GGCOV" "Greg Banks"
 .SH NAME
@@ -64,6 +64,34 @@ dialog so you can select one directory, executable, or source file.
 Directories, executables, or source files can also be added after
 \fBggcov\fP is started by dragging and dropping them from a GNOME
 Nautilus window onto any \fBggcov\fP window.
+.SH OPTIONS
+.TP
+\fB\-r\fP, \fB\-\-recursive\fP
+When a directory is specified on the command line, search for
+coverage data files recursively in all child directories.
+.TP
+\fB\-X\fP \fIsymbols\fP, \fB\-\-suppress\-ifdef=\fP\fIsymbols\fP
+Do not include in statistics or summaries, code inside C pre-processor
+directives which depend on any of the given \fIsymbols\fP.  One or
+more symbols may be given, separated by commas or whitespace.  \fBGgcov\fP
+understands the following subset of the C pre-processor command set:
+.IP
+\(bu \fI#if SYMBOL\fP
+.br
+\(bu \fI#if defined(SYMBOL)\fP
+.br
+\(bu \fI#ifdef SYMBOL\fP
+.br
+\(bu \fI#ifndef SYMBOL\fP
+.br
+\(bu \fI#else\fP
+.br
+\(bu \fI#endif\fP
+.br
+.IP
+This option is useful for suppressing test infrastructure code, debugging
+code, or other code which is compiled into the coverage test executable
+but whose coverage is not significant.
 .SH EXAMPLES
 .PP
 View coverage data for all the available source in an executable (on

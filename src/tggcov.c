@@ -28,14 +28,16 @@
 #include "cov.H"
 #include "filename.h"
 #include "estring.H"
+#include "tok.H"
 #include "fakepopt.h"
 
-CVSID("$Id: tggcov.c,v 1.6 2003-11-03 23:16:33 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.7 2004-02-08 11:06:32 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
 
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
+static char *suppressed_ifdefs = 0;
 static int header_flag = FALSE;
 static int blocks_flag = FALSE;
 static int lines_flag = FALSE;
@@ -53,6 +55,16 @@ read_gcov_files(void)
     GList *iter;
     
     cov_init();
+
+    if (suppressed_ifdefs != 0)
+    {
+    	tok_t tok(/*force copy*/(const char *)suppressed_ifdefs, ", \t");
+	const char *v;
+	
+	while ((v = tok.next()) != 0)
+    	    cov_suppress_conditional(v);
+    }
+
     cov_pre_read();
     
     if (files == 0)
@@ -160,7 +172,8 @@ annotate_file(cov_file_t *f)
 
 	if (new_format_flag)
 	{
-	    if (ln->status() != cov_line_t::UNINSTRUMENTED)
+	    if (ln->status() != cov_line_t::UNINSTRUMENTED &&
+	    	ln->status() != cov_line_t::SUPPRESSED)
 	    {
 		if (ln->count())
 		    fprintf(outfp, "%9llu:%5lu:", ln->count(), lineno);
@@ -172,7 +185,8 @@ annotate_file(cov_file_t *f)
 	}
 	else
 	{
-	    if (ln->status() != cov_line_t::UNINSTRUMENTED)
+	    if (ln->status() != cov_line_t::UNINSTRUMENTED &&
+	    	ln->status() != cov_line_t::SUPPRESSED)
 	    {
 		if (ln->count())
 		    fprintf(outfp, "%12lld    ", ln->count());
@@ -229,6 +243,15 @@ static struct poptOption popt_options[] =
 	&recursive,     	    	    	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"recursively scan directories for source", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"suppress-ifdef",	    	    	/* longname */
+	'X',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&suppressed_ifdefs,     	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"suppress source which is conditional on this cpp define", /* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {
@@ -318,6 +341,7 @@ parse_args(int argc, char **argv)
 	string_var token_str = debug_enabled_tokens();
 
 	duprintf1("parse_args: recursive=%d\n", recursive);
+	duprintf1("parse_args: suppressed_ifdefs=%s\n", suppressed_ifdefs);
 	duprintf1("parse_args: blocks_flag=%d\n", blocks_flag);
 	duprintf1("parse_args: header_flag=%d\n", header_flag);
 	duprintf1("parse_args: lines_flag=%d\n", lines_flag);
