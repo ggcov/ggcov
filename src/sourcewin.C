@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.14 2003-06-08 06:34:07 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.15 2003-06-12 16:59:53 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -139,6 +139,8 @@ sourcewin_t::sourcewin_t()
     
 #if GTK2
     gtk_widget_modify_font(text_view_, font_);
+    /* select_region() relies on not having line wrapping */
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view_), GTK_WRAP_NONE);
 #else
     if (!screenshot_mode)
 	gtk_widget_set_usize(text_,
@@ -170,7 +172,7 @@ on_source_filenames_entry_changed(GtkWidget *w, gpointer userdata)
     cov_file_t *f = (cov_file_t *)ui_combo_get_current_data(
     	    	    	    	    GTK_COMBO(sw->filenames_combo_));
     
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_ || f == 0/*stupid gtk2*/)
     	return;
     sw->set_filename(f->name(), f->minimal_name());
 }
@@ -203,7 +205,7 @@ on_source_functions_entry_changed(GtkWidget *w, gpointer userdata)
     const cov_location_t *first;
     const cov_location_t *last;
     
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_ || fn == 0 /*stupid gtk2*/)
     	return;
     
     first = fn->get_first_location();
@@ -250,7 +252,8 @@ sourcewin_t::populate_functions()
     {
     	fn = f->nth_function(fnidx);
 	
-	if (fn->is_suppressed())
+	if (fn->is_suppressed() ||
+	    fn->get_first_location() == 0)
 	    continue;
 	functions = g_list_prepend(functions, fn);
     }
@@ -618,8 +621,13 @@ sourcewin_t::set_filename(const char *filename, const char *display_fname)
 void
 sourcewin_t::select_region(unsigned long startline, unsigned long endline)
 {
+#if DEBUG
+    fprintf(stderr, "sourcewin_t::select_region: startline=%ld endline=%ld\n",
+    	    	startline, endline);
+#endif
+
 #if GTK2
-#if GTK_CHECK_VERSION(2,0,3)
+#ifdef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
     GtkTextIter start, end;
     GtkTextBuffer *buffer;
 
@@ -630,8 +638,34 @@ sourcewin_t::select_region(unsigned long startline, unsigned long endline)
 
     /* this function appeared sometime after 2.0.2 */
     gtk_text_buffer_select_range(buffer, &start, &end);
-#endif /* 2.0.0 */
-#else
+#else /* !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
+    /*
+     * In GTK late 1.99 there is no way I can see to use the official
+     * API to select a range of rows.  However, we can fake it by
+     * calling TextView class methods as if the user had entered the
+     * keystrokes for cursor movement and selection...this is a HACK!
+     * Unfortunately we can only move down by display lines not
+     * logical text lines, so this technique relies on them being
+     * identical, i.e. no line wrap.
+     */
+    GtkTextViewClass *klass = GTK_TEXT_VIEW_GET_CLASS(text_view_);
+    GtkTextView *tview = GTK_TEXT_VIEW(text_view_);
+    /* first move the cursor to the start of the buffer */
+    (*klass->move_cursor)(tview, GTK_MOVEMENT_BUFFER_ENDS, -1, FALSE);
+    /* move the cursor down to the start line */
+    if (startline > 1)
+	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINES,
+    	    	    	      (gint)startline-1, FALSE);
+    /* select down to the end line */
+    if (endline == startline)
+	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINE_ENDS,
+    	    	    	      1, /*extend_selection*/TRUE);
+    else
+	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINES,
+    	    	    	      (gint)(endline - startline + 1),
+			      /*extend_selection*/TRUE);
+#endif /* !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
+#else /* !GTK2 */
     int endoff;
     
     assert(offsets_by_line_->len > 0);
