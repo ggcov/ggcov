@@ -28,6 +28,7 @@
 <widget>
   <class>GtkWindow</class>
   <name>source</name>
+  <visible>False</visible>
   <signal>
     <name>delete_event</name>
     <handler>on_source_close_activate</handler>
@@ -37,8 +38,6 @@
   <type>GTK_WINDOW_TOPLEVEL</type>
   <position>GTK_WIN_POS_NONE</position>
   <modal>False</modal>
-  <default_width>400</default_width>
-  <default_height>500</default_height>
   <allow_shrink>False</allow_shrink>
   <allow_grow>True</allow_grow>
   <auto_shrink>False</auto_shrink>

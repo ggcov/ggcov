@@ -1,0 +1,38 @@
+#!/bin/sh
+
+set `sed -n -e 's|^AM_INIT_AUTOMAKE(\([^,]\+\),\([^)]\+\))|\1 \2|p' < configure.in`
+PACKAGE=$1
+VERSION=$2
+
+SPECFILE=${PACKAGE}.spec
+TARBALL=${PACKAGE}-${VERSION}.tar.gz
+BUILDDIR=buildrpm.d
+
+#echo PACKAGE=$PACKAGE
+#echo VERSION=$VERSION
+#echo TARBALL=$TARBALL
+#echo BUILDDIR=$BUILDDIR
+#exit 1
+
+set -x
+
+if [ ! -f $SPECFILE ]; then
+    autoconf
+    autoheader
+    automake -a
+    ./configure
+    if [ ! -f $SPECFILE ]; then
+    	echo "Can't build $SPECFILE, giving up"
+	exit 1
+    fi
+fi
+
+/bin/rm -rf $BUILDDIR
+mkdir -p $BUILDDIR
+(cd $BUILDDIR ; mkdir -p BUILD RPMS/i386 RPMS/`uname -m` SPECS SRPMS )
+
+rpm -bb \
+    --define "_topdir $PWD/$BUILDDIR" \
+    --define "_sourcedir $PWD" \
+    --verbose \
+    $SPECFILE

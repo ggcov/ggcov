@@ -1,0 +1,47 @@
+Summary: GTK+ front end for gcov
+Name: @PACKAGE@
+Version: @VERSION@
+Release: 1
+Copyright: GPL
+Group: Development/C
+Source: http://www.alphalink.com.au/~gnb/%{name}/%{name}-%{version}.tar.gz
+BuildRoot: /var/tmp/%{name}-root
+Vendor: Greg Banks <gnb@alphalink.com.au>
+
+%description
+Ggcov is a simple GUI program for browsing test coverage data
+from C programs, and is intended to be a graphical replacement
+for the gcov program.
+
+Test coverage data is produced by programs which have been built
+with "gcc -fprofile-arcs -ftest-coverage", and indicate how
+many times each line and branch has been executed, cumulatively
+over multiple test runs.
+
+%prep
+%setup -q
+
+autoconf
+autoheader
+automake -a
+
+%build
+CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix=/usr
+make
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install prefix=$RPM_BUILD_ROOT/usr
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root)
+/usr/bin/ggcov
+/usr/share/ggcov/ggcov.glade
+%doc NEWS AUTHORS README INSTALL COPYING ChangeLog
+
+%changelog
+* Sat Nov 24 2001 Greg Banks <gnb@alphalink.com.au>
+- Building RPM for first release

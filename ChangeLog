@@ -1,3 +1,10 @@
+Sat Nov 24 01:34:43 2001  Greg Banks <gnb@alphalink.com.au>
+
+	* Release 0.0.3
+	* Added GUI to browse source annotated with line execution
+	counts (only).
+    	* Built RPM.
+
 Fri Nov 23 15:41:28 2001  Greg Banks <gnb@alphalink.com.au>
 
 	* Release 0.0.2
