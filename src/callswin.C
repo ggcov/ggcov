@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.5 2003-02-18 14:46:20 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.6 2003-03-11 21:12:35 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -173,7 +173,7 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 	    	(a->name() == 0 || strcmp(to_fn->name(), a->name())))
 	    	continue;
 		
-	    snprintf(countbuf, sizeof(countbuf), "%llu", a->from()->count());
+	    snprintf(countbuf, sizeof(countbuf), GNB_U64_DFMT, a->from()->count());
 	    text[COL_COUNT] = countbuf;
 
 	    snprintf(arcbuf, sizeof(arcbuf), "B%u A%u", b->bindex(), a->aindex());

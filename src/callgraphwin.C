@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.5 2003-02-18 14:46:45 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.6 2003-03-11 21:12:14 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -215,7 +215,7 @@ format_stat(
     else if (percent_flag)
     	snprintf(buf, maxlen, "%.2f", (double)numerator * 100.0 / denominator);
     else
-    	snprintf(buf, maxlen, "%llu/%llu", numerator, denominator);
+    	snprintf(buf, maxlen, GNB_U64_DFMT"/"GNB_U64_DFMT, numerator, denominator);
 }
 
 void
