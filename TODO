@@ -1,6 +1,12 @@
 
 --- OPEN ---
 
+x  Make the --disable-crash-dialog commandline option work
+
+x  Fix assert failures or otherwise in Call Butterfly and
+   Call Graph windows when test014's bar.c is loaded without
+   foo.c.
+
 x  find out how to get ggcov to be a std GNOME prog.
 
 x  Suppress blocks on the failure branch of the assert() macro.
