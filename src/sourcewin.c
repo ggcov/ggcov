@@ -22,7 +22,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.7 2001-11-25 06:44:41 gnb Exp $");
+CVSID("$Id: sourcewin.c,v 1.8 2001-11-25 07:32:12 gnb Exp $");
 
 extern GList *filenames;
 
@@ -65,23 +65,6 @@ sourcewin_init(GtkWidget *w)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static GtkWidget *
-get_dummy_menu(GladeXML *xml, const char *name)
-{
-    GtkWidget *dummy;
-    GtkWidget *menu;
-    GtkWidget *tearoff;
-
-    dummy = glade_xml_get_widget(xml, name);
-    
-    menu = dummy->parent;
-    
-    tearoff = gtk_tearoff_menu_item_new();
-    gtk_menu_append(GTK_MENU(menu), tearoff);
-    gtk_widget_show(tearoff);
-    
-    return menu;
-}
 
 #define SOURCE_COLUMNS	    (8+8+80) 	/* number,count,source */
 #define SOURCE_ROWS	    (35)
@@ -110,8 +93,9 @@ sourcewin_new(void)
     sw->count_check = glade_xml_get_widget(xml, "source_count_check");
     sw->source_check = glade_xml_get_widget(xml, "source_source_check");
     sw->colors_check = glade_xml_get_widget(xml, "source_colors_check");
-    sw->filenames_menu = get_dummy_menu(xml, "source_file_dummy");
-    sw->functions_menu = get_dummy_menu(xml, "source_func_dummy");
+    sw->filenames_menu = ui_get_dummy_menu(xml, "source_file_dummy");
+    sw->functions_menu = ui_get_dummy_menu(xml, "source_func_dummy");
+    ui_register_windows_menu(ui_get_dummy_menu(xml, "source_windows_dummy"));
     
     gtk_object_set_data(GTK_OBJECT(sw->window), sourcewin_window_key, sw);
     
@@ -167,7 +151,6 @@ on_source_filename_activate(GtkWidget *w, gpointer userdata)
 static void
 sourcewin_populate_filenames(sourcewin_t *sw)
 {
-    GtkWidget *butt;
     GList *iter;
     
     ui_delete_menu_items(sw->filenames_menu);
@@ -175,13 +158,9 @@ sourcewin_populate_filenames(sourcewin_t *sw)
     for (iter = filenames ; iter != 0 ; iter = iter->next)
     {
     	const char *filename = (const char *)iter->data;
-	
-	butt = gtk_menu_item_new_with_label(filename);
-	gtk_menu_append(GTK_MENU(sw->filenames_menu), butt);
-	gtk_signal_connect(GTK_OBJECT(butt), "activate", 
-    			   GTK_SIGNAL_FUNC(on_source_filename_activate),
-			   (gpointer)filename);
-	gtk_widget_show(butt);
+
+	ui_add_simple_menu_item(sw->filenames_menu, filename,
+	    	    on_source_filename_activate, (gpointer)filename);
     }
 }
 
@@ -270,7 +249,6 @@ sourcewin_populate_functions(sourcewin_t *sw)
     unsigned fnidx;
     cov_file_t *f;
     cov_function_t *fn;
-    GtkWidget *butt;
     
     /* build an alphabetically sorted list of functions */
     f = cov_file_find(sw->filename);
@@ -294,12 +272,8 @@ sourcewin_populate_functions(sourcewin_t *sw)
     {
     	fn = (cov_function_t *)functions->data;
 	
-	butt = gtk_menu_item_new_with_label(fn->name);
-	gtk_menu_append(GTK_MENU(sw->functions_menu), butt);
-	gtk_signal_connect(GTK_OBJECT(butt), "activate", 
-    			   GTK_SIGNAL_FUNC(on_source_function_activate),
-			   (gpointer)fn);
-	gtk_widget_show(butt);
+	ui_add_simple_menu_item(sw->functions_menu, fn->name,
+	    	    on_source_function_activate, fn);
 	
 	functions = g_list_remove_link(functions, functions);
     }

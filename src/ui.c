@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.h"
 
-CVSID("$Id: ui.c,v 1.2 2001-11-25 05:47:20 gnb Exp $");
+CVSID("$Id: ui.c,v 1.3 2001-11-25 07:32:12 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -129,6 +129,25 @@ ui_load_tree(const char *root)
     return xml;
 }
 
+
+GtkWidget *
+ui_get_dummy_menu(GladeXML *xml, const char *name)
+{
+    GtkWidget *dummy;
+    GtkWidget *menu;
+    GtkWidget *tearoff;
+
+    dummy = glade_xml_get_widget(xml, name);
+    
+    menu = dummy->parent;
+    
+    tearoff = gtk_tearoff_menu_item_new();
+    gtk_menu_append(GTK_MENU(menu), tearoff);
+    gtk_widget_show(tearoff);
+    
+    return menu;
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GtkWidget *ui_get_window(GtkWidget *w);
@@ -153,21 +172,91 @@ ui_get_window(GtkWidget *w)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static int ui_num_registered_windows = 0;
+static GList *ui_windows;
+static GList *ui_windows_menus;
 
 static void
-ui_registered_window_destroy(GtkWidget *w, gpointer userdata)
+ui_on_windows_menu_activate(GtkWidget *w, gpointer userdata)
 {
-    if (--ui_num_registered_windows == 0)
+    GtkWidget *win = (GtkWidget *)userdata;
+        
+#if DEBUG
+    fprintf(stderr, "ui_on_windows_menu_activate: %s\n",
+    	    	    	GTK_WINDOW(win)->title);
+#endif
+			
+    gdk_window_show(win->window);
+    gdk_window_raise(win->window);
+}
+
+
+static void
+ui_update_windows_menu(GtkWidget *menu)
+{
+    GList *iter;
+    
+    ui_delete_menu_items(menu);
+    
+    for (iter = ui_windows ; iter != 0 ; iter = iter->next)
+    {
+    	GtkWidget *win = (GtkWidget *)iter->data;
+	const char *title;
+	
+	if ((title = strchr(GTK_WINDOW(win)->title, ':')) != 0)
+	{
+	    title++;	/* skip colon */
+	    while (*title && isspace(*title))
+	    	title++;    	    /* skip whitespace */
+	}
+	if (title == 0 || *title == '\0')
+	    title = GTK_WINDOW(win)->title;
+	
+	ui_add_simple_menu_item(menu, title,
+	    	    ui_on_windows_menu_activate, win);
+    }
+}
+
+static void
+ui_update_windows_menus(void)
+{
+    GList *iter;
+    
+    for (iter = ui_windows_menus ; iter != 0 ; iter = iter->next)
+    	ui_update_windows_menu((GtkWidget *)iter->data);
+}
+
+static void
+ui_on_window_destroy(GtkWidget *w, gpointer userdata)
+{
+    ui_windows = g_list_remove(ui_windows, w);
+    if (ui_windows == 0)
     	gtk_main_quit();
+    else
+	ui_update_windows_menus();
 }
 
 void
 ui_register_window(GtkWidget *w)
 {
-    ++ui_num_registered_windows;
+    ui_windows = g_list_append(ui_windows, w);
     gtk_signal_connect(GTK_OBJECT(w), "destroy", 
-    	GTK_SIGNAL_FUNC(ui_registered_window_destroy), 0);
+    	GTK_SIGNAL_FUNC(ui_on_window_destroy), 0);
+    ui_update_windows_menus();
+}
+
+static void
+ui_on_windows_menu_destroy(GtkWidget *w, gpointer userdata)
+{
+    ui_windows_menus = g_list_remove(ui_windows_menus, w);
+}
+
+void
+ui_register_windows_menu(GtkWidget *menu)
+{
+    ui_windows_menus = g_list_append(ui_windows_menus, menu);
+    gtk_signal_connect(GTK_OBJECT(menu), "destroy", 
+    	GTK_SIGNAL_FUNC(ui_on_windows_menu_destroy), 0);
+    ui_update_windows_menu(menu);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -212,6 +301,10 @@ ui_window_set_title(GtkWidget *w, const char *filename)
     gtk_window_set_title(GTK_WINDOW(w), title.data);
         
     estring_free(&title);
+    
+    /* update windows menus if necessary */
+    if (g_list_find(ui_windows, w))
+    	ui_update_windows_menus();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -235,5 +328,24 @@ ui_delete_menu_items(GtkWidget *menu)
     }
 }
 
+GtkWidget *
+ui_add_simple_menu_item(
+    GtkWidget *menu,
+    const char *label,
+    void (*callback)(GtkWidget*, gpointer),
+    gpointer calldata)
+{
+    GtkWidget *butt;
+
+    butt = gtk_menu_item_new_with_label(label);
+    gtk_menu_append(GTK_MENU(menu), butt);
+    gtk_signal_connect(GTK_OBJECT(butt), "activate", 
+    		       GTK_SIGNAL_FUNC(callback),
+		       (gpointer)calldata);
+    gtk_widget_show(butt);
+    
+    return butt;
+}
+     
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

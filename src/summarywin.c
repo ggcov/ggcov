@@ -23,7 +23,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: summarywin.c,v 1.2 2001-11-25 06:44:52 gnb Exp $");
+CVSID("$Id: summarywin.c,v 1.3 2001-11-25 07:32:12 gnb Exp $");
 
 extern GList *filenames;
 
@@ -74,6 +74,8 @@ summarywin_new(void)
     sw->branches_taken_label = glade_xml_get_widget(xml,
     	    	    	    	    "summary_branches_taken_label");
     
+    ui_register_windows_menu(ui_get_dummy_menu(xml, "summary_windows_dummy"));
+
     gtk_object_set_data(GTK_OBJECT(sw->window), summarywin_window_key, sw);
     
     summarywin_populate(sw);

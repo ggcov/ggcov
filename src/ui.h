@@ -30,6 +30,8 @@
 
 GladeXML *ui_load_tree(const char *root);
 extern const char *ui_glade_path;
+GtkWidget *ui_get_dummy_menu(GladeXML *xml, const char *name);
+
 
 /* combobox get/set current item using index */
 int gtk_combo_get_current(GtkCombo *combo);
@@ -44,6 +46,8 @@ GtkWidget *ui_get_window(GtkWidget *w);
 
 /* when the last registered window is destroyed, quit the main loop */
 void ui_register_window(GtkWidget *w);
+/* remember a menu which is updated when windows are registered & destroyed */
+void ui_register_windows_menu(GtkWidget *menu);
 
 /*
  * Update the window's title to reflect `filename'.  The
@@ -54,5 +58,7 @@ void ui_window_set_title(GtkWidget *w, const char *filename);
 
 /* delete every item in the menu except a tearoff */
 void ui_delete_menu_items(GtkWidget *menu);
+GtkWidget *ui_add_simple_menu_item(GtkWidget *menu, const char *label,
+	       void (*callback)(GtkWidget*, gpointer), gpointer calldata);
 
 #endif /* _ggcov_ui_h_ */
