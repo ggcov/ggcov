@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.3 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.4 2003-06-01 07:56:27 gnb Exp $");
 
 GHashTable *cov_block_t::by_location_; 	/* GList of blocks keyed on "file:line" */
 
@@ -118,10 +118,15 @@ cov_block_t::set_count(count_t count)
 gboolean
 cov_block_t::needs_call() const
 {
+    /*
+     * TODO: can avoid calling ncalls() and just test the number
+     * of incoming arcs to the last block in the function, which
+     * should be the same.
+     */
     return (idx_ > 0 &&
     	    idx_ < function_->num_blocks()-1 &&
 	    call_ == 0 &&
-    	    cov_arc_t::nfake(out_arcs_) > 0);
+    	    cov_arc_t::ncalls(out_arcs_) > 0);
 }
 
 void
@@ -160,10 +165,10 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
     {
 	cov_arc_t *a = *aiter;
 
-    	if (a->fall_through_/*these are not branches apparently*/)
-	    continue;
+    	if (a->is_fall_through())
+	    continue;	/* control flow does not branch */
 
-	if (a->fake_/*is a function call*/)
+	if (a->is_call())
 	{
 	    stats->calls++;
 	    if (count_)

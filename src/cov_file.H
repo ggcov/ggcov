@@ -91,6 +91,12 @@ private:
     char *try_file(const char *dir, const char *ext) const;
     char *find_file(const char *ext, gboolean quiet) const;
 
+    gboolean
+    gcc296_braindeath() const
+    {
+    	return (num_missing_fake_ > 0 && num_expected_fake_ > 0);
+    }
+
     static void search_path_append(const char *dir);
     gboolean read(gboolean quiet);
 
@@ -114,6 +120,10 @@ private:
     GPtrArray *functions_;
     GHashTable *functions_by_name_;
     const cov_location_t *last_location_;
+
+    /* Fields used to detect gcc 2.96 braindeath */
+    unsigned num_missing_fake_;
+    unsigned num_expected_fake_;
 
     friend void cov_add_search_directory(const char *fname);
     friend gboolean cov_read_source_file_2(const char *fname, gboolean quiet);

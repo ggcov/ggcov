@@ -44,10 +44,11 @@ public:
     {
     	return idx_;
     }
+    gboolean is_call() const;
     gboolean
-    is_call() const
+    is_fall_through() const
     {
-    	return fake_;
+    	return fall_through_;
     }
     
     cov_block_t *
@@ -73,7 +74,10 @@ private:
 
     void set_count(count_t count);
     static count_t total(const list_t<cov_arc_t> &list);
+#ifdef HAVE_BBG_FAKE_FLAG
     static unsigned int nfake(const list_t<cov_arc_t> &list);
+#endif
+    static unsigned int ncalls(const list_t<cov_arc_t> &list);
     static cov_arc_t *find_invalid(const list_t<cov_arc_t> &list);
 
     cov_block_t *from_, *to_;
@@ -81,7 +85,9 @@ private:
     count_t count_;
     char *name_;     	    /* name of function called (if known) or NULL */
     gboolean on_tree_:1;
+#ifdef HAVE_BBG_FAKE_FLAG
     gboolean fake_:1;
+#endif
     gboolean fall_through_:1;
     gboolean count_valid_:1;
     
@@ -89,7 +95,9 @@ private:
     friend class cov_function_t;
     friend class cov_block_t;
     friend void dump_arc(cov_arc_t *a);
+#ifdef HAVE_BBG_FAKE_FLAG
     friend void cov_check_fakeness(cov_file_t *f);
+#endif
 };
 
 

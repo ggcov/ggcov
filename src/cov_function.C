@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: cov_function.C,v 1.4 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.5 2003-06-01 07:56:27 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -149,13 +149,13 @@ cov_function_t::reconcile_calls()
     	cov_block_t *b = nth_block(bidx);
 	estring desc = b->describe();
 
-	if (cov_arc_t::nfake(b->out_arcs_) != (b->call_ == 0 ? 0U : 1U))
+	if (cov_arc_t::ncalls(b->out_arcs_) != (b->call_ == 0 ? 0U : 1U))
 	{
 	    /* TODO */
 	    fprintf(stderr, "Failed to reconcile calls for %s\n",
 		    	desc.data());
-	    fprintf(stderr, "    %d fake arcs, %d recorded calls\n",
-		    	    cov_arc_t::nfake(b->out_arcs_),
+	    fprintf(stderr, "    %d call arcs, %d recorded calls\n",
+		    	    cov_arc_t::ncalls(b->out_arcs_),
 			    (b->call_ == 0 ? 0 : 1));
 	    strdelete(b->call_);
 	    ret = FALSE;
@@ -166,12 +166,12 @@ cov_function_t::reconcile_calls()
 	{
 	    cov_arc_t *a = *aiter;
 
-    	    if (a->fake_)
+    	    if (a->is_call())
 	    	a->name_ = b->pop_call();
     	}
 #if DEBUG > 1
 	fprintf(stderr, "Reconciled %d calls for %s\n",
-		    	    cov_arc_t::nfake(b->out_arcs_), desc.data());
+		    	    cov_arc_t::ncalls(b->out_arcs_), desc.data());
 #endif
     }
     return ret;

@@ -116,9 +116,9 @@ private:
     char *call_;
     
     friend void cov_init(void);
-    friend void cov_o_file_add_call(cov_read_state_t *rs,
-    	    	    	    	    unsigned long address,
-				    const char *callname);
+    friend gboolean cov_o_file_add_call(cov_read_state_t *rs,
+    	    	    	    		unsigned long address,
+					const char *callname);
     friend class cov_file_t;
     friend class cov_function_t;
     friend class cov_arc_t;

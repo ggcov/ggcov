@@ -28,7 +28,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.8 2003-05-31 07:31:39 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.9 2003-06-01 07:56:27 gnb Exp $");
 
 
 GHashTable *cov_file_t::files_;
@@ -348,7 +348,7 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	    
 	default:
 #if DEBUG > 1
-	    fprintf(stderr, "BB line = %d\n", (int)tag);
+	    fprintf(stderr, "BB line = %d (block %d)\n", (int)tag, bidx);
 #endif
 	    assert(fn != 0);
 
@@ -366,7 +366,12 @@ cov_file_t::read_bb_file(const char *bbfilename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#define BBG_SEPERATOR	0x80000001
+#define BBG_SEPARATOR	0x80000001
+
+/* arc flags */
+#define BBG_ON_TREE	    	0x1
+#define BBG_FAKE	    	0x2
+#define BBG_FALL_THROUGH	0x4
 
 gboolean
 cov_file_t::read_bbg_function(FILE *fp)
@@ -408,20 +413,28 @@ cov_file_t::read_bbg_function(FILE *fp)
     	    fprintf(stderr, "BBG     arc %d: %d->%d flags %x(%s,%s,%s)\n",
 	    	    	    aidx,
 			    bidx, dest, flags,
-			    (flags & 0x1 ? "on_tree" : ""),
-			    (flags & 0x2 ? "fake" : ""),
-			    (flags & 0x4 ? "fall_through" : ""));
+			    (flags & BBG_ON_TREE ? "on_tree" : ""),
+			    (flags & BBG_FAKE ? "fake" : ""),
+			    (flags & BBG_FALL_THROUGH ? "fall_through" : ""));
 #endif
 			    
 	    a = new cov_arc_t(fn->nth_block(bidx), fn->nth_block(dest));
-	    a->on_tree_ = (flags & 0x1);
-	    a->fake_ = !!(flags & 0x2);
-	    a->fall_through_ = !!(flags & 0x4);
+	    a->on_tree_ = (flags & BBG_ON_TREE);
+#ifdef HAVE_BBG_FAKE_FLAG
+	    a->fake_ = !!(flags & BBG_FAKE);
+#endif
+    	    if (nblocks >= 2 && dest == nblocks-1)
+	    {
+	    	num_expected_fake_++;
+    		if (!(flags & BBG_FAKE))
+	    	    num_missing_fake_++;
+	    }
+	    a->fall_through_ = !!(flags & BBG_FALL_THROUGH);
 	}
     }
 
     covio_read_u32(fp, &sep);
-    if (sep != BBG_SEPERATOR)
+    if (sep != BBG_SEPARATOR)
     	return FALSE;
 	
     return TRUE;
@@ -526,7 +539,7 @@ struct cov_read_state_t
     long nsymbols;
 };
 
-void
+gboolean
 cov_o_file_add_call(
     cov_read_state_t *rs,
     unsigned long address,
@@ -540,7 +553,7 @@ cov_o_file_add_call(
 
     if (!bfd_find_nearest_line(rs->abfd, rs->section, rs->symbols, address,
 		    	       &filename, &function, &lineno))
-	return;
+	return FALSE;
 #if DEBUG > 1
     fprintf(stderr, "%s:%d: %s calls %s\n",
 		file_basename_c(filename), lineno, function, callname);
@@ -554,6 +567,7 @@ cov_o_file_add_call(
     {
 	fprintf(stderr, "No blocks for call to %s at %s:%ld\n",
 		    callname, loc.filename, loc.lineno);
+	return FALSE;
     }
     else
     {
@@ -581,14 +595,22 @@ cov_o_file_add_call(
     	        fprintf(stderr, "    block %s\n", desc.data());
 #endif
 		b->add_call(callname);
-		return;
+		return TRUE;
 	    }
 #if DEBUG > 1
 	    fprintf(stderr, "    skipping block %s\n", desc.data());
 #endif
 
 	}
-	assert(0);
+	/*
+	 * Something is badly wrong if we get here: at least one of
+	 * the blocks on the line should have needed a call and none
+	 * did.  Either the .o file is out of sync with the .bb or
+	 * .bbg files, or we've encountered the braindead gcc 2.96.
+	 */
+	fprintf(stderr, "Could not assign block for call to %s at %s:%ld\n",
+		    callname, loc.filename, loc.lineno);
+	return FALSE;
     }
 }
 
@@ -649,7 +671,12 @@ cov_o_file_scan_static_calls(
 #if DEBUG > 1
     	    	fprintf(stderr, "Scanned static call\n");
 #endif
-		cov_o_file_add_call(rs, callfrom, rs->symbols[i]->name);
+		if (!cov_o_file_add_call(rs, callfrom, rs->symbols[i]->name))
+		{
+		    /* something is very wrong */
+		    g_free(buf);
+		    return;
+		}
 		p += 4;
     	    	break;
 	    }
@@ -818,7 +845,14 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
 		cov_o_file_scan_static_calls(&rs, lastaddr, rel->address);
 		lastaddr = rel->address + bfd_get_reloc_size(rel->howto);
 		
-		cov_o_file_add_call(&rs, rel->address, sym->name);
+		if (!cov_o_file_add_call(&rs, rel->address, sym->name))
+		{
+		    /* something is very wrong */
+		    g_free(relocs);
+		    g_free(rs.symbols);
+		    bfd_close(rs.abfd);
+		    return FALSE;
+		}
 	    }
 
 	}
@@ -846,13 +880,14 @@ cov_file_t::read_o_file(const char *ofilename)
     unsigned int fnidx;
 
     if (!read_o_file_relocs(ofilename))
-    {
-    	/* TODO */
-    	fprintf(stderr, "%s: Warning: could not read object file, less information may be displayed\n",
-	    ofilename);
 	return TRUE;	    /* this info is optional */
-    }
     
+    /*
+     * Calls can fail to be reconciled for perfectly harmless
+     * reasons (e.g. the code uses function pointers) so don't
+     * fail if reconciliation fails.
+     * TODO: record the failure in the cov_function_t.
+     */
     for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
     	nth_function(fnidx)->reconcile_calls();
     
@@ -938,9 +973,42 @@ cov_file_t::read(gboolean quiet)
 	 !read_da_file(filename))
 	return FALSE;
 
-    if ((filename = find_file(".o", quiet)) == 0 ||
-	 !read_o_file(filename))
-	return FALSE;
+    /*
+     * If the data files were written by broken versions of gcc 2.96
+     * the callgraph will be irretrievably broken and there's no point
+     * at all trying to read the object file.
+     */
+    if (gcc296_braindeath())
+    {
+	static const char warnmsg[] = 
+	"data files written by a broken gcc 2.96; the Calls "
+	"statistics and the contents of the Calls, Call Butterfly and "
+	"Call Graph windows will be incomplete.  Skipping object "
+	"file.\n"
+	;
+    	/* TODO: save and report in alert to user */
+    	fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
+    }
+    else
+    {
+	/*
+	 * The data we get from object files is optional, a user can
+	 * still get lots of value from ggcov with the remainder of the
+	 * files.  So if we can't find the object or can't read it,
+	 * complain and keep going.
+	 */
+    	if ((filename = find_file(".o", quiet)) == 0 ||
+	    !read_o_file(filename))
+	{
+	    static const char warnmsg[] = 
+	    "could not find or read matching object file; the contents "
+	    "of the Calls, Call Butterfly and Call Graph windows may "
+	    "be inaccurate or incomplete.\n"
+	    ;
+    	    /* TODO: save and report in alert to user */
+    	    fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
+	}
+    }
 
     return solve();
 }

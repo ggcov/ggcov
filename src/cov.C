@@ -31,7 +31,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov.C,v 1.10 2003-05-31 13:42:57 gnb Exp $");
+CVSID("$Id: cov.C,v 1.11 2003-06-01 07:56:27 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -133,7 +133,7 @@ cov_read_source_file(const char *filename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if DEBUG > 1
+#if defined(HAVE_BBG_FAKE_FLAG) && DEBUG > 1
 /*
  * For N blocks, 0..N-1,
  * block 0: in arcs are calls to the function => 1 arc 1 fake
@@ -243,7 +243,7 @@ cov_post_read(void)
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     	cov_add_callarcs(*iter);
 
-#if DEBUG > 1
+#if defined(HAVE_BBG_FAKE_FLAG) && DEBUG > 1
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     	cov_check_fakeness(*iter);
 #endif

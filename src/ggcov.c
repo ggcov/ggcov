@@ -34,7 +34,7 @@
 #include <libgnomeui/libgnomeui.h>
 #endif
 
-CVSID("$Id: ggcov.c,v 1.21 2003-05-11 02:32:31 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.22 2003-06-01 07:56:27 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -218,7 +218,9 @@ dump_arc(cov_arc_t *a)
     fprintf(stderr, "                        COUNT="GNB_U64_DFMT"\n", a->count());
     fprintf(stderr, "                        NAME=%s\n", a->name());
     fprintf(stderr, "                        ON_TREE=%s\n", boolstr(a->on_tree_));
+#ifdef HAVE_BBG_FAKE_FLAG
     fprintf(stderr, "                        FAKE=%s\n", boolstr(a->fake_));
+#endif
     fprintf(stderr, "                        FALL_THROUGH=%s\n", boolstr(a->fall_through_));
     fprintf(stderr, "                    }\n");
 }
