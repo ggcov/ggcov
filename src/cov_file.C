@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.14 2003-06-06 15:21:30 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.15 2003-06-15 04:31:49 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -425,6 +425,41 @@ cov_file_t::read_bb_file(const char *bbfilename)
 #define BBG_FAKE	    	0x2
 #define BBG_FALL_THROUGH	0x4
 
+/*
+ * Put an arbitrary upper limit on complexity of functions to
+ * prevent bogus data files (or the gcc 3.2 format which we don't
+ * yet parse) from causing us to eat all swap in a tight loop.
+ */
+#define BBG_MAX_BLOCKS	(64 * 1024)
+#define BBG_MAX_ARCS	(64 * 1024)
+
+/*
+ * The bbg_failed*() macros are for debugging problems with .bbg files.
+ */
+#if DEBUG > 1
+/* I can't wait for C99 variadic macros to become common */
+#define bbg_failed0(fmt) \
+    { \
+	fprintf(stderr, "BBG:%d, " fmt "\n", __LINE__); \
+    	return FALSE; \
+    }
+#define bbg_failed1(fmt, a1) \
+    { \
+	fprintf(stderr, "BBG:%d, " fmt "\n", __LINE__, a1); \
+    	return FALSE; \
+    }
+#define bbg_failed2(fmt, a1, a2) \
+    { \
+	fprintf(stderr, "BBG:%d, " fmt "\n", __LINE__, a1, a2); \
+    	return FALSE; \
+    }
+#else
+#define bbg_failed0(fmt)    	    	return FALSE;
+#define bbg_failed1(fmt, a1)    	return FALSE;
+#define bbg_failed2(fmt, a1, a2)    	return FALSE;
+#endif
+
+
 gboolean
 cov_file_t::read_bbg_function(FILE *fp)
 {
@@ -441,8 +476,15 @@ cov_file_t::read_bbg_function(FILE *fp)
 #endif
     
     if (!covio_read_u32(fp, &nblocks))
-    	return FALSE;
-    covio_read_u32(fp, &totnarcs);
+    	return TRUE;	/* end of file */
+
+    if (!covio_read_u32(fp, &totnarcs))
+    	bbg_failed0("short file");
+    
+    if (nblocks > BBG_MAX_BLOCKS)
+    	bbg_failed2("nblocks=%u > %u", nblocks, BBG_MAX_BLOCKS);
+    if (totnarcs > BBG_MAX_ARCS)
+    	bbg_failed2("totnarcs=%u > %u", totnarcs, BBG_MAX_ARCS);
     
     fn = add_function();
     for (bidx = 0 ; bidx < nblocks ; bidx++)
@@ -454,21 +496,28 @@ cov_file_t::read_bbg_function(FILE *fp)
     	fprintf(stderr, "BBG   block %d\n", bidx);
 #endif
 	b = fn->nth_block(bidx);
-	covio_read_u32(fp, &narcs);
+	if (!covio_read_u32(fp, &narcs))
+    	    bbg_failed0("short file");
+
+	if (narcs > BBG_MAX_ARCS)
+    	    bbg_failed2("narcs=%u > %u", narcs, BBG_MAX_ARCS);
 
 	for (aidx = 0 ; aidx < narcs ; aidx++)
 	{
 	    covio_read_u32(fp, &dest);
-	    covio_read_u32(fp, &flags);
+	    if (!covio_read_u32(fp, &flags))
+	    	bbg_failed0("short file");
 
 #if DEBUG > 1
-    	    fprintf(stderr, "BBG     arc %d: %d->%d flags %x(%s,%s,%s)\n",
+    	    fprintf(stderr, "BBG     arc %u: %u->%u flags %x(%s,%s,%s)\n",
 	    	    	    aidx,
 			    bidx, dest, flags,
 			    (flags & BBG_ON_TREE ? "on_tree" : ""),
 			    (flags & BBG_FAKE ? "fake" : ""),
 			    (flags & BBG_FALL_THROUGH ? "fall_through" : ""));
 #endif
+	    if (dest >= nblocks)
+    	    	bbg_failed2("dest=%u > nblocks=%u", dest, nblocks);
 			    
 	    a = new cov_arc_t(fn->nth_block(bidx), fn->nth_block(dest));
 	    a->on_tree_ = (flags & BBG_ON_TREE);
@@ -487,7 +536,7 @@ cov_file_t::read_bbg_function(FILE *fp)
 
     covio_read_u32(fp, &sep);
     if (sep != BBG_SEPARATOR)
-    	return FALSE;
+    	bbg_failed2("sep=0x%08x != 0x%08x", sep, BBG_SEPARATOR);
 	
     return TRUE;
 }
@@ -509,7 +558,16 @@ cov_file_t::read_bbg_file(const char *bbgfilename)
     }
     
     while (!feof(fp))
-    	read_bbg_function(fp);
+    {
+    	if (!read_bbg_function(fp))
+	{
+	    /* TODO */
+	    fprintf(stderr, "%s: file is corrupted or in a bad file format.\n",
+	    	    bbgfilename);
+	    fclose(fp);
+	    return FALSE;
+	}
+    }
 
     fclose(fp);
     return TRUE;
