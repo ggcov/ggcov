@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.32 2003-07-10 15:51:32 gnb Exp $
+dnl $Id: configure.in,v 1.33 2003-07-13 13:23:16 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -62,8 +62,8 @@ dnl ALL_LINGUAS="la"
 dnl AM_GNU_GETTEXT
 
 dnl Checks for libraries.
-AC_CHECK_LIB(bfd, bfd_init)
 AC_CHECK_LIB(iberty, obstack_free)
+AC_CHECK_LIB(bfd, bfd_init)
 AC_CHECK_LIB(popt, poptGetContext)
 
 dnl Checks for header files.
