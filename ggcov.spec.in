@@ -21,10 +21,6 @@ over multiple test runs.
 %prep
 %setup -q
 
-autoconf
-autoheader
-automake -a
-
 %build
 CFLAGS="$RPM_OPT_FLAGS" ./configure --prefix=/usr
 make
