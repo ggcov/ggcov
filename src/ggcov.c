@@ -25,12 +25,13 @@
 #include "sourcewin.h"
 #include "summarywin.h"
 #include "callswin.h"
+#include "callgraphwin.h"
 #include "functionswin.h"
 #include "fileswin.h"
 #include <dirent.h>
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.6 2001-12-02 07:26:59 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.7 2001-12-03 01:05:15 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -135,6 +136,8 @@ read_gcov_files(void)
     
     cov_file_foreach(append_one_filename, 0);
     filenames = g_list_sort(filenames, compare_filenames);
+    
+    cov_post_read();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -201,6 +204,42 @@ annotate(void)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #if DEBUG
+
+static void
+dump_callarcs(GList *arcs)
+{
+    for ( ; arcs != 0 ; arcs = arcs->next)
+    {
+    	cov_callarc_t *ca = (cov_callarc_t *)arcs->data;
+	
+	fprintf(stderr, "        ARC {\n");
+	fprintf(stderr, "            FROM=%s\n", ca->from->name);
+	fprintf(stderr, "            TO=%s\n", ca->to->name);
+	fprintf(stderr, "            COUNT=%llu\n", ca->count);
+	fprintf(stderr, "        }\n");
+    }
+}
+
+static void
+dump_callnode(cov_callnode_t *cn, void *userdata)
+{
+    fprintf(stderr, "CALLNODE {\n");
+    fprintf(stderr, "    NAME=%s\n", cn->name);
+    if (cn->function == 0)
+	fprintf(stderr, "    FUNCTION=null\n");
+    else
+	fprintf(stderr, "    FUNCTION=%s:%s\n", cn->function->file->name,
+	    	    	    	    	    	cn->function->name);
+    fprintf(stderr, "    COUNT=%llu\n", cn->count);
+    fprintf(stderr, "    OUT_ARCS={\n");
+    dump_callarcs(cn->out_arcs);
+    fprintf(stderr, "    }\n");
+    fprintf(stderr, "    IN_ARCS={\n");
+    dump_callarcs(cn->in_arcs);
+    fprintf(stderr, "    }\n");
+    fprintf(stderr, "}\n");
+    
+}
 
 static void
 dump_arc(cov_arc_t *a)
@@ -277,6 +316,7 @@ static void
 summarise(void)
 {
     cov_file_foreach(dump_file, 0);
+    cov_callnode_foreach(dump_callnode, 0);
 }
 
 #endif
@@ -320,6 +360,15 @@ on_windows_new_callswin_activated(GtkWidget *w, gpointer userdata)
 }
 
 static void
+on_windows_new_callgraphwin_activated(GtkWidget *w, gpointer userdata)
+{
+    callgraphwin_t *cgw;
+    
+    cgw = callgraphwin_new();
+    callgraphwin_set_node(cgw, cov_callnode_find("main"));
+}
+
+static void
 on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *srcw;
@@ -339,6 +388,8 @@ ui_create(void)
     			      on_windows_new_functionswin_activated, 0);
     ui_register_windows_entry("New Calls List...",
     			      on_windows_new_callswin_activated, 0);
+    ui_register_windows_entry("New Call Graph...",
+    			      on_windows_new_callgraphwin_activated, 0);
     ui_register_windows_entry("New Source...",
     			      on_windows_new_sourcewin_activated, 0);
 

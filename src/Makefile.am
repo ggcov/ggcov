@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.8 2001-12-02 07:28:05 gnb Exp $
+# $Id: Makefile.am,v 1.9 2001-12-03 01:05:15 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
@@ -31,6 +31,7 @@ ggcov_SOURCES=	common.h common.c \
 		sourcewin.h sourcewin.c \
 		summarywin.h summarywin.c \
 		callswin.h callswin.c \
+		callgraphwin.h callgraphwin.c \
 		functionswin.h functionswin.c \
 		fileswin.h fileswin.c \
 		ggcov.c

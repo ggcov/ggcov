@@ -1814,4 +1814,343 @@
   </widget>
 </widget>
 
+<widget>
+  <class>GtkWindow</class>
+  <name>callgraph</name>
+  <visible>False</visible>
+  <signal>
+    <name>delete_event</name>
+    <handler>on_calls_close_activate</handler>
+    <last_modification_time>Sat, 01 Dec 2001 10:45:10 GMT</last_modification_time>
+  </signal>
+  <title>GGCov: Call Graph @FILE@</title>
+  <type>GTK_WINDOW_TOPLEVEL</type>
+  <position>GTK_WIN_POS_NONE</position>
+  <modal>False</modal>
+  <default_width>500</default_width>
+  <default_height>300</default_height>
+  <allow_shrink>False</allow_shrink>
+  <allow_grow>True</allow_grow>
+  <auto_shrink>False</auto_shrink>
+
+  <widget>
+    <class>GtkVBox</class>
+    <name>vbox6</name>
+    <homogeneous>False</homogeneous>
+    <spacing>0</spacing>
+
+    <widget>
+      <class>GtkMenuBar</class>
+      <name>menubar6</name>
+      <shadow_type>GTK_SHADOW_OUT</shadow_type>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>False</fill>
+      </child>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>menuitem5</name>
+	<stock_item>GNOMEUIINFO_MENU_FILE_TREE</stock_item>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>menuitem5_menu</name>
+
+	  <widget>
+	    <class>GtkPixmapMenuItem</class>
+	    <name>callgraph_close</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_callgraph_close_activate</handler>
+	      <last_modification_time>Sun, 02 Dec 2001 07:31:21 GMT</last_modification_time>
+	    </signal>
+	    <stock_item>GNOMEUIINFO_MENU_CLOSE_ITEM</stock_item>
+	  </widget>
+
+	  <widget>
+	    <class>GtkPixmapMenuItem</class>
+	    <name>callgraph_exit</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_callgraph_exit_activate</handler>
+	      <last_modification_time>Sun, 02 Dec 2001 07:31:32 GMT</last_modification_time>
+	    </signal>
+	    <stock_item>GNOMEUIINFO_MENU_EXIT_ITEM</stock_item>
+	  </widget>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
+	<name>menuitem6</name>
+	<stock_item>GNOMEUIINFO_MENU_WINDOWS_TREE</stock_item>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>menuitem6_menu</name>
+
+	  <widget>
+	    <class>GtkMenuItem</class>
+	    <name>callgraph_windows_dummy</name>
+	    <label>dummy</label>
+	    <right_justify>False</right_justify>
+	  </widget>
+	</widget>
+      </widget>
+    </widget>
+
+    <widget>
+      <class>GtkTable</class>
+      <name>table4</name>
+      <border_width>4</border_width>
+      <rows>1</rows>
+      <columns>5</columns>
+      <homogeneous>False</homogeneous>
+      <row_spacing>4</row_spacing>
+      <column_spacing>4</column_spacing>
+      <child>
+	<padding>0</padding>
+	<expand>False</expand>
+	<fill>True</fill>
+      </child>
+
+      <widget>
+	<class>GtkLabel</class>
+	<name>label25</name>
+	<label>Function:</label>
+	<justify>GTK_JUSTIFY_RIGHT</justify>
+	<wrap>False</wrap>
+	<xalign>1</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+	<child>
+	  <left_attach>0</left_attach>
+	  <right_attach>1</right_attach>
+	  <top_attach>0</top_attach>
+	  <bottom_attach>1</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>False</xexpand>
+	  <yexpand>False</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>False</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkCombo</class>
+	<name>callgraph_function_combo</name>
+	<value_in_list>True</value_in_list>
+	<ok_if_empty>False</ok_if_empty>
+	<case_sensitive>False</case_sensitive>
+	<use_arrows>True</use_arrows>
+	<use_arrows_always>False</use_arrows_always>
+	<items></items>
+	<child>
+	  <left_attach>1</left_attach>
+	  <right_attach>4</right_attach>
+	  <top_attach>0</top_attach>
+	  <bottom_attach>1</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>True</xexpand>
+	  <yexpand>False</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>False</yfill>
+	</child>
+
+	<widget>
+	  <class>GtkEntry</class>
+	  <child_name>GtkCombo:entry</child_name>
+	  <name>callgraph_function_entry</name>
+	  <can_focus>True</can_focus>
+	  <signal>
+	    <name>changed</name>
+	    <handler>on_callgraph_function_entry_changed</handler>
+	    <last_modification_time>Sun, 02 Dec 2001 08:23:00 GMT</last_modification_time>
+	  </signal>
+	  <editable>False</editable>
+	  <text_visible>True</text_visible>
+	  <text_max_length>0</text_max_length>
+	  <text></text>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>callgraph_function_view</name>
+	<can_focus>True</can_focus>
+	<signal>
+	  <name>clicked</name>
+	  <handler>on_callgraph_function_view_clicked</handler>
+	  <last_modification_time>Sun, 02 Dec 2001 12:40:56 GMT</last_modification_time>
+	</signal>
+	<label>View...</label>
+	<child>
+	  <left_attach>4</left_attach>
+	  <right_attach>5</right_attach>
+	  <top_attach>0</top_attach>
+	  <bottom_attach>1</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>False</xexpand>
+	  <yexpand>False</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>False</xfill>
+	  <yfill>False</yfill>
+	</child>
+      </widget>
+    </widget>
+
+    <widget>
+      <class>GtkHPaned</class>
+      <name>hpaned1</name>
+      <handle_size>10</handle_size>
+      <gutter_size>6</gutter_size>
+      <position>0</position>
+      <child>
+	<padding>0</padding>
+	<expand>True</expand>
+	<fill>True</fill>
+      </child>
+
+      <widget>
+	<class>GtkFrame</class>
+	<name>frame6</name>
+	<label>Distribution to Ancestors</label>
+	<label_xalign>0</label_xalign>
+	<shadow_type>GTK_SHADOW_NONE</shadow_type>
+	<child>
+	  <shrink>True</shrink>
+	  <resize>True</resize>
+	</child>
+
+	<widget>
+	  <class>GtkScrolledWindow</class>
+	  <name>scrolledwindow5</name>
+	  <border_width>4</border_width>
+	  <hscrollbar_policy>GTK_POLICY_AUTOMATIC</hscrollbar_policy>
+	  <vscrollbar_policy>GTK_POLICY_AUTOMATIC</vscrollbar_policy>
+	  <hupdate_policy>GTK_UPDATE_CONTINUOUS</hupdate_policy>
+	  <vupdate_policy>GTK_UPDATE_CONTINUOUS</vupdate_policy>
+
+	  <widget>
+	    <class>GtkCList</class>
+	    <name>callgraph_ancestors_clist</name>
+	    <can_focus>True</can_focus>
+	    <signal>
+	      <name>button_press_event</name>
+	      <handler>on_callgraph_ancestors_clist_button_press_event</handler>
+	      <last_modification_time>Sun, 02 Dec 2001 12:29:53 GMT</last_modification_time>
+	    </signal>
+	    <columns>2</columns>
+	    <column_widths>80,80</column_widths>
+	    <selection_mode>GTK_SELECTION_SINGLE</selection_mode>
+	    <show_titles>True</show_titles>
+	    <shadow_type>GTK_SHADOW_IN</shadow_type>
+
+	    <widget>
+	      <class>GtkLabel</class>
+	      <child_name>CList:title</child_name>
+	      <name>label33</name>
+	      <label>Count</label>
+	      <justify>GTK_JUSTIFY_CENTER</justify>
+	      <wrap>False</wrap>
+	      <xalign>0.5</xalign>
+	      <yalign>0.5</yalign>
+	      <xpad>0</xpad>
+	      <ypad>0</ypad>
+	    </widget>
+
+	    <widget>
+	      <class>GtkLabel</class>
+	      <child_name>CList:title</child_name>
+	      <name>label34</name>
+	      <label>Function</label>
+	      <justify>GTK_JUSTIFY_CENTER</justify>
+	      <wrap>False</wrap>
+	      <xalign>0.5</xalign>
+	      <yalign>0.5</yalign>
+	      <xpad>0</xpad>
+	      <ypad>0</ypad>
+	    </widget>
+	  </widget>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkFrame</class>
+	<name>frame5</name>
+	<label>Distribution to Descendants</label>
+	<label_xalign>0</label_xalign>
+	<shadow_type>GTK_SHADOW_NONE</shadow_type>
+	<child>
+	  <shrink>True</shrink>
+	  <resize>True</resize>
+	</child>
+
+	<widget>
+	  <class>GtkScrolledWindow</class>
+	  <name>scrolledwindow6</name>
+	  <border_width>4</border_width>
+	  <hscrollbar_policy>GTK_POLICY_AUTOMATIC</hscrollbar_policy>
+	  <vscrollbar_policy>GTK_POLICY_AUTOMATIC</vscrollbar_policy>
+	  <hupdate_policy>GTK_UPDATE_CONTINUOUS</hupdate_policy>
+	  <vupdate_policy>GTK_UPDATE_CONTINUOUS</vupdate_policy>
+
+	  <widget>
+	    <class>GtkCList</class>
+	    <name>callgraph_descendants_clist</name>
+	    <can_focus>True</can_focus>
+	    <signal>
+	      <name>button_press_event</name>
+	      <handler>on_callgraph_descendants_clist_button_press_event</handler>
+	      <last_modification_time>Sun, 02 Dec 2001 12:29:41 GMT</last_modification_time>
+	    </signal>
+	    <columns>2</columns>
+	    <column_widths>80,80</column_widths>
+	    <selection_mode>GTK_SELECTION_SINGLE</selection_mode>
+	    <show_titles>True</show_titles>
+	    <shadow_type>GTK_SHADOW_IN</shadow_type>
+
+	    <widget>
+	      <class>GtkLabel</class>
+	      <child_name>CList:title</child_name>
+	      <name>label35</name>
+	      <label>Count</label>
+	      <justify>GTK_JUSTIFY_CENTER</justify>
+	      <wrap>False</wrap>
+	      <xalign>0.5</xalign>
+	      <yalign>0.5</yalign>
+	      <xpad>0</xpad>
+	      <ypad>0</ypad>
+	    </widget>
+
+	    <widget>
+	      <class>GtkLabel</class>
+	      <child_name>CList:title</child_name>
+	      <name>label36</name>
+	      <label>Function</label>
+	      <justify>GTK_JUSTIFY_CENTER</justify>
+	      <wrap>False</wrap>
+	      <xalign>0.5</xalign>
+	      <yalign>0.5</yalign>
+	      <xpad>0</xpad>
+	      <ypad>0</ypad>
+	    </widget>
+	  </widget>
+	</widget>
+      </widget>
+    </widget>
+  </widget>
+</widget>
+
 </GTK-Interface>
