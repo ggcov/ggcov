@@ -91,13 +91,15 @@ private:
     gboolean populating_;
 
     GtkWidget *lines_label_;
-    GtkWidget *lines_progressbar_;
+    GtkWidget *lines_bar_;
+    GtkWidget *functions_label_;
+    GtkWidget *functions_bar_;
     GtkWidget *calls_label_;
-    GtkWidget *calls_progressbar_;
-    GtkWidget *branches_executed_label_;
-    GtkWidget *branches_executed_progressbar_;
-    GtkWidget *branches_taken_label_;
-    GtkWidget *branches_taken_progressbar_;
+    GtkWidget *calls_bar_;
+    GtkWidget *branches_label_;
+    GtkWidget *branches_bar_;
+    GtkWidget *blocks_label_;
+    GtkWidget *blocks_bar_;
 
     friend void on_summary_overall_radio_toggled(GtkWidget *w, gpointer data);
     friend void on_summary_filename_radio_toggled(GtkWidget *w, gpointer data);

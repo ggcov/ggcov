@@ -24,9 +24,9 @@
 #include "estring.H"
 #include "prefs.H"
 #include "uix.h"
-#include "gnbprogressbar.h"
+#include "gnbstackedbar.h"
 
-CVSID("$Id: summarywin.C,v 1.16 2003-11-03 23:03:14 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.17 2004-02-18 11:18:09 gnb Exp $");
 
 list_t<summarywin_t> summarywin_t::instances_;
 
@@ -60,41 +60,39 @@ summarywin_t::summarywin_t()
     range_view_ = glade_xml_get_widget(xml, "summary_range_view");
 
     lines_label_ = glade_xml_get_widget(xml, "summary_lines_label");
-    lines_progressbar_ = glade_xml_get_widget(xml, "summary_lines_progressbar");
+    lines_bar_ = glade_xml_get_widget(xml, "summary_lines_bar");
+    functions_label_ = glade_xml_get_widget(xml, "summary_functions_label");
+    functions_bar_ = glade_xml_get_widget(xml, "summary_functions_bar");
     calls_label_ = glade_xml_get_widget(xml, "summary_calls_label");
-    calls_progressbar_ = glade_xml_get_widget(xml, "summary_calls_progressbar");
-    branches_executed_label_ = glade_xml_get_widget(xml,
-    	    	    	    	    "summary_branches_executed_label");
-    branches_executed_progressbar_ = glade_xml_get_widget(xml,
-    	    	    	    	    "summary_branches_executed_progressbar");
-    branches_taken_label_ = glade_xml_get_widget(xml,
-    	    	    	    	    "summary_branches_taken_label");
-    branches_taken_progressbar_ = glade_xml_get_widget(xml,
-    	    	    	    	    "summary_branches_taken_progressbar");
+    calls_bar_ = glade_xml_get_widget(xml, "summary_calls_bar");
+    branches_label_ = glade_xml_get_widget(xml, "summary_branches_label");
+    branches_bar_ = glade_xml_get_widget(xml, "summary_branches_bar");
+    blocks_label_ = glade_xml_get_widget(xml, "summary_blocks_label");
+    blocks_bar_ = glade_xml_get_widget(xml, "summary_blocks_bar");
     
     ui_register_windows_menu(ui_get_dummy_menu(xml, "summary_windows_dummy"));
 
-#if 0
-    gdk_color_parse("#d01010", &red);
-    gdk_color_parse("#10d010", &green);
-#endif
-
-    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(lines_progressbar_),
-	    	    	    	      &prefs.uncovered_foreground);
-    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(lines_progressbar_),
-	    	    	    	     &prefs.covered_foreground);
-    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(calls_progressbar_),
-	    	    	    	      &prefs.uncovered_foreground);
-    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(calls_progressbar_),
-	    	    	    	     &prefs.covered_foreground);
-    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(branches_executed_progressbar_),
-	    	    	    	      &prefs.uncovered_foreground);
-    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(branches_executed_progressbar_),
-	    	    	    	     &prefs.covered_foreground);
-    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(branches_taken_progressbar_),
-	    	    	    	      &prefs.uncovered_foreground);
-    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(branches_taken_progressbar_),
-	    	    	    	     &prefs.covered_foreground);
+    /* NUM_STATUS-2 to ignore SUPPRESSED,UNINSTRUMENTED */
+    gnb_stacked_bar_set_num_metrics(GNB_STACKED_BAR(lines_bar_),
+    	    	    	    	    cov::NUM_STATUS-2);
+    gnb_stacked_bar_set_metric_colors(GNB_STACKED_BAR(lines_bar_),
+    	    	    	    	      (const GdkColor **)foregrounds_by_status);
+    gnb_stacked_bar_set_num_metrics(GNB_STACKED_BAR(calls_bar_),
+    	    	    	    	    cov::NUM_STATUS-2);
+    gnb_stacked_bar_set_metric_colors(GNB_STACKED_BAR(calls_bar_),
+    	    	    	    	      (const GdkColor **)foregrounds_by_status);
+    gnb_stacked_bar_set_num_metrics(GNB_STACKED_BAR(functions_bar_),
+    	    	    	    	    cov::NUM_STATUS-2);
+    gnb_stacked_bar_set_metric_colors(GNB_STACKED_BAR(functions_bar_),
+    	    	    	    	      (const GdkColor **)foregrounds_by_status);
+    gnb_stacked_bar_set_num_metrics(GNB_STACKED_BAR(branches_bar_),
+    	    	    	    	    cov::NUM_STATUS-2);
+    gnb_stacked_bar_set_metric_colors(GNB_STACKED_BAR(branches_bar_),
+    	    	    	    	      (const GdkColor **)foregrounds_by_status);
+    gnb_stacked_bar_set_num_metrics(GNB_STACKED_BAR(blocks_bar_),
+    	    	    		     cov::NUM_STATUS-2);
+    gnb_stacked_bar_set_metric_colors(GNB_STACKED_BAR(blocks_bar_),
+    	    	    	    	      (const GdkColor **)foregrounds_by_status);
 
     instances_.append(this);
 }
@@ -294,38 +292,51 @@ summarywin_t::grey_items()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void
-set_label_fraction(
-    GtkWidget *label,
-    unsigned long numerator,
-    unsigned long denominator)
+static inline unsigned long
+total(const unsigned long *values)
 {
+    return values[cov::COVERED] +
+           values[cov::PARTCOVERED] +
+    	   values[cov::UNCOVERED];
+}
+
+
+static void
+set_label_values(GtkWidget *label, const unsigned long *values)
+{
+    unsigned long numerator, denominator;
     char buf[128];
 
+    numerator = values[cov::COVERED] + values[cov::PARTCOVERED];
+    denominator = total(values);
+
     if (denominator == 0)
-	snprintf(buf, sizeof(buf), "%ld/%ld", numerator, denominator);
+	snprintf(buf, sizeof(buf), "0/0");
+    else if (values[cov::PARTCOVERED] == 0)
+	snprintf(buf, sizeof(buf), "%ld/%ld  %.1f%%",
+	    	numerator, denominator,
+    	    	(double)numerator * 100.0 / (double)denominator);
     else
-	snprintf(buf, sizeof(buf), "%ld/%ld  %.2f%%", numerator, denominator,
-    	    		(double)numerator * 100.0 / (double)denominator);
+	snprintf(buf, sizeof(buf), "%ld+%ld/%ld  %.1f+%.1f%%",
+	    	values[cov::COVERED],
+		values[cov::PARTCOVERED],
+		denominator,
+    	    	(double)values[cov::COVERED] * 100.0 / (double)denominator,
+    	    	(double)values[cov::PARTCOVERED] * 100.0 / (double)denominator);
     gtk_label_set_text(GTK_LABEL(label), buf);
 }
 
 static void
-set_progressbar_fraction(
-    GtkWidget *progressbar,
-    unsigned long numerator,
-    unsigned long denominator)
+set_bar_values(GtkWidget *sbar, const unsigned long *values)
 {
-    if (denominator == 0)
+    if (total(values) == 0)
     {
-    	gtk_widget_hide(progressbar);
+    	gtk_widget_hide(sbar);
     }
     else
     {
-    	gtk_widget_show(progressbar);
-	gtk_progress_configure(GTK_PROGRESS(progressbar),
-	    	    /*value*/(gfloat)numerator,
-		    /*min*/0.0, /*max*/(gfloat)denominator);
+    	gtk_widget_show(sbar);
+	gnb_stacked_bar_set_metric_values(GNB_STACKED_BAR(sbar), values);
     }
 }
 
@@ -392,25 +403,18 @@ summarywin_t::update()
 	stats = &empty;
     }
 
-    set_label_fraction(lines_label_,
-    	    	    	 stats->lines_executed, stats->lines);
-    set_progressbar_fraction(lines_progressbar_,
-    	    	    	 stats->lines_executed, stats->lines);
-    set_label_fraction(calls_label_,
-    	    	    	 stats->calls_executed, stats->calls);
-    set_progressbar_fraction(calls_progressbar_,
-    	    	    	 stats->calls_executed, stats->calls);
-    set_label_fraction(branches_executed_label_,
-    	    	    	 stats->branches_executed, stats->branches);
-    set_progressbar_fraction(branches_executed_progressbar_,
-    	    	    	 stats->branches_executed, stats->branches);
-    set_label_fraction(branches_taken_label_,
-    	    	    	 stats->branches_taken, stats->branches);
-    set_progressbar_fraction(branches_taken_progressbar_,
-    	    	    	 stats->branches_taken, stats->branches);
+    set_label_values(lines_label_, stats->lines_by_status());
+    set_bar_values(lines_bar_, stats->lines_by_status());
+    set_label_values(functions_label_, stats->functions_by_status());
+    set_bar_values(functions_bar_, stats->functions_by_status());
+    set_label_values(calls_label_, stats->calls_by_status());
+    set_bar_values(calls_bar_, stats->calls_by_status());
+    set_label_values(branches_label_, stats->branches_by_status());
+    set_bar_values(branches_bar_, stats->branches_by_status());
+    set_label_values(blocks_label_, stats->blocks_by_status());
+    set_bar_values(blocks_bar_, stats->blocks_by_status());
 			 
     delete sc;
-    /* TODO: keep the scope object around and MVC listen on it */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
