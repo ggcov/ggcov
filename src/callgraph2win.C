@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: callgraph2win.C,v 1.11 2003-06-01 08:49:59 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.12 2003-06-03 23:08:16 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -194,6 +194,7 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
     ny = ystart + FILE_GAP;
     yperspread = (n->spread_ == 0 ? 0.0 : (yend-ystart-FILE_GAP)/n->spread_);
     
+    points = gnome_canvas_points_new(2);
     for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)
     {
     	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
@@ -204,7 +205,6 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
     	show_box(child, ny, nyend);
 	ny = nyend;
 
-    	points = gnome_canvas_points_new(2);
 	points->coords[0] = n->x_+ BOX_WIDTH;
 	points->coords[1] = n->y_ + BOX_HEIGHT/2.0;
 	points->coords[2] = child->x_,
@@ -226,6 +226,7 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
 		    "fill_color_gdk",	fn_color,
 		    0);
     }
+    gnome_canvas_points_free(points);
 }
 
 
