@@ -3576,7 +3576,7 @@ C programs built with the GNU C Compiler.
 	<class>GtkTable</class>
 	<name>table6</name>
 	<border_width>4</border_width>
-	<rows>5</rows>
+	<rows>6</rows>
 	<columns>3</columns>
 	<homogeneous>False</homogeneous>
 	<row_spacing>4</row_spacing>
@@ -3594,6 +3594,29 @@ C programs built with the GNU C Compiler.
 	    <right_attach>2</right_attach>
 	    <top_attach>4</top_attach>
 	    <bottom_attach>5</bottom_attach>
+	    <xpad>0</xpad>
+	    <ypad>0</ypad>
+	    <xexpand>False</xexpand>
+	    <yexpand>False</yexpand>
+	    <xshrink>False</xshrink>
+	    <yshrink>False</yshrink>
+	    <xfill>True</xfill>
+	    <yfill>False</yfill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GnomeColorPicker</class>
+	  <name>preferences_colors_suppressed_foreground</name>
+	  <can_focus>True</can_focus>
+	  <dither>True</dither>
+	  <use_alpha>False</use_alpha>
+	  <title>Suppressed Foreground</title>
+	  <child>
+	    <left_attach>1</left_attach>
+	    <right_attach>2</right_attach>
+	    <top_attach>5</top_attach>
+	    <bottom_attach>6</bottom_attach>
 	    <xpad>0</xpad>
 	    <ypad>0</ypad>
 	    <xexpand>False</xexpand>
@@ -3819,6 +3842,29 @@ C programs built with the GNU C Compiler.
 	</widget>
 
 	<widget>
+	  <class>GnomeColorPicker</class>
+	  <name>preferences_colors_suppressed_background</name>
+	  <can_focus>True</can_focus>
+	  <dither>False</dither>
+	  <use_alpha>False</use_alpha>
+	  <title>Suppressed Background</title>
+	  <child>
+	    <left_attach>2</left_attach>
+	    <right_attach>3</right_attach>
+	    <top_attach>5</top_attach>
+	    <bottom_attach>6</bottom_attach>
+	    <xpad>0</xpad>
+	    <ypad>0</ypad>
+	    <xexpand>False</xexpand>
+	    <yexpand>False</yexpand>
+	    <xshrink>False</xshrink>
+	    <yshrink>False</yshrink>
+	    <xfill>True</xfill>
+	    <yfill>False</yfill>
+	  </child>
+	</widget>
+
+	<widget>
 	  <class>GtkLabel</class>
 	  <name>label49</name>
 	  <label>Uninstrumented:</label>
@@ -3937,6 +3983,32 @@ C programs built with the GNU C Compiler.
 	    <right_attach>1</right_attach>
 	    <top_attach>0</top_attach>
 	    <bottom_attach>1</bottom_attach>
+	    <xpad>0</xpad>
+	    <ypad>0</ypad>
+	    <xexpand>False</xexpand>
+	    <yexpand>False</yexpand>
+	    <xshrink>False</xshrink>
+	    <yshrink>False</yshrink>
+	    <xfill>True</xfill>
+	    <yfill>False</yfill>
+	  </child>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <name>label69</name>
+	  <label>Suppressed:</label>
+	  <justify>GTK_JUSTIFY_RIGHT</justify>
+	  <wrap>False</wrap>
+	  <xalign>1</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <child>
+	    <left_attach>0</left_attach>
+	    <right_attach>1</right_attach>
+	    <top_attach>5</top_attach>
+	    <bottom_attach>6</bottom_attach>
 	    <xpad>0</xpad>
 	    <ypad>0</ypad>
 	    <xexpand>False</xexpand>

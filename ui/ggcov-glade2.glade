@@ -3714,6 +3714,26 @@ C programs built with the GNU C Compiler.
                 </child>
 
                 <child>
+                  <widget class="GnomeColorPicker" id="preferences_colors_suppressed_foreground">
+                    <property name="can_focus">yes</property>
+                    <property name="dither">yes</property>
+                    <property name="use_alpha">no</property>
+                    <property name="title" translatable="yes">Suppressed Foreground</property>
+                    <property name="visible">yes</property>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="right_attach">2</property>
+                    <property name="top_attach">5</property>
+                    <property name="bottom_attach">6</property>
+                    <property name="x_padding">0</property>
+                    <property name="y_padding">0</property>
+                    <property name="x_options">fill</property>
+                    <property name="y_options"></property>
+                  </packing>
+                </child>
+
+                <child>
                   <widget class="GnomeColorPicker" id="preferences_colors_uncovered_foreground">
                     <property name="can_focus">yes</property>
                     <property name="dither">yes</property>
@@ -3900,6 +3920,26 @@ C programs built with the GNU C Compiler.
                 </child>
 
                 <child>
+                  <widget class="GnomeColorPicker" id="preferences_colors_suppressed_background">
+                    <property name="can_focus">yes</property>
+                    <property name="dither">no</property>
+                    <property name="use_alpha">no</property>
+                    <property name="title" translatable="yes">Suppressed Background</property>
+                    <property name="visible">yes</property>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">2</property>
+                    <property name="right_attach">3</property>
+                    <property name="top_attach">5</property>
+                    <property name="bottom_attach">6</property>
+                    <property name="x_padding">0</property>
+                    <property name="y_padding">0</property>
+                    <property name="x_options">fill</property>
+                    <property name="y_options"></property>
+                  </packing>
+                </child>
+
+                <child>
                   <widget class="GtkLabel" id="label49">
                     <property name="label" translatable="yes">Uninstrumented:</property>
                     <property name="justify">GTK_JUSTIFY_RIGHT</property>
@@ -3915,6 +3955,29 @@ C programs built with the GNU C Compiler.
                     <property name="right_attach">1</property>
                     <property name="top_attach">4</property>
                     <property name="bottom_attach">5</property>
+                    <property name="x_padding">0</property>
+                    <property name="y_padding">0</property>
+                    <property name="x_options">fill</property>
+                    <property name="y_options"></property>
+                  </packing>
+                </child>
+
+                <child>
+                  <widget class="GtkLabel" id="label49">
+                    <property name="label" translatable="yes">Suppressed:</property>
+                    <property name="justify">GTK_JUSTIFY_RIGHT</property>
+                    <property name="wrap">no</property>
+                    <property name="xalign">1</property>
+                    <property name="yalign">0.5</property>
+                    <property name="xpad">0</property>
+                    <property name="ypad">0</property>
+                    <property name="visible">yes</property>
+                  </widget>
+                  <packing>
+                    <property name="left_attach">0</property>
+                    <property name="right_attach">1</property>
+                    <property name="top_attach">5</property>
+                    <property name="bottom_attach">6</property>
                     <property name="x_padding">0</property>
                     <property name="y_padding">0</property>
                     <property name="x_options">fill</property>
