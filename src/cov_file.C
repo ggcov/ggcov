@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.20 2003-07-09 01:05:23 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.21 2003-07-09 01:22:15 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -762,6 +762,7 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 		    }
 
     	    	    filename = file_make_absolute_to(s, name_);
+		    g_free(s);
 		}
 		else
 		{
