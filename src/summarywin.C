@@ -26,7 +26,7 @@
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.15 2003-07-18 12:10:42 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.16 2003-11-03 23:03:14 gnb Exp $");
 
 list_t<summarywin_t> summarywin_t::instances_;
 
@@ -240,9 +240,7 @@ summarywin_t::populate_function_combo(GtkCombo *combo)
 void
 summarywin_t::populate()
 {
-#if DEBUG
-    fprintf(stderr, "summarywin_t::populate\n");
-#endif
+    dprintf0(D_SUMMARYWIN, "summarywin_t::populate\n");
 
     populating_ = TRUE;     /* suppress combo entry callbacks */
     populate_filename_combo(GTK_COMBO(filename_combo_));
@@ -265,10 +263,8 @@ summarywin_t::spin_update()
     assert(file_ != 0);
     lastline = file_->num_lines();
     
-#if DEBUG
-    fprintf(stderr, "summarywin_t::spin_update: %s[1-%lu]\n",
+    dprintf2(D_SUMMARYWIN, "summarywin_t::spin_update: %s[1-%lu]\n",
     	    	file_->minimal_name(), lastline);
-#endif
 
     adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(range_start_spin_));
     adj->lower = 1;
@@ -340,9 +336,7 @@ summarywin_t::update()
     cov_scope_t *sc = 0;
     const cov_stats_t *stats;
     
-#if DEBUG
-    fprintf(stderr, "summarywin_t::update\n");
-#endif
+    dprintf0(D_SUMMARYWIN, "summarywin_t::update\n");
     
     grey_items();
 
@@ -380,10 +374,8 @@ summarywin_t::update()
 
     case SU_RANGE:
     	assert(file_ != 0);
-#if DEBUG
-    	fprintf(stderr, "summarywin_update: SU_RANGE %s %lu-%lu\n",
+    	dprintf3(D_SUMMARYWIN, "summarywin_update: SU_RANGE %s %lu-%lu\n",
 	    	    	file_->minimal_name(), start_, end_);
-#endif
     	sc = new cov_range_scope_t(file_, start_, end_);
 	break;
 	

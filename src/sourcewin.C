@@ -23,7 +23,7 @@
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.22 2003-07-19 06:26:28 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.23 2003-11-03 23:03:35 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -150,12 +150,10 @@ on_source_functions_entry_changed(GtkWidget *w, gpointer userdata)
     
     first = fn->get_first_location();
     last = fn->get_last_location();
-#if DEBUG
-    fprintf(stderr, "Function %s -> %s:%ld to %s:%ld\n",
+    dprintf5(D_SOURCEWIN, "Function %s -> %s:%ld to %s:%ld\n",
     	    	    	fn->name(),
 			first->filename, first->lineno,
 			last->filename, last->lineno);
-#endif
     
     /* Check for weirdness like functions spanning files */
     if (strcmp(first->filename, sw->filename_))
@@ -469,10 +467,8 @@ sourcewin_t::set_filename(const char *filename, const char *display_fname)
 void
 sourcewin_t::select_region(unsigned long startline, unsigned long endline)
 {
-#if DEBUG
-    fprintf(stderr, "sourcewin_t::select_region: startline=%ld endline=%ld\n",
+    dprintf2(D_SOURCEWIN, "sourcewin_t::select_region: startline=%ld endline=%ld\n",
     	    	startline, endline);
-#endif
     ui_text_select_lines(text_, startline, endline);
 }
 
@@ -508,10 +504,8 @@ sourcewin_t::show_lines(
     estring fullname = cov_file_t::unminimise_name(filename);
     estring displayname = cov_file_t::minimise_name(fullname.data());
 
-#if DEBUG
-    fprintf(stderr, "sourcewin_t::show_lines(\"%s\", %lu, %lu) => \"%s\"\n",
+    dprintf4(D_SOURCEWIN, "sourcewin_t::show_lines(\"%s\", %lu, %lu) => \"%s\"\n",
     	    	filename, startline, endline, fullname.data());
-#endif
     
     sw->set_filename(fullname.data(), displayname.data());
     sw->show();

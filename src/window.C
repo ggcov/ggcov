@@ -23,7 +23,7 @@
 #include "tok.H"
 #include "string_var.H"
 
-CVSID("$Id: window.C,v 1.12 2003-07-19 10:41:51 gnb Exp $");
+CVSID("$Id: window.C,v 1.13 2003-11-03 23:02:50 gnb Exp $");
 
 static const char window_key[] = "ggcov_window_key";
 
@@ -76,9 +76,7 @@ dnd_handle_uri_list(void *data, unsigned int length)
     cov_pre_read();
     while ((uri = tok.next()) != 0)
     {
-#if DEBUG
-    	fprintf(stderr, "uri=\"%s\"\n", uri);
-#endif
+    	dprintf1(D_UICORE, "dnd_handle_uri_list: uri=\"%s\"\n", uri);
     	if (!strncmp(uri, "file:", 5) && ggcov_read_file(uri+5))
 	    nfiles++;
     }
@@ -116,17 +114,18 @@ dnd_drag_data_received(
     guint time,
     gpointer user_data)
 {
-#if DEBUG
-    string_var selection_str = gdk_atom_name(data->selection);
-    string_var target_str = gdk_atom_name(data->target);
-    string_var type_str = gdk_atom_name(data->type);
-    fprintf(stderr, "dnd_drag_data_received: info=%d, "
-		    "data={selection=%s target=%s type=%s "
-		    "data=0x%p length=%d format=%d}\n",
-		    info,
-		    selection_str.data(), target_str.data(), type_str.data(),
-		    data->data, data->length, data->format);
-#endif
+    if (debug_enabled(D_UICORE))
+    {
+	string_var selection_str = gdk_atom_name(data->selection);
+	string_var target_str = gdk_atom_name(data->target);
+	string_var type_str = gdk_atom_name(data->type);
+	duprintf7("dnd_drag_data_received: info=%d, "
+		  "data={selection=%s target=%s type=%s "
+		  "data=0x%p length=%d format=%d}\n",
+		  info,
+		  selection_str.data(), target_str.data(), type_str.data(),
+		  data->data, data->length, data->format);
+    }
 
     switch (info)
     {
