@@ -35,7 +35,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.28 2003-06-15 04:30:25 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.29 2003-06-28 10:21:13 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -104,198 +104,6 @@ read_gcov_files(void)
     cov_post_read();
 }
 
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-#if 0
-
-static void
-annotate_file(cov_file_t *f)
-{
-    const char *cfilename = f->name;
-    FILE *infp, *outfp;
-    cov_location_t loc;
-    count_t count;
-    cov_status_t status;
-    char *ggcov_filename;
-    char buf[1024];
-    
-    if ((infp = fopen(cfilename, "r")) == 0)
-    {
-    	perror(cfilename);
-	return;
-    }
-
-    ggcov_filename = g_strconcat(cfilename, ".ggcov", 0);
-    fprintf(stderr, "Writing %s\n", ggcov_filename);
-    if ((outfp = fopen(ggcov_filename, "w")) == 0)
-    {
-    	perror(ggcov_filename);
-	g_free(ggcov_filename);
-	fclose(infp);
-	return;
-    }
-    g_free(ggcov_filename);
-    
-    loc.filename = cfilename;
-    loc.lineno = 0;
-    while (fgets(buf, sizeof(buf), infp) != 0)
-    {
-    	++loc.lineno;
-	
-	status = cov_get_count_by_location(&loc, &count);
-	if (status != CS_UNINSTRUMENTED)
-	{
-	    if (count)
-		fprintf(outfp, "%12lld    ", count);
-	    else
-		fputs("      ######    ", outfp);
-	}
-	else
-	    fputs("\t\t", outfp);
-	fputs(buf, outfp);
-    }
-    
-    fclose(infp);
-    fclose(outfp);
-}
-
-static void
-annotate(void)
-{
-    list_iterator_t<cov_file_t> iter;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	annotate_file(*iter);
-}
-#endif
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-#if DEBUG > 1
-
-static void
-dump_callarcs(GList *arcs)
-{
-    for ( ; arcs != 0 ; arcs = arcs->next)
-    {
-    	cov_callarc_t *ca = (cov_callarc_t *)arcs->data;
-	
-	fprintf(stderr, "        ARC {\n");
-	fprintf(stderr, "            FROM=%s\n", ca->from->name.data());
-	fprintf(stderr, "            TO=%s\n", ca->to->name.data());
-	fprintf(stderr, "            COUNT="GNB_U64_DFMT"\n", ca->count);
-	fprintf(stderr, "        }\n");
-    }
-}
-
-static void
-dump_callnode(cov_callnode_t *cn, void *userdata)
-{
-    fprintf(stderr, "CALLNODE {\n");
-    fprintf(stderr, "    NAME=%s\n", cn->name.data());
-    if (cn->function == 0)
-	fprintf(stderr, "    FUNCTION=null\n");
-    else
-	fprintf(stderr, "    FUNCTION=%s:%s\n", cn->function->file()->name(),
-	    	    	    	    	    	cn->function->name());
-    fprintf(stderr, "    COUNT="GNB_U64_DFMT"\n", cn->count);
-    fprintf(stderr, "    OUT_ARCS={\n");
-    dump_callarcs(cn->out_arcs);
-    fprintf(stderr, "    }\n");
-    fprintf(stderr, "    IN_ARCS={\n");
-    dump_callarcs(cn->in_arcs);
-    fprintf(stderr, "    }\n");
-    fprintf(stderr, "}\n");
-    
-}
-
-/* TODO: move this into class cov_arc_t */
-void
-dump_arc(cov_arc_t *a)
-{
-    estring fromdesc = a->from()->describe();
-    estring todesc = a->to()->describe();
-
-    fprintf(stderr, "                    ARC {\n");
-    fprintf(stderr, "                        FROM=%s\n", fromdesc.data());
-    fprintf(stderr, "                        TO=%s\n", todesc.data());
-    fprintf(stderr, "                        COUNT="GNB_U64_DFMT"\n", a->count());
-    fprintf(stderr, "                        NAME=%s\n", a->name());
-    fprintf(stderr, "                        ON_TREE=%s\n", boolstr(a->on_tree_));
-#ifdef HAVE_BBG_FAKE_FLAG
-    fprintf(stderr, "                        FAKE=%s\n", boolstr(a->fake_));
-#endif
-    fprintf(stderr, "                        FALL_THROUGH=%s\n", boolstr(a->fall_through_));
-    fprintf(stderr, "                    }\n");
-}
-
-void
-dump_block(cov_block_t *b)
-{
-    list_iterator_t<cov_arc_t> aiter;
-    list_iterator_t<cov_location_t>liter;
-    estring desc = b->describe();
-    
-    fprintf(stderr, "            BLOCK {\n");
-    fprintf(stderr, "                IDX=%s\n", desc.data());
-    fprintf(stderr, "                COUNT="GNB_U64_DFMT"\n", b->count());
-
-    fprintf(stderr, "                OUT_ARCS {\n");
-    for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
-    	dump_arc(*aiter);
-    fprintf(stderr, "                }\n");
-
-    fprintf(stderr, "                IN_ARCS {\n");
-    for (aiter = b->in_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
-    	dump_arc(*aiter);
-    fprintf(stderr, "                }\n");
-    
-    fprintf(stderr, "                LOCATIONS {\n");
-    for (liter = b->location_iterator() ; liter != (cov_location_t *)0 ; ++liter)
-    {
-    	cov_location_t *loc = *liter;
-	fprintf(stderr, "                    %s:%ld\n", loc->filename, loc->lineno);
-    }
-    fprintf(stderr, "                }\n");
-    fprintf(stderr, "            }\n");
-}
-
-static void
-dump_function(cov_function_t *fn)
-{
-    unsigned int i;
-    
-    fprintf(stderr, "        FUNCTION {\n");
-    fprintf(stderr, "            NAME=\"%s\"\n", fn->name());
-    for (i = 0 ; i < fn->num_blocks() ; i++)
-    	dump_block(fn->nth_block(i));
-    fprintf(stderr, "    }\n");
-}
-
-static void
-dump_file(cov_file_t *f)
-{
-    unsigned int i;
-    
-    fprintf(stderr, "FILE {\n");
-    fprintf(stderr, "    NAME=\"%s\"\n", f->name());
-    fprintf(stderr, "    MINIMAL_NAME=\"%s\"\n", f->minimal_name());
-    for (i = 0 ; i < f->num_functions() ; i++)
-    	dump_function(f->nth_function(i));
-    fprintf(stderr, "}\n");
-}
-
-static void
-summarise(void)
-{
-    list_iterator_t<cov_file_t> iter;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	dump_file(*iter);
-
-    cov_callnode_t::foreach(dump_callnode, 0);
-}
-
-#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
@@ -540,12 +348,7 @@ main(int argc, char **argv)
     parse_args(argc, argv);
     read_gcov_files();
 
-#if DEBUG > 1
-    summarise();
-#endif
-#if 0
-    annotate();
-#endif
+    cov_dump(stderr);
     ui_create();
     gtk_main();
 
