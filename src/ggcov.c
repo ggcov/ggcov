@@ -35,7 +35,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.33 2003-07-17 15:50:47 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.34 2003-07-18 12:11:51 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -46,6 +46,9 @@ static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+/*
+ * Read files from the commandline.
+ */
 static void
 read_gcov_files(void)
 {
@@ -100,6 +103,9 @@ read_gcov_files(void)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+/*
+ * Read a file from the File->Open dialog.
+ */
 static gboolean
 ggcov_read_file(const char *filename)
 {
@@ -289,12 +295,19 @@ ui_create(void)
     ui_set_default_icon(icon_xpm);
 
     prefs.load();
+
+    if (files == 0)
+    {
+    	/* Nothing on commandline...show the File->Open dialog to get some */
+    	on_file_open_activate(0, 0);
+	while (!*cov_file_t::first())
+	    gtk_main_iteration();
+    }
+
+    /* Possibly have files from commandline or dialog...show the Summary window */
     summarywin_t *sw = new summarywin_t();
     sw->show();
     prefs.post_load(sw->get_window());
-    
-    if (files == 0)
-    	on_file_open_activate(0, 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
