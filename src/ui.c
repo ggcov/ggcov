@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.h"
 
-CVSID("$Id: ui.c,v 1.3 2001-11-25 07:32:12 gnb Exp $");
+CVSID("$Id: ui.c,v 1.4 2001-11-25 15:17:34 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -347,5 +347,94 @@ ui_add_simple_menu_item(
     return butt;
 }
      
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void
+ui_on_clist_click_column(GtkCList *clist, int col, gpointer userdata)
+{
+    if (col == clist->sort_column)
+    	ui_clist_set_sort_type(clist, (clist->sort_type == GTK_SORT_ASCENDING ?
+	    	    	    	       GTK_SORT_DESCENDING : GTK_SORT_ASCENDING));
+    else
+    	ui_clist_set_sort_column(clist, col);
+    gtk_clist_sort(clist);
+}
+
+void
+ui_clist_init_column_arrow(GtkCList *clist, int col)
+{
+    GtkWidget *hbox;
+    GtkWidget *label;
+    GtkWidget *arrow;
+    GtkWidget *oldlabel;
+    char *oldstr = "FOOBAR";
+    static const char ui_clist_arrow_key[] = "ui_clist_arrow_key";
+    
+    oldlabel = gtk_clist_get_column_widget(clist, col);
+    gtk_label_get(GTK_LABEL(oldlabel), &oldstr);
+    
+    hbox = gtk_hbox_new(/*homogeneous*/FALSE, /*spacing*/4);
+    gtk_widget_show(hbox);
+    
+    label = gtk_label_new(oldstr);
+    gtk_box_pack_start(GTK_BOX(hbox), label,
+    	    	       /*expand*/TRUE, /*fill*/TRUE, /*padding*/0);
+    gtk_widget_show(label);
+    
+    arrow = gtk_arrow_new(GTK_ARROW_DOWN,
+    	       (col == clist->sort_column ? GTK_SHADOW_OUT : GTK_SHADOW_NONE));
+    gtk_box_pack_start(GTK_BOX(hbox), arrow,
+    	    	      /*expand*/FALSE, /*fill*/TRUE, /*padding*/0);
+    gtk_widget_show(arrow);
+    
+    gtk_clist_set_column_widget(clist, col, hbox);
+    /* TODO: free oldstr */
+    
+    /* Setup signal handler -- just once */
+    if (gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key) == 0)
+    {
+    	gtk_object_set_data(GTK_OBJECT(clist), ui_clist_arrow_key, (gpointer)1);
+	gtk_signal_connect(GTK_OBJECT(clist), "click_column",
+    	    	    	GTK_SIGNAL_FUNC(ui_on_clist_click_column), 0);
+    }
+}
+
+static GtkWidget *
+ui_clist_get_column_arrow(GtkCList *clist, int col)
+{
+    GtkWidget *button = clist->column[col].button;
+    GtkWidget *hbox = GTK_BUTTON(button)->child;
+    GtkBoxChild *boxchild = g_list_nth_data(GTK_BOX(hbox)->children, 1);
+    return boxchild->widget;
+}
+
+void
+ui_clist_set_sort_column(GtkCList *clist, int col)
+{
+    GtkWidget *arrow;
+    
+    arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
+    gtk_arrow_set(GTK_ARROW(arrow), GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+    
+    gtk_clist_set_sort_column(clist, col);
+
+    arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
+    gtk_arrow_set(GTK_ARROW(arrow),
+      (clist->sort_type == GTK_SORT_ASCENDING ? GTK_ARROW_DOWN : GTK_ARROW_UP),
+      GTK_SHADOW_OUT);
+}
+
+void
+ui_clist_set_sort_type(GtkCList *clist, GtkSortType type)
+{
+    GtkWidget *arrow;
+
+    gtk_clist_set_sort_type(clist, type);
+    arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
+    gtk_arrow_set(GTK_ARROW(arrow),
+      (clist->sort_type == GTK_SORT_ASCENDING ? GTK_ARROW_DOWN : GTK_ARROW_UP),
+      GTK_SHADOW_OUT);
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

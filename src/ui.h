@@ -61,4 +61,10 @@ void ui_delete_menu_items(GtkWidget *menu);
 GtkWidget *ui_add_simple_menu_item(GtkWidget *menu, const char *label,
 	       void (*callback)(GtkWidget*, gpointer), gpointer calldata);
 
+/* Functions for making the column labels in a clist have sort arrows */
+void ui_clist_init_column_arrow(GtkCList *, int col);
+void ui_clist_set_sort_column(GtkCList *, int col);
+void ui_clist_set_sort_type(GtkCList *, GtkSortType ty);
+
+
 #endif /* _ggcov_ui_h_ */
