@@ -1908,6 +1908,82 @@
 
       <widget>
 	<class>GtkMenuItem</class>
+	<name>view1</name>
+	<stock_item>GNOMEUIINFO_MENU_VIEW_TREE</stock_item>
+
+	<widget>
+	  <class>GtkMenu</class>
+	  <name>view1_menu</name>
+
+	  <widget>
+	    <class>GtkCheckMenuItem</class>
+	    <name>calls_call_from_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_calls_call_from_check_activate</handler>
+	      <last_modification_time>Sat, 04 Jan 2003 02:52:44 GMT</last_modification_time>
+	    </signal>
+	    <label>Call _From</label>
+	    <active>True</active>
+	    <always_show_toggle>False</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkCheckMenuItem</class>
+	    <name>calls_call_to_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_calls_call_to_check_activate</handler>
+	      <last_modification_time>Sat, 04 Jan 2003 02:53:41 GMT</last_modification_time>
+	    </signal>
+	    <label>Call _To</label>
+	    <active>True</active>
+	    <always_show_toggle>False</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkCheckMenuItem</class>
+	    <name>calls_line_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_calls_line_check_activate</handler>
+	      <last_modification_time>Sat, 04 Jan 2003 02:54:13 GMT</last_modification_time>
+	    </signal>
+	    <label>_Line</label>
+	    <active>True</active>
+	    <always_show_toggle>False</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkCheckMenuItem</class>
+	    <name>calls_arc_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_calls_arc_check_activate</handler>
+	      <last_modification_time>Sat, 04 Jan 2003 02:54:33 GMT</last_modification_time>
+	    </signal>
+	    <label>_Arc</label>
+	    <active>False</active>
+	    <always_show_toggle>False</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkCheckMenuItem</class>
+	    <name>calls_count_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_calls_count_check_activate</handler>
+	      <last_modification_time>Sat, 04 Jan 2003 02:54:49 GMT</last_modification_time>
+	    </signal>
+	    <label>_Count</label>
+	    <active>True</active>
+	    <always_show_toggle>False</always_show_toggle>
+	  </widget>
+	</widget>
+      </widget>
+
+      <widget>
+	<class>GtkMenuItem</class>
 	<name>settings5</name>
 	<stock_item>GNOMEUIINFO_MENU_SETTINGS_TREE</stock_item>
 

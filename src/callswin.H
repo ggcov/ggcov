@@ -25,6 +25,11 @@
 
 GLADE_CALLBACK void on_calls_close_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_exit_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_calls_call_from_check_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_calls_call_to_check_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_calls_line_check_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_calls_arc_check_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_calls_count_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_from_function_entry_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_to_function_entry_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_from_function_view_clicked(GtkWidget *w, gpointer data);
@@ -59,6 +64,11 @@ private:
 
     friend void on_calls_close_activate(GtkWidget *w, gpointer data);
     friend void on_calls_exit_activate(GtkWidget *w, gpointer data);
+    friend void on_calls_call_from_check_activate(GtkWidget *w, gpointer data);
+    friend void on_calls_call_to_check_activate(GtkWidget *w, gpointer data);
+    friend void on_calls_line_check_activate(GtkWidget *w, gpointer data);
+    friend void on_calls_arc_check_activate(GtkWidget *w, gpointer data);
+    friend void on_calls_count_check_activate(GtkWidget *w, gpointer data);
     friend void on_calls_from_function_entry_changed(GtkWidget *w, gpointer data);
     friend void on_calls_to_function_entry_changed(GtkWidget *w, gpointer data);
     friend void on_calls_from_function_view_clicked(GtkWidget *w, gpointer data);

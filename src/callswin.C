@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.3 2002-12-29 13:13:15 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.4 2003-01-04 03:01:57 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -90,7 +90,8 @@ callswin_t::callswin_t()
     gtk_clist_set_compare_func(GTK_CLIST(clist_), callswin_compare);
     ui_clist_set_sort_column(GTK_CLIST(clist_), COL_ARC);
     ui_clist_set_sort_type(GTK_CLIST(clist_), GTK_SORT_ASCENDING);
-    
+    gtk_clist_set_column_visibility(GTK_CLIST(clist_), COL_ARC, FALSE);
+
     
     ui_register_windows_menu(ui_get_dummy_menu(xml, "calls_windows_dummy"));
 }
@@ -263,6 +264,51 @@ GLADE_CALLBACK void
 on_calls_exit_activate(GtkWidget *w, gpointer data)
 {
     gtk_main_quit();
+}
+
+GLADE_CALLBACK void
+on_calls_call_from_check_activate(GtkWidget *w, gpointer data)
+{
+    callswin_t *cw = callswin_t::from_widget(w);
+    
+    gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_FROM,
+    	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
+}
+
+GLADE_CALLBACK void
+on_calls_call_to_check_activate(GtkWidget *w, gpointer data)
+{
+    callswin_t *cw = callswin_t::from_widget(w);
+    
+    gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_TO,
+    	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
+}
+
+GLADE_CALLBACK void
+on_calls_line_check_activate(GtkWidget *w, gpointer data)
+{
+    callswin_t *cw = callswin_t::from_widget(w);
+    
+    gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_LINE,
+    	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
+}
+
+GLADE_CALLBACK void
+on_calls_arc_check_activate(GtkWidget *w, gpointer data)
+{
+    callswin_t *cw = callswin_t::from_widget(w);
+    
+    gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_ARC,
+    	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
+}
+
+GLADE_CALLBACK void
+on_calls_count_check_activate(GtkWidget *w, gpointer data)
+{
+    callswin_t *cw = callswin_t::from_widget(w);
+    
+    gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_COUNT,
+    	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
 }
 
 GLADE_CALLBACK void

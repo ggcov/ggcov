@@ -74,10 +74,6 @@ x  Add menu item to Source window to save the text with annotations.
 x  Add column titles to Source window, with the ability to hide them,
    visible by default, state saved automatically.
    
-x  Add a View menu to the Calls List window, with at least the ability
-   to show/hide the various columns in the list and the colour coding.
-   Column "Arc" to be hidden by default.
-
 x  Merge the Line column in the Calls window into the Call From column,
    so it's expressed as "function:line".
 
@@ -97,7 +93,15 @@ x  ??? Minimise filenames only within the context of a program or library?
 
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
+x   The File->Close and File->Exit callbacks in each window can now be
+    made unique, as there is a virtual window_t dtor to enable correct
+    cleaning up.
+
 --- CLOSED ---
+
+x  Add a View menu to the Calls List window, with at least the ability
+   to show/hide the various columns in the list and the colour coding.
+   Column "Arc" to be hidden by default.
 
 x  In the Source window, deal with large Filenames and Functions menus
    by splitting them up, like maketool's targets menu.  Or make them
