@@ -140,6 +140,7 @@ private:
 
     char *try_file(const char *dir, const char *ext) const;
     char *find_file(const char *ext, gboolean quiet) const;
+    void file_missing(const char *ext, const char *ext2) const;
 
     gboolean
     gcc296_braindeath() const
@@ -156,6 +157,7 @@ private:
     gboolean read_old_bbg_file_common(const char *bbgfilename, FILE *fp);
     gboolean read_old_bbg_file(const char *filename, FILE *fp);
     gboolean read_oldplus_bbg_file(const char *filename, FILE *fp);
+    const char *read_rh_funcid(covio_t *io) const;
     gboolean read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version);
     gboolean read_gcc33_bbg_file(const char *filename, FILE *fp);
     gboolean read_gcc34l_bbg_file(const char *filename, FILE *fp);
@@ -189,6 +191,8 @@ private:
     gboolean little_endian_;	/* for gcc34 format */
     ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char, cov_function_t> *functions_by_name_;
+    /* extra hashtable needed for RH-hacked gcc3.4 formats */
+    hashtable_t<const char, cov_function_t> *functions_by_id_;
     ptrarray_t<cov_line_t> *lines_;
     cov_line_t *null_line_; /* returned for all uninstrumented lines */
 

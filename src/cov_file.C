@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.38 2005-02-13 09:00:37 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.39 2005-02-27 06:09:17 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -77,6 +77,7 @@ cov_file_t::cov_file_t(const char *name)
 
     functions_ = new ptrarray_t<cov_function_t>();
     functions_by_name_ = new hashtable_t<const char, cov_function_t>;
+    functions_by_id_ = new hashtable_t<const char, cov_function_t>;
     lines_ = new ptrarray_t<cov_line_t>();
     null_line_ = new cov_line_t();
 
@@ -98,6 +99,7 @@ cov_file_t::~cov_file_t()
     delete functions_;
 
     delete functions_by_name_;
+    delete functions_by_id_;
 
     for (i = 0 ; i < lines_->length() ; i++)
     	delete lines_->nth(i);
@@ -806,6 +808,25 @@ gcov_tag_as_string(gnb_u32_t tag)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+/*
+ * RedHat just love to make my life interesting.
+ */
+ 
+const char *
+cov_file_t::read_rh_funcid(covio_t *io) const
+{
+    gnb_u64_t id;
+    static char idbuf[17];
+    
+    if (!io->read_u64(&id))
+    	return 0;
+    
+    snprintf(idbuf, sizeof(idbuf), "%016llx", id);
+    
+    return idbuf;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
 cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
@@ -820,6 +841,8 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     cov_arc_t *a;
     gnb_u32_t dest, flags;
     gnb_u32_t line, last_line = 0;
+    unsigned int len_unit = 1;
+    const char *funcid = 0;
 
     if (!io->read_u32(&format_version_))
     	bbg_failed0("short file");
@@ -828,9 +851,13 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     case BBG_VERSION_GCC33:
     	break;
     case BBG_VERSION_GCC34_RH:
+    	if (expect_version == BBG_VERSION_GCC34)
+	    expect_version = BBG_VERSION_GCC34_RH;
+	/* fall through */
     case BBG_VERSION_GCC34:
 	io->read_u32(&tmp);	/* ignore the timestamp */
     	/* TODO: should really do something useful with this */
+	len_unit = 4;	/* records lengths are in 4-byte units now */
     	break;
     default:
     	bbg_failed1("unknown version=0x%08x", format_version_);
@@ -842,17 +869,32 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     {
 	if (!io->read_u32(&length))
     	    bbg_failed0("short file");
+	length *= len_unit;
 	
     	dprintf3(D_BBG, "tag=0x%08x (%s) length=%u\n",
 	    	tag, gcov_tag_as_string(tag), length);
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    funcname = io->read_string();
+	    if (format_version_ == BBG_VERSION_GCC34_RH)
+	    {
+	    	/* RedHat just *have* to be different.  Thanks, guys */
+		funcid = read_rh_funcid(io);
+		funcname = io->read_string();
+		string_var filename = io->read_string();
+		io->read_u32(&tmp);	/* this seems to be a line number */
+	    }
+	    else
+	    {
+		funcname = io->read_string();
+		io->read_u32(&tmp);	/* ignore the checksum */
+	    }
 	    funcname = normalise_mangled(funcname);
     	    fn = add_function();
 	    fn->set_name(funcname);
-	    io->read_u32(&tmp);	/* ignore the checksum */
+	    if (funcid != 0)
+	    	fn->set_id(funcid);
+    	    dprintf1(D_BBG, "added function \"%s\"\n", funcname.data());
 	    nblocks = 0;
 	    break;
 
@@ -989,12 +1031,12 @@ cov_file_t::format_rec_t cov_file_t::formats[] =
     {
     	"gcno", 4,
 	&cov_file_t::read_gcc34b_bbg_file,
-	"gcc 3.4 .bbg (big-endian) format"
+	"gcc 3.4 .gcno (big-endian) format"
     },
     {
     	"oncg", 4,
 	&cov_file_t::read_gcc34l_bbg_file,
-	"gcc 3.4 .bbg (little-endian) format"
+	"gcc 3.4 .gcno (little-endian) format"
     },
     {
     	"gbbg", 4,
@@ -1239,12 +1281,12 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 {
     gnb_u32_t magic, version;
     gnb_u32_t tag, length;
-    string_var funcname;
     cov_function_t *fn = 0;
     gnb_u64_t count;
     gnb_u32_t tmp;
     unsigned int bidx;
     list_iterator_t<cov_arc_t> aiter;
+    unsigned int len_unit = 1;
 
     if (!io->read_u32(&magic) ||
         !io->read_u32(&version))
@@ -1262,24 +1304,38 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
     {
     	if (!io->read_u32(&tmp))    	/* ignore timestamp */
     	    da_failed0("short file");
+	len_unit = 4;	/* record lengths are in 4-byte units */
     }
 
     while (io->read_u32(&tag))
     {
 	if (!io->read_u32(&length))
     	    da_failed0("short file");
+	length *= len_unit;
 	
     	dprintf3(D_DA, "tag=0x%08x (%s) length=%u\n",
 	    	tag, gcov_tag_as_string(tag), length);
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    funcname = io->read_string();
-	    funcname = normalise_mangled(funcname);
-    	    fn = find_function(funcname);
-	    if (fn == 0)
-	    	da_failed1("unexpected function name \"%s\"", funcname.data());
-	    io->read_u32(&tmp);	/* ignore the checksum */
+	    if (format_version_ == BBG_VERSION_GCC34_RH)
+	    {
+	    	/* RedHat just *have* to be different.  Thanks, guys */
+		const char *funcid = read_rh_funcid(io);
+		if (funcid == 0)
+		    fn = 0;
+		else if ((fn = functions_by_id_->lookup(funcid)) == 0)
+	    	    da_failed1("unexpected function id \"%s\"", funcid);
+	    }
+	    else
+	    {
+		string_var funcname = io->read_string();
+		funcname = normalise_mangled(funcname);
+    		fn = find_function(funcname);
+		if (fn == 0)
+	    	    da_failed1("unexpected function name \"%s\"", funcname.data());
+		io->read_u32(&tmp);	/* ignore the checksum */
+	    }
 	    break;
 
     	case GCOV_TAG_COUNTER_BASE:
@@ -1332,7 +1388,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 gboolean
 cov_file_t::read_da_file(const char *dafilename)
 {
-    dprintf1(D_FILES, "Reading .da file \"%s\"\n", dafilename);
+    dprintf1(D_FILES, "Reading runtime data file \"%s\"\n", dafilename);
 
     switch (format_version_)
     {
@@ -1340,14 +1396,14 @@ cov_file_t::read_da_file(const char *dafilename)
     case BBG_VERSION_GCC34_RH:
 	if (little_endian_)
 	{
-	    dprintf0(D_FILES, "Detected gcc3.4 (little endian) .da format\n");
+	    dprintf0(D_FILES, "Detected gcc 3.4 (little endian) .gcda format\n");
     	    covio_gcc34l_t io(dafilename);
 	    if (io.open_read())
     	    	return read_gcc3_da_file(&io, DA_GCC34_MAGIC);
 	}
 	else
 	{
-	    dprintf0(D_FILES, "Detected gcc3.4 (big endian) .da format\n");
+	    dprintf0(D_FILES, "Detected gcc 3.4 (big endian) .gcda format\n");
     	    covio_gcc34b_t io(dafilename);
 	    if (io.open_read())
     	    	return read_gcc3_da_file(&io, DA_GCC34_MAGIC);
@@ -1636,17 +1692,24 @@ cov_file_t::find_file(const char *ext, gboolean quiet) const
     }
     
     if (!quiet)
-    {
-    	string_var dir = file_dirname(name());
-
-    	fprintf(stderr, "Couldn't find %s file for %s in path:\n",
-	    	    ext, file_basename_c(name()));
-	fprintf(stderr, "   %s\n", dir.data());
-	for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
-	    fprintf(stderr, "   %s\n", *iter);
-    }
+    	file_missing(ext, 0);
     
     return 0;
+}
+
+void
+cov_file_t::file_missing(const char *ext, const char *ext2) const
+{
+    list_iterator_t<char> iter;
+    string_var dir = file_dirname(name());
+    string_var which = (ext2 == 0 ? g_strdup("") :
+    	    	    	    g_strdup_printf(" or %s", ext2));
+
+    fprintf(stderr, "Couldn't find %s%s file for %s in path:\n",
+	    	ext, which.data(), file_basename_c(name()));
+    fprintf(stderr, "   %s\n", dir.data());
+    for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
+	fprintf(stderr, "   %s\n", *iter);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1655,9 +1718,22 @@ gboolean
 cov_file_t::read(gboolean quiet)
 {
     string_var filename;
+    const char *da_ext = ".da";
 
-    if ((filename = find_file(".bbg", quiet)) == 0 ||
-	 !read_bbg_file(filename))
+    if ((filename = find_file(".bbg", TRUE)) == 0)
+    {
+    	/* The .bbg file was gratuitously renamed .gcno in gcc 3.4 */
+    	if ((filename = find_file(".gcno", TRUE)) == 0)
+	{
+	    if (!quiet)
+	    	file_missing(".bbg", ".gcno");
+	    return FALSE;
+	}
+	/* The .da file was renamed too */
+	da_ext = ".gcda";
+    }
+    
+    if (!read_bbg_file(filename))
 	return FALSE;
 
     /* 
@@ -1672,7 +1748,7 @@ cov_file_t::read(gboolean quiet)
     }
 
     /* TODO: read multiple .da files from the search path & accumulate */
-    if ((filename = find_file(".da", quiet)) == 0 ||
+    if ((filename = find_file(da_ext, quiet)) == 0 ||
 	 !read_da_file(filename))
 	return FALSE;
 

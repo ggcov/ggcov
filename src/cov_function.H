@@ -82,6 +82,7 @@ private:
     ~cov_function_t();
     
     void set_name(const char *name);
+    void set_id(const char *id); /* needed for hacked-up RH gcc 3.4 file formats */
     cov_block_t *add_block();
     gboolean is_self_suppressed() const;
     void suppress();
@@ -91,6 +92,7 @@ private:
     cov::status_t calc_stats(cov_stats_t *) const;
 
     string_var name_;
+    string_var id_;
     gboolean suppressed_;   /* suppressed from above or by self */
     unsigned int idx_; 	    /* serial number in file */
     cov_file_t *file_;
