@@ -1,3 +1,12 @@
+Fri Jul 11 01:51:32 2003  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.1.8
+
+	* Fixed interpretation of relative filenames in .bb files.
+	* Added assignment operators to class estring.
+	* Fixed broken compile when libbfd missing.
+	* When showing or hiding columns in the Source window, preserve
+	the scroll position instead of flipping back to the start.
+
 Wed Jul  2 22:30:45 2003  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.1.7
 
