@@ -21,15 +21,8 @@
 #include <math.h>
 #include "sourcewin.H"
 #include "cov.h"
-#include "estring.h"
 
-CVSID("$Id: functionswin.C,v 1.1 2002-12-15 15:53:24 gnb Exp $");
-
-typedef struct
-{
-    cov_function_t *function;
-    cov_stats_t stats;
-} func_rec_t;
+CVSID("$Id: functionswin.C,v 1.2 2002-12-22 02:11:41 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -40,26 +33,22 @@ typedef struct
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static func_rec_t *
-func_rec_new(cov_function_t *fn)
+struct func_rec_t
 {
-    func_rec_t *fr;
-    
-    fr = new(func_rec_t);
-    
-    fr->function = fn;
+    cov_function_t *function;
+    cov_stats_t stats;
 
-    cov_stats_init(&fr->stats);
-    cov_function_calc_stats(fn, &fr->stats);
+    func_rec_t(cov_function_t *fn)
+    {
+	function = fn;
+	cov_stats_init(&stats);
+	cov_function_calc_stats(fn, &stats);
+    }
     
-    return fr;
-}
-
-static void
-func_rec_delete(func_rec_t *fr)
-{
-    g_free(fr);
-}
+    ~func_rec_t()
+    {
+    }
+};
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -142,7 +131,7 @@ functionswin_t::functionswin_t()
 
 functionswin_t::~functionswin_t()
 {
-    listdelete(functions_, func_rec_t, func_rec_delete);
+    listdelete(functions_, func_rec_t, delete);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -160,7 +149,7 @@ functionswin_t::add_functions(cov_file_t *f, void *userdata)
 	if (!strncmp(fn->name, "_GLOBAL_", 8))
 	    continue;
 	
-	fw->functions_ = g_list_prepend(fw->functions_, func_rec_new(fn));
+	fw->functions_ = g_list_prepend(fw->functions_, new func_rec_t(fn));
     }
 }
 
