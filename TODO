@@ -1,6 +1,15 @@
 
 --- OPEN ---
 
+x  cov_file_t are kept in a hashtable, and the only standard iteration
+   mechanism uses this hashtable, which is very clunky as it requires
+   passing a function pointer to be called for every cov_file_t. OTOH
+   there is a global alphabetically sorted list of minimal file names.
+   Replace that global list of filenames with a static member list of
+   cov_file_t, sorted in alphabetical minimal file name order, built
+   in cov_post_read.  Replace the clunky iteration interface with a
+   list iterator over that list.
+
 x  Annotate source with per-function coverage summaries.  The challenge
    is that this breaks the identity between source code line and text
    widget line.
@@ -107,7 +116,23 @@ x  Arrows appear in all the sortable column titles...they should appear
    only in the current sort column.
    
 x  In the Source window, deal with large Filenames and Functions menus
-   by splitting them up, like maketool's targets menu.
+   by splitting them up, like maketool's targets menu.  Or make them
+   comboboxes in a toolbar, which would probably be easier.
+
+x  Handle shared libraries...scan the .dynamic structure of the executable
+   for runtime path and list of sonames, resolve each, and recursively
+   scan them for coveraged source files.
+   
+x  ??? Minimise filenames only within the context of a program or library?
+
+x  ??? Add option to only coverage shared libraries and ignore programs.
+
+x   Rename Windows->New Call Graph to Windows->New Call Butterfly and
+    Windows->New Call Graph2 to Windows->New Call Tree.
+    
+x   Callgraphwin should label the two lists something easier to
+    understand.  Instead of "Distibution to Ancestors" something like
+    "Called From".
 
 --- CLOSED ---
 
