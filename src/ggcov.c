@@ -24,12 +24,13 @@
 #include "estring.h"
 #include "sourcewin.h"
 #include "summarywin.h"
+#include "callswin.h"
 #include "functionswin.h"
 #include "fileswin.h"
 #include <dirent.h>
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.5 2001-11-30 01:07:59 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.6 2001-12-02 07:26:59 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -111,6 +112,8 @@ static void
 read_gcov_files(void)
 {
     GList *iter;
+    
+    cov_init();
     
     if (files == 0)
     {
@@ -210,6 +213,7 @@ dump_arc(cov_arc_t *a)
     	    	    	    	a->to->function->name,
 				a->to->idx);
     fprintf(stderr, "                        COUNT=%lld\n", a->count);
+    fprintf(stderr, "                        NAME=%s\n", a->name);
     fprintf(stderr, "                        ON_TREE=%s\n", boolstr(a->on_tree));
     fprintf(stderr, "                        FAKE=%s\n", boolstr(a->fake));
     fprintf(stderr, "                        FALL_THROUGH=%s\n", boolstr(a->fall_through));
@@ -239,7 +243,7 @@ dump_block(cov_block_t *b)
     for (iter = b->locations ; iter != 0 ; iter = iter->next)
     {
     	cov_location_t *loc = (cov_location_t *)iter->data;
-	fprintf(stderr, "                    %s:%d\n", loc->filename, loc->lineno);
+	fprintf(stderr, "                    %s:%ld\n", loc->filename, loc->lineno);
     }
     fprintf(stderr, "                }\n");
     fprintf(stderr, "            }\n");
@@ -310,6 +314,12 @@ on_windows_new_functionswin_activated(GtkWidget *w, gpointer userdata)
 }
 
 static void
+on_windows_new_callswin_activated(GtkWidget *w, gpointer userdata)
+{
+    callswin_new();
+}
+
+static void
 on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *srcw;
@@ -327,6 +337,8 @@ ui_create(void)
     			      on_windows_new_fileswin_activated, 0);
     ui_register_windows_entry("New Function List...",
     			      on_windows_new_functionswin_activated, 0);
+    ui_register_windows_entry("New Calls List...",
+    			      on_windows_new_callswin_activated, 0);
     ui_register_windows_entry("New Source...",
     			      on_windows_new_sourcewin_activated, 0);
 
