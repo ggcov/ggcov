@@ -27,6 +27,14 @@ if [ ! -f $SPECFILE ]; then
     fi
 fi
 
+if [ ! -f $TARBALL ]; then
+    make dist
+    if [ ! -f $TARBALL ]; then
+    	echo "Can't build $TARBALL, giving up"
+	exit 1
+    fi
+fi
+
 /bin/rm -rf $BUILDDIR
 mkdir -p $BUILDDIR
 (cd $BUILDDIR ; mkdir -p BUILD RPMS/i386 RPMS/`uname -m` SPECS SRPMS )
