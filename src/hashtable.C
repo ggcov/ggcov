@@ -19,7 +19,7 @@
 
 #include "hashtable.H"
 
-CVSID("$Id: hashtable.C,v 1.2 2004-02-22 10:59:20 gnb Exp $");
+CVSID("$Id: hashtable.C,v 1.3 2005-02-27 06:20:59 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -48,17 +48,17 @@ direct_compare(gconstpointer v1, gconstpointer v2)
     	return 0;
 }
 
-GHashFunc hashtable_ops_t<char>::hash = g_str_hash;
-GCompareFunc hashtable_ops_t<char>::compare = g_str_equal;
-GCompareFunc hashtable_ops_t<char>::sort_compare = string_compare;
+template<> GHashFunc hashtable_ops_t<char>::hash = g_str_hash;
+template<> GCompareFunc hashtable_ops_t<char>::compare = g_str_equal;
+template<> GCompareFunc hashtable_ops_t<char>::sort_compare = string_compare;
 
-GHashFunc hashtable_ops_t<const char>::hash = g_str_hash;
-GCompareFunc hashtable_ops_t<const char>::compare = g_str_equal;
-GCompareFunc hashtable_ops_t<const char>::sort_compare = string_compare;
+template<> GHashFunc hashtable_ops_t<const char>::hash = g_str_hash;
+template<> GCompareFunc hashtable_ops_t<const char>::compare = g_str_equal;
+template<> GCompareFunc hashtable_ops_t<const char>::sort_compare = string_compare;
 
-GHashFunc hashtable_ops_t<void>::hash = g_direct_hash;
-GCompareFunc hashtable_ops_t<void>::compare = g_direct_equal;
-GCompareFunc hashtable_ops_t<void>::sort_compare = direct_compare;
+template<> GHashFunc hashtable_ops_t<void>::hash = g_direct_hash;
+template<> GCompareFunc hashtable_ops_t<void>::compare = g_direct_equal;
+template<> GCompareFunc hashtable_ops_t<void>::sort_compare = direct_compare;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
