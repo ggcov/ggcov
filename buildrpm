@@ -8,6 +8,12 @@ SPECFILE=${PACKAGE}.spec
 TARBALL=${PACKAGE}-${VERSION}.tar.gz
 RPMDIR=rpm.d
 
+if [ -x /usr/bin/rpmbuild ] ; then
+    RPMBUILD=rpmbuild
+else
+    RPMBUILD=rpm
+fi
+
 # Calculate a string which identifies the Linux distro
 DISTRO=
 if [ -f /etc/redhat-release ]; then
@@ -19,6 +25,7 @@ fi
 #echo TARBALL=$TARBALL
 #echo RPMDIR=$RPMDIR
 #echo DISTRO=$DISTRO
+#echo RPMBUILD=$RPMBUILD
 #exit 1
 
 set -x
@@ -46,7 +53,8 @@ fi
 mkdir -p $RPMDIR
 (cd $RPMDIR ; mkdir -p BUILD RPMS/i386 RPMS/`uname -m` SPECS SRPMS )
 
-rpm -bb \
+
+$RPMBUILD -bb \
     --define "_topdir $PWD/$RPMDIR" \
     --define "_sourcedir $PWD" \
     --verbose \
