@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _ggcov_ui_common_h_
-#define _ggcov_ui_common_h_ 1
+#ifndef _ggcov_uicommon_h_
+#define _ggcov_uicommon_h_ 1
 
 #include <gtk/gtk.h>
 
@@ -28,4 +28,4 @@
 #define GTK2 0
 #endif
 
-#endif /* _ggcov_ui_common_h_ */
+#endif /* _ggcov_uicommon_h_ */

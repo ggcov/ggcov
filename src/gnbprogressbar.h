@@ -29,8 +29,8 @@
  * GTK+ at ftp://ftp.gtk.org/pub/gtk/. 
  */
 
-#ifndef __GNB_PROGRESS_BAR_H__
-#define __GNB_PROGRESS_BAR_H__
+#ifndef __GNBPROGRESSBAR_H__
+#define __GNBPROGRESSBAR_H__
 
 
 #include <gdk/gdk.h>

@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _ptrarray_h_
-#define _ptrarray_h_ 1
+#ifndef _ptrarray_H_
+#define _ptrarray_H_ 1
 
 #include "common.h"
 
@@ -107,4 +107,4 @@ public:
     }
 };
 
-#endif /* _ptrarray_h_ */
+#endif /* _ptrarray_H_ */

@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _tok_h_
-#define _tok_h_ 1
+#ifndef _tok_H_
+#define _tok_H_ 1
 
 #include "common.h"
 
@@ -50,4 +50,4 @@ private:
 };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-#endif /* _tok_h_ */
+#endif /* _tok_H_ */
