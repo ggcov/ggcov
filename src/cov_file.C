@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.34 2004-03-21 09:48:04 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.35 2004-04-04 13:50:17 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -377,6 +377,36 @@ cov_file_t::add_location(
     
     ln = f->get_nth_line(lineno);
     
+    /*
+     * This incredibly obscure corner case keeps tripping the regression
+     * tests.  The 2nd last block in a function normally represents the
+     * function epilogue; in some functions which have an empty epilogue
+     * the gcc 2.96 compiler spits out a line entry for the epilogue block
+     * which is a duplicate of the real last line.  This is mostly harmless
+     * except in functions where the last line is not always executed, e.g.
+     * foo()
+     * {
+     *    ...
+     *    if (...)
+     *       yadda();
+     * }
+     * Here the last line spuriously contains 2 blocks, one of which counts
+     * the number of times yadda() was called and the other counts the number
+     * of times it wasn't; the result reported is the maximum of the two.
+     * This tweak suppresses the line entry for the epilogue block if
+     * another block already has the line.
+     */
+    if (ln->blocks_ != 0 && b->is_epilogue())
+    {
+    	if (debug_enabled(D_BB))
+	{
+    	    string_var desc = b->describe();
+    	    duprintf3("Block %s skipping duplicate epilogue line %s:%lu\n",
+		      desc.data(), filename, lineno);
+	}
+    	return;
+    }
+
     if (debug_enabled(D_BB))
     {
 	string_var desc = b->describe();

@@ -88,6 +88,8 @@ public:
     {
     	return count_;
     }
+    
+    gboolean is_epilogue() const;
 
 private:
     cov_block_t();

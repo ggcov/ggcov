@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.12 2004-02-16 22:58:44 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.13 2004-04-04 13:50:17 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -47,6 +47,19 @@ char *
 cov_block_t::describe() const
 {
     return g_strdup_printf("%s:%d", function_->name(), idx_);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_block_t::is_epilogue() const
+{
+    unsigned int nblocks = function_->num_blocks();
+
+    return (nblocks >= 4 &&
+            idx_ == (nblocks - 2) &&
+	    out_arcs_.length() == 1 &&
+	    (*(out_arcs_.first()))->to()->bindex() == (nblocks-1));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
