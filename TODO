@@ -66,8 +66,39 @@ x  Additional source annotations in the Source window (i.e. non-column
    additions like per-function stats) should be colour coded to
    make them distinct from non-executable lines of source.
    
+x  Add menu item to Source window to save the text with annotations.
+
+x  Add column titles to Source window, with the ability to hide them,
+   visible by default, state saved automatically.
+   
+x  Colour code red/green the entries in the Function List, Calls List
+   etc windows.
+   
+x  Add a View menu to the Calls List window, with at least the ability
+   to show/hide the various columns in the list and the colour coding.
+   Column "Arc" to be hidden by default.
+   
+x  Make the default widths of the columns in the Call List window wide
+   enough to actually show the label.
+
+x  Preferences window pane to control colour coding colours.
+
+x  ??? Add a Weighted Sum to the Summary Overall window.
+
+x  Arrows appear in all the sortable column titles...they should appear
+   only in the current sort column.
+
 --- CLOSED ---
 
+x  Calls List window should have an "All Functions" entry in the
+   Function combo box.  This should be the first and default entry.
+   
+x  Add another column to the Calls List window, so it has both From
+   and To function names.
+   
+x  Double-clicking on rows in the Calls List window should show the
+   source for that call.
+   
 x  Add a "Files List" window analagous to the existing "Functions List"
    window: shows list of all filenames, with columns for various test
    coverage stats, all columns sortable.  Double-clicking on a filename
