@@ -22,7 +22,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.3 2001-11-23 11:48:12 gnb Exp $");
+CVSID("$Id: sourcewin.c,v 1.4 2001-11-23 12:32:29 gnb Exp $");
 
 extern GList *filenames;
 
@@ -339,6 +339,55 @@ block_list_total(const GList *list)
     return total;
 }
 
+
+/*
+ * Expand tabs in the line because GTK 1.2.7 through 1.2.9 can
+ * only be trusted to expand *initial* tabs correctly, DAMMIT.
+ */
+static char *
+fgets_tabexpand(char *buf, unsigned int maxlen, FILE *fp)
+{
+    int c;
+    unsigned int len = 0, ns;
+    static const char spaces[] = "        ";
+    
+    maxlen--;	/* allow for nul terminator */
+    
+    for (;;)
+    {
+    	if ((c = getc(fp)) == EOF)
+	    return (len == 0 ? 0 : buf);
+	    
+	if (c == '\t')
+	{
+	    ns = 8-(len&7);
+	    if (len+ns >= maxlen)
+	    {
+	    	ungetc(c, fp);
+		return buf;
+	    }
+	    memcpy(buf+len, spaces, ns);
+	    len += ns;
+	    buf[len] = '\0';
+	}
+	else
+	{
+	    if (len+1 == maxlen)
+	    {
+	    	ungetc(c, fp);
+		return buf;
+	    }
+	    buf[len++] = c;
+	    buf[len] = '\0';
+	    if (c == '\n')
+	    	break;
+	}
+    }
+    
+    return buf;
+}
+
+
 static void
 sourcewin_update_source(sourcewin_t *sw)
 {
@@ -349,7 +398,7 @@ sourcewin_update_source(sourcewin_t *sw)
     GtkText *text = GTK_TEXT(sw->text);
     int i, nstrs;
     GdkColor *color;
-    char *strs[4];
+    const char *strs[4];
     char linenobuf[32];
     char countbuf[32];
     char linebuf[1024];
@@ -369,7 +418,7 @@ sourcewin_update_source(sourcewin_t *sw)
     g_array_set_size(sw->offsets_by_line, 0);
 
     lineno = 0;
-    while (fgets(linebuf, sizeof(linebuf), fp) != 0)
+    while (fgets_tabexpand(linebuf, sizeof(linebuf), fp) != 0)
     {
     	++lineno;
 	
