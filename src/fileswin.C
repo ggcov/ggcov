@@ -25,7 +25,7 @@
 #include "prefs.H"
 #include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.22 2004-02-18 11:20:17 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.23 2004-02-23 11:09:50 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -89,10 +89,6 @@ struct file_rec_t
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-
-#define ratio(n,d) \
-    ((d) == 0 ? -1.0 : (double)(n) / (double)(d))
-    
 static int
 ratiocmp(double r1, double r2)
 {
@@ -111,29 +107,24 @@ fileswin_compare(file_rec_t *fr1, file_rec_t *fr2, int column)
     switch (column)
     {
     case COL_BLOCKS:
-    	return ratiocmp(
-    	    	    ratio(s1->blocks_executed(), s1->blocks_total()),
-    	    	    ratio(s2->blocks_executed(), s2->blocks_total()));
+    	return ratiocmp(s1->blocks_sort_fraction(),
+	    	    	s2->blocks_sort_fraction());
 	
     case COL_LINES:
-    	return ratiocmp(
-    	    	    ratio(s1->lines_executed(), s1->lines_total()),
-    	    	    ratio(s2->lines_executed(), s2->lines_total()));
+    	return ratiocmp(s1->lines_sort_fraction(),
+	    	    	s2->lines_sort_fraction());
 	
     case COL_FUNCTIONS:
-    	return ratiocmp(
-    	    	    ratio(s1->functions_executed(), s1->functions_total()),
-    	    	    ratio(s2->functions_executed(), s2->functions_total()));
+    	return ratiocmp(s1->functions_sort_fraction(),
+	    	        s2->functions_sort_fraction());
 	
     case COL_CALLS:
-    	return ratiocmp(
-    	    	    ratio(s1->calls_executed(), s1->calls_total()),
-    	    	    ratio(s2->calls_executed(), s2->calls_total()));
+    	return ratiocmp(s1->calls_sort_fraction(),
+	    	        s2->calls_sort_fraction());
 	
     case COL_BRANCHES:
-    	return ratiocmp(
-    	    	    ratio(s1->branches_executed(), s1->branches_total()),
-    	    	    ratio(s2->branches_executed(), s2->branches_total()));
+    	return ratiocmp(s1->branches_sort_fraction(),
+	    	        s2->branches_sort_fraction());
 	
     case COL_FILE:
     	return strcmp(fr1->name, fr2->name);

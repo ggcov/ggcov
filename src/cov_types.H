@@ -112,6 +112,19 @@ public:
     {
     	return blocks_;
     }
+    double blocks_fraction() const
+    {
+    	unsigned long n = blocks_executed();
+	unsigned long d = blocks_total();
+	return (d == 0 ? 0.0 : (double)n / (double)d);
+    }
+    /* for sorting objects: -1 forces uninstrumented last */
+    double blocks_sort_fraction() const
+    {
+    	unsigned long n = blocks_executed();
+	unsigned long d = blocks_total();
+	return (d == 0 ? -1.0 : (double)n / (double)d);
+    }
 
     unsigned long lines_executed() const
     {
@@ -139,6 +152,19 @@ public:
     const unsigned long *lines_by_status() const
     {
     	return lines_;
+    }
+    double lines_fraction() const
+    {
+    	unsigned long n = lines_executed();
+	unsigned long d = lines_total();
+	return (d == 0 ? 0.0 : (double)n / (double)d);
+    }
+    /* for sorting objects: -1 forces uninstrumented last */
+    double lines_sort_fraction() const
+    {
+    	unsigned long n = lines_executed();
+	unsigned long d = lines_total();
+	return (d == 0 ? -1.0 : (double)n / (double)d);
     }
 
     unsigned long functions_executed() const
@@ -168,6 +194,19 @@ public:
     {
     	return functions_;
     }
+    double functions_fraction() const
+    {
+    	unsigned long n = functions_executed();
+	unsigned long d = functions_total();
+	return (d == 0 ? 0.0 : (double)n / (double)d);
+    }
+    /* for sorting objects: -1 forces uninstrumented last */
+    double functions_sort_fraction() const
+    {
+    	unsigned long n = functions_executed();
+	unsigned long d = functions_total();
+	return (d == 0 ? -1.0 : (double)n / (double)d);
+    }
 
     /* calls happen on block boundaries hence cannot be partial */
     unsigned long calls_executed() const
@@ -186,6 +225,19 @@ public:
     const unsigned long *calls_by_status() const
     {
     	return calls_;
+    }
+    double calls_fraction() const
+    {
+    	unsigned long n = calls_executed();
+	unsigned long d = calls_total();
+	return (d == 0 ? 0.0 : (double)n / (double)d);
+    }
+    /* for sorting objects: -1 forces uninstrumented last */
+    double calls_sort_fraction() const
+    {
+    	unsigned long n = calls_executed();
+	unsigned long d = calls_total();
+	return (d == 0 ? -1.0 : (double)n / (double)d);
     }
 
 
@@ -216,6 +268,19 @@ public:
     const unsigned long *branches_by_status() const
     {
     	return branches_;
+    }
+    double branches_fraction() const
+    {
+    	unsigned long n = branches_executed();
+	unsigned long d = branches_total();
+	return (d == 0 ? 0.0 : (double)n / (double)d);
+    }
+    /* for sorting objects: -1 forces uninstrumented last */
+    double branches_sort_fraction() const
+    {
+    	unsigned long n = branches_executed();
+	unsigned long d = branches_total();
+	return (d == 0 ? -1.0 : (double)n / (double)d);
     }
 
     /* Used in calculating status for aggregated objects like functions */
