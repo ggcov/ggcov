@@ -90,6 +90,8 @@ public:
     }
     
     gboolean is_epilogue() const;
+    
+    void finalise();
 
 private:
     cov_block_t();

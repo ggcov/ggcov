@@ -110,6 +110,8 @@ public:
 	}
 #endif
     }
+    
+    void finalise();
 
 private:
     cov_arc_t(cov_block_t *from, cov_block_t *to);

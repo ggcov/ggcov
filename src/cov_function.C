@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.16 2005-02-27 06:09:17 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.17 2005-03-05 15:05:34 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -99,8 +99,13 @@ cov_function_t::suppress()
 void
 cov_function_t::finalise()
 {
+    unsigned int bidx;
+
     if (is_self_suppressed())
     	suppress();
+	
+    for (bidx = 0 ; bidx < num_blocks() ; bidx++)
+	nth_block(bidx)->finalise();
 }
 
 const cov_location_t *

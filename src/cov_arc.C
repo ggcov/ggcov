@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_arc.C,v 1.6 2004-02-16 22:57:26 gnb Exp $");
+CVSID("$Id: cov_arc.C,v 1.7 2005-03-05 15:05:34 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -158,6 +158,42 @@ cov_arc_t::find_invalid(const list_t<cov_arc_t> &list)
 	    return a;
     }
     return 0;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cov_arc_t::finalise()
+{
+    static const char * const ignored[] =
+    {
+	"__cxa_allocate_exception", /* gcc 3.4 exception handling */
+	"__cxa_begin_catch",   	    /* gcc 3.4 exception handling */
+	"__cxa_call_unexpected",    /* gcc 3.4 exception handling */
+	"__cxa_end_catch",   	    /* gcc 3.4 exception handling */
+	"__cxa_throw",   	    /* gcc 3.4 exception handling */
+	"_Unwind_Resume",   	    /* gcc 3.4 exception handling */
+    	0
+    };
+    const char * const *p;
+    
+    if (name_ == 0)
+    	return;
+    
+    /*
+     * Suppress arcs which are calls to any of the internal
+     * language functions we don't care about, such as g++
+     * exception handling.
+     * TODO: also stuff like integer arithmetic millicode.
+     */
+    for (p = ignored ; *p != 0 ; p++)
+    {
+	if (!strcmp(name_, *p))
+	{
+	    suppress();
+	    return;
+	}
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
