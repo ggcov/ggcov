@@ -18,11 +18,12 @@
  */
 
 #include "ui.h"
+#include "uix.h"
 #include "estring.H"
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.19 2003-06-09 05:26:02 gnb Exp $");
+CVSID("$Id: ui.c,v 1.20 2003-07-19 06:26:13 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -661,6 +662,439 @@ ui_tree_view_double_click_data(GtkTreeView *tv, GdkEvent *event, int column)
     return 0;
 }
 #endif
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#if GTK2
+static PangoFontDescription *ui_text_font_desc;
+#else
+static GdkFont *ui_text_font;
+
+struct ui_text_tag_s
+{
+    char *name;
+    GdkColor foreground;
+};
+
+typedef struct
+{
+    GList *tags;	    	/* list of tags */
+    int lineno;     	    	/* current line number */
+    GArray *offsets_by_line;	/* for selecting by line number */
+} ui_text_data;
+
+static const char ui_text_data_key[] = "ui_text_data_key";
+
+static void
+ui_text_on_destroy(GtkWidget *w, gpointer closure)
+{
+    ui_text_data *td = (ui_text_data *)closure;
+
+    while (td->tags != 0)
+    {
+    	ui_text_tag *tag = (ui_text_tag *)td->tags->data;
+	
+	g_free(tag->name);
+	g_free(tag);
+	
+    	td->tags = g_list_remove_link(td->tags, td->tags);
+    }
+    g_array_free(td->offsets_by_line, /*free_segment*/TRUE);
+    g_free(td);
+}
+
+static void
+ui_text_line_start(GtkText *text, ui_text_data *td)
+{
+    unsigned int offset = gtk_text_get_length(text);
+#if DEBUG > 5
+    fprintf(stderr, "offsets_by_line[%d] = %d\n",
+    	td->offsets_by_line->len, offset);
+#endif
+    g_array_append_val(td->offsets_by_line, offset);
+}
+
+#endif /* !GTK2 */
+
+void
+ui_text_setup(GtkWidget *w)
+{
+#if GTK2
+    assert(GTK_IS_TEXT_VIEW(w));
+
+    /*
+     * Override the font in the text window: it needs to be
+     * fixedwidth so the source aligns properly.
+     */
+    if (ui_text_font_desc == 0)
+    	ui_text_font_desc = pango_font_description_from_string("monospace");
+    gtk_widget_modify_font(w, ui_text_font_desc);
+
+#ifndef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
+    /* hacky select_region() implementation relies on not having line wrapping */
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(w), GTK_WRAP_NONE);
+#endif /* !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
+
+#else /* !GTK2 */
+    ui_text_data *td;
+    
+    assert(GTK_IS_TEXT(w));
+
+    td = new(ui_text_data);
+
+    if (ui_text_font == 0)
+	ui_text_font = uix_fixed_width_font(gtk_widget_get_style(w)->font);
+
+    td->offsets_by_line = g_array_new(/*zero_terminated*/TRUE,
+				      /*clear*/TRUE,
+				      sizeof(unsigned int));
+    gtk_object_set_data(GTK_OBJECT(w), ui_text_data_key, td);
+    gtk_signal_connect(GTK_OBJECT(w), "destroy", 
+    	GTK_SIGNAL_FUNC(ui_text_on_destroy), td);
+#endif /* !GTK2 */
+}
+
+
+int
+ui_text_font_width(GtkWidget *w)
+{
+#if GTK2
+    /*
+     * Yes this is a deprecated function...but there doesn't
+     * seem to be any other way to get a font width.
+     */
+    GdkFont *font = gtk_style_get_font(gtk_widget_get_style(w));
+    return uix_font_width(font);
+#else /* !GTK2 */
+    return uix_font_width(ui_text_font);
+#endif /* !GTK2 */
+}
+
+
+ui_text_tag *
+ui_text_create_tag(GtkWidget *w, const char *name, GdkColor *fg)
+{
+#if GTK2
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
+
+    return gtk_text_buffer_create_tag(buffer, name,
+    		"foreground-gdk",   	fg,
+		(char *)0);
+#else /* !GTK2 */
+    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
+    	    	    	    	    	    	    	   ui_text_data_key);
+    ui_text_tag *tag;
+    
+    tag = new(ui_text_tag);
+    tag->name = g_strdup(name);
+    tag->foreground = *fg;
+    td->tags = g_list_prepend(td->tags, tag);
+    
+    return tag;
+#endif /* !GTK2 */
+}   
+
+
+gfloat
+ui_text_vscroll_sample(GtkWidget *w)
+{
+#if GTK2
+    return GTK_TEXT_VIEW(w)->vadjustment->value;
+#else /* !GTK2 */
+    return GTK_TEXT(w)->vadj->value;
+#endif /* !GTK2 */
+}
+
+void
+ui_text_vscroll_restore(GtkWidget *w, gfloat vs)
+{
+#if GTK2
+    GtkTextView *tv = GTK_TEXT_VIEW(w);
+
+    /* Work around rounding bug in gtk 2.0.2 */
+    if (vs + tv->vadjustment->page_size + 0.5 > tv->vadjustment->upper)
+    	vs = tv->vadjustment->upper - tv->vadjustment->page_size - 0.5;
+
+    gtk_adjustment_set_value(tv->vadjustment, vs);
+#else /* !GTK2 */
+    gtk_adjustment_set_value(GTK_TEXT(w)->vadj, vs);
+#endif /* !GTK2 */
+}
+
+void
+ui_text_begin(GtkWidget *w)
+{
+#if GTK2
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
+
+    gtk_text_buffer_set_text(buffer, "", -1);
+#else /* !GTK2 */
+    GtkText *text = GTK_TEXT(w);
+    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
+    	    	    	    	    	    	    	   ui_text_data_key);
+
+    gtk_text_freeze(text);
+    gtk_editable_delete_text(GTK_EDITABLE(text), 0, -1);
+    g_array_set_size(td->offsets_by_line, 0);
+    ui_text_line_start(text, td);   /* skip 0th entry */
+#endif /* !GTK2 */
+}
+
+void
+ui_text_add(GtkWidget *w, ui_text_tag *tag, const char *str, int len)
+{
+#if GTK2
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
+    GtkTextIter end;
+
+    gtk_text_buffer_get_end_iter(buffer, &end);
+    gtk_text_buffer_insert_with_tags(buffer, &end, str, len,
+	    	    	    	     tag, (char*)0);
+#else /* !GTK2 */
+    GtkText *text = GTK_TEXT(w);
+    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
+    	    	    	    	    	    	    	   ui_text_data_key);
+    const char *s, *e;
+    GdkColor *fg = (tag == 0 ? 0 : &tag->foreground);
+    GdkColor *bg = 0;
+
+    if (len < 0)
+    	len = strlen(str);
+
+    /* parse the string for newlines so we can track line offsets */
+    s = str;
+    while (len > 0 && (e = strchr(s, '\n')) != 0)
+    {
+    	e++;
+	gtk_text_insert(text, ui_text_font, fg, bg, s, (e-s));
+    	ui_text_line_start(text, td);
+	len -= (e-s);
+	s = e;
+    }
+    if (len > 0)
+	gtk_text_insert(text, ui_text_font, fg, bg, s, len);
+#endif /* !GTK2 */
+}
+
+void
+ui_text_end(GtkWidget *w)
+{
+#if !GTK2
+    GtkText *text = GTK_TEXT(w);
+
+    gtk_text_thaw(text);
+#endif /* !GTK2 */
+}
+
+
+void
+ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endline)
+{
+#if GTK2
+#ifdef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
+    GtkTextIter start, end;
+    
+    gtk_text_buffer_get_iter_at_line(buffer, &start, startline);
+    gtk_text_buffer_get_iter_at_line(buffer, &end, endline);
+
+    /* this function appeared sometime after 2.0.2 */
+    gtk_text_buffer_select_range(buffer, &start, &end);
+#else /* GTK2 && !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
+    /*
+     * In GTK late 1.99 there is no way I can see to use the official
+     * API to select a range of rows.  However, we can fake it by
+     * calling TextView class methods as if the user had entered the
+     * keystrokes for cursor movement and selection...this is a HACK!
+     * Unfortunately we can only move down by display lines not
+     * logical text lines, so this technique relies on them being
+     * identical, i.e. no line wrap.
+     */
+    GtkTextViewClass *klass = GTK_TEXT_VIEW_GET_CLASS(w);
+    GtkTextView *tview = GTK_TEXT_VIEW(w);
+    /* first move the cursor to the start of the buffer */
+    (*klass->move_cursor)(tview, GTK_MOVEMENT_BUFFER_ENDS, -1, FALSE);
+    /* move the cursor down to the start line */
+    if (startline > 1)
+	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINES,
+    	    	    	      (gint)startline-1, FALSE);
+    /* select down to the end line */
+    if (endline == startline)
+	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINE_ENDS,
+    	    	    	      1, /*extend_selection*/TRUE);
+    else
+	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINES,
+    	    	    	      (gint)(endline - startline + 1),
+			      /*extend_selection*/TRUE);
+#endif /* GTK2 && !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
+#else /* !GTK2 */
+    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
+    	    	    	    	    	    	    	   ui_text_data_key);
+    int endoff;
+    
+    assert(td->offsets_by_line->len > 0);
+
+    if (startline < 1)
+    	startline = 1;
+    if (endline < 1)
+    	endline = startline;
+    if (startline > td->offsets_by_line->len)
+    	startline = td->offsets_by_line->len;
+    if (endline > td->offsets_by_line->len)
+    	endline = td->offsets_by_line->len;
+    if (startline > endline)
+    	return;
+	
+    assert(startline >= 1);
+    assert(startline <= td->offsets_by_line->len);
+    assert(endline >= 1);
+    assert(endline <= td->offsets_by_line->len);
+    
+    /* set endoff to the first location after the last line to be selected */
+    if (endline == td->offsets_by_line->len)
+	endoff = -1;
+    else
+	endoff = g_array_index(td->offsets_by_line, unsigned int, endline)-1;
+
+    gtk_editable_select_region(GTK_EDITABLE(w),
+    	    g_array_index(td->offsets_by_line, unsigned int, startline-1),
+    	    endoff);
+#endif /* !GTK2 */
+}
+
+
+void
+ui_text_ensure_visible(GtkWidget *w, unsigned long line)
+{
+#if GTK2
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
+    GtkTextIter iter;
+    
+    gtk_text_buffer_get_iter_at_line(buffer, &iter, line);
+    gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(w), &iter,
+                                 0.0, FALSE, 0.0, 0.0);
+#else
+    /* This mostly works.  Not totally predictable but good enough for now */
+    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
+    	    	    	    	    	    	    	   ui_text_data_key);
+    GtkAdjustment *adj = GTK_TEXT(w)->vadj;
+
+    gtk_adjustment_set_value(adj,
+	    	adj->upper * (double)line / (double)td->offsets_by_line->len
+		    - adj->page_size/2.0);
+#endif
+}
+
+
+#if !GTK2
+static unsigned long
+ui_text_offset_to_lineno(ui_text_data *td, unsigned int offset)
+{
+    unsigned int top, bottom;
+    
+    if (offset == 0)
+    	return 0;
+
+    top = td->offsets_by_line->len-1;
+    bottom = 0;
+    
+#if DEBUG > 5
+    fprintf(stderr, "ui_text_offset_to_lineno: { offset=%u top=%u bottom=%u\n",
+    	    offset, top, bottom);
+#endif
+
+    while (top - bottom > 1)
+    {
+    	unsigned int mid = (top + bottom)/2;
+	unsigned int midoff = g_array_index(td->offsets_by_line, unsigned int, mid);
+	
+#if DEBUG > 5
+    	fprintf(stderr, "ui_text_offset_to_lineno:     top=%d bottom=%d mid=%d midoff=%u\n",
+	    	    	 top, bottom, mid, midoff);
+#endif
+
+	if (midoff == offset)
+	    top = bottom = mid;
+    	else if (midoff < offset)
+	    bottom = mid;
+	else
+	    top = mid;
+    }
+
+#if DEBUG > 5
+    fprintf(stderr, "ui_text_offset_to_lineno: offset=%u line=%u }\n",
+    	    offset, bottom);
+#endif
+
+    return (unsigned long)bottom+1;
+}
+#endif /* !GTK2 */
+
+
+void
+ui_text_get_selected_lines(
+    GtkWidget *w,
+    unsigned long *startp,
+    unsigned long *endp)
+{
+#if GTK2
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
+    GtkTextIter start_iter, end_iter;
+    
+    if (gtk_text_buffer_get_selection_bounds(buffer, &start_iter, &end_iter))
+    {
+	if (startp != 0)
+	    *startp = 0;
+	if (endp != 0)
+	    *endp = 0;
+    }
+    else
+    {
+	if (startp != 0)
+	    *startp = gtk_text_iter_get_line(&start_iter);
+	if (endp != 0)
+	    *endp = gtk_text_iter_get_line(&end_iter);
+    }
+#else /* !GTK2 */
+    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
+    	    	    	    	    	    	    	   ui_text_data_key);
+
+    if (GTK_EDITABLE(w)->selection_start_pos == 0 &&
+    	GTK_EDITABLE(w)->selection_end_pos == 0)
+    {
+	if (startp != 0)
+	    *startp = 0;
+	if (endp != 0)
+	    *endp = 0;
+    }
+    else
+    {
+	if (startp != 0)
+	    *startp = ui_text_offset_to_lineno(td,
+	    	    		GTK_EDITABLE(w)->selection_start_pos);
+	if (endp != 0)
+	    *endp = ui_text_offset_to_lineno(td,
+	    	    		GTK_EDITABLE(w)->selection_end_pos-1);
+    }
+#endif /* !GTK2 */
+}
+
+
+char *
+ui_text_get_contents(GtkWidget *w)
+{
+#if GTK2
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
+    GtkTextIter start, end;
+
+    gtk_text_buffer_get_bounds(buffer, &start, &end);
+    return gtk_text_buffer_get_text(buffer, &start, &end,
+                                    /*include_hidden_chars*/FALSE);
+#else /* !GTK2 */
+    return gtk_editable_get_chars(GTK_EDITABLE(w), 0, -1);
+#endif /* !GTK2 */
+}
+
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

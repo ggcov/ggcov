@@ -89,5 +89,42 @@ gpointer ui_clist_double_click_data(GtkCList *, GdkEvent *);
 gpointer ui_tree_view_double_click_data(GtkTreeView *, GdkEvent *, int column);
 #endif
 
+/*
+ * Abstraction of GtkText (gtk 1.2) and GtkTextView et al (gtk 2.0).
+ * Text windows get a fixed width font and support colour coding by
+ * the use of "tags".  Other features of gtk 2.0 are not supported
+ * through this interface.
+ */
+/* set up a text window, force the font etc */
+void ui_text_setup(GtkWidget *w);
+/* return the font width, e.g. for aligning title columns */
+int ui_text_font_width(GtkWidget *w);
+
+#if GTK2
+typedef GtkTextTag ui_text_tag;
+#else
+typedef struct ui_text_tag_s ui_text_tag;
+#endif
+/* create a colour coding tag */
+ui_text_tag *ui_text_create_tag(GtkWidget *w, const char *name, GdkColor *fg);
+
+/* sample and restore the vertical scroll setting */
+gfloat ui_text_vscroll_sample(GtkWidget *w);
+void ui_text_vscroll_restore(GtkWidget *w, gfloat);
+
+/* add text to the window in streaming mode. tag may be NULL. len may be -1 for strlen */
+void ui_text_begin(GtkWidget *w);
+void ui_text_add(GtkWidget *w, ui_text_tag *tag, const char *s, int len);
+void ui_text_end(GtkWidget *w);
+
+/* select all the lines from `start' to `end' inclusive */
+void ui_text_select_lines(GtkWidget *w, unsigned long start, unsigned long end);
+/* ensure the given line is visible, if necessary scrolling vertically */
+void ui_text_ensure_visible(GtkWidget *w, unsigned long line);
+/* return the range of lines currently selected */
+void ui_text_get_selected_lines(GtkWidget *w, unsigned long *startp,
+    	    	    	    	unsigned long *endp);
+/* get the entire contents of the window, needs to be g_free()d */
+char *ui_text_get_contents(GtkWidget *w);
 
 #endif /* _ggcov_ui_h_ */
