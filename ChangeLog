@@ -1,3 +1,18 @@
+Mon Mar 17 14:54:46 2003  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.1.1
+	
+	* Added a tree mode to Files window, which displays source files
+	from multiple directories in a tree format.
+	* When the Call Butterfly window is shown, initialise the hpaned widget
+	so that both the Calls From and Calls To lists are visible.
+	* Call Graph window shows whole graph when graph is nontrivial.
+	Layout algorithm still sucks.
+	* Hacked around bug with new argument parsing where gtk/gnome options
+	are not stripped out before ggcov parses the arguments.
+	* Fixed bug which lost list column header labels on recent gtk 1.2's.
+	* Fixed bugs where Call Graph window would SEGV or loop when the
+	coverage data contained function call loops.
+
 Tue Mar 11 13:54:45 2003  Greg Banks <gnb@alphalink.com.au>
 
 	* Release 0.1
