@@ -45,17 +45,28 @@ struct cov_location_t
     unsigned long lineno;
 };
 
-
-struct cov_stats_t
+struct cov
 {
-    unsigned long lines;
-    unsigned long lines_executed;
-    unsigned long calls;
-    unsigned long calls_executed;
-    unsigned long branches;
-    unsigned long branches_executed;
-    unsigned long branches_taken;
-    
+    enum status_t
+    {
+	COVERED,
+	PARTCOVERED,
+	UNCOVERED,
+	UNINSTRUMENTED,
+	SUPPRESSED
+    };
+    enum _constants
+    {
+	NUM_STATUS=5
+    };
+
+private:
+    cov() { }    /* prevent instantiation */
+};
+
+class cov_stats_t
+{
+public:
     /*
      * c'tor zeroes out counters, rather than relying on
      * global operator new, because cov_stats_t is mostly
@@ -75,14 +86,176 @@ struct cov_stats_t
     void
     accumulate(const cov_stats_t *st)
     {
-    	lines += st->lines;
-    	lines_executed += st->lines_executed;
-    	calls += st->calls;
-    	calls_executed += st->calls_executed;
-    	branches += st->branches;
-    	branches_executed += st->branches_executed;
-    	branches_taken += st->branches_taken;
+    	unsigned int i;
+	unsigned long *uthis = (unsigned long *)this;
+	unsigned long *ust = (unsigned long *)st;
+	
+	for (i = 0 ; i < sizeof(*this)/sizeof(unsigned long) ; i++)
+	    *uthis++ += *ust++;
     }
+    
+    /* there are no partial blocks; blocks are the unit of coverage */
+    unsigned long blocks_executed() const
+    {
+    	return blocks_[cov::COVERED];
+    }
+    unsigned long blocks_total() const
+    {
+	return blocks_[cov::COVERED] +
+	       blocks_[cov::UNCOVERED];
+    }
+    unsigned long blocks_suppressed() const
+    {
+    	return blocks_[cov::SUPPRESSED];
+    }
+    const unsigned long *blocks_by_status() const
+    {
+    	return blocks_;
+    }
+
+    unsigned long lines_executed() const
+    {
+	return lines_[cov::COVERED] +
+	       lines_[cov::PARTCOVERED];
+    }
+    unsigned long lines_full() const
+    {
+    	return lines_[cov::COVERED];
+    }
+    unsigned long lines_partial() const
+    {
+    	return lines_[cov::PARTCOVERED];
+    }
+    unsigned long lines_total() const
+    {
+	return lines_[cov::COVERED] +
+	       lines_[cov::PARTCOVERED] +
+	       lines_[cov::UNCOVERED];
+    }
+    unsigned long lines_suppressed() const
+    {
+    	return lines_[cov::SUPPRESSED];
+    }
+    const unsigned long *lines_by_status() const
+    {
+    	return lines_;
+    }
+
+    unsigned long functions_executed() const
+    {
+	return functions_[cov::COVERED] +
+	       functions_[cov::PARTCOVERED];
+    }
+    unsigned long functions_full() const
+    {
+    	return functions_[cov::COVERED];
+    }
+    unsigned long functions_partial() const
+    {
+    	return functions_[cov::PARTCOVERED];
+    }
+    unsigned long functions_total() const
+    {
+	return functions_[cov::COVERED] +
+	       functions_[cov::PARTCOVERED] +
+	       functions_[cov::UNCOVERED];
+    }
+    unsigned long functions_suppressed() const
+    {
+    	return functions_[cov::SUPPRESSED];
+    }
+    const unsigned long *functions_by_status() const
+    {
+    	return functions_;
+    }
+
+    /* calls happen on block boundaries hence cannot be partial */
+    unsigned long calls_executed() const
+    {
+    	return calls_[cov::COVERED];
+    }
+    unsigned long calls_total() const
+    {
+	return calls_[cov::COVERED] +
+	       calls_[cov::UNCOVERED];
+    }
+    unsigned long calls_suppressed() const
+    {
+    	return calls_[cov::SUPPRESSED];
+    }
+    const unsigned long *calls_by_status() const
+    {
+    	return calls_;
+    }
+
+
+    /*
+     * Branches happen on block boundaries hence cannot be partial,
+     * but for storage purposes we use [PARTCOVERED]=test executed
+     * but branch not taken and [COVERED]=branch taken.
+     */
+    unsigned long branches_executed() const
+    {
+    	return branches_[cov::COVERED] +
+	       branches_[cov::PARTCOVERED];
+    }
+    unsigned long branches_taken() const
+    {
+    	return branches_[cov::COVERED];
+    }
+    unsigned long branches_total() const
+    {
+	return branches_[cov::COVERED] +
+	       branches_[cov::PARTCOVERED] +
+	       branches_[cov::UNCOVERED];
+    }
+    unsigned long branches_suppressed() const
+    {
+    	return branches_[cov::SUPPRESSED];
+    }
+    const unsigned long *branches_by_status() const
+    {
+    	return branches_;
+    }
+
+    /* Used in calculating status for aggregated objects like functions */
+    cov::status_t status_by_blocks()
+    {
+	unsigned long ntot = blocks_total();
+
+    	if (!ntot)
+	    return (blocks_[cov::SUPPRESSED] ? cov::SUPPRESSED : cov::UNINSTRUMENTED);
+	else if (blocks_[cov::COVERED] == ntot)
+    	    return cov::COVERED;
+	else if (blocks_[cov::UNCOVERED] == ntot)
+    	    return cov::UNCOVERED;
+	else
+    	    return cov::PARTCOVERED;
+    }
+    cov::status_t status_by_lines()
+    {
+	unsigned long ntot = lines_total();
+
+    	if (!ntot)
+	    return (lines_[cov::SUPPRESSED] ? cov::SUPPRESSED : cov::UNINSTRUMENTED);
+	else if (lines_[cov::COVERED] == ntot)
+    	    return cov::COVERED;
+	else if (lines_[cov::UNCOVERED] == ntot)
+    	    return cov::UNCOVERED;
+	else
+    	    return cov::PARTCOVERED;
+    }
+
+private:
+    unsigned long blocks_[cov::NUM_STATUS];
+    unsigned long lines_[cov::NUM_STATUS];
+    unsigned long functions_[cov::NUM_STATUS];
+    unsigned long calls_[cov::NUM_STATUS];
+    unsigned long branches_[cov::NUM_STATUS];
+    
+    friend class cov_block_t;
+    friend class cov_function_t;
+    friend class cov_file_t;
 };
 
 
