@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.14 2004-02-16 23:01:26 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.15 2004-04-04 13:58:43 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -314,7 +314,7 @@ cov_function_t::solve()
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
-		    assert(b->count_ >= cov_arc_t::total(b->out_arcs_));
+//		    assert(b->count_ >= cov_arc_t::total(b->out_arcs_));
 		    a->set_count(b->count_ - cov_arc_t::total(b->out_arcs_));
 		    changes++;
     	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
