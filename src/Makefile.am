@@ -16,13 +16,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.19 2003-03-17 03:54:49 gnb Exp $
+# $Id: Makefile.am,v 1.20 2003-05-11 00:22:15 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
 
 ggcov_SOURCES=	common.h common.c \
-		estring.H estring.C \
+		estring.H estring.C string_var.H tok.H tok.C \
 		filename.h filename.c \
 		list.H \
 		covio.h covio.c \
@@ -69,7 +69,10 @@ licence.c: $(top_srcdir)/COPYING
 
 EXTRA_CLEAN=	licence.c
 
-noinst_PROGRAMS=	bbdump
+noinst_PROGRAMS=	bbdump filetest
 
 bbdump_SOURCES= bbdump.c covio.c estring.C
 bbdump_LDADD=	$(GGCOV_LIBS)
+
+filetest_SOURCES= filetest.c filename.c estring.C tok.C
+filetest_LDADD=	$(GGCOV_LIBS)
