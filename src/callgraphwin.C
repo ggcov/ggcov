@@ -22,14 +22,22 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.10 2003-06-01 08:49:59 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.11 2003-06-09 04:56:20 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
-#define COL_MAX     2
+#if !GTK2
+#define NUM_COLS    	2
+#else
+#define COL_CLOSURE	2
+#define NUM_COLS    	3
+#define COL_TYPES \
+    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER
+#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+#if !GTK2
 static int
 callgraphwin_ancestors_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
 {
@@ -68,8 +76,29 @@ callgraphwin_descendants_compare(GtkCList *clist, const void *ptr1, const void *
     }
 }
 
+#else
+
+static int
+callgraphwin_count_compare(
+    GtkTreeModel *tm,
+    GtkTreeIter *iter1,
+    GtkTreeIter *iter2,
+    gpointer data)
+{
+    cov_callarc_t *ca1 = 0;
+    cov_callarc_t *ca2 = 0;
+
+    gtk_tree_model_get(tm, iter1, COL_CLOSURE, &ca1, -1);
+    gtk_tree_model_get(tm, iter2, COL_CLOSURE, &ca2, -1);
+
+    return u64cmp(ca1->count, ca2->count);
+}
+
+#endif
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+#if !GTK2
 void
 callgraphwin_t::init_clist(
     GtkCList *clist,
@@ -82,6 +111,40 @@ callgraphwin_t::init_clist(
     ui_clist_set_sort_column(clist, COL_COUNT);
     ui_clist_set_sort_type(clist, GTK_SORT_DESCENDING);
 }
+#else
+void
+callgraphwin_t::init_tree_view(GtkTreeView *tv)
+{
+    GtkListStore *store;
+    GtkTreeViewColumn *col;
+    GtkCellRenderer *rend;
+
+    store = gtk_list_store_new(NUM_COLS, COL_TYPES);
+
+    /* default alphabetic sort is adequate for COL_NAME */
+    gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store, COL_COUNT,
+	  callgraphwin_count_compare, 0, 0);
+    
+    gtk_tree_view_set_model(tv, GTK_TREE_MODEL(store));
+
+    rend = gtk_cell_renderer_text_new();
+
+    col = gtk_tree_view_column_new_with_attributes(_("Count"), rend,
+    	    	"text", COL_COUNT,
+		(char *)0);
+    gtk_tree_view_column_set_sort_column_id(col, COL_COUNT);
+    gtk_tree_view_append_column(tv, col);
+    
+    col = gtk_tree_view_column_new_with_attributes(_("Function"), rend,
+    	    	"text", COL_NAME,
+		(char *)0);
+    gtk_tree_view_column_set_sort_column_id(col, COL_NAME);
+    gtk_tree_view_append_column(tv, col);
+    
+    /* the TreeView has another reference, so we can safely drop ours */
+    g_object_unref(G_OBJECT(store));
+}
+#endif
 
 callgraphwin_t::callgraphwin_t()
 {
@@ -96,12 +159,20 @@ callgraphwin_t::callgraphwin_t()
     function_view_ = glade_xml_get_widget(xml, "callgraph_function_view");
 
     ancestors_clist_ = glade_xml_get_widget(xml, "callgraph_ancestors_clist");
+#if !GTK2
     init_clist(GTK_CLIST(ancestors_clist_),
     	    	    	    callgraphwin_ancestors_compare);
+#else
+    init_tree_view(GTK_TREE_VIEW(ancestors_clist_));
+#endif
 
     descendants_clist_ = glade_xml_get_widget(xml, "callgraph_descendants_clist");
+#if !GTK2
     init_clist(GTK_CLIST(descendants_clist_),
     	    	    	    callgraphwin_descendants_compare);
+#else
+    init_tree_view(GTK_TREE_VIEW(descendants_clist_));
+#endif
     
     ui_register_windows_menu(ui_get_dummy_menu(xml, "callgraph_windows_dummy"));
 
@@ -149,6 +220,8 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
     GList *list = 0, *iter;
     estring label;
     
+    ui_combo_clear(combo);    /* stupid glade2 */
+
     cov_callnode_t::foreach(add_callnode, &list);
     list = g_list_sort(list, compare_callnodes);
     
@@ -227,16 +300,26 @@ void
 callgraphwin_t::update_clist(GtkWidget *clist, GList *arcs, gboolean isin)
 {
     GList *iter;
+#if !GTK2    
     int row;
+#else
+    GtkListStore *store = (GtkListStore *)gtk_tree_view_get_model(
+    	    	    	    	    	    	    	GTK_TREE_VIEW(clist));
+    GtkTreeIter titer;
+#endif
     count_t total;
-    char *text[COL_MAX];
+    char *text[NUM_COLS];
     char countbuf[32];
 
     total = cov_callarcs_total(arcs);
-    
+
+#if !GTK2    
     gtk_clist_freeze(GTK_CLIST(clist));
     gtk_clist_clear(GTK_CLIST(clist));
-    
+#else
+    gtk_list_store_clear(store);
+#endif
+
     for (iter = arcs ; iter != 0 ; iter = iter->next)
     {
 	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
@@ -247,13 +330,24 @@ callgraphwin_t::update_clist(GtkWidget *clist, GList *arcs, gboolean isin)
 
 	text[COL_NAME] = (char *)(isin ? ca->from : ca->to)->name.data();
 
+#if !GTK2
 	row = gtk_clist_prepend(GTK_CLIST(clist), text);
 	gtk_clist_set_row_data(GTK_CLIST(clist), row, ca);
+#else
+    	gtk_list_store_append(store, &titer);
+	gtk_list_store_set(store,  &titer,
+	    COL_COUNT, text[COL_COUNT],
+	    COL_NAME, text[COL_NAME],
+	    COL_CLOSURE, ca,
+	    -1);
+#endif
     }
-    
+
+#if !GTK2    
     gtk_clist_sort(GTK_CLIST(clist));
     gtk_clist_columns_autosize(GTK_CLIST(clist));
     gtk_clist_thaw(GTK_CLIST(clist));
+#endif
 }
 
 void
@@ -275,6 +369,7 @@ void
 callgraphwin_t::set_node(cov_callnode_t *cn)
 {
     callnode_ = cn;
+    assert(callnode_ != 0);
     if (shown_)
     	update();
 }
@@ -285,10 +380,15 @@ GLADE_CALLBACK void
 on_callgraph_function_entry_changed(GtkWidget *w, gpointer data)
 {
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
+    cov_callnode_t *cn;
 
-    cw->callnode_ = (cov_callnode_t *)ui_combo_get_current_data(
+    cn = (cov_callnode_t *)ui_combo_get_current_data(
     	    	    	    	    	GTK_COMBO(cw->function_combo_));
-    cw->update();
+    if (cn != 0)
+    {
+    	/* stupid gtk2 */
+	cw->set_node(cn);
+    }
 }
 
 GLADE_CALLBACK void
@@ -299,12 +399,13 @@ on_callgraph_function_view_clicked(GtkWidget *w, gpointer data)
     sourcewin_t::show_function(cw->callnode_->function);
 }
 
-GLADE_CALLBACK void
+GLADE_CALLBACK gboolean
 on_callgraph_ancestors_clist_button_press_event(
     GtkWidget *w,
     GdkEventButton *event,
     gpointer data)
 {
+#if !GTK2
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
     int row, col;
     cov_callarc_t *ca;
@@ -322,14 +423,44 @@ on_callgraph_ancestors_clist_button_press_event(
 	
 	cw->set_node(ca->from);
     }
+    return FALSE;
+#else
+    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
+    GtkTreeModel *model;
+    GtkTreePath *path = 0;
+    GtkTreeIter iter;
+    cov_callarc_t *ca;
+
+    if (event->type == GDK_2BUTTON_PRESS &&
+    	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(w),
+	    	    	    	     (int)event->x,
+				     (int)event->y,
+				     &path, (GtkTreeViewColumn **)0,
+				     (gint *)0, (gint *)0))
+    {
+#if DEBUG
+    	string_var path_str = gtk_tree_path_to_string(path);
+    	fprintf(stderr, "on_callgraph_ancestors_clist_button_press_event: path=\"%s\"\n",
+	    	    	path_str.data());
+#endif
+    	model = gtk_tree_view_get_model(GTK_TREE_VIEW(w));
+    	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get(model, &iter, COL_CLOSURE, &ca, -1);
+	gtk_tree_path_free(path);
+	
+	cw->set_node(ca->from);
+    }
+    return FALSE;
+#endif
 }
 
-GLADE_CALLBACK void
+GLADE_CALLBACK gboolean
 on_callgraph_descendants_clist_button_press_event(
     GtkWidget *w,
     GdkEventButton *event,
     gpointer data)
 {
+#if !GTK2
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
     int row, col;
     cov_callarc_t *ca;
@@ -347,6 +478,35 @@ on_callgraph_descendants_clist_button_press_event(
 	
 	cw->set_node(ca->to);
     }
+    return FALSE;
+#else
+    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
+    GtkTreeModel *model;
+    GtkTreePath *path = 0;
+    GtkTreeIter iter;
+    cov_callarc_t *ca;
+
+    if (event->type == GDK_2BUTTON_PRESS &&
+    	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(w),
+	    	    	    	     (int)event->x,
+				     (int)event->y,
+				     &path, (GtkTreeViewColumn **)0,
+				     (gint *)0, (gint *)0))
+    {
+#if DEBUG
+    	string_var path_str = gtk_tree_path_to_string(path);
+    	fprintf(stderr, "on_callgraph_descendants_clist_button_press_event: path=\"%s\"\n",
+	    	    	path_str.data());
+#endif
+    	model = gtk_tree_view_get_model(GTK_TREE_VIEW(w));
+    	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get(model, &iter, COL_CLOSURE, &ca, -1);
+	gtk_tree_path_free(path);
+	
+	cw->set_node(ca->to);
+    }
+    return FALSE;
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -25,9 +25,9 @@
 
 GLADE_CALLBACK void on_callgraph_function_entry_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_callgraph_function_view_clicked(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_callgraph_ancestors_clist_button_press_event(
+GLADE_CALLBACK gboolean on_callgraph_ancestors_clist_button_press_event(
 			  GtkWidget *w, GdkEventButton *event, gpointer data);
-GLADE_CALLBACK void on_callgraph_descendants_clist_button_press_event(
+GLADE_CALLBACK gboolean on_callgraph_descendants_clist_button_press_event(
 			  GtkWidget *w, GdkEventButton *event, gpointer data);
 
 class callgraphwin_t : public window_t
@@ -41,8 +41,12 @@ public:
 private:
     void populate_function_combo(GtkCombo *combo);
     void populate();
+#if !GTK2
     static void init_clist(GtkCList *clist,
     	    	    	   int (*sortfn)(GtkCList *, const void*, const void*));
+#else
+    static void init_tree_view(GtkTreeView *tv);
+#endif
     static void update_clist(GtkWidget *clist, GList *arcs, gboolean isin);
     static void on_callgraph_show(GtkWidget *w, gpointer data);
     void update();
@@ -58,14 +62,18 @@ private:
 
     GtkWidget *ancestors_clist_;
     GtkWidget *descendants_clist_;
+#if GTK2
+    GtkListStore *ancestors_store_;
+    GtkListStore *descendants_store_;
+#endif
 
     GtkWidget *hpaned_;
 
     friend void on_callgraph_function_entry_changed(GtkWidget *w, gpointer data);
     friend void on_callgraph_function_view_clicked(GtkWidget *w, gpointer data);
-    friend void on_callgraph_ancestors_clist_button_press_event(
+    friend gboolean on_callgraph_ancestors_clist_button_press_event(
 			      GtkWidget *w, GdkEventButton *event, gpointer data);
-    friend void on_callgraph_descendants_clist_button_press_event(
+    friend gboolean on_callgraph_descendants_clist_button_press_event(
 			      GtkWidget *w, GdkEventButton *event, gpointer data);
 };
 
