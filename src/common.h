@@ -122,13 +122,15 @@ extern int ullcmp(unsigned long long ull1, unsigned long long ull2);
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#ifndef _
+#ifdef _
+#undef _
+#endif
 #define _(s)	s
-#endif
 
-#ifndef N_
-#define N_(s)	s
+#ifdef N_
+#undef N_
 #endif
+#define N_(s)	s
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
