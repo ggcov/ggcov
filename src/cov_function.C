@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.7 2003-06-01 09:49:13 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.8 2003-06-06 15:21:30 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -29,14 +29,13 @@ cov_function_t::cov_function_t()
     blocks_ = g_ptr_array_new();
 }
 
-/* TODO: ability to delete these structures !!  */
 cov_function_t::~cov_function_t()
 {
-#if 0
-    g_ptr_array_delete(blocks_, /*delete_seg*/TRUE);
-#else
-    assert(0);
-#endif
+    unsigned int i;
+    
+    for (i = 0 ; i < num_blocks() ; i++)
+    	delete nth_block(i);
+    g_ptr_array_free(blocks_, /*delete_seg*/TRUE);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

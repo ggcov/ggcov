@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.13 2003-06-03 14:46:49 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.14 2003-06-06 15:21:30 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -44,24 +44,37 @@ int cov_file_t::common_len_;
 cov_file_t::cov_file_t(const char *name)
  :  name_(name)
 {
+    /*
+     * It is the caller's responsibility to create cov_file_t objects
+     * with an absolute filename which is not already known.
+     */
+    assert(name[0] == '/');
+    assert(find(name_) == 0);
+
     functions_ = g_ptr_array_new();
     functions_by_name_ = new hashtable_t<const char*, cov_function_t>;
-    
-    files_->insert(name_, this);
-    add_name(name_);
 }
 
 cov_file_t::~cov_file_t()
 {
-#if 0
-    files_->remove(name_);
+    unsigned int i;
 
-    g_ptr_array_free(functions_, /*free_seg*/TRUE);
-    g_ptr_array_free(blocks_, /*free_seg*/TRUE);
-    g_ptr_array_free(arcs_, /*free_seg*/TRUE);
-#else
-    assert(0);
-#endif
+    if (finalised_)
+    {
+        files_list_.remove(this);
+        files_->remove(name_);
+    }
+
+    for (i = 0 ; i < num_functions() ; i++)
+    	delete nth_function(i);
+    g_ptr_array_free(functions_, /*delete_seg*/TRUE);
+
+    delete functions_by_name_;
+
+    if (finalised_)
+    {
+	dirty_common_path();
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -72,6 +85,18 @@ cov_file_t::init()
     files_ = new hashtable_t<const char*, cov_file_t>;
     common_path_ = 0;
     common_len_ = 0;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cov_file_t::finalise()
+{
+    files_->insert(name_, this);
+
+    add_name(name_);
+
+    finalised_ = TRUE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -157,15 +182,47 @@ cov_file_t::add_name(const char *name)
 #endif
 }
 
+void
+cov_file_t::dirty_common_path()
+{
+    if (common_path_ != 0)
+    {
+	g_free(common_path_);
+	common_path_ = 0;
+	common_len_ = -1;   /* indicates dirty */
+    }
+}
+
+void
+cov_file_t::add_name_tramp(const char *name, cov_file_t *f, gpointer userdata)
+{
+    add_name(name);
+}
+
+void
+cov_file_t::check_common_path()
+{
+    if (common_len_ < 0)
+    {
+#if DEBUG > 1
+    	fprintf(stderr, "cov_file_t::check_common_path: recalculating common path\n");
+#endif
+    	common_len_ = 0;
+	files_->foreach(add_name_tramp, 0);
+    }
+}
+
 const char *
 cov_file_t::minimal_name() const
 {
+    check_common_path();
     return name_.data() + common_len_;
 }
 
 char *
 cov_file_t::minimise_name(const char *name)
 {
+    check_common_path();
     if (!strncmp(name, common_path_, common_len_))
     {
     	return g_strdup(name + common_len_);
@@ -188,6 +245,7 @@ cov_file_t::unminimise_name(const char *name)
     else
     {
     	/* partial, presumably minimal, name */
+    	check_common_path();
 	return g_strconcat(common_path_, name, 0);
     }
 }
@@ -195,6 +253,7 @@ cov_file_t::unminimise_name(const char *name)
 const char *
 cov_file_t::common_path()
 {
+    check_common_path();
     return common_path_;
 }
 
@@ -743,11 +802,15 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
     }
 
 #if DEBUG > 5
-    for (i = 0 ; i < nsymbols ; i++)
+    for (i = 0 ; i < rs.nsymbols ; i++)
     {
     	sym = rs.symbols[i];
+	string_var dem = demangle(sym->name);
 	
-	fprintf(stderr, "%s\n", sym->name);
+	if (!strcmp(dem, sym->name))
+	    fprintf(stderr, "%s\n", sym->name);
+	else
+	    fprintf(stderr, "%s (%s)\n", sym->name, dem.data());
     }
 #endif
 
@@ -1010,7 +1073,11 @@ cov_file_t::read(gboolean quiet)
 	}
     }
 
-    return solve();
+    if (!solve())
+    	return FALSE;
+	
+    finalise();
+    return TRUE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

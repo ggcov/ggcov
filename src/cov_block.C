@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.6 2003-06-01 09:49:13 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.7 2003-06-06 15:21:30 gnb Exp $");
 
 hashtable_t<const char *, GList> *cov_block_t::by_location_; 	/* GList of blocks keyed on "file:line" */
 
@@ -33,10 +33,21 @@ cov_block_t::cov_block_t()
 
 cov_block_t::~cov_block_t()
 {
-#if 0
-#else
-    assert(0);
-#endif
+    cov_location_t *loc;
+    string_var key;
+    cov_arc_t *a;
+    
+    while ((loc = locations_.remove_head()) != 0)
+    {
+    	key = loc->make_key();
+	by_location_->remove(key);
+	delete loc;
+    }
+    
+    while ((a = in_arcs_.head()) != 0)
+    	delete a;
+    while ((a = out_arcs_.head()) != 0)
+    	delete a;
 }
 
 void

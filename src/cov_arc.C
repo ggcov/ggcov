@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_arc.C,v 1.3 2003-06-01 07:56:27 gnb Exp $");
+CVSID("$Id: cov_arc.C,v 1.4 2003-06-06 15:21:30 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -40,10 +40,9 @@ cov_arc_t::cov_arc_t(cov_block_t *from, cov_block_t *to)
 
 cov_arc_t::~cov_arc_t()
 {
-#if 0
-#else
-    assert(0);
-#endif
+    to_->in_arcs_.remove(this);
+    from_->out_arcs_.remove(this);
+    /* TODO: ninvalid counts?!?! */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

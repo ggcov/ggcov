@@ -88,6 +88,9 @@ private:
     static void init();
     static void post_read();
     static void add_name(const char *name);
+    static void dirty_common_path();
+    static void add_name_tramp(const char *, cov_file_t *, gpointer);
+    static void check_common_path();
     cov_function_t *add_function();
     void add_location(const cov_location_t *);
     char *try_file(const char *dir, const char *ext) const;
@@ -109,6 +112,7 @@ private:
     gboolean read_o_file_relocs(const char *filename);
     gboolean read_o_file(const char *filename);
     gboolean solve();
+    void finalise();
 
     void calc_stats(cov_stats_t *stats) const;
 
@@ -119,6 +123,7 @@ private:
     static int common_len_;
 
     string_var name_;
+    gboolean finalised_;    /* data read & `this' inserted into files_ */
     GPtrArray *functions_;
     hashtable_t<const char*, cov_function_t> *functions_by_name_;
     const cov_location_t *last_location_;
