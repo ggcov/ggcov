@@ -30,7 +30,7 @@
 #include "estring.H"
 #include "fakepopt.h"
 
-CVSID("$Id: tggcov.c,v 1.5 2003-07-14 15:57:17 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.6 2003-11-03 23:16:33 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -40,6 +40,7 @@ static int header_flag = FALSE;
 static int blocks_flag = FALSE;
 static int lines_flag = FALSE;
 static int new_format_flag = FALSE;
+static const char *debug_str = 0;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /* 
@@ -266,6 +267,15 @@ static struct poptOption popt_options[] =
 	"display count in new gcc 3.3 format",	/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
+    {
+    	"debug",	    	    	    	/* longname */
+	'D',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&debug_str,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"enable ggcov debugging features",  	/* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
     POPT_AUTOHELP
     { 0, 0, 0, 0, 0, 0, 0 }
 };
@@ -299,23 +309,25 @@ parse_args(int argc, char **argv)
 	
     poptFreeContext(popt_context);
     
-#if 0
+    if (debug_str != 0)
+    	debug_set(debug_str);
+
+    if (debug_enabled(D_DUMP|D_VERBOSE))
     {
     	GList *iter;
+	string_var token_str = debug_enabled_tokens();
 
-	fprintf(stderr, "parse_args: recursive=%d\n", recursive);
-	fprintf(stderr, "parse_args: blocks_flag=%d\n", blocks_flag);
-	fprintf(stderr, "parse_args: header_flag=%d\n", header_flag);
-	fprintf(stderr, "parse_args: lines_flag=%d\n", lines_flag);
+	duprintf1("parse_args: recursive=%d\n", recursive);
+	duprintf1("parse_args: blocks_flag=%d\n", blocks_flag);
+	duprintf1("parse_args: header_flag=%d\n", header_flag);
+	duprintf1("parse_args: lines_flag=%d\n", lines_flag);
+	duprintf2("parse_args: debug = 0x%lx (%s)\n", debug, token_str.data());
 
-	fprintf(stderr, "parse_args: files = {\n");
+	duprintf0("parse_args: files = ");
 	for (iter = files ; iter != 0 ; iter = iter->next)
-	    fprintf(stderr, "parse_args:     %s\n", (char *)iter->data);
-	fprintf(stderr, "parse_args: }\n");
-
-	exit(1);
+	    duprintf1(" \"%s\"", (char *)iter->data);
+	duprintf0(" }\n");
     }
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
