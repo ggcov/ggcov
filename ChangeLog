@@ -1,3 +1,66 @@
+Tue Jul 22 21:43:30 2003  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.2
+
+	* Full support for all features in GTK2.
+	* Removed the --enable-gtk2 configure option; uses GTK 2.0 if
+	its installed and recent enough otherwise fallback to GTK 1.2.
+	* Fixed colour coding of list rows in Files and Functions windows
+	in gtk2.
+	* Pushed ifdef code for dealing with GtkText in gtk 1.2 build versus
+	GtkTextView in gtk 2.0, down into new ui_text_*() functions.  Source
+	and Licence windows use new ui_text_*() functions.  No GTK2 ifdefs.
+	* Fixed compile warning in GTK2 port.
+
+	* Added GNOME .desktop file (thanks to Dag Wieers) and a 63x63
+	desktop icon.
+	* ggcov handles file:// URLs on the command line so it can be
+	invoked by dragging files or directories from Nautilus
+	onto its GNOME desktop icon.
+	* Default action if no files on commandline (e.g. user double-clicks
+	the desktop icon) is to show the File->Open dialog and exit if files
+	are selected (used to be the same as "ggcov .").
+
+	* User can load source, objects or directories into ggcov by dragging
+	and dropping them from Nautilus.
+	* Added File->Open dialog to allow user to select executables, source
+	files or directories.  Files can be loaded in multiple passes, e.g.
+	from multiple invocations of the File->Open dialog.
+	* Added MVC module.
+	* Class cov_file_t provides an object to be listened to for MVC
+	notifications of when the global set of files changes.
+	* All windows are notified of changes to the global files set
+	by having their populate() method called, which rebuilds the
+	display from scratch.
+
+    	* Added support for building RPMs on RedHat 9.
+	* Support for autoconf 2.57 (RH9).
+	* Fixed library order bug which broke build on RH9.
+	* Encode into the RPM filename the name of the Linux distro where built.
+	* Only one of the two glade files is packaged into the RPM.
+	* Used %configure in spec file.  Required switching from
+	overloading prefix to DESTDIR in %install stage.
+
+	* Added ptrarray_t, a templated wrapper around glib's GPtrArray.
+	* Converted most uses of GPtrArray to ptrarray_t.
+
+	* Reorganised data structures.  There is now a per-line class
+	cov_line_t, an array of which is kept per-file.  It contains the list
+	of blocks for that line as well as caching the calculated count.
+	* cov_file_t now created on demand for secondary files, e.g. header
+	files with inline functions.
+
+	* Fixed bug which failed an assert if user selected a range of
+	uninstrumented lines in the Source window and used the Summarise Range
+	command.
+	* Fixed bugs with text window line selection in gtk2 port.
+	* Removed spurious #ifdef which was always disabling the config file.
+	* Made formatting in Source window a little less dependent on hardcoded
+	column widths.
+	* Removed last traces of the screenshot_mode option.
+	* Fixed bug where Files window's populate() method didn't handle
+	being called twice.
+	* Added argv0 so test programs will link.
+
 Fri Jul 11 01:51:32 2003  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.1.8
 
