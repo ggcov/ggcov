@@ -23,7 +23,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.5 2003-01-01 03:19:29 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.6 2003-01-01 04:15:56 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 GdkFont *sourcewin_t::font_;
@@ -563,7 +563,8 @@ sourcewin_t::show_function(const cov_function_t *fn)
     start = fn->get_first_location();
     end = fn->get_last_location();
 
-    show_lines(start->filename, start->lineno, end->lineno);
+    if (start != 0 && end != 0)
+	show_lines(start->filename, start->lineno, end->lineno);
 }
 
 void
