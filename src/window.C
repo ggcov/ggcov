@@ -21,8 +21,9 @@
 #include "cov.H"
 #include "mvc.h"
 #include "tok.H"
+#include "string_var.H"
 
-CVSID("$Id: window.C,v 1.11 2003-07-19 09:59:11 gnb Exp $");
+CVSID("$Id: window.C,v 1.12 2003-07-19 10:41:51 gnb Exp $");
 
 static const char window_key[] = "ggcov_window_key";
 
@@ -47,6 +48,18 @@ window_t::~window_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static char *
+dnd_data_as_text(void *data, unsigned int length)
+{
+    char *text;
+
+    text = (char *)gnb_xmalloc(length+1);
+    memcpy(text, data, length);
+    text[length] = '\0';
+
+    return text;
+}
+
 extern gboolean ggcov_read_file(const char *filename);
 
 /*
@@ -54,9 +67,9 @@ extern gboolean ggcov_read_file(const char *filename);
  * into the global cov* data structures.
  */
 static void
-dnd_handle_uri_list(char *uri_list)
+dnd_handle_uri_list(void *data, unsigned int length)
 {
-    tok_t tok(uri_list, "\n\r");
+    tok_t tok(dnd_data_as_text(data, length), "\n\r");
     int nfiles = 0;
     const char *uri;
 
@@ -103,27 +116,22 @@ dnd_drag_data_received(
     guint time,
     gpointer user_data)
 {
-    char *text;
-    
-#if GTK2
-    text = (char *)gtk_selection_data_get_text(data);
-#else
-    text = (char *)g_malloc(data->length+1);
-    memcpy(text, data->data, data->length);
-    text[data->length] = '\0';
-#endif
-
 #if DEBUG
-    fprintf(stderr, "dnd_drag_data_received: info=%d, text=\"%s\"\n", info, text);
+    string_var selection_str = gdk_atom_name(data->selection);
+    string_var target_str = gdk_atom_name(data->target);
+    string_var type_str = gdk_atom_name(data->type);
+    fprintf(stderr, "dnd_drag_data_received: info=%d, "
+		    "data={selection=%s target=%s type=%s "
+		    "data=0x%p length=%d format=%d}\n",
+		    info,
+		    selection_str.data(), target_str.data(), type_str.data(),
+		    data->data, data->length, data->format);
 #endif
 
     switch (info)
     {
     case URI_LIST:
-	dnd_handle_uri_list(text);
-	break;
-    default:
-    	g_free(text);
+	dnd_handle_uri_list(data->data, data->length);
 	break;
     }
 }
@@ -147,7 +155,7 @@ dnd_drag_motion(
 
     for (iter = drag_context->targets ; iter != 0 ; iter = iter->next)
     {
-	gchar *name = gdk_atom_name(GPOINTER_TO_INT(iter->data));
+	gchar *name = gdk_atom_name((GdkAtom)GPOINTER_TO_INT(iter->data));
 	fprintf(stderr, "\"%s\"%s", name, (iter->next == 0 ? "" : ", "));
 	g_free (name);
     }
@@ -165,10 +173,12 @@ dnd_setup(GtkWidget *w)
 {
     GtkDestDefaults defaults;
     
-    defaults = GTK_DEST_DEFAULT_ALL;
 #if DEBUG_DND_TARGETS
-    defaults &= ~GTK_DEST_DEFAULT_MOTION,
-#endif /* DEBUG_DND_TARGETS */
+    defaults = (GtkDestDefaults)
+		(GTK_DEST_DEFAULT_ALL & ~GTK_DEST_DEFAULT_MOTION);
+#else /* !DEBUG_DND_TARGETS */
+    defaults = GTK_DEST_DEFAULT_ALL;
+#endif /* !DEBUG_DND_TARGETS */
 
     gtk_drag_dest_set(w, defaults,
     	    	      dnd_targets, sizeof(dnd_targets)/sizeof(dnd_targets[0]),
