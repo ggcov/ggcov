@@ -21,13 +21,13 @@
 #define _ggcov_cov_file_H_ 1
 
 #include "common.h"
+#include "list.H"
 
 class cov_function_t;
 
 class cov_file_t
 {
 public:
-    static cov_file_t *find(const char *name);
 
     const char *
     name() const
@@ -57,8 +57,10 @@ public:
     /* returns a new string */
     static char *unminimise_name(const char *name);
 
-    /* Iterate over all file instances.  TODO: real Iterator pattern */
-    static void foreach(void (*func)(cov_file_t*, void *userdata), void *userdata);
+    /* find a file by name, full or minimal */
+    static cov_file_t *find(const char *name);
+    /* Return an iterator over all the files in minimal filename order */
+    static list_iterator_t<cov_file_t> first();
 
     /* For iterating over a file's functions */
     unsigned int
@@ -82,6 +84,7 @@ private:
     ~cov_file_t();
     
     static void init();
+    static void post_read();
     static void add_name(const char *name);
     cov_function_t *add_function();
 
@@ -94,6 +97,7 @@ private:
     gboolean solve();
 
     static GHashTable *files_;
+    static list_t<cov_file_t> files_list_;
     static char *common_path_;
     static int common_len_;
 

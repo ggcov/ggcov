@@ -28,7 +28,7 @@
 #include <bfd.h>
 #include <elf.h>
 
-CVSID("$Id: cov.C,v 1.2 2002-12-29 14:08:33 gnb Exp $");
+CVSID("$Id: cov.C,v 1.3 2002-12-31 14:53:56 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -140,17 +140,13 @@ cov_read_source_file(const char *filename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-/* TODO: really, really need a proper iteration interface for files */
-static void
-cov_file_calc_stats_tramp(cov_file_t *f, void *userdata)
-{
-    f->calc_stats((cov_stats_t *)userdata);
-}
-
 void
 cov_overall_calc_stats(cov_stats_t *stats)
 {
-    cov_file_t::foreach(cov_file_calc_stats_tramp, stats);
+    list_iterator_t<cov_file_t> iter;
+    
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    	(*iter)->calc_stats(stats);
 }
 
 
@@ -237,7 +233,7 @@ cov_range_calc_stats(
  *            out arcs are returns from the function, 1 arc, 1 fake.
  */
 void
-cov_check_fakeness(cov_file_t *f, void *userdata)
+cov_check_fakeness(cov_file_t *f)
 {
     unsigned int fnidx;
     unsigned int bidx;
@@ -321,10 +317,19 @@ cov_pre_read(void)
 void
 cov_post_read(void)
 {
+    list_iterator_t<cov_file_t> iter;
+    
+    /* construct the list of filenames */
+    cov_file_t::post_read();
+
     /* Build the callgraph */
-    cov_file_t::foreach(cov_add_callnodes, 0);
-    cov_file_t::foreach(cov_add_callarcs, 0);
-    cov_file_t::foreach(cov_check_fakeness, 0);
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    	cov_add_callnodes(*iter);
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    	cov_add_callarcs(*iter);
+
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    	cov_check_fakeness(*iter);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

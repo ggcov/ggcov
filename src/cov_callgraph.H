@@ -50,8 +50,8 @@ private:
     static GHashTable *all_;
     
     friend void cov_init(void);
-    friend void cov_add_callnodes(cov_file_t*, void*);
-    friend void cov_add_callarcs(cov_file_t*, void*);
+    friend void cov_add_callnodes(cov_file_t*);
+    friend void cov_add_callarcs(cov_file_t*);
 };
 
 /*
@@ -68,7 +68,7 @@ private:
 
     void add_count(count_t);
 
-    friend void cov_add_callarcs(cov_file_t*, void*);
+    friend void cov_add_callarcs(cov_file_t*);
 };
 
 

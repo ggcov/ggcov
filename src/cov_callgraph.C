@@ -19,7 +19,7 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_callgraph.C,v 1.1 2002-12-29 14:08:33 gnb Exp $");
+CVSID("$Id: cov_callgraph.C,v 1.2 2002-12-31 14:53:56 gnb Exp $");
 
 GHashTable *cov_callnode_t::all_;
 
@@ -157,7 +157,7 @@ cov_callarc_t::add_count(count_t ccount)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-cov_add_callnodes(cov_file_t *f, void *userdata)
+cov_add_callnodes(cov_file_t *f)
 {
     unsigned int fnidx;
     cov_callnode_t *cn;
@@ -178,7 +178,7 @@ cov_add_callnodes(cov_file_t *f, void *userdata)
 }
 
 void
-cov_add_callarcs(cov_file_t *f, void *userdata)
+cov_add_callarcs(cov_file_t *f)
 {
     unsigned int fnidx;
     unsigned int bidx;

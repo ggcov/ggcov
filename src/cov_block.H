@@ -124,7 +124,7 @@ private:
     friend class cov_file_t;
     friend class cov_function_t;
     friend class cov_arc_t;
-    friend void cov_check_fakeness(cov_file_t*, void*);
+    friend void cov_check_fakeness(cov_file_t*);
 };
 
 #endif /* _ggcov_cov_block_H_ */

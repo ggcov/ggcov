@@ -26,10 +26,11 @@
 #include <elf.h>
 
 
-CVSID("$Id: cov_file.C,v 1.1 2002-12-29 13:14:16 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.2 2002-12-31 14:53:56 gnb Exp $");
 
 
 GHashTable *cov_file_t::files_;
+list_t<cov_file_t> cov_file_t::files_list_;
 char *cov_file_t::common_path_;
 int cov_file_t::common_len_;
 
@@ -60,12 +61,44 @@ cov_file_t::~cov_file_t()
 #endif
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 void
 cov_file_t::init()
 {
     files_ = g_hash_table_new(g_str_hash, g_str_equal);
     common_path_ = 0;
     common_len_ = 0;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static int
+compare_files(const cov_file_t *fa, const cov_file_t *fb)
+{
+    return strcmp(fa->minimal_name(), fb->minimal_name());
+}
+
+static void
+cov_file_add(gpointer key, gpointer value, gpointer userdata)
+{
+    cov_file_t *f = (cov_file_t *)value;
+    list_t<cov_file_t> *listp = (list_t<cov_file_t> *)userdata;
+    
+    listp->append(f);
+}
+
+void
+cov_file_t::post_read()
+{
+    g_hash_table_foreach(files_, cov_file_add, &files_list_);
+    files_list_.sort(compare_files);
+}
+
+list_iterator_t<cov_file_t>
+cov_file_t::first()
+{
+    return files_list_.first();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -78,38 +111,6 @@ cov_file_t::find(const char *name)
     assert(files_ != 0);
     estring fullname = unminimise_name(name);
     return (cov_file_t *)g_hash_table_lookup(files_, fullname.data());
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-/* TODO:  Desperately need a hash table for which it is possible
- * to implement a reasonable Iterator.
- */
-
-typedef struct
-{
-    void (*func)(cov_file_t *, void *);
-    void *userdata;
-} cov_file_foreach_rec_t;
-
-static void
-cov_file_foreach_tramp(gpointer key, gpointer value, gpointer userdata)
-{
-    cov_file_t *f = (cov_file_t *)value;
-    cov_file_foreach_rec_t *rec = (cov_file_foreach_rec_t *)userdata;
-    
-    (*rec->func)(f, rec->userdata);
-}
-
-void
-cov_file_t::foreach(
-    void (*func)(cov_file_t*, void *userdata),
-    void *userdata)
-{
-    cov_file_foreach_rec_t rec;
-    
-    rec.func = func;
-    rec.userdata = userdata;
-    g_hash_table_foreach(files_, cov_file_foreach_tramp, &rec);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

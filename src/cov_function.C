@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: cov_function.C,v 1.1 2002-12-29 13:14:16 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.2 2002-12-31 14:53:56 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -285,27 +285,25 @@ cov_function_t::solve()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void
-add_functions(cov_file_t *f, void *userdata)
-{
-    GList **listp = (GList **)userdata;
-    unsigned int fnidx;
-    
-    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
-    {
-    	cov_function_t *fn = f->nth_function(fnidx);
-	
-	if (!fn->is_suppressed())
-	    *listp = g_list_prepend(*listp, fn);
-    }
-}
-
 GList *
 cov_function_t::list_all()
 {
     GList *list = 0;
+    list_iterator_t<cov_file_t> iter;
+    unsigned int fnidx;
     
-    cov_file_t::foreach(add_functions, &list);
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    {
+    	cov_file_t *f = *iter;
+
+	for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
+	{
+    	    cov_function_t *fn = f->nth_function(fnidx);
+
+	    if (!fn->is_suppressed())
+		list = g_list_prepend(list, fn);
+	}
+    }
     return g_list_sort(list, cov_function_t::compare);
 }
 
