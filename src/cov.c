@@ -26,7 +26,7 @@
 #include <bfd.h>
 #include <elf.h>
 
-CVSID("$Id: cov.c,v 1.6 2001-12-03 01:02:41 gnb Exp $");
+CVSID("$Id: cov.c,v 1.7 2002-09-28 00:17:29 gnb Exp $");
 
 GHashTable *cov_files;
 /* TODO: ? reorg this */
@@ -188,6 +188,46 @@ cov_file_foreach(
     rec.func = func;
     rec.userdata = userdata;
     g_hash_table_foreach(cov_files, cov_file_foreach_tramp, &rec);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static int
+compare_functions(const void *a, const void *b)
+{
+    const cov_function_t *fa = (const cov_function_t *)a;
+    const cov_function_t *fb = (const cov_function_t *)b;
+    int ret;
+    
+    ret = strcmp(fa->name, fb->name);
+    if (ret == 0)
+    	ret = strcmp(fa->file->name, fb->file->name);
+    return ret;
+}
+
+static void
+add_functions(cov_file_t *f, void *userdata)
+{
+    GList **listp = (GList **)userdata;
+    unsigned fnidx;
+    
+    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    {
+    	cov_function_t *fn = cov_file_nth_function(f, fnidx);
+	
+	if (!strncmp(fn->name, "_GLOBAL_", 8))
+	    continue;
+	*listp = g_list_prepend(*listp, fn);
+    }
+}
+
+GList *
+cov_list_functions(void)
+{
+    GList *list = 0;
+    
+    cov_file_foreach(add_functions, &list);
+    return g_list_sort(list, compare_functions);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
