@@ -87,6 +87,7 @@ private:
     static void post_read();
     static void add_name(const char *name);
     cov_function_t *add_function();
+    void add_location(const cov_location_t *);
 
     gboolean read_bb_file(const char *filename);
     gboolean read_bbg_function(FILE *fp);
@@ -104,11 +105,13 @@ private:
     char *name_;
     GPtrArray *functions_;
     GHashTable *functions_by_name_;
+    const cov_location_t *last_location_;
 
     friend gboolean cov_read_source_file_2(const char *fname, gboolean quiet);
     friend void cov_init(void);
     friend void cov_post_read(void);
     friend class cov_function_t;
+    friend class cov_block_t;
 };
 
 
