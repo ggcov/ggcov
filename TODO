@@ -43,6 +43,9 @@ x  Option to watch mtimes of .da files and reload them when they
    change, so that user can watch coverage stats update in realtime
    as their testsuite is run.
    
+x  Option to aggregate coverage stats from multiple runs (multiple
+   sets of .da files in separate directories).
+   
 x  In the Summary window, typing into the entry or popped-up list
    of the filename and function name combo boxes should seek in
    the list.
