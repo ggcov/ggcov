@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.40 2004-11-20 09:13:38 gnb Exp $
+# $Id: Makefile.am,v 1.41 2005-02-13 09:01:53 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -55,14 +55,13 @@ LIBCOV_STATIC_SOURCES= \
 		cov_stab32.C cov_i386.C cov_dwarf2.C
 		
 if GUI
-GUIPROG=	ggcov
 BASEINCLUDES=	$(GGCOV_GUI_CFLAGS)
 else
-GUIPROG=	
 BASEINCLUDES=	$(GGCOV_CLI_CFLAGS)
 endif
 
-bin_PROGRAMS=	$(GUIPROG) tggcov
+bin_PROGRAMS=	@GUIPROG@ tggcov
+EXTRA_PROGRAMS= ggcov
 
 ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		gnbstackedbar.h gnbstackedbar.c \
