@@ -1,6 +1,9 @@
 
 --- OPEN ---
 
+x  Get libgnome stuff (config, canvas, color picker) working in
+   the gtk2 build.
+
 x  Provide a menu command and window(s) which allows the user to 
    lose the current set of coverage data and read a new set, in
    any of the ways possible from the commandline, i.e. 1) exe
