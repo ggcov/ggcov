@@ -15,3 +15,5 @@ version.m4
 core.*
 ggcov-*.rpm
 vg*.log
+autom4te.cache
+stamp-h1
