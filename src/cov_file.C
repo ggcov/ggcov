@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.37 2004-11-20 09:19:23 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.38 2005-02-13 09:00:37 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -815,7 +815,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     string_var filename, funcname;
     gnb_u32_t tmp;
     unsigned int nblocks = 0;
-    unsigned int bidx, last_bidx = 0;
+    gnb_u32_t bidx, last_bidx = 0;
     unsigned int nlines = 0;
     cov_arc_t *a;
     gnb_u32_t dest, flags;
@@ -1145,7 +1145,6 @@ cov_file_t::read_oldplus_da_file(const char *dafilename)
     unsigned int bidx;
     unsigned int actual_narcs;
     list_iterator_t<cov_arc_t> aiter;
-    gboolean ret = TRUE;
     
     covio_old_t io(dafilename);
     if (!io.open_read())
