@@ -116,8 +116,6 @@ private:
     char *call_;
     
     friend void cov_init(void);
-    friend void cov_get_count_by_location(const cov_location_t *loc,
-    	    	    	    	          count_t *countp, gboolean *existsp);
     friend void cov_o_file_add_call(cov_read_state_t *rs,
     	    	    	    	    unsigned long address,
 				    const char *callname);

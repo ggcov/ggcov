@@ -43,8 +43,8 @@ gboolean cov_read_directory(const char *exefilename);
 /* Call this after reading all files; mostly just calculates callgraph */
 void cov_post_read(void);
 
-void cov_get_count_by_location(const cov_location_t *loc,
-			       count_t *countp, gboolean *existsp);
+cov_status_t cov_get_count_by_location(const cov_location_t *loc,
+			       count_t *countp);
 
 void cov_overall_calc_stats(cov_stats_t *stats);
 void cov_range_calc_stats(const cov_location_t *start,

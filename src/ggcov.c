@@ -32,7 +32,7 @@
 #include "fileswin.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.15 2002-12-31 14:52:56 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.16 2003-01-01 03:15:46 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -126,7 +126,7 @@ annotate_file(cov_file_t *f)
     FILE *infp, *outfp;
     cov_location_t loc;
     count_t count;
-    gboolean have_count;
+    cov_status_t status;
     char *ggcov_filename;
     char buf[1024];
     
@@ -153,8 +153,8 @@ annotate_file(cov_file_t *f)
     {
     	++loc.lineno;
 	
-	cov_get_count_by_location(&loc, &count, &have_count);
-	if (have_count)
+	status = cov_get_count_by_location(&loc, &count);
+	if (status != CS_UNINSTRUMENTED)
 	{
 	    if (count)
 		fprintf(outfp, "%12lld    ", count);
