@@ -1170,7 +1170,7 @@
       <class>GtkTable</class>
       <name>table1</name>
       <border_width>4</border_width>
-      <rows>4</rows>
+      <rows>5</rows>
       <columns>3</columns>
       <homogeneous>False</homogeneous>
       <row_spacing>4</row_spacing>
@@ -1183,22 +1183,22 @@
 
       <widget>
 	<class>GtkLabel</class>
-	<name>summary_lines_label</name>
-	<label></label>
+	<name>label1</name>
+	<label>Lines:</label>
 	<justify>GTK_JUSTIFY_CENTER</justify>
 	<wrap>False</wrap>
-	<xalign>0.5</xalign>
+	<xalign>1</xalign>
 	<yalign>0.5</yalign>
 	<xpad>0</xpad>
 	<ypad>0</ypad>
 	<child>
-	  <left_attach>1</left_attach>
-	  <right_attach>2</right_attach>
+	  <left_attach>0</left_attach>
+	  <right_attach>1</right_attach>
 	  <top_attach>0</top_attach>
 	  <bottom_attach>1</bottom_attach>
 	  <xpad>0</xpad>
 	  <ypad>0</ypad>
-	  <xexpand>True</xexpand>
+	  <xexpand>False</xexpand>
 	  <yexpand>False</yexpand>
 	  <xshrink>False</xshrink>
 	  <yshrink>False</yshrink>
@@ -1210,7 +1210,33 @@
       <widget>
 	<class>GtkLabel</class>
 	<name>label4</name>
-	<label>Branches taken:</label>
+	<label>Blocks:</label>
+	<justify>GTK_JUSTIFY_CENTER</justify>
+	<wrap>False</wrap>
+	<xalign>1</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+	<child>
+	  <left_attach>0</left_attach>
+	  <right_attach>1</right_attach>
+	  <top_attach>4</top_attach>
+	  <bottom_attach>5</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>False</xexpand>
+	  <yexpand>False</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>False</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkLabel</class>
+	<name>label3</name>
+	<label>Branches:</label>
 	<justify>GTK_JUSTIFY_CENTER</justify>
 	<wrap>False</wrap>
 	<xalign>1</xalign>
@@ -1235,8 +1261,8 @@
 
       <widget>
 	<class>GtkLabel</class>
-	<name>label3</name>
-	<label>Branches executed:</label>
+	<name>label2</name>
+	<label>Calls:</label>
 	<justify>GTK_JUSTIFY_CENTER</justify>
 	<wrap>False</wrap>
 	<xalign>1</xalign>
@@ -1261,8 +1287,8 @@
 
       <widget>
 	<class>GtkLabel</class>
-	<name>label2</name>
-	<label>Functions called:</label>
+	<name>label70</name>
+	<label>Functions:</label>
 	<justify>GTK_JUSTIFY_CENTER</justify>
 	<wrap>False</wrap>
 	<xalign>1</xalign>
@@ -1287,17 +1313,43 @@
 
       <widget>
 	<class>GtkLabel</class>
-	<name>label1</name>
-	<label>Source lines executed:</label>
+	<name>summary_functions_label</name>
+	<label></label>
 	<justify>GTK_JUSTIFY_CENTER</justify>
 	<wrap>False</wrap>
-	<xalign>1</xalign>
+	<xalign>0.5</xalign>
 	<yalign>0.5</yalign>
 	<xpad>0</xpad>
 	<ypad>0</ypad>
 	<child>
-	  <left_attach>0</left_attach>
-	  <right_attach>1</right_attach>
+	  <left_attach>1</left_attach>
+	  <right_attach>2</right_attach>
+	  <top_attach>1</top_attach>
+	  <bottom_attach>2</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>False</xexpand>
+	  <yexpand>False</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>False</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkLabel</class>
+	<name>summary_lines_label</name>
+	<label></label>
+	<justify>GTK_JUSTIFY_CENTER</justify>
+	<wrap>False</wrap>
+	<xalign>0.5</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+	<child>
+	  <left_attach>1</left_attach>
+	  <right_attach>2</right_attach>
 	  <top_attach>0</top_attach>
 	  <bottom_attach>1</bottom_attach>
 	  <xpad>0</xpad>
@@ -1324,37 +1376,11 @@
 	<child>
 	  <left_attach>1</left_attach>
 	  <right_attach>2</right_attach>
-	  <top_attach>1</top_attach>
-	  <bottom_attach>2</bottom_attach>
-	  <xpad>0</xpad>
-	  <ypad>0</ypad>
-	  <xexpand>True</xexpand>
-	  <yexpand>False</yexpand>
-	  <xshrink>False</xshrink>
-	  <yshrink>False</yshrink>
-	  <xfill>True</xfill>
-	  <yfill>False</yfill>
-	</child>
-      </widget>
-
-      <widget>
-	<class>GtkLabel</class>
-	<name>summary_branches_executed_label</name>
-	<label></label>
-	<justify>GTK_JUSTIFY_CENTER</justify>
-	<wrap>False</wrap>
-	<xalign>0.5</xalign>
-	<yalign>0.5</yalign>
-	<xpad>0</xpad>
-	<ypad>0</ypad>
-	<child>
-	  <left_attach>1</left_attach>
-	  <right_attach>2</right_attach>
 	  <top_attach>2</top_attach>
 	  <bottom_attach>3</bottom_attach>
 	  <xpad>0</xpad>
 	  <ypad>0</ypad>
-	  <xexpand>True</xexpand>
+	  <xexpand>False</xexpand>
 	  <yexpand>False</yexpand>
 	  <xshrink>False</xshrink>
 	  <yshrink>False</yshrink>
@@ -1365,7 +1391,7 @@
 
       <widget>
 	<class>GtkLabel</class>
-	<name>summary_branches_taken_label</name>
+	<name>summary_branches_label</name>
 	<label></label>
 	<justify>GTK_JUSTIFY_CENTER</justify>
 	<wrap>False</wrap>
@@ -1380,7 +1406,33 @@
 	  <bottom_attach>4</bottom_attach>
 	  <xpad>0</xpad>
 	  <ypad>0</ypad>
-	  <xexpand>True</xexpand>
+	  <xexpand>False</xexpand>
+	  <yexpand>False</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>False</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkLabel</class>
+	<name>summary_blocks_label</name>
+	<label></label>
+	<justify>GTK_JUSTIFY_CENTER</justify>
+	<wrap>False</wrap>
+	<xalign>0.5</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+	<child>
+	  <left_attach>1</left_attach>
+	  <right_attach>2</right_attach>
+	  <top_attach>4</top_attach>
+	  <bottom_attach>5</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>False</xexpand>
 	  <yexpand>False</yexpand>
 	  <xshrink>False</xshrink>
 	  <yshrink>False</yshrink>
@@ -1391,77 +1443,8 @@
 
       <widget>
 	<class>Custom</class>
-	<name>summary_calls_progressbar</name>
-	<creation_function>gnb_progress_bar_new</creation_function>
-	<int1>0</int1>
-	<int2>0</int2>
-	<last_modification_time>Mon, 26 Nov 2001 05:52:56 GMT</last_modification_time>
-	<child>
-	  <left_attach>2</left_attach>
-	  <right_attach>3</right_attach>
-	  <top_attach>1</top_attach>
-	  <bottom_attach>2</bottom_attach>
-	  <xpad>0</xpad>
-	  <ypad>0</ypad>
-	  <xexpand>False</xexpand>
-	  <yexpand>False</yexpand>
-	  <xshrink>False</xshrink>
-	  <yshrink>False</yshrink>
-	  <xfill>True</xfill>
-	  <yfill>True</yfill>
-	</child>
-      </widget>
-
-      <widget>
-	<class>Custom</class>
-	<name>summary_branches_executed_progressbar</name>
-	<creation_function>gnb_progress_bar_new</creation_function>
-	<int1>0</int1>
-	<int2>0</int2>
-	<last_modification_time>Mon, 26 Nov 2001 05:53:26 GMT</last_modification_time>
-	<child>
-	  <left_attach>2</left_attach>
-	  <right_attach>3</right_attach>
-	  <top_attach>2</top_attach>
-	  <bottom_attach>3</bottom_attach>
-	  <xpad>0</xpad>
-	  <ypad>0</ypad>
-	  <xexpand>False</xexpand>
-	  <yexpand>False</yexpand>
-	  <xshrink>False</xshrink>
-	  <yshrink>False</yshrink>
-	  <xfill>True</xfill>
-	  <yfill>True</yfill>
-	</child>
-      </widget>
-
-      <widget>
-	<class>Custom</class>
-	<name>summary_branches_taken_progressbar</name>
-	<creation_function>gnb_progress_bar_new</creation_function>
-	<int1>0</int1>
-	<int2>0</int2>
-	<last_modification_time>Mon, 26 Nov 2001 05:53:51 GMT</last_modification_time>
-	<child>
-	  <left_attach>2</left_attach>
-	  <right_attach>3</right_attach>
-	  <top_attach>3</top_attach>
-	  <bottom_attach>4</bottom_attach>
-	  <xpad>0</xpad>
-	  <ypad>0</ypad>
-	  <xexpand>False</xexpand>
-	  <yexpand>False</yexpand>
-	  <xshrink>False</xshrink>
-	  <yshrink>False</yshrink>
-	  <xfill>True</xfill>
-	  <yfill>True</yfill>
-	</child>
-      </widget>
-
-      <widget>
-	<class>Custom</class>
-	<name>summary_lines_progressbar</name>
-	<creation_function>gnb_progress_bar_new</creation_function>
+	<name>summary_lines_bar</name>
+	<creation_function>gnb_stacked_bar_new</creation_function>
 	<int1>0</int1>
 	<int2>0</int2>
 	<last_modification_time>Mon, 26 Nov 2001 05:51:07 GMT</last_modification_time>
@@ -1472,8 +1455,100 @@
 	  <bottom_attach>1</bottom_attach>
 	  <xpad>0</xpad>
 	  <ypad>0</ypad>
-	  <xexpand>False</xexpand>
-	  <yexpand>False</yexpand>
+	  <xexpand>True</xexpand>
+	  <yexpand>True</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>True</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>Custom</class>
+	<name>summary_functions_bar</name>
+	<creation_function>gnb_stacked_bar_new</creation_function>
+	<int1>0</int1>
+	<int2>0</int2>
+	<last_modification_time>Mon, 26 Nov 2001 05:51:07 GMT</last_modification_time>
+	<child>
+	  <left_attach>2</left_attach>
+	  <right_attach>3</right_attach>
+	  <top_attach>1</top_attach>
+	  <bottom_attach>2</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>True</xexpand>
+	  <yexpand>True</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>True</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>Custom</class>
+	<name>summary_calls_bar</name>
+	<creation_function>gnb_stacked_bar_new</creation_function>
+	<int1>0</int1>
+	<int2>0</int2>
+	<last_modification_time>Mon, 26 Nov 2001 05:52:56 GMT</last_modification_time>
+	<child>
+	  <left_attach>2</left_attach>
+	  <right_attach>3</right_attach>
+	  <top_attach>2</top_attach>
+	  <bottom_attach>3</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>True</xexpand>
+	  <yexpand>True</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>True</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>Custom</class>
+	<name>summary_branches_bar</name>
+	<creation_function>gnb_stacked_bar_new</creation_function>
+	<int1>0</int1>
+	<int2>0</int2>
+	<last_modification_time>Mon, 26 Nov 2001 05:53:26 GMT</last_modification_time>
+	<child>
+	  <left_attach>2</left_attach>
+	  <right_attach>3</right_attach>
+	  <top_attach>3</top_attach>
+	  <bottom_attach>4</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>True</xexpand>
+	  <yexpand>True</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>True</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>Custom</class>
+	<name>summary_blocks_bar</name>
+	<creation_function>gnb_stacked_bar_new</creation_function>
+	<int1>0</int1>
+	<int2>0</int2>
+	<last_modification_time>Mon, 26 Nov 2001 05:53:51 GMT</last_modification_time>
+	<child>
+	  <left_attach>2</left_attach>
+	  <right_attach>3</right_attach>
+	  <top_attach>4</top_attach>
+	  <bottom_attach>5</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>True</xexpand>
+	  <yexpand>True</yexpand>
 	  <xshrink>False</xshrink>
 	  <yshrink>False</yshrink>
 	  <xfill>True</xfill>
@@ -1570,6 +1645,19 @@
 	<widget>
 	  <class>GtkMenu</class>
 	  <name>view1_menu</name>
+
+	  <widget>
+	    <class>GtkCheckMenuItem</class>
+	    <name>functions_blocks_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_functions_blocks_check_activate</handler>
+	      <last_modification_time>Sun, 25 Nov 2001 07:56:40 GMT</last_modification_time>
+	    </signal>
+	    <label>_Blocks</label>
+	    <active>True</active>
+	    <always_show_toggle>True</always_show_toggle>
+	  </widget>
 
 	  <widget>
 	    <class>GtkCheckMenuItem</class>
@@ -1712,11 +1800,24 @@
 	  <handler>on_functions_clist_button_press_event</handler>
 	  <last_modification_time>Sun, 25 Nov 2001 08:07:27 GMT</last_modification_time>
 	</signal>
-	<columns>4</columns>
-	<column_widths>80,80,80,80</column_widths>
+	<columns>5</columns>
+	<column_widths>80,80,80,80,80</column_widths>
 	<selection_mode>GTK_SELECTION_SINGLE</selection_mode>
 	<show_titles>True</show_titles>
 	<shadow_type>GTK_SHADOW_IN</shadow_type>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <child_name>CList:title</child_name>
+	  <name>label12</name>
+	  <label>Blocks</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	</widget>
 
 	<widget>
 	  <class>GtkLabel</class>
@@ -1863,10 +1964,36 @@
 
 	  <widget>
 	    <class>GtkCheckMenuItem</class>
+	    <name>files_blocks_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_files_blocks_check_activate</handler>
+	      <last_modification_time>Thu, 29 Nov 2001 12:59:57 GMT</last_modification_time>
+	    </signal>
+	    <label>_Blocks</label>
+	    <active>True</active>
+	    <always_show_toggle>True</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkCheckMenuItem</class>
 	    <name>files_lines_check</name>
 	    <signal>
 	      <name>activate</name>
 	      <handler>on_files_lines_check_activate</handler>
+	      <last_modification_time>Thu, 29 Nov 2001 12:59:57 GMT</last_modification_time>
+	    </signal>
+	    <label>_Lines</label>
+	    <active>True</active>
+	    <always_show_toggle>True</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkCheckMenuItem</class>
+	    <name>files_functions_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_files_functions_check_activate</handler>
 	      <last_modification_time>Thu, 29 Nov 2001 12:59:57 GMT</last_modification_time>
 	    </signal>
 	    <label>_Lines</label>
@@ -2045,8 +2172,8 @@
 	  <handler>on_files_ctree_button_press_event</handler>
 	  <last_modification_time>Sat, 07 Jun 2003 16:12:00 GMT</last_modification_time>
 	</signal>
-	<columns>4</columns>
-	<column_widths>80,80,80,80</column_widths>
+	<columns>6</columns>
+	<column_widths>80,80,80,80,80,80</column_widths>
 	<selection_mode>GTK_SELECTION_SINGLE</selection_mode>
 	<show_titles>True</show_titles>
 	<shadow_type>GTK_SHADOW_IN</shadow_type>
@@ -2067,8 +2194,34 @@
 	<widget>
 	  <class>GtkLabel</class>
 	  <child_name>CTree:title</child_name>
+	  <name>label65</name>
+	  <label>Blocks</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <child_name>CTree:title</child_name>
 	  <name>label66</name>
 	  <label>Lines</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <child_name>CTree:title</child_name>
+	  <name>label66</name>
+	  <label>Functions</label>
 	  <justify>GTK_JUSTIFY_CENTER</justify>
 	  <wrap>False</wrap>
 	  <xalign>0.5</xalign>
