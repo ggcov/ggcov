@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.8 2003-11-03 22:54:44 gnb Exp $");
+CVSID("$Id: common.c,v 1.9 2004-02-08 10:49:01 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -110,6 +110,7 @@ static struct
 {"verbose",    	1},
 
 {"files",    	F(D_FILES)},
+{"cpp",    	F(D_CPP)},
 {"bb",       	F(D_BB)},
 {"bbg",      	F(D_BBG)},
 {"da",       	F(D_DA)},

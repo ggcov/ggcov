@@ -54,6 +54,7 @@ typedef enum
     /* bit0 is the "verbose" bit -- the __debug_enabled macro relies on this */
     /* cov library related features */
     D_FILES=1,
+    D_CPP,
     D_BB,
     D_BBG,
     D_DA,
