@@ -74,9 +74,16 @@ public:
     {
 	return g_ptr_array_remove(this, p);
     }
+    void set(unsigned i, T *p)
+    {
+    	if (i >= len)
+    	    g_ptr_array_set_size(this, i+1);
+	((T **)pdata)[i] = p;
+    }
 
     T *nth(unsigned i) const
     {
+    	assert(i < len);
 	return (T *)g_ptr_array_index(this, i);
     }
     T *operator[](unsigned i) const
