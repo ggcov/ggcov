@@ -18,9 +18,9 @@
  */
 
 #include "ui.h"
-#include "estring.h"
+#include "estring.H"
 
-CVSID("$Id: ui.c,v 1.10 2002-12-15 15:47:24 gnb Exp $");
+CVSID("$Id: ui.c,v 1.11 2002-12-22 02:49:48 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -391,16 +391,12 @@ ui_window_set_title(GtkWidget *w, const char *filename)
 	    	    	    	 ui_window_title_destroy);
     }
 
-    estring_init(&title);
+    title.append_string(proto);
+    title.replace_all("@FILE@", filename);
+    title.replace_all("@VERSION@", VERSION);
     
-    estring_append_string(&title, proto);
-    estring_replace_all(&title, "@FILE@", filename);
-    estring_replace_all(&title, "@VERSION@", VERSION);
-    
-    gtk_window_set_title(GTK_WINDOW(w), title.data);
+    gtk_window_set_title(GTK_WINDOW(w), title.data());
         
-    estring_free(&title);
-    
     /* update windows menus if necessary */
     if (g_list_find(ui_windows, w))
     	ui_update_windows_menus();
