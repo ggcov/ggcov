@@ -148,7 +148,7 @@ public:
     static void * PASTE(klass,_creator)() { return new klass (); } \
     cov_factory_item_t PASTE(klass,_static_reg)( \
     	superklass::factory_category(), \
-	STRINGIFY(klass), PASTE(klass,_creator));
+	STRINGIFY(klass), PASTE(klass,_creator))
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
