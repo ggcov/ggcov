@@ -1,3 +1,27 @@
+Sun Sep 26 20:48:49 2004  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.3
+
+	* Added a number of text reports to ggcov, tggcov.
+	* Added -o option to ggcov, tggcov (same as gcov's -o option).
+	* Summary window shows percentages of partially covered entities.
+	* Split Summary window numeric display into separate columns for
+	proportion and percentage, to get better visual alignment.
+	* Added Blocks column to the Functions window.
+	* Added Blocks and Functions columns to the Files window.
+	* Added support for yet another .bbg/.bb/.da file format, this time
+	emitted by gcc 3.3.2 in Fedora Core 1.
+
+	* Source lines which depend on any of the cpp symbols in the
+	suppression set, are suppressed.  The -X commandline option
+	* adds a cpp symbol to the suppression set.
+	* Arcs from suppressed lines are suppressed; functions are
+	suppressed if they contain no unsuppressed lines.
+	* Suppressed source lines are shown in a different colour.
+
+	* Reorganised BFD and platform-specific call scanning code.
+	* Various minor bug fixes.
+	* Checked in a bunch of tests which have been sitting around.
+
 Tue Nov  4 23:55:52 2003  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.2.2
 
