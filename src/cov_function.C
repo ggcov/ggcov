@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.17 2005-03-05 15:05:34 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.18 2005-03-05 15:11:47 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -203,11 +203,20 @@ cov_function_t::reconcile_calls()
 	if (cov_arc_t::ncalls(b->out_arcs_) != (b->call_ == 0 ? 0U : 1U))
 	{
 	    /* TODO */
-	    fprintf(stderr, "Failed to reconcile calls for %s\n",
+	    if (b->get_first_location() != 0)
+	    {
+	    	/*
+		 * Don't complain about not being to reconcile weird
+		 * calls inserted by g++, like _Unwind_Resume() or
+		 * __cxa_throw(), or any other call with no direct
+		 * relationship to the source code.
+		 */
+		fprintf(stderr, "Failed to reconcile calls for block %s\n",
 		    	desc.data());
-	    fprintf(stderr, "    %d call arcs, %d recorded calls\n",
+		fprintf(stderr, "    %d call arcs, %d recorded calls\n",
 		    	    cov_arc_t::ncalls(b->out_arcs_),
 			    (b->call_ == 0 ? 0 : 1));
+    	    }
 	    b->call_ = (const char *)0;   /* free and null out */
 	    ret = FALSE;
 	    continue;
@@ -218,9 +227,13 @@ cov_function_t::reconcile_calls()
 	    cov_arc_t *a = *aiter;
 
     	    if (a->is_call())
+	    {
 	    	a->name_ = b->pop_call();
+	    	dprintf2(D_CGRAPH|D_VERBOSE, "    block %s calls %s\n",
+		    	    	    desc.data(), a->name_.data());
+	    }
     	}
-	dprintf2(D_CGRAPH, "Reconciled %d calls for %s\n",
+	dprintf2(D_CGRAPH, "Reconciled %d calls for block %s\n",
 		    	    cov_arc_t::ncalls(b->out_arcs_), desc.data());
     }
     return ret;
