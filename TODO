@@ -21,9 +21,6 @@ x  Reorganise the text widget of the Source window so that there are
 x  Add a column to the Source window showing a comma-seperated list
    of block execution counts for each line.
    
-x  Colour-code the coverage stats cells in the Function List and
-   File List windows.
-   
 x  Provide a menu command to export the file and function lists and
    summaries to useful formats, e.g. CSV, XML, Excel spreadsheet.
    
@@ -113,6 +110,9 @@ x   Callgraphwin should label the two lists something easier to
 
 --- CLOSED ---
 
+x  Colour-code the coverage stats cells in the Function List and
+   File List windows.
+   
 x  Preferences window pane to control colour coding colours.
 
 x  Added a Properties window which allows the user to control the
