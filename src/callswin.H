@@ -32,7 +32,7 @@ GLADE_CALLBACK void on_calls_from_function_entry_changed(GtkWidget *w, gpointer 
 GLADE_CALLBACK void on_calls_to_function_entry_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_from_function_view_clicked(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_to_function_view_clicked(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
+GLADE_CALLBACK gboolean on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
 
 class callswin_t : public window_t
 {
@@ -58,6 +58,9 @@ private:
     GtkWidget *to_function_view_;
 
     GtkWidget *clist_;
+#if GTK2
+    GtkListStore *store_;
+#endif
     GList *functions_;	/* list of cov_function_t */
 
     friend void on_calls_call_from_check_activate(GtkWidget *w, gpointer data);
@@ -69,7 +72,7 @@ private:
     friend void on_calls_to_function_entry_changed(GtkWidget *w, gpointer data);
     friend void on_calls_from_function_view_clicked(GtkWidget *w, gpointer data);
     friend void on_calls_to_function_view_clicked(GtkWidget *w, gpointer data);
-    friend void on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
+    friend gboolean on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
 };
 
 #endif /* _ggcov_callswin_H_ */

@@ -23,26 +23,31 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.8 2003-04-05 23:53:20 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.9 2003-06-09 04:06:51 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
 #define COL_LINE    2
 #define COL_ARC     3
 #define COL_COUNT   4
-#define COL_NUM     5
+#if !GTK2
+#define NUM_COLS    	5
+#else
+#define COL_CLOSURE	5
+#define NUM_COLS    	6
+#define COL_TYPES \
+    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
+    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER
+#endif
 
 static const char all_functions[] = N_("All Functions");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
-callswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
+callswin_compare(cov_arc_t *a1, cov_arc_t *a2, int column)
 {
-    cov_arc_t *a1 = (cov_arc_t *)((GtkCListRow *)ptr1)->data;
-    cov_arc_t *a2 = (cov_arc_t *)((GtkCListRow *)ptr2)->data;
-
-    switch (clist->sort_column)
+    switch (column)
     {
     case COL_COUNT:
     	return u64cmp(a1->from()->count(), a2->from()->count());
@@ -64,11 +69,41 @@ callswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
     }
 }
 
+#if !GTK2
+static int
+callswin_clist_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
+{
+    return callswin_compare(
+    	(cov_arc_t *)((GtkCListRow *)ptr1)->data,
+    	(cov_arc_t *)((GtkCListRow *)ptr2)->data,
+    	clist->sort_column);
+}
+#else
+static int
+callswin_tree_iter_compare(
+    GtkTreeModel *tm,
+    GtkTreeIter *iter1,
+    GtkTreeIter *iter2,
+    gpointer data)
+{
+    cov_arc_t *a1 = 0;
+    cov_arc_t *a2 = 0;
+
+    gtk_tree_model_get(tm, iter1, COL_CLOSURE, &a1, -1);
+    gtk_tree_model_get(tm, iter2, COL_CLOSURE, &a2, -1);
+    return callswin_compare(a1, a2, GPOINTER_TO_INT(data));
+}
+#endif
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 callswin_t::callswin_t()
 {
     GladeXML *xml;
+#if GTK2
+    GtkTreeViewColumn *col;
+    GtkCellRenderer *rend;
+#endif
     
     /* load the interface & connect signals */
     xml = ui_load_tree("calls");
@@ -82,22 +117,73 @@ callswin_t::callswin_t()
     to_function_view_ = glade_xml_get_widget(xml, "calls_to_function_view");
 
     clist_ = glade_xml_get_widget(xml, "calls_clist");
+#if !GTK2
     gtk_clist_column_titles_passive(GTK_CLIST(clist_));
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_FROM);
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_TO);
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_ARC);
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_COUNT);
-    gtk_clist_set_compare_func(GTK_CLIST(clist_), callswin_compare);
+    gtk_clist_set_compare_func(GTK_CLIST(clist_), callswin_clist_compare);
     ui_clist_set_sort_column(GTK_CLIST(clist_), COL_ARC);
     ui_clist_set_sort_type(GTK_CLIST(clist_), GTK_SORT_ASCENDING);
     gtk_clist_set_column_visibility(GTK_CLIST(clist_), COL_ARC, FALSE);
+#else
+    store_ = gtk_list_store_new(NUM_COLS, COL_TYPES);
+    /* default alphabetic sort is adequate for COL_FROM, COL_TO */
+    gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_LINE,
+	  callswin_tree_iter_compare, GINT_TO_POINTER(COL_LINE), 0);
+    gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_ARC,
+	  callswin_tree_iter_compare, GINT_TO_POINTER(COL_ARC), 0);
+    gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_COUNT,
+	  callswin_tree_iter_compare, GINT_TO_POINTER(COL_COUNT), 0);
+    
+    gtk_tree_view_set_model(GTK_TREE_VIEW(clist_), GTK_TREE_MODEL(store_));
 
+    rend = gtk_cell_renderer_text_new();
+
+    col = gtk_tree_view_column_new_with_attributes(_("From"), rend,
+    	    	"text", COL_FROM,
+		(char *)0);
+    gtk_tree_view_column_set_sort_column_id(col, COL_FROM);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
+    
+    col = gtk_tree_view_column_new_with_attributes(_("To"), rend,
+    	    	"text", COL_TO,
+		(char *)0);
+    gtk_tree_view_column_set_sort_column_id(col, COL_TO);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
+    
+    col = gtk_tree_view_column_new_with_attributes(_("Line"), rend,
+    	    	"text", COL_LINE,
+		(char *)0);
+    gtk_tree_view_column_set_sort_column_id(col, COL_LINE);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
+    
+    col = gtk_tree_view_column_new_with_attributes(_("Arc"), rend,
+    	    	"text", COL_ARC,
+		(char *)0);
+    gtk_tree_view_column_set_sort_column_id(col, COL_ARC);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
+    
+    col = gtk_tree_view_column_new_with_attributes(_("Count"), rend,
+    	    	"text", COL_COUNT,
+		(char *)0);
+    gtk_tree_view_column_set_sort_column_id(col, COL_COUNT);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
+
+    gtk_tree_view_set_reorderable(GTK_TREE_VIEW(clist_), TRUE);
+    gtk_tree_view_set_enable_search(GTK_TREE_VIEW(clist_), TRUE);
+    gtk_tree_view_set_search_column(GTK_TREE_VIEW(clist_), COL_FROM);
+#endif
     
     ui_register_windows_menu(ui_get_dummy_menu(xml, "calls_windows_dummy"));
 }
 
 callswin_t::~callswin_t()
 {
+#if GTK2
+    g_object_unref(G_OBJECT(store_));
+#endif
     listclear(functions_);
 }
 
@@ -109,6 +195,7 @@ callswin_t::populate_function_combo(GtkCombo *combo)
     GList *iter;
     estring label;
     
+    ui_combo_clear(combo);    /* stupid glade2 */
     ui_combo_add_data(combo, _(all_functions), 0);
 
     for (iter = functions_ ; iter != 0 ; iter = iter->next)
@@ -151,10 +238,14 @@ void
 callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 {
     unsigned int bidx;
+#if GTK2
+    GtkTreeIter titer;
+#else
     int row;
+#endif
     list_iterator_t<cov_arc_t> aiter;
     const cov_location_t *loc;
-    char *text[COL_NUM];
+    char *text[NUM_COLS];
     char countbuf[32];
     char arcbuf[64];
     char linebuf[32];
@@ -189,8 +280,20 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 	    if ((text[COL_TO] = (char *)a->name()) == 0)
 	    	text[COL_TO] = "(unknown)";
 		
+#if !GTK2
 	    row = gtk_clist_append(GTK_CLIST(clist_), text);
 	    gtk_clist_set_row_data(GTK_CLIST(clist_), row, a);
+#else
+    	    gtk_list_store_append(store_, &titer);
+	    gtk_list_store_set(store_,  &titer,
+		COL_FROM, text[COL_FROM],
+		COL_TO, text[COL_TO],
+		COL_LINE, text[COL_LINE],
+		COL_ARC, text[COL_ARC],
+		COL_COUNT, text[COL_COUNT],
+		COL_CLOSURE, (*aiter),
+		-1);
+#endif
 	}
     }
 }
@@ -224,9 +327,12 @@ callswin_t::update()
     }
     set_title(title.data());
 
-
+#if !GTK2
     gtk_clist_freeze(GTK_CLIST(clist_));
     gtk_clist_clear(GTK_CLIST(clist_));
+#else
+    gtk_list_store_clear(store_);
+#endif
 
     if (from_fn != 0)
     {
@@ -245,8 +351,10 @@ callswin_t::update()
 	}
     }
     
+#if !GTK2
     gtk_clist_columns_autosize(GTK_CLIST(clist_));
     gtk_clist_thaw(GTK_CLIST(clist_));
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -256,8 +364,14 @@ on_calls_call_from_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
     
+#if !GTK2
     gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_FROM,
     	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
+#else
+    gtk_tree_view_column_set_visible(
+    	    gtk_tree_view_get_column(GTK_TREE_VIEW(cw->clist_), COL_FROM),
+    	    GTK_CHECK_MENU_ITEM(w)->active);
+#endif
 }
 
 GLADE_CALLBACK void
@@ -265,8 +379,14 @@ on_calls_call_to_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
     
+#if !GTK2
     gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_TO,
     	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
+#else
+    gtk_tree_view_column_set_visible(
+    	    gtk_tree_view_get_column(GTK_TREE_VIEW(cw->clist_), COL_TO),
+    	    GTK_CHECK_MENU_ITEM(w)->active);
+#endif
 }
 
 GLADE_CALLBACK void
@@ -274,8 +394,14 @@ on_calls_line_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
     
+#if !GTK2
     gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_LINE,
     	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
+#else
+    gtk_tree_view_column_set_visible(
+    	    gtk_tree_view_get_column(GTK_TREE_VIEW(cw->clist_), COL_LINE),
+    	    GTK_CHECK_MENU_ITEM(w)->active);
+#endif
 }
 
 GLADE_CALLBACK void
@@ -283,8 +409,14 @@ on_calls_arc_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
     
+#if !GTK2
     gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_ARC,
     	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
+#else
+    gtk_tree_view_column_set_visible(
+    	    gtk_tree_view_get_column(GTK_TREE_VIEW(cw->clist_), COL_ARC),
+    	    GTK_CHECK_MENU_ITEM(w)->active);
+#endif
 }
 
 GLADE_CALLBACK void
@@ -292,8 +424,14 @@ on_calls_count_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
     
+#if !GTK2
     gtk_clist_set_column_visibility(GTK_CLIST(cw->clist_), COL_COUNT,
     	    	    	    	    GTK_CHECK_MENU_ITEM(w)->active);
+#else
+    gtk_tree_view_column_set_visible(
+    	    gtk_tree_view_get_column(GTK_TREE_VIEW(cw->clist_), COL_COUNT),
+    	    GTK_CHECK_MENU_ITEM(w)->active);
+#endif
 }
 
 GLADE_CALLBACK void
@@ -330,9 +468,10 @@ on_calls_to_function_view_clicked(GtkWidget *w, gpointer data)
     sourcewin_t::show_function(fn);
 }
 
-GLADE_CALLBACK void
+GLADE_CALLBACK gboolean
 on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data)
 {
+#if !GTK2
     int row, col;
     cov_arc_t *a;
     const cov_location_t *loc;
@@ -353,6 +492,37 @@ on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data)
 	if (loc != 0)
 	    sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);
     }
+    return FALSE;
+#else
+    GtkTreeModel *model;
+    GtkTreePath *path = 0;
+    GtkTreeIter iter;
+    cov_arc_t *a;
+    const cov_location_t *loc;
+
+    if (event->type == GDK_2BUTTON_PRESS &&
+    	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(w),
+	    	    	    	     (int)event->button.x,
+				     (int)event->button.y,
+				     &path, (GtkTreeViewColumn **)0,
+				     (gint *)0, (gint *)0))
+    {
+#if DEBUG
+    	string_var path_str = gtk_tree_path_to_string(path);
+    	fprintf(stderr, "on_calls_clist_button_press_event: path=\"%s\"\n",
+	    	    	path_str.data());
+#endif
+    	model = gtk_tree_view_get_model(GTK_TREE_VIEW(w));
+    	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get(model, &iter, COL_CLOSURE, &a, -1);
+	gtk_tree_path_free(path);
+	
+	loc = a->get_from_location();
+	if (loc != 0)
+	    sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);
+    }
+    return FALSE;
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
