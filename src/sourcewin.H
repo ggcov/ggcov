@@ -31,6 +31,9 @@ GLADE_CALLBACK void on_source_block_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_source_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_colors_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_toolbar_check_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_summarise_file_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_summarise_function_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_summarise_range_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_filenames_entry_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_functions_entry_changed(GtkWidget *w, gpointer data);
 
@@ -57,11 +60,18 @@ public:
 
 private:
     static void init(GtkWidget *);
+#if GTK2
+    void initialise_tags();
+#endif
     static sourcewin_t *instance();
     void populate_filenames();
     void populate_functions();
     void populate();
     void update();
+    void get_selected_lines(unsigned long *startp, unsigned long *endp);
+#if !GTK2
+    unsigned long offset_to_lineno(unsigned int offset);
+#endif
     static int delayed_function_activate(gpointer userdata);
     static void on_source_filename_activate(GtkWidget *w, gpointer userdata);
     static void on_source_function_activate(GtkWidget *w, gpointer userdata);
@@ -72,12 +82,20 @@ private:
     }
 
     static gboolean initialised_;
+#if GTK2
+    static PangoFontDescription *font_;
+#else
     static GdkFont *font_;
     static int font_width_, font_height_;
+#endif
     static list_t<sourcewin_t> instances_;
     
-
+#if GTK2
+    GtkWidget *text_view_;
+    GtkTextTag *text_tags_[4];
+#else
     GtkWidget *text_;
+#endif
     GtkWidget *number_check_;
     GtkWidget *block_check_;
     GtkWidget *count_check_;
@@ -89,7 +107,9 @@ private:
     gboolean populating_;
     char *filename_;
     unsigned int max_lineno_;	/* the largest linenumber */
+#if !GTK2
     GArray *offsets_by_line_;
+#endif
 
     friend void on_source_close_activate(GtkWidget *w, gpointer data);
     friend void on_source_exit_activate(GtkWidget *w, gpointer data);
@@ -99,6 +119,9 @@ private:
     friend void on_source_source_check_activate(GtkWidget *w, gpointer data);
     friend void on_source_colors_check_activate(GtkWidget *w, gpointer data);
     friend void on_source_toolbar_check_activate(GtkWidget *w, gpointer data);
+    friend void on_source_summarise_file_activate(GtkWidget *w, gpointer data);
+    friend void on_source_summarise_function_activate(GtkWidget *w, gpointer data);
+    friend void on_source_summarise_range_activate(GtkWidget *w, gpointer data);
     friend void on_source_filenames_entry_changed(GtkWidget *w, gpointer data);
     friend void on_source_functions_entry_changed(GtkWidget *w, gpointer data);
 };

@@ -18,16 +18,21 @@
  */
 
 #include "sourcewin.H"
+#include "summarywin.H"
 #include "cov.H"
 #include "estring.H"
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.7 2003-01-04 02:39:13 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.8 2003-03-11 21:44:01 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
+#if GTK2
+PangoFontDescription *sourcewin_t::font_;
+#else
 GdkFont *sourcewin_t::font_;
 int sourcewin_t::font_width_, sourcewin_t::font_height_;
+#endif
 list_t<sourcewin_t> sourcewin_t::instances_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -39,10 +44,40 @@ sourcewin_t::init(GtkWidget *w)
     	return;
     initialised_ = TRUE;
 
+#if GTK2
+    font_ = pango_font_description_from_string("monospace");
+#else
     font_ = uix_fixed_width_font(gtk_widget_get_style(w)->font);
     font_height_ = uix_font_height(font_);
     font_width_ = uix_font_width(font_);
+#endif
 }
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#if GTK2
+void
+sourcewin_t::initialise_tags()
+{
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
+    
+    text_tags_[CS_COVERED] = gtk_text_buffer_create_tag(buffer, "covered",
+    	"foreground-gdk",   	prefs.covered_foreground,
+	(char *)0);
+    
+    text_tags_[CS_PARTCOVERED] = gtk_text_buffer_create_tag(buffer, "partcovered",
+    	"foreground-gdk",   	prefs.partcovered_foreground,
+	(char *)0);
+    
+    text_tags_[CS_UNCOVERED] = gtk_text_buffer_create_tag(buffer, "uncovered",
+    	"foreground-gdk",   	prefs.uncovered_foreground,
+	(char *)0);
+    
+    text_tags_[CS_UNINSTRUMENTED] = gtk_text_buffer_create_tag(buffer, "uninstrumented",
+    	"foreground-gdk",   	prefs.uninstrumented_foreground,
+	(char *)0);
+}
+#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -58,16 +93,23 @@ sourcewin_t::sourcewin_t()
 {
     GladeXML *xml;
     
+#if !GTK2
     offsets_by_line_ = g_array_new(/*zero_terminated*/TRUE,
 				      /*clear*/TRUE,
 				      sizeof(unsigned int));
+#endif
     
     /* load the interface & connect signals */
     xml = ui_load_tree("source");
     
     set_window(glade_xml_get_widget(xml, "source"));
 
+#if GTK2
+    text_view_ = glade_xml_get_widget(xml, "source_text");
+    initialise_tags();
+#else
     text_ = glade_xml_get_widget(xml, "source_text");
+#endif
     number_check_ = glade_xml_get_widget(xml, "source_number_check");
     block_check_ = glade_xml_get_widget(xml, "source_block_check");
     count_check_ = glade_xml_get_widget(xml, "source_count_check");
@@ -80,18 +122,24 @@ sourcewin_t::sourcewin_t()
         
     init(window_);
     
+#if GTK2
+    gtk_widget_modify_font(text_view_, font_);
+#else
     if (!screenshot_mode)
 	gtk_widget_set_usize(text_,
     	    SOURCE_COLUMNS * font_width_ + MAGIC_MARGINX,
     	    SOURCE_ROWS * font_height_ + MAGIC_MARGINY);
-	    
+#endif
+
     instances_.append(this);
 }
 
 sourcewin_t::~sourcewin_t()
 {
     strdelete(filename_);
+#if !GTK2
     g_array_free(offsets_by_line_, /*free_segment*/TRUE);
+#endif
     instances_.remove(this);
 }
 
@@ -269,7 +317,7 @@ format_blocks(char *buf, unsigned int width, const cov_location_t *loc)
 {
     const GList *blocks;
     unsigned int len;
-    unsigned int start = 0, end;
+    unsigned int start = 0, end = 0;
     
     for (blocks = cov_block_t::find_by_location(loc) ; 
     	 blocks != 0 && width > 0 ;
@@ -319,14 +367,20 @@ sourcewin_t::update()
     cov_location_t loc;
     count_t count;
     cov_status_t status;
-    GtkText *text = GTK_TEXT(text_);
     int i, nstrs;
+#if GTK2
+    GtkTextView *text_view = GTK_TEXT_VIEW(text_view_);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(text_view);
+    GtkTextTag *tag;
+#else
+    GtkText *text = GTK_TEXT(text_);
     GdkColor *color;
     static GdkColor *scolors[4] =
     {
     	&prefs.covered_foreground, &prefs.partcovered_foreground,
 	&prefs.uncovered_foreground, &prefs.uninstrumented_foreground
     };
+#endif
     const char *strs[5];
     char linenobuf[32];
     char blockbuf[32];
@@ -340,11 +394,14 @@ sourcewin_t::update()
 	return;
     }
 
-
+#if GTK2
+    gtk_text_buffer_set_text(buffer, "", -1);
+#else
     gtk_text_freeze(text);
     gtk_editable_delete_text(GTK_EDITABLE(text), 0, -1);
     
     g_array_set_size(offsets_by_line_, 0);
+#endif
 
     loc.filename = filename_;
     loc.lineno = 0;
@@ -352,6 +409,7 @@ sourcewin_t::update()
     {
     	++loc.lineno;
 	
+#if !GTK2
 	/*
 	 * Stash the offset of this (file) line number.
 	 *
@@ -367,13 +425,20 @@ sourcewin_t::update()
 	    fprintf(stderr, "line=%d offset=%d\n", lineno, offset);
 #endif
 	}
+#endif
 	
 	status = cov_get_count_by_location(&loc, &count);
 
+#if GTK2
     	/* choose colours */
+	tag = 0;
+	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
+	    tag = text_tags_[status];
+#else
 	color = 0;
 	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
 	    color = scolors[status];
+#endif
 
     	/* generate strings */
 	
@@ -416,17 +481,29 @@ sourcewin_t::update()
 
     	for (i = 0 ; i < nstrs ; i++)
 	{
+#if GTK2
+    	    GtkTextIter end;
+
+    	    gtk_text_buffer_get_end_iter(buffer, &end);
+    	    gtk_text_buffer_insert_with_tags(buffer, &end, strs[i], -1,
+	    	    	    	    	     tag, (char*)0);
+#else
     	    gtk_text_insert(text, font_,
 	    		    color, /*back*/0,
 			    strs[i], strlen(strs[i]));
+#endif
     	}
     }
     
     max_lineno_ = loc.lineno;
+#if !GTK2
     assert(offsets_by_line_->len == max_lineno_);
+#endif
     
     fclose(fp);
+#if !GTK2
     gtk_text_thaw(text);
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -449,6 +526,20 @@ sourcewin_t::set_filename(const char *filename, const char *display_fname)
 void
 sourcewin_t::select_region(unsigned long startline, unsigned long endline)
 {
+#if GTK2
+#if GTK_CHECK_VERSION(2,0,3)
+    GtkTextIter start, end;
+    GtkTextBuffer *buffer;
+
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
+    
+    gtk_text_buffer_get_iter_at_line(buffer, &start, startline);
+    gtk_text_buffer_get_iter_at_line(buffer, &end, endline);
+
+    /* this function appeared sometime after 2.0.2 */
+    gtk_text_buffer_select_range(buffer, &start, &end);
+#endif /* 2.0.0 */
+#else
     int endoff;
     
     assert(offsets_by_line_->len > 0);
@@ -478,17 +569,28 @@ sourcewin_t::select_region(unsigned long startline, unsigned long endline)
     gtk_editable_select_region(GTK_EDITABLE(text_),
     	    g_array_index(offsets_by_line_, unsigned int, startline-1),
     	    endoff);
+#endif
 }
 
-/* This mostly works.  Not totally predictable but good enough for now */
 void
 sourcewin_t::ensure_visible(unsigned long line)
 {
+#if GTK2
+    GtkTextIter iter;
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
+    
+    gtk_text_buffer_get_iter_at_line(buffer, &iter, line);
+    gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(text_view_),
+                                 &iter,
+                                 0.0, FALSE, 0.0, 0.0);
+#else
+    /* This mostly works.  Not totally predictable but good enough for now */
     GtkAdjustment *adj = GTK_TEXT(text_)->vadj;
 
     gtk_adjustment_set_value(adj,
 	    	adj->upper * (double)line / (double)max_lineno_
 		    - adj->page_size/2.0);
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -557,6 +659,85 @@ sourcewin_t::show_filename(const char *filename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+#if !GTK2
+unsigned long
+sourcewin_t::offset_to_lineno(unsigned int offset)
+{
+    unsigned int top, bottom;
+    
+    if (offset == 0)
+    	return 0;
+
+    top = offsets_by_line_->len-1;
+    bottom = 0;
+    
+    fprintf(stderr, "offset_to_lineno: { offset=%u top=%u bottom=%u\n",
+    	    offset, top, bottom);
+
+    while (top - bottom > 1)
+    {
+    	unsigned int mid = (top + bottom)/2;
+	unsigned int midoff = g_array_index(offsets_by_line_, unsigned int, mid);
+	
+    	fprintf(stderr, "offset_to_lineno:     top=%d bottom=%d mid=%d midoff=%u\n",
+	    	    	 top, bottom, mid, midoff);
+
+	if (midoff == offset)
+	    top = bottom = mid;
+    	else if (midoff < offset)
+	    bottom = mid;
+	else
+	    top = mid;
+    }
+
+    fprintf(stderr, "offset_to_lineno: offset=%u line=%u }\n",
+    	    offset, bottom);
+
+    return (unsigned long)bottom+1;
+}
+#endif
+
+void
+sourcewin_t::get_selected_lines(unsigned long *startp, unsigned long *endp)
+{
+#if GTK2
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
+    GtkTextIter start_iter, end_iter;
+    
+    if (gtk_text_buffer_get_selection_bounds(buffer, &start_iter, &end_iter))
+    {
+	if (startp != 0)
+	    *startp = 0;
+	if (endp != 0)
+	    *endp = 0;
+    }
+    else
+    {
+	if (startp != 0)
+	    *startp = gtk_text_iter_get_line(&start_iter);
+	if (endp != 0)
+	    *endp = gtk_text_iter_get_line(&end_iter);
+    }
+#else
+    if (GTK_EDITABLE(text_)->selection_start_pos == 0 &&
+    	GTK_EDITABLE(text_)->selection_end_pos == 0)
+    {
+	if (startp != 0)
+	    *startp = 0;
+	if (endp != 0)
+	    *endp = 0;
+    }
+    else
+    {
+	if (startp != 0)
+	    *startp = offset_to_lineno(GTK_EDITABLE(text_)->selection_start_pos);
+	if (endp != 0)
+	    *endp = offset_to_lineno(GTK_EDITABLE(text_)->selection_end_pos-1);
+    }
+#endif
+}
+
+
 GLADE_CALLBACK void
 on_source_close_activate(GtkWidget *w, gpointer data)
 {
@@ -621,6 +802,42 @@ on_source_toolbar_check_activate(GtkWidget *w, gpointer data)
     	gtk_widget_show(sw->toolbar_);
     else
     	gtk_widget_hide(sw->toolbar_);
+}
+
+
+GLADE_CALLBACK void
+on_source_summarise_file_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    
+    summarywin_t::show_file(cov_file_t::find(sw->filename_));
+}
+
+GLADE_CALLBACK void
+on_source_summarise_function_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    cov_location_t loc;
+    const GList *blocks;
+    
+    loc.filename = sw->filename_;
+    sw->get_selected_lines(&loc.lineno, 0);
+
+    if (loc.lineno != 0 ||
+    	(blocks = cov_block_t::find_by_location(&loc)) == 0)
+    	return;
+    summarywin_t::show_function(((cov_block_t *)blocks->data)->function());
+}
+
+GLADE_CALLBACK void
+on_source_summarise_range_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    unsigned long start, end;
+    
+    sw->get_selected_lines(&start, &end);
+    if (start != 0)
+	summarywin_t::show_lines(sw->filename_, start, end);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
