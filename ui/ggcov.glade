@@ -239,6 +239,7 @@
 <widget>
   <class>GtkWindow</class>
   <name>summary</name>
+  <visible>False</visible>
   <signal>
     <name>delete_event</name>
     <handler>on_summary_close_activate</handler>
@@ -977,47 +978,12 @@
       </widget>
 
       <widget>
-	<class>GtkProgressBar</class>
-	<name>summary_lines_progressbar</name>
-	<value>0</value>
-	<lower>0</lower>
-	<upper>100</upper>
-	<bar_style>GTK_PROGRESS_CONTINUOUS</bar_style>
-	<orientation>GTK_PROGRESS_LEFT_TO_RIGHT</orientation>
-	<activity_mode>False</activity_mode>
-	<show_text>False</show_text>
-	<format>%P %%</format>
-	<text_xalign>0.5</text_xalign>
-	<text_yalign>0.5</text_yalign>
-	<child>
-	  <left_attach>2</left_attach>
-	  <right_attach>3</right_attach>
-	  <top_attach>0</top_attach>
-	  <bottom_attach>1</bottom_attach>
-	  <xpad>0</xpad>
-	  <ypad>0</ypad>
-	  <xexpand>False</xexpand>
-	  <yexpand>False</yexpand>
-	  <xshrink>False</xshrink>
-	  <yshrink>False</yshrink>
-	  <xfill>False</xfill>
-	  <yfill>False</yfill>
-	</child>
-      </widget>
-
-      <widget>
-	<class>GtkProgressBar</class>
+	<class>Custom</class>
 	<name>summary_calls_progressbar</name>
-	<value>0</value>
-	<lower>0</lower>
-	<upper>100</upper>
-	<bar_style>GTK_PROGRESS_CONTINUOUS</bar_style>
-	<orientation>GTK_PROGRESS_LEFT_TO_RIGHT</orientation>
-	<activity_mode>False</activity_mode>
-	<show_text>False</show_text>
-	<format>%P %%</format>
-	<text_xalign>0.5</text_xalign>
-	<text_yalign>0.5</text_yalign>
+	<creation_function>gnb_progress_bar_new</creation_function>
+	<int1>0</int1>
+	<int2>0</int2>
+	<last_modification_time>Mon, 26 Nov 2001 05:52:56 GMT</last_modification_time>
 	<child>
 	  <left_attach>2</left_attach>
 	  <right_attach>3</right_attach>
@@ -1029,24 +995,18 @@
 	  <yexpand>False</yexpand>
 	  <xshrink>False</xshrink>
 	  <yshrink>False</yshrink>
-	  <xfill>False</xfill>
-	  <yfill>False</yfill>
+	  <xfill>True</xfill>
+	  <yfill>True</yfill>
 	</child>
       </widget>
 
       <widget>
-	<class>GtkProgressBar</class>
+	<class>Custom</class>
 	<name>summary_branches_executed_progressbar</name>
-	<value>0</value>
-	<lower>0</lower>
-	<upper>100</upper>
-	<bar_style>GTK_PROGRESS_CONTINUOUS</bar_style>
-	<orientation>GTK_PROGRESS_LEFT_TO_RIGHT</orientation>
-	<activity_mode>False</activity_mode>
-	<show_text>False</show_text>
-	<format>%P %%</format>
-	<text_xalign>0.5</text_xalign>
-	<text_yalign>0.5</text_yalign>
+	<creation_function>gnb_progress_bar_new</creation_function>
+	<int1>0</int1>
+	<int2>0</int2>
+	<last_modification_time>Mon, 26 Nov 2001 05:53:26 GMT</last_modification_time>
 	<child>
 	  <left_attach>2</left_attach>
 	  <right_attach>3</right_attach>
@@ -1058,24 +1018,18 @@
 	  <yexpand>False</yexpand>
 	  <xshrink>False</xshrink>
 	  <yshrink>False</yshrink>
-	  <xfill>False</xfill>
-	  <yfill>False</yfill>
+	  <xfill>True</xfill>
+	  <yfill>True</yfill>
 	</child>
       </widget>
 
       <widget>
-	<class>GtkProgressBar</class>
+	<class>Custom</class>
 	<name>summary_branches_taken_progressbar</name>
-	<value>0</value>
-	<lower>0</lower>
-	<upper>100</upper>
-	<bar_style>GTK_PROGRESS_CONTINUOUS</bar_style>
-	<orientation>GTK_PROGRESS_LEFT_TO_RIGHT</orientation>
-	<activity_mode>False</activity_mode>
-	<show_text>False</show_text>
-	<format>%P %%</format>
-	<text_xalign>0.5</text_xalign>
-	<text_yalign>0.5</text_yalign>
+	<creation_function>gnb_progress_bar_new</creation_function>
+	<int1>0</int1>
+	<int2>0</int2>
+	<last_modification_time>Mon, 26 Nov 2001 05:53:51 GMT</last_modification_time>
 	<child>
 	  <left_attach>2</left_attach>
 	  <right_attach>3</right_attach>
@@ -1087,8 +1041,31 @@
 	  <yexpand>False</yexpand>
 	  <xshrink>False</xshrink>
 	  <yshrink>False</yshrink>
-	  <xfill>False</xfill>
-	  <yfill>False</yfill>
+	  <xfill>True</xfill>
+	  <yfill>True</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>Custom</class>
+	<name>summary_lines_progressbar</name>
+	<creation_function>gnb_progress_bar_new</creation_function>
+	<int1>0</int1>
+	<int2>0</int2>
+	<last_modification_time>Mon, 26 Nov 2001 05:51:07 GMT</last_modification_time>
+	<child>
+	  <left_attach>2</left_attach>
+	  <right_attach>3</right_attach>
+	  <top_attach>0</top_attach>
+	  <bottom_attach>1</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>False</xexpand>
+	  <yexpand>False</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>True</yfill>
 	</child>
       </widget>
     </widget>
@@ -1102,6 +1079,8 @@
   <type>GTK_WINDOW_TOPLEVEL</type>
   <position>GTK_WIN_POS_NONE</position>
   <modal>False</modal>
+  <default_width>400</default_width>
+  <default_height>400</default_height>
   <allow_shrink>False</allow_shrink>
   <allow_grow>True</allow_grow>
   <auto_shrink>False</auto_shrink>

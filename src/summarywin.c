@@ -22,8 +22,9 @@
 #include "cov.h"
 #include "estring.h"
 #include "uix.h"
+#include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.c,v 1.5 2001-11-26 01:11:36 gnb Exp $");
+CVSID("$Id: summarywin.c,v 1.6 2001-11-27 00:49:55 gnb Exp $");
 
 extern GList *filenames;
 
@@ -40,6 +41,7 @@ summarywin_new(void)
 {
     summarywin_t *sw;
     GladeXML *xml;
+    GdkColor red, green;
     
     sw = new(summarywin_t);
 
@@ -89,6 +91,18 @@ summarywin_new(void)
     	    		    GTK_TOGGLE_BUTTON(sw->scope_radio[SU_OVERALL]),
 			    TRUE);
     
+    gdk_color_parse("#d01010", &red);
+    gdk_color_parse("#10d010", &green);
+
+    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(sw->lines_progressbar), &red);
+    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(sw->lines_progressbar), &green);
+    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(sw->calls_progressbar), &red);
+    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(sw->calls_progressbar), &green);
+    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(sw->branches_executed_progressbar), &red);
+    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(sw->branches_executed_progressbar), &green);
+    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(sw->branches_taken_progressbar), &red);
+    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(sw->branches_taken_progressbar), &green);
+
     summarywin_update(sw);
     summarywin_spin_update(sw);
     gtk_widget_show(sw->window);
