@@ -1,3 +1,10 @@
+Sun Nov 25 19:44:38 2001  Greg Banks <gnb@alphalink.com.au>
+
+	* Release 0.0.4
+	* Added GUI to show summary of coverage statistics at
+	overall, file, function, and range scope.
+	* Various small GUI improvments.
+
 Sat Nov 24 01:34:43 2001  Greg Banks <gnb@alphalink.com.au>
 
 	* Release 0.0.3
