@@ -16,9 +16,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.5 2005-02-13 08:59:07 gnb Exp $
+# $Id: Makefile.am,v 1.1 2005-02-13 08:59:08 gnb Exp $
 #
 
-SUBDIRS=	src ui doc test
+SUBDIRS=	test001 test002 test004 test005 \
+		test006 test007 test008 test009 \
+		test010 test011 test013
 
-EXTRA_DIST=	.cvsignore .gdbinit
+EXTRA_DIST=	common.sh platform.sh runtest
+

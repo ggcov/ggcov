@@ -16,9 +16,9 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.5 2005-02-13 08:59:07 gnb Exp $
+# $Id: Makefile.am,v 1.1 2005-02-13 08:59:08 gnb Exp $
 #
 
-SUBDIRS=	src ui doc test
+SUBDIRS=	subdir
 
-EXTRA_DIST=	.cvsignore .gdbinit
+EXTRA_DIST=	runtest foo.C even.h odd.h
