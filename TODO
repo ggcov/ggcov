@@ -1,0 +1,86 @@
+
+--- OPEN ---
+
+x  Annotate source with per-function coverage summaries.  The challenge
+   is that this breaks the identity between source code line and text
+   widget line.
+
+x  Annotate blocks with call and branch stats.
+
+x  Try to correlate the call numbers from blocks with function symbols
+   by looking up ELF relocs and debug line number records in the object
+   files using the BFD library.  For each reloc, reloc -> address ->
+   linenumber -> block(s).  May be tricky, especially when blocks
+   overlap on a line.
+   
+x  Show block boundaries in the Source window using one of:
+   1. drawn rectangles with block number labelled, or
+   2. 4-colour mapping, or
+   3. a column showing block numbers(s) -- clicking on a block
+      number selects the block.
+   
+x  Reorganise the text widget of the Source window so that there are
+   (passive) column headers like a clist.  May require some trickery,
+   even writing a new widget.  It might be useful to use multiple
+   text widgets side by side to implement columns.
+   
+x  Add a column to the Source window showing a comma-seperated list
+   of block execution counts for each line.
+   
+x  Colour-code the coverage stats cells in the Function List and
+   File List windows.
+   
+x  Provide a menu command to export the file and function lists and
+   summaries to useful formats, e.g. CSV, XML, Excel spreadsheet.
+   
+x  Added a Properties window which allows the user to control the
+   colours used for colour coding.
+   
+x  Add to the Properties window a list of filename and function name
+   patterns to ignore, e.g. ignore functions matching "_GLOBAL_*".
+   
+x  Handle the boundary case of the last block in a function properly.
+
+x  In the Source window, show branches graphically, as drawn arrows
+   (labelled with branch probablities) from one block to another.
+   
+x  Implement the -o option of gcov which specifies a directory in
+   which .bb .bbg and .da files are found (also .o for ggcov).
+   
+x  Option to watch mtimes of .da files and reload them when they
+   change, so that user can watch coverage stats update in realtime
+   as their testsuite is run.
+   
+x  Add a menu command to the Source window to go to the Summary
+   window for that source file.
+   
+x  Add a menu command to the Source window to go to the Summary
+   window for the function containing the first selected line.
+
+x  Add a menu command to the Source window to go to the Summary
+   window for the range of selected lines.
+
+x  In the Summary window, typing into the entry or popped-up list
+   of the filename and function name combo boxes should seek in
+   the list.
+
+x  Add a menu command to the Source window to go to a specific line.
+
+x  Add a menu command to the Source window to search for patterns.
+
+x  Additional source annotations in the Source window (i.e. non-column
+   additions like per-function stats) should be colour coded to
+   make them distinct from non-executable lines of source.
+   
+x  Add Help->About, Help->Licence etc menu commands.
+
+--- CLOSED ---
+
+x  Add a "Files List" window analagous to the existing "Functions List"
+   window: shows list of all filenames, with columns for various test
+   coverage stats, all columns sortable.  Double-clicking on a filename
+   pops up a Source window for that file.
+
+x  Add menu commands to the Windows menu to create new Summary window
+   etc, and replace all the initial startup windows with just an
+   overall Summary.
