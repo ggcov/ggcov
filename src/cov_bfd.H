@@ -53,7 +53,11 @@ public:
 			       
     unsigned long raw_size() const
     {
+#ifdef HAVE_BFD_ASECTION_RAWSIZE
+    	return ((asection *)this)->rawsize;
+#else
     	return ((asection *)this)->_raw_size;
+#endif
     }
 };
 

@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.49 2005-02-27 06:14:35 gnb Exp $
+dnl $Id: configure.in,v 1.50 2005-02-27 06:16:08 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -91,6 +91,20 @@ AC_ARG_WITH(bfd,
 if test $with_bfd = yes ; then
 AC_CHECK_LIB(iberty, obstack_free)
 AC_CHECK_LIB(bfd, bfd_init)
+
+dnl Sometime before binutils 2.15.92.0.2, the field _raw_size
+dnl in the asection struct was renamed to rawsize.
+AC_MSG_CHECKING([name of raw size field in struct bfd_section])
+AC_TRY_COMPILE([
+#include <bfd.h>
+],[
+    return (int)(&((asection *)0)->rawsize);
+],[
+    AC_DEFINE(HAVE_BFD_ASECTION_RAWSIZE,1,[Whether the raw size field in struct bfd_section is called rawsize])
+    AC_MSG_RESULT(rawsize)
+],[
+    AC_MSG_RESULT(_raw_size)
+])
 fi
 
 dnl Checks for header files.
