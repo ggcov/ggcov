@@ -32,5 +32,55 @@ Source
     coded according to whether they have been covered.
     
 
+Limitations
+-----------
+
+The gcc+ggcov system has several limitations and gotches of which you
+should be aware.
+
+*   Gcc will add enough instrumentation to .bbg files for ggcov to
+    tell that certain arcs between basic blocks are actually calls
+    to other functions, but there isn't enough information to tell
+    *which* other functions are being called, even when this is
+    known at compile time.  Ggcov attempts to extract this information
+    after the fact by scanning the code in object files and correlating
+    that with the .bbg files.  This process can fail for several
+    reasons, which will result in the data in the Call Graph and Call
+    Butterfly windows being absent or incomplete, and the data in the
+    Calls window not having the function names.  Reasons for the include:
+    
+    x	gcc 2.96 on RedHat 7.3 is buggy and doesn't write the necessary
+    	information to the .bbg file (note that gcov on RH 7.3 cannot
+	correctly report call stats either).
+	
+    x	the object files are missing
+    
+    x	the object files are for an architecture which is not yet
+    	supported by ggcov for the purposes of this feature (at time
+	of writing, only x86 on Linux is supported).
+	
+    x	calls through function pointers or C++ virtual functions
+    	are not known at compile time and cannot be calculated
+	using the data available to ggcov.
+
+*   Ggcov does not handle non-local flow transfer (such as setjmp()
+    or C++ exceptions) well.  With the compilers I've been able to
+    test, neither does gcov.
+
+*   Code which puts multiple basic blocks on a line may not give the
+    line coverage numbers you expect.  In particular, when an entire
+    loop is squashed into a single line, ggcov will report the number
+    of times the loop ran plus one for each time the loop started,
+    instead of the number of times the line as a whole ran.
+
+*   The Call Graph window uses a very primitive graph layout algorithm
+    and may well loop or crash when given used on some programs.
+    
+*   The .da file is written by the instrumented program at two times
+    only: just before fork() and just after exit().  If your instrumented
+    program does neither (e.g. a long running server or a program that
+    terminates on a signal), it's counts will be lost.
+
+
 Greg Banks <gnb@alphalink.com.au>
-27 November 2001.
+2 July 2003.
