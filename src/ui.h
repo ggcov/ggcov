@@ -31,8 +31,13 @@
 GladeXML *ui_load_tree(const char *root);
 extern const char *ui_glade_path;
 
+/* combobox get/set current item using index */
 int gtk_combo_get_current(GtkCombo *combo);
 void gtk_combo_set_current(GtkCombo *combo, int n);
+
+/* combobox add/get current item using data */
+void ui_combo_add_data(GtkCombo *combo, const char *label, gpointer data);
+gpointer ui_combo_get_current_data(GtkCombo *combo);
 
 /* Get the nearest enclosing dialog or toplevel window */
 GtkWidget *ui_get_window(GtkWidget *w);
@@ -40,6 +45,14 @@ GtkWidget *ui_get_window(GtkWidget *w);
 /* when the last registered window is destroyed, quit the main loop */
 void ui_register_window(GtkWidget *w);
 
+/*
+ * Update the window's title to reflect `filename'.  The
+ * magic string @FILE@ is used in the glade file to mark
+ * where the filename will be inserted; @VERSION@ works too.
+ */
+void ui_window_set_title(GtkWidget *w, const char *filename);
+
+/* delete every item in the menu except a tearoff */
 void ui_delete_menu_items(GtkWidget *menu);
 
 #endif /* _ggcov_ui_h_ */

@@ -18,8 +18,9 @@
  */
 
 #include "ui.h"
+#include "estring.h"
 
-CVSID("$Id: ui.c,v 1.1 2001-11-23 09:09:25 gnb Exp $");
+CVSID("$Id: ui.c,v 1.2 2001-11-25 05:47:20 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -41,9 +42,38 @@ gtk_combo_set_current(GtkCombo *combo, int n)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static const char ui_combo_item_key[] = "ui_combo_item_key";
+
+void
+ui_combo_add_data(GtkCombo *combo, const char *label, gpointer data)
+{
+    GtkWidget *item;
+    
+    item = gtk_list_item_new_with_label(label);
+    gtk_object_set_data(GTK_OBJECT(item), ui_combo_item_key, data);
+    gtk_widget_show(item);
+    gtk_container_add(GTK_CONTAINER(combo->list), item);
+}
+
+gpointer
+ui_combo_get_current_data(GtkCombo *combo)
+{
+    GtkList *listw = GTK_LIST(combo->list);
+
+    if (listw->selection == 0)
+    	return 0;
+    return gtk_object_get_data(GTK_OBJECT(listw->selection->data),
+    	    	    	       ui_combo_item_key);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#ifndef UI_DEBUG
+#define UI_DEBUG 0
+#endif
 
 const char *ui_glade_path = 
-#if DEBUG
+#if DEBUG || UI_DEBUG
 "ui:../../ui:"
 #endif
 PKGDATADIR;
@@ -84,14 +114,14 @@ ui_load_tree(const char *root)
     {
 	filename = find_file(ui_glade_path, gladefile);
 	if (filename == 0)
-	    fatal("can't find %s in path %s", gladefile, ui_glade_path);
+	    fatal("can't find %s in path %s\n", gladefile, ui_glade_path);
 #if DEBUG
 	fprintf(stderr, "Loading Glade UI from file \"%s\"\n", filename);
 #endif
     }
     xml = glade_xml_new(filename, root);
     if (xml == 0)
-    	fatal("can't load Glade UI from file \"%s\"", filename);
+    	fatal("can't load Glade UI from file \"%s\"\n", filename);
     
     /* connect the signals in the interface */
     glade_xml_signal_autoconnect(xml);
@@ -138,6 +168,50 @@ ui_register_window(GtkWidget *w)
     ++ui_num_registered_windows;
     gtk_signal_connect(GTK_OBJECT(w), "destroy", 
     	GTK_SIGNAL_FUNC(ui_registered_window_destroy), 0);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static const char ui_title_key[] = "ui_title_key";
+
+static void
+ui_replace_all(estring *e, const char *from, const char *to)
+{
+    char *p;
+
+    while ((p = strstr(e->data, from)) != 0)
+    	estring_replace_string(e, (p - e->data), strlen(from), to);
+}
+
+static void
+ui_window_title_destroy(void *data)
+{
+    g_free(data);
+}
+
+void
+ui_window_set_title(GtkWidget *w, const char *filename)
+{
+    char *proto;
+    estring title;
+
+    /* Grab the original title, derived from the glade file */
+    if ((proto = gtk_object_get_data(GTK_OBJECT(w), ui_title_key)) == 0)
+    {
+    	proto = g_strdup(GTK_WINDOW(w)->title);
+	gtk_object_set_data_full(GTK_OBJECT(w), ui_title_key, proto,
+	    	    	    	 ui_window_title_destroy);
+    }
+
+    estring_init(&title);
+    
+    estring_append_string(&title, proto);
+    ui_replace_all(&title, "@FILE@", filename);
+    ui_replace_all(&title, "@VERSION@", VERSION);
+    
+    gtk_window_set_title(GTK_WINDOW(w), title.data);
+        
+    estring_free(&title);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
