@@ -23,7 +23,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.3 2002-12-12 00:06:30 gnb Exp $");
+CVSID("$Id: filename.c,v 1.4 2002-12-15 15:46:09 gnb Exp $");
 
 #ifndef __set_errno
 #define __set_errno(v)	 errno = (v)
@@ -87,7 +87,11 @@ file_change_extension(
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-mode_t
+/*
+ * Returns an int instead of a mode_t because we can fail and
+ * return -1 but mode_t is unsigned and doesn't allow for -1.
+ */
+int
 file_mode(const char *filename)
 {
     struct stat sb;
