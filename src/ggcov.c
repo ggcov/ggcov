@@ -21,7 +21,6 @@
 #include "cov.h"
 #include "ui.h"
 #include "filename.h"
-#include "estring.h"
 #include "sourcewin.H"
 #include "summarywin.H"
 #include "callswin.H"
@@ -31,7 +30,7 @@
 #include "fileswin.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.11 2002-12-15 15:53:24 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.12 2002-12-22 02:22:47 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -70,7 +69,7 @@ static void summarise(void);
 static void
 append_one_filename(cov_file_t *f, void *userdata)
 {
-    filenames = g_list_append(filenames, f->name);
+    filenames = g_list_append(filenames, (void *)cov_file_minimal_name(f));
 }
 
 static int
@@ -299,6 +298,7 @@ dump_file(cov_file_t *f, void *userdata)
     
     fprintf(stderr, "FILE {\n");
     fprintf(stderr, "    NAME=\"%s\"\n", f->name);
+    fprintf(stderr, "    MINIMAL_NAME=\"%s\"\n", cov_file_minimal_name(f));
     for (i = 0 ; i < cov_file_num_functions(f) ; i++)
     	dump_function(cov_file_nth_function(f, i));
     fprintf(stderr, "}\n");
@@ -386,9 +386,10 @@ static void
 on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *srcw;
+    const char *filename = (const char *)filenames->data;
 
     srcw = new sourcewin_t();
-    srcw->set_filename((const char *)filenames->data);
+    srcw->set_filename(cov_unminimise_filename(filename), filename);
     srcw->show();
 }
 
@@ -405,9 +406,9 @@ ui_create(void)
     			      on_windows_new_functionswin_activated, 0);
     ui_register_windows_entry("New Calls List...",
     			      on_windows_new_callswin_activated, 0);
-    ui_register_windows_entry("New Call Graph...",
+    ui_register_windows_entry("New Call Butterfly...",
     			      on_windows_new_callgraphwin_activated, 0);
-    ui_register_windows_entry("New Call Graph2...",
+    ui_register_windows_entry("New Call Tree...",
     			      on_windows_new_callgraph2win_activated, 0);
     ui_register_windows_entry("New Source...",
     			      on_windows_new_sourcewin_activated, 0);
