@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.15 2002-12-29 14:08:33 gnb Exp $
+# $Id: Makefile.am,v 1.16 2002-12-31 14:37:56 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
@@ -34,6 +34,8 @@ ggcov_SOURCES=	common.h common.c \
 		cov.H cov.C \
 		ui.h ui.c uix.h uix.c \
 		gnbprogressbar.h gnbprogressbar.c \
+		confsection.H confsection.C \
+		prefs.H prefs.C \
 		window.H window.C \
 		sourcewin.H sourcewin.C \
 		summarywin.H summarywin.C \
@@ -42,6 +44,7 @@ ggcov_SOURCES=	common.h common.c \
 		callgraph2win.H callgraph2win.C \
 		functionswin.H functionswin.C \
 		fileswin.H fileswin.C \
+		prefswin.H prefswin.C \
 		help.c ggcov.c
 INCLUDES=	$(LIBGLADE_CFLAGS)
 ggcov_LDADD=	$(LIBGLADE_LIBS) -lbfd -liberty
