@@ -20,7 +20,6 @@
 #ifndef _ggcov_confsection_H_
 #define _ggcov_confsection_H_ 1
 
-#include <libgnome/libgnome.h>
 #include "common.h"
 
 struct confenum_t
