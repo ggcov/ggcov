@@ -1757,7 +1757,7 @@
       <class>GtkTable</class>
       <name>table3</name>
       <border_width>4</border_width>
-      <rows>1</rows>
+      <rows>2</rows>
       <columns>5</columns>
       <homogeneous>False</homogeneous>
       <row_spacing>4</row_spacing>
@@ -1771,7 +1771,7 @@
       <widget>
 	<class>GtkLabel</class>
 	<name>label21</name>
-	<label>Function:</label>
+	<label>From Function:</label>
 	<justify>GTK_JUSTIFY_RIGHT</justify>
 	<wrap>False</wrap>
 	<xalign>1</xalign>
@@ -1796,7 +1796,7 @@
 
       <widget>
 	<class>GtkCombo</class>
-	<name>calls_function_combo</name>
+	<name>calls_from_function_combo</name>
 	<value_in_list>True</value_in_list>
 	<ok_if_empty>False</ok_if_empty>
 	<case_sensitive>False</case_sensitive>
@@ -1825,8 +1825,8 @@
 	  <can_focus>True</can_focus>
 	  <signal>
 	    <name>changed</name>
-	    <handler>on_calls_function_entry_changed</handler>
-	    <last_modification_time>Sat, 01 Dec 2001 10:44:55 GMT</last_modification_time>
+	    <handler>on_calls_from_function_entry_changed</handler>
+	    <last_modification_time>Wed, 25 Sep 2002 11:55:00 GMT</last_modification_time>
 	  </signal>
 	  <editable>False</editable>
 	  <text_visible>True</text_visible>
@@ -1837,12 +1837,12 @@
 
       <widget>
 	<class>GtkButton</class>
-	<name>calls_function_view</name>
+	<name>calls_from_function_view</name>
 	<can_focus>True</can_focus>
 	<signal>
 	  <name>clicked</name>
-	  <handler>on_calls_function_view_clicked</handler>
-	  <last_modification_time>Sat, 01 Dec 2001 10:44:41 GMT</last_modification_time>
+	  <handler>on_calls_from_function_view_clicked</handler>
+	  <last_modification_time>Wed, 25 Sep 2002 11:50:28 GMT</last_modification_time>
 	</signal>
 	<label>View...</label>
 	<child>
@@ -1859,6 +1859,99 @@
 	  <xfill>False</xfill>
 	  <yfill>False</yfill>
 	</child>
+      </widget>
+
+      <widget>
+	<class>GtkLabel</class>
+	<name>label37</name>
+	<label>To Function:</label>
+	<justify>GTK_JUSTIFY_RIGHT</justify>
+	<wrap>False</wrap>
+	<xalign>1</xalign>
+	<yalign>0.5</yalign>
+	<xpad>0</xpad>
+	<ypad>0</ypad>
+	<child>
+	  <left_attach>0</left_attach>
+	  <right_attach>1</right_attach>
+	  <top_attach>1</top_attach>
+	  <bottom_attach>2</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>False</xexpand>
+	  <yexpand>False</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>False</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkButton</class>
+	<name>calls_to_function_view</name>
+	<can_focus>True</can_focus>
+	<signal>
+	  <name>clicked</name>
+	  <handler>on_calls_to_function_view_clicked</handler>
+	  <last_modification_time>Wed, 25 Sep 2002 11:50:21 GMT</last_modification_time>
+	</signal>
+	<label>View...</label>
+	<child>
+	  <left_attach>4</left_attach>
+	  <right_attach>5</right_attach>
+	  <top_attach>1</top_attach>
+	  <bottom_attach>2</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>False</xexpand>
+	  <yexpand>False</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>False</xfill>
+	  <yfill>False</yfill>
+	</child>
+      </widget>
+
+      <widget>
+	<class>GtkCombo</class>
+	<name>calls_to_function_combo</name>
+	<value_in_list>True</value_in_list>
+	<ok_if_empty>False</ok_if_empty>
+	<case_sensitive>False</case_sensitive>
+	<use_arrows>True</use_arrows>
+	<use_arrows_always>False</use_arrows_always>
+	<items></items>
+	<child>
+	  <left_attach>1</left_attach>
+	  <right_attach>4</right_attach>
+	  <top_attach>1</top_attach>
+	  <bottom_attach>2</bottom_attach>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	  <xexpand>True</xexpand>
+	  <yexpand>False</yexpand>
+	  <xshrink>False</xshrink>
+	  <yshrink>False</yshrink>
+	  <xfill>True</xfill>
+	  <yfill>False</yfill>
+	</child>
+
+	<widget>
+	  <class>GtkEntry</class>
+	  <child_name>GtkCombo:entry</child_name>
+	  <name>entry3</name>
+	  <can_focus>True</can_focus>
+	  <signal>
+	    <name>changed</name>
+	    <handler>on_calls_to_function_entry_changed</handler>
+	    <last_modification_time>Wed, 25 Sep 2002 12:13:21 GMT</last_modification_time>
+	  </signal>
+	  <editable>False</editable>
+	  <text_visible>True</text_visible>
+	  <text_max_length>0</text_max_length>
+	  <text></text>
+	</widget>
       </widget>
     </widget>
 
@@ -1880,8 +1973,13 @@
 	<class>GtkCList</class>
 	<name>calls_clist</name>
 	<can_focus>True</can_focus>
-	<columns>3</columns>
-	<column_widths>80,80,80</column_widths>
+	<signal>
+	  <name>button_press_event</name>
+	  <handler>on_calls_clist_button_press_event</handler>
+	  <last_modification_time>Wed, 25 Sep 2002 12:28:52 GMT</last_modification_time>
+	</signal>
+	<columns>5</columns>
+	<column_widths>80,80,80,80,80</column_widths>
 	<selection_mode>GTK_SELECTION_SINGLE</selection_mode>
 	<show_titles>True</show_titles>
 	<shadow_type>GTK_SHADOW_IN</shadow_type>
@@ -1890,7 +1988,7 @@
 	  <class>GtkLabel</class>
 	  <child_name>CList:title</child_name>
 	  <name>label22</name>
-	  <label>Calls</label>
+	  <label>Call From</label>
 	  <justify>GTK_JUSTIFY_CENTER</justify>
 	  <wrap>False</wrap>
 	  <xalign>0.5</xalign>
@@ -1903,7 +2001,7 @@
 	  <class>GtkLabel</class>
 	  <child_name>CList:title</child_name>
 	  <name>label23</name>
-	  <label>Arc</label>
+	  <label>Call To</label>
 	  <justify>GTK_JUSTIFY_CENTER</justify>
 	  <wrap>False</wrap>
 	  <xalign>0.5</xalign>
@@ -1916,7 +2014,33 @@
 	  <class>GtkLabel</class>
 	  <child_name>CList:title</child_name>
 	  <name>label24</name>
-	  <label>Name</label>
+	  <label>Line</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <child_name>CList:title</child_name>
+	  <name>label24</name>
+	  <label>Arc</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <child_name>CList:title</child_name>
+	  <name>label25</name>
+	  <label>Count</label>
 	  <justify>GTK_JUSTIFY_CENTER</justify>
 	  <wrap>False</wrap>
 	  <xalign>0.5</xalign>
