@@ -20,7 +20,7 @@
 #include "confsection.H"
 #include "prefs.H"
 
-CVSID("$Id: prefs.C,v 1.1 2002-12-31 14:41:34 gnb Exp $");
+CVSID("$Id: prefs.C,v 1.2 2003-01-01 03:16:24 gnb Exp $");
 
 prefs_t prefs;
 
@@ -50,7 +50,7 @@ prefs_t::load()
     colorstr(cs->get_string("covered_background", 0),
     	     &covered_background, "#80d080");
     colorstr(cs->get_string("partcovered_foreground", 0),
-    	     &partcovered_foreground, "#c0c000");
+    	     &partcovered_foreground, "#a0a000");
     colorstr(cs->get_string("partcovered_background", 0),
     	     &partcovered_background, "#d0d080");
     colorstr(cs->get_string("uncovered_foreground", 0),
@@ -60,7 +60,7 @@ prefs_t::load()
     colorstr(cs->get_string("uninstrumented_foreground", 0),
     	     &uninstrumented_foreground, "#000000");
     colorstr(cs->get_string("uninstrumented_background", 0),
-    	     &uninstrumented_background, "#d0d0d0");
+    	     &uninstrumented_background, "#a0a0a0");
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
