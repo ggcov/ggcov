@@ -30,8 +30,11 @@
 #include "callgraph2win.H"
 #include "functionswin.H"
 #include "fileswin.H"
+#if !GTK2
+#include <libgnomeui/libgnomeui.h>
+#endif
 
-CVSID("$Id: ggcov.c,v 1.20 2003-05-11 00:29:30 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.21 2003-05-11 02:32:31 gnb Exp $");
 
 #define DEBUG_GTK 1
 

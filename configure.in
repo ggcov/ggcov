@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.17 2003-05-11 00:18:36 gnb Exp $
+dnl $Id: configure.in,v 1.18 2003-05-11 02:32:24 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -56,22 +56,13 @@ if test x$debug = xyes ; then
     echo "debug mode on"
 fi
 
-dnl A bunch of warning options for gcc
-dnl -Wshadow
-AC_GCC_ADD_CFLAGS([-Wall -Wchar-subscripts -Wmissing-declarations
-    -Wmissing-prototypes -Wnested-externs -Wpointer-arithmetic
-    -Wcast-align -Wsign-compare -pedantic -Wno-long-long])
-
-dnl Compile C and C++ with the same (C++) compiler.
-CXXFLAGS="$CFLAGS"
-CC="$CXX"
-
-
 dnl Stuff for gettext
 dnl ALL_LINGUAS="la"
 dnl AM_GNU_GETTEXT
 
 dnl Checks for libraries.
+AC_CHECK_LIB(bfd, bfd_init)
+AC_CHECK_LIB(iberty, obstack_free)
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -84,6 +75,16 @@ AC_TYPE_PID_T
 
 dnl Check for the libglade, libxml, and GTK libraries
 
+
+dnl A bunch of warning options for gcc
+dnl -Wshadow
+AC_GCC_ADD_CFLAGS([-Wall -Wchar-subscripts -Wmissing-declarations
+    -Wmissing-prototypes -Wnested-externs -Wpointer-arithmetic
+    -Wcast-align -Wsign-compare -pedantic -Wno-long-long])
+
+dnl Compile C and C++ with the same (C++) compiler.
+CXXFLAGS="$CFLAGS"
+CC="$CXX"
 
 
 
@@ -106,8 +107,9 @@ if test $gtk2 = yes ; then
     PKG_CHECK_MODULES(GGCOV, libglade-2.0 >= 1.99.9)
 else
     AM_PATH_LIBGLADE(,AC_MSG_ERROR(ggcov requires the libglade library),gnome)
-    GGCOV_CFLAGS="$LIBGLADE_CFLAGS"
-    GGCOV_LIBS="$LIBGLADE_LIBS"
+    AM_PATH_IMLIB(,,AC_MSG_ERROR(ggcov requires the libgdk_imlib library))
+    GGCOV_CFLAGS="$LIBGLADE_CFLAGS $IMLIB_CFLAGS"
+    GGCOV_LIBS="$LIBGLADE_LIBS $IMLIB_LIBS"
 fi
 AC_SUBST(GGCOV_CFLAGS)
 AC_SUBST(GGCOV_LIBS)

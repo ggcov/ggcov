@@ -23,11 +23,12 @@
 #include "string_var.H"
 #include "filename.h"
 
+#ifdef HAVE_LIBBFD
 #include <bfd.h>
 #include <elf.h>
+#endif
 
-
-CVSID("$Id: cov_file.C,v 1.6 2003-05-11 00:27:22 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.7 2003-05-11 02:32:31 gnb Exp $");
 
 
 GHashTable *cov_file_t::files_;
@@ -515,6 +516,8 @@ cov_file_t::read_da_file(const char *dafilename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+#ifdef HAVE_LIBBFD
+
 struct cov_read_state_t
 {
     bfd *abfd;
@@ -655,7 +658,7 @@ cov_o_file_scan_static_calls(
     
     g_free(buf);
 }
-#else
+#else /* !__i386 */
 
 static void
 cov_o_file_scan_static_calls(
@@ -665,7 +668,8 @@ cov_o_file_scan_static_calls(
 {
 }
 
-#endif
+#endif /* !__i386 */
+#endif /* HAVE_LIBBFD */
 
 /*
  * Use the BFD library to scan relocation records in the .o file.
@@ -673,6 +677,7 @@ cov_o_file_scan_static_calls(
 gboolean
 cov_file_t::read_o_file_relocs(const char *ofilename)
 {
+#ifdef HAVE_LIBBFD
     cov_read_state_t rs;
     asymbol *sym;
     asection *sec;
@@ -829,6 +834,7 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
     g_free(rs.symbols);
     
     bfd_close(rs.abfd);
+#endif /* HAVE_LIBBFD */
     return TRUE;
 }
 
@@ -836,6 +842,7 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
 gboolean
 cov_file_t::read_o_file(const char *ofilename)
 {
+#ifdef HAVE_LIBBFD
     unsigned int fnidx;
 
     if (!read_o_file_relocs(ofilename))
@@ -849,6 +856,7 @@ cov_file_t::read_o_file(const char *ofilename)
     for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
     	nth_function(fnidx)->reconcile_calls();
     
+#endif /* HAVE_LIBBFD */
     return TRUE;
 }
 

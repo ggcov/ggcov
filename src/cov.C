@@ -26,10 +26,12 @@
 #include <dirent.h>
 
 
+#ifdef HAVE_LIBBFD
 #include <bfd.h>
 #include <elf.h>
+#endif
 
-CVSID("$Id: cov.C,v 1.7 2003-05-11 00:25:20 gnb Exp $");
+CVSID("$Id: cov.C,v 1.8 2003-05-11 02:32:30 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -275,8 +277,10 @@ cov_check_fakeness(cov_file_t *f)
     }
 }
 
-#endif
+#endif /* DEBUG>1 */
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#ifdef HAVE_LIBBFD
 
 static void
 cov_bfd_error_handler(const char *fmt, ...)
@@ -287,12 +291,15 @@ cov_bfd_error_handler(const char *fmt, ...)
     vfprintf(stderr, fmt, args);
     va_end(args);
 }
+#endif /* HAVE_LIBBFD */
 
 void
 cov_init(void)
 {
+#ifdef HAVE_LIBBFD
     bfd_init();
     bfd_set_error_handler(cov_bfd_error_handler);
+#endif /* HAVE_LIBBFD */
 
     cov_callnode_t::init();
     cov_file_t::init();
@@ -343,6 +350,7 @@ typedef struct
 gboolean
 cov_read_object_file(const char *exefilename)
 {
+#ifdef HAVE_LIBBFD
     bfd *abfd;
     asection *stab_sec, *string_sec;
     bfd_size_type string_size;
@@ -476,6 +484,9 @@ cov_read_object_file(const char *exefilename)
     	fprintf(stderr, "found no coveraged source files in executable \"%s\"\n",
 	    	exefilename);
     return (successes > 0);
+#else /* !HAVE_LIBBFD */
+    return TRUE;
+#endif /* !HAVE_LIBBFD */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

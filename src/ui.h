@@ -24,7 +24,6 @@
 #include "uicommon.h"
 #include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
-#include <gdk_imlib.h>
 
 #ifdef __cplusplus
 #define GLADE_CALLBACK extern "C"

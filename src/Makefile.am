@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.20 2003-05-11 00:22:15 gnb Exp $
+# $Id: Makefile.am,v 1.21 2003-05-11 02:32:30 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
@@ -48,7 +48,7 @@ ggcov_SOURCES=	common.h common.c \
 		help.c ggcov.c
 INCLUDES=	$(GGCOV_CFLAGS) -DPKGDATADIR="\"$(pkgdatadir)\"" \
  		-DDEBUG=$(DEBUG) -DUI_DEBUG=$(UI_DEBUG)
-ggcov_LDADD=	$(GGCOV_LIBS) -lbfd -liberty
+ggcov_LDADD=	$(GGCOV_LIBS)
 
 
 # Note this is an automake conditional *not* a gmake conditional
@@ -65,7 +65,12 @@ UI_DEBUG=0
 # provide the Licence window.
 help.o: licence.c
 licence.c: $(top_srcdir)/COPYING
-	sed -e 's///g' -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^\(.*\)$$/"\1\\n"/' <$< >$@
+	sed \
+	    -e 's///g' \
+	    -e 's/\\/\\\\/g' \
+	    -e 's/"/\\"/g' \
+	    -e 's/^\(.*\)$$/"\1\\n"/' \
+	    < $(top_srcdir)/COPYING > $@
 
 EXTRA_CLEAN=	licence.c
 
