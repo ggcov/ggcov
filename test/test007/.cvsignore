@@ -1,0 +1,6 @@
+foo
+*.bb
+*.bbg
+*.da
+*.c.gcov
+*.c.tggcov

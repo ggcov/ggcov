@@ -1,0 +1,3 @@
+
+Tests non-local flow control transfer via C++ exceptions.
+

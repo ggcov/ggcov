@@ -1,0 +1,22 @@
+#!/bin/sh
+
+CC="gcc"
+CWARNFLAGS="-Wall"
+CCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
+
+set -x
+/bin/rm -f *.bb *.bbg
+$CC $CWARNFLAGS $CCOVFLAGS -c foo.c || exit 1
+$CC $CCOVFLAGS -o foo foo.o || exit 1
+
+/bin/rm -f *.da *.gcov
+
+./foo 1
+./foo 2
+./foo 3
+./foo 4
+
+gcov -b -f foo.c
+
+../../src/tggcov foo.c 2>/dev/null
+egrep -v '^(call|branch)' foo.c.gcov | diff -u - foo.c.tggcov

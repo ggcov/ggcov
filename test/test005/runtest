@@ -1,0 +1,28 @@
+#!/bin/sh
+
+CXX="c++"
+CWARNFLAGS="-Wall"
+CCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
+
+set -x
+/bin/rm -f *.bb *.bbg
+$CXX $CWARNFLAGS $CCOVFLAGS -c foo.C
+$CXX $CCOVFLAGS -o foo foo.o
+
+/bin/rm -f *.da *.gcov
+
+./foo 1
+gcov -b -f foo.C && mv foo.c.gcov foo.c.gcov1
+
+./foo 2
+gcov -b -f foo.C && mv foo.c.gcov foo.c.gcov2
+
+./foo 3
+gcov -b -f foo.C && mv foo.c.gcov foo.c.gcov3
+
+./foo 42
+gcov -b -f foo.C && mv foo.c.gcov foo.c.gcov42
+
+./foo -1
+gcov -b -f foo.C && mv foo.c.gcov foo.c.gcov-1
+
