@@ -28,7 +28,7 @@ extern "C" {
 }
 #endif
 
-CVSID("$Id: demangle.c,v 1.1 2003-06-03 14:46:49 gnb Exp $");
+CVSID("$Id: demangle.c,v 1.2 2003-06-28 10:31:43 gnb Exp $");
 
 #define LEFT_BRACKET	'('
 #define RIGHT_BRACKET	')'
@@ -157,7 +157,7 @@ normalise_mangled(const char *sym)
 	{
 	    while (p > buf.data() && issym(*p))
     		p--;
-	    if (p > buf.data() && func_count && *p == '*')
+	    if (p > buf.data() && (*p == '*' || *p == '&'))
 	    	*p-- = ' ';
 	}
     }
