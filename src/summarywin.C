@@ -22,19 +22,17 @@
 #include "filename.h"
 #include "cov.H"
 #include "estring.H"
+#include "prefs.H"
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.4 2002-12-29 13:23:46 gnb Exp $");
-
-extern GList *filenames;
+CVSID("$Id: summarywin.C,v 1.5 2002-12-31 14:48:22 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 summarywin_t::summarywin_t()
 {
     GladeXML *xml;
-    GdkColor red, green;
     
     /* load the interface & connect signals */
     xml = ui_load_tree("summary");
@@ -78,18 +76,29 @@ summarywin_t::summarywin_t()
     	    		    GTK_TOGGLE_BUTTON(scope_radio_[SU_OVERALL]),
 			    TRUE);
     
+#if 0
     gdk_color_parse("#d01010", &red);
     gdk_color_parse("#10d010", &green);
+#endif
 
-    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(lines_progressbar_), &red);
-    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(lines_progressbar_), &green);
-    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(calls_progressbar_), &red);
-    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(calls_progressbar_), &green);
-    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(branches_executed_progressbar_), &red);
-    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(branches_executed_progressbar_), &green);
-    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(branches_taken_progressbar_), &red);
-    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(branches_taken_progressbar_), &green);
+    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(lines_progressbar_),
+	    	    	    	      &prefs.uncovered_foreground);
+    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(lines_progressbar_),
+	    	    	    	     &prefs.covered_foreground);
+    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(calls_progressbar_),
+	    	    	    	      &prefs.uncovered_foreground);
+    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(calls_progressbar_),
+	    	    	    	     &prefs.covered_foreground);
+    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(branches_executed_progressbar_),
+	    	    	    	      &prefs.uncovered_foreground);
+    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(branches_executed_progressbar_),
+	    	    	    	     &prefs.covered_foreground);
+    gnb_progress_bar_set_trough_color(GNB_PROGRESS_BAR(branches_taken_progressbar_),
+	    	    	    	      &prefs.uncovered_foreground);
+    gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(branches_taken_progressbar_),
+	    	    	    	     &prefs.covered_foreground);
 }
+
 
 summarywin_t::~summarywin_t()
 {
@@ -100,39 +109,23 @@ summarywin_t::~summarywin_t()
 static void
 populate_filename_combo(GtkCombo *combo)
 {
-    GList *iter;
+    list_iterator_t<cov_file_t> iter;
     
-    for (iter = filenames ; iter != 0 ; iter = iter->next)
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     {
-    	const char *filename = (const char *)iter->data;
+    	const char *filename = (*iter)->minimal_name();
 	
     	ui_combo_add_data(combo, filename, (gpointer)filename);
     }
 }
 
 static void
-add_functions(cov_file_t *f, void *userdata)
-{
-    GList **listp = (GList **)userdata;
-    unsigned int fnidx;
-    
-    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
-    {
-    	cov_function_t *fn = f->nth_function(fnidx);
-	
-	if (!fn->is_suppressed())
-	    *listp = g_list_prepend(*listp, fn);
-    }
-}
-
-static void
 populate_function_combo(GtkCombo *combo)
 {
-    GList *list = 0, *iter;
+    GList *list, *iter;
     estring label;
     
-    cov_file_t::foreach(add_functions, &list);
-    list = g_list_sort(list, cov_function_t::compare);
+    list = cov_function_t::list_all();
     
     for (iter = list ; iter != 0 ; iter = iter->next)
     {
@@ -165,7 +158,7 @@ summarywin_t::populate()
 #if DEBUG
     fprintf(stderr, "summarywin_t::populate\n");
 #endif
-    
+
     populate_filename_combo(GTK_COMBO(filename_combo_));
     populate_function_combo(GTK_COMBO(function_combo_));
     populate_filename_combo(GTK_COMBO(range_combo_));
