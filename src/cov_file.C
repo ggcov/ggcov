@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.18 2003-07-02 12:06:00 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.19 2003-07-04 10:10:31 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -528,7 +528,12 @@ cov_file_t::read_old_bbg_function(FILE *fp)
 	    {
 	    	num_expected_fake_++;
     		if (!(flags & BBG_FAKE))
+		{
 	    	    num_missing_fake_++;
+#if DEBUG > 1
+    	    	    fprintf(stderr, "BBG     missing fake flag\n");
+#endif
+		}
 	    }
 	    a->fall_through_ = !!(flags & BBG_FALL_THROUGH);
 	}
@@ -711,11 +716,18 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 		a->fall_through_ = !!(flags & BBG_FALL_THROUGH);
 		a->on_tree_ = (flags & BBG_ON_TREE);
 
-    		if (nblocks >= 2 && dest == nblocks-1)
+    		if (nblocks >= 2 &&
+		    dest == nblocks-1 &&
+		    !(bidx == dest-1 && (flags & BBG_FALL_THROUGH)))
 		{
 	    	    num_expected_fake_++;
     		    if (!(flags & BBG_FAKE))
+		    {
 	    		num_missing_fake_++;
+#if DEBUG > 1
+    	    		fprintf(stderr, "BBG     missing fake flag\n");
+#endif
+		    }
 		}
 	    }
 	    break;
@@ -1532,6 +1544,7 @@ cov_file_t::read(gboolean quiet)
 	"file.\n"
 	;
     	/* TODO: save and report in alert to user */
+	/* TODO: update the message to point out that line stats are fine */
     	fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
     }
     else
