@@ -16,12 +16,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.2 2005-03-14 07:49:16 gnb Exp $
+# $Id: Makefile.am,v 1.3 2005-04-03 08:50:22 gnb Exp $
 #
 
 SUBDIRS=	test001 test002 test004 test005 \
 		test006 test007 test008 test009 \
 		test010 test011 test013
 
+TESTS=	    	runtest
 EXTRA_DIST=	common.sh platform.sh runtest
 
