@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: cvs2changelog,v 1.2 2003-03-13 19:42:20 gnb Exp $
+# $Id: cvs2changelog,v 1.3 2003-04-01 11:02:24 gnb Exp $
 #
 # Shell script to build a change log for a new release
 # from CVS logs. The change log will still need some
@@ -186,11 +186,13 @@ BEGIN {
 /^----------------/ {
     for (i = 0 ; i < nlines ; i++)
     	print lines[i];
+    print "";
     state = 0;
 }
 /^================/ {
     for (i = 0 ; i < nlines ; i++)
     	print lines[i];
+    print "";
     state = 0;
     inattic = 0;
     nlines = 0;
@@ -218,16 +220,33 @@ BEGIN {
     join = "\n\t";
 #    prefix = "X";
 #    join = "Y";
+    mode = 0;
 }
 {
-    if (match($0, "^[*x][ \t][ \t][ \t]*")) {
+    if ($0 == "") {
     	if (line != "") print line;
+    	line = "";
+    } else if (match($0, "^[*x](   +|\t+)")) {
+    	if (line != "") print line;
+	mode = 1;
 	line = prefix""substr($0, RLENGTH+1, length($0)-RLENGTH);
-    } else if (match($0, "^[ \t][ \t][ \t]*")) {
+    } else if (match($0, "^(   +|\t+)")) {
+    	if (mode != 1 && line != "") {
+	    print line;
+	    line = "";
+	}
+	mode = 1;
 	line = line""join""substr($0, RLENGTH+1, length($0)-RLENGTH);
     } else {
-    	if (line != "") print line;
-	line = prefix""$0;
+    	if (mode != 2 && line != "") {
+	    print line;
+	    line = "";
+	}
+	mode = 2;
+	if (line == "")
+	    line = prefix""$0;
+	else
+	    line = line""join""$0;
     }
 }
 END {
@@ -268,7 +287,7 @@ getDirs ()
 {
     IGNOREEXP=`echo "$IGNOREDIRS" | sed -e 's:[ 	][  ]*:|:g'`
     find . -type d -name CVS -print |\
-    	sed -e 's:/CVS$::'  -e 's:^\./::' |\
+    	sed -e '/^\.\/CVS$/d' -e 's/\/CVS$//' -e 's/^\.\///' |\
 	egrep -v '^('$IGNOREEXP')$'
 }
 
