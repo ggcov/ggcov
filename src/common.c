@@ -19,7 +19,24 @@
 
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.1 2001-11-23 03:47:48 gnb Exp $");
+CVSID("$Id: common.c,v 1.2 2001-11-23 09:04:01 gnb Exp $");
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+extern char *argv0;
+
+void
+fatal(const char *fmt, ...)
+{
+    va_list args;
+    
+    va_start(args, fmt);
+    fprintf(stderr, "%s: ", argv0);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+    
+    exit(1);
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

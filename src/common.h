@@ -85,6 +85,13 @@
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+extern void fatal(const char *fmt, ...)
+#ifdef __GNUC__
+__attribute__ (( noreturn ))
+__attribute__ (( format(printf,1,2) ))
+#endif
+;
+
 extern void *xmalloc(size_t sz);
 #define new(ty)     	((ty *)xmalloc(sizeof(ty)))
 
