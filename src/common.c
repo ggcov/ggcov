@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.14 2005-03-14 07:49:15 gnb Exp $");
+CVSID("$Id: common.c,v 1.15 2005-04-03 09:07:26 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -119,6 +119,7 @@ static struct
 {"solve",    	F(D_SOLVE)},
 {"stabs",    	F(D_STABS)},
 {"dwarf",    	F(D_DWARF)},
+{"elf",    	F(D_ELF)},
 {"dump",     	F(D_DUMP)},
 {"report",     	F(D_REPORT)},
 

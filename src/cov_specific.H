@@ -178,6 +178,30 @@ protected:
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
+ * Base class for classes which scan an executable looking for
+ * required shared libraries.  Used to implement handling an
+ * executable or object file on the commandline.
+ */
+
+class cov_shlib_scanner_t
+{
+public:
+    cov_shlib_scanner_t();
+    virtual ~cov_shlib_scanner_t();
+    
+    virtual gboolean attach(cov_bfd_t *b);
+    
+    /* Iteration interface: returns new strings until it returns NULL */
+    virtual char *next() = 0;
+    
+    static int factory_category();
+
+protected:
+    cov_bfd_t *cbfd_;
+};
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+/*
  * Base class for classes which scan an object looking for
  * function calls in the object code.  Used to implement
  * extraction of the call graph.

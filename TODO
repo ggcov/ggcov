@@ -119,16 +119,16 @@ x  ??? Add a Weighted Sum to the Summary Overall window.
 
 x  Arrows appear in all the sortable column titles...they should appear
    only in the current sort column.
-   
-x  Handle shared libraries...scan the .dynamic structure of the executable
-   for runtime path and list of sonames, resolve each, and recursively
-   scan them for coveraged source files.
-   
+      
 x  ??? Minimise filenames only within the context of a program or library?
 
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
+
+x  Handle shared libraries...scan the .dynamic structure of the executable
+   for runtime path and list of sonames, resolve each, and recursively
+   scan them for coveraged source files.
 
 x  Change parsing of source for cpp dependencies to reuse a single
    dummy cov_line_t for lines which are suppressed but not otherwise

@@ -26,7 +26,9 @@
 #include "mvc.h"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.24 2005-03-14 07:49:15 gnb Exp $");
+CVSID("$Id: cov.C,v 1.25 2005-04-03 09:07:26 gnb Exp $");
+
+static gboolean cov_read_one_object_file(const char *exefilename, int depth);
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -208,9 +210,54 @@ cov_post_read(void)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
- 
+
 gboolean
 cov_read_object_file(const char *exefilename)
+{
+    return cov_read_one_object_file(exefilename, 0);
+}    
+
+static gboolean
+cov_read_shlibs(cov_bfd_t *b, int depth)
+{
+    cov_factory_t<cov_shlib_scanner_t> factory;
+    cov_shlib_scanner_t *ss;
+    string_var file;
+    int successes = 0;
+
+    dprintf1(D_FILES, "Scanning \"%s\" for shared libraries\n",
+    	     b->filename());
+
+    do
+    {
+    	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
+    	if ((ss = factory.create()) != 0 && ss->attach(b))
+	    break;
+	delete ss;
+	ss = 0;
+    }
+    while (factory.next());
+
+    if (ss == 0)
+    	return FALSE;	/* no scanner can open this file */
+
+    /*
+     * TODO: instead of using the first scanner that succeeds open()
+     *       use the first one that returns any results.
+     */
+    while ((file = ss->next()) != 0)
+    {
+    	dprintf1(D_FILES, "Trying filename %s\n", file.data());
+	if (cov_read_one_object_file(file, depth))
+	    successes++;
+    }
+    
+    delete ss;
+    return (successes > 0);
+}
+
+static gboolean
+cov_read_one_object_file(const char *exefilename, int depth)
 {
     cov_bfd_t *b;
     cov_filename_scanner_t *fs;
@@ -240,7 +287,10 @@ cov_read_object_file(const char *exefilename)
     while (factory.next());
 
     if (fs == 0)
+    {
+    	delete b;
     	return FALSE;	/* no scanner can open this file */
+    }
 
     dir = file_dirname(exefilename);
     cov_add_search_directory(dir);
@@ -259,10 +309,13 @@ cov_read_object_file(const char *exefilename)
     }
     
     delete fs;
+    
+    successes += cov_read_shlibs(b, depth+1);
 
-    if (successes == 0)
+    if (depth == 0 && successes == 0)
     	fprintf(stderr, "found no coveraged source files in executable \"%s\"\n",
 	    	exefilename);
+    delete b;
     return (successes > 0);
 }
 

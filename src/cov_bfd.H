@@ -82,6 +82,12 @@ public:
     static void dump_symbol(unsigned int idx, asymbol *sym);
     static void dump_reloc(unsigned int idx, arelent *rel);
 
+    
+    enum bfd_flavour flavour() const
+    {
+    	return bfd_get_flavour(abfd_);
+    }
+
 private:
     /* utility functions */
     gboolean get_symbols();
@@ -109,6 +115,7 @@ private:
 typedef struct _asymbol asymbol;
 typedef struct _arelent arelent;
 typedef uint32_t bfd_size_type;
+enum bfd_flavour { bfd_target_unknown_flavour };
 
 class cov_bfd_section_t
 {
@@ -148,6 +155,8 @@ public:
     /* Dump various structures, for debugging;  idx==0 dumps header */
     static void dump_symbol(unsigned int idx, asymbol *sym) {}
     static void dump_reloc(unsigned int idx, arelent *rel) {}
+
+    enum bfd_flavour flavour() const { return 0; }
 
 private:
 };

@@ -63,6 +63,7 @@ typedef enum
     D_SOLVE,
     D_STABS,
     D_DWARF,
+    D_ELF,
     D_DUMP,
     D_REPORT,
     /* gui related features */

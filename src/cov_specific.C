@@ -22,7 +22,7 @@
 #include "filename.h"
 #include "demangle.h"
 
-CVSID("$Id: cov_specific.C,v 1.5 2005-03-14 08:20:59 gnb Exp $");
+CVSID("$Id: cov_specific.C,v 1.6 2005-04-03 09:07:26 gnb Exp $");
 
  
 cov_factory_item_t *cov_factory_item_t::all_;
@@ -54,6 +54,35 @@ int
 cov_filename_scanner_t::factory_category()
 {
     return 1;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+cov_shlib_scanner_t::cov_shlib_scanner_t()
+{
+    cbfd_ = 0;
+}
+
+cov_shlib_scanner_t::~cov_shlib_scanner_t()
+{
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_shlib_scanner_t::attach(cov_bfd_t *c)
+{
+    cbfd_ = c;
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+/* TODO: allocate these dynamically */
+int
+cov_shlib_scanner_t::factory_category()
+{
+    return 3;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
