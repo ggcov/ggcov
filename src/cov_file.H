@@ -28,6 +28,7 @@
 
 class cov_function_t;
 class cov_line_t;
+class covio_t;
 
 class cov_file_t
 {
@@ -118,6 +119,15 @@ private:
     cov_file_t(const char *name);
     ~cov_file_t();
     
+    struct format_rec_t
+    {
+    	const char *magic_;
+	unsigned int magic_len_;
+	gboolean (cov_file_t::*read_func_)(const char *, FILE *);
+	const char *description_;
+    };
+    static format_rec_t formats[];
+    
     static void init();
     static void post_read();
     static void add_name(const char *name);
@@ -140,15 +150,20 @@ private:
     static void search_path_append(const char *dir);
     gboolean read(gboolean quiet);
 
-    int skip_oldplus_func_header(FILE *fp, const char *prefix);
+    int skip_oldplus_func_header(covio_t *io, const char *prefix);
     gboolean read_bb_file(const char *filename);
-    gboolean read_old_bbg_function(FILE *fp);
+    gboolean read_old_bbg_function(covio_t *);
+    gboolean read_old_bbg_file_common(const char *bbgfilename, FILE *fp);
     gboolean read_old_bbg_file(const char *filename, FILE *fp);
-    gboolean read_new_bbg_file(const char *filename, FILE *fp);
+    gboolean read_oldplus_bbg_file(const char *filename, FILE *fp);
+    gboolean read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version);
+    gboolean read_gcc33_bbg_file(const char *filename, FILE *fp);
+    gboolean read_gcc34l_bbg_file(const char *filename, FILE *fp);
+    gboolean read_gcc34b_bbg_file(const char *filename, FILE *fp);
     gboolean read_bbg_file(const char *filename);
     gboolean read_old_da_file(const char *filename);
     gboolean read_oldplus_da_file(const char *filename);
-    gboolean read_new_da_file(const char *filename);
+    gboolean read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic);
     gboolean read_da_file(const char *filename);
 #ifdef HAVE_LIBBFD
     static gboolean o_file_add_call(const cov_location_t *, const char *);
@@ -171,6 +186,7 @@ private:
     string_var name_;
     gboolean finalised_;    /* data read & `this' inserted into files_ */
     gnb_u32_t format_version_;	/* file format version */
+    gboolean little_endian_;	/* for gcc34 format */
     ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char, cov_function_t> *functions_by_name_;
     ptrarray_t<cov_line_t> *lines_;

@@ -19,7 +19,7 @@
 
 #include "cov.H"
 #include "cov_specific.H"
-#include "covio.h"
+#include "covio.H"
 #include "estring.H"
 #include "string_var.H"
 #include "hashtable.H"
@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.36 2004-08-20 16:28:02 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.37 2004-11-20 09:19:23 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -37,11 +37,14 @@ char *cov_file_t::common_path_;
 int cov_file_t::common_len_;
 void *cov_file_t::files_model_;
 
-#define BBG_VERSION_3_3p \
-     	(((gnb_u32_t)'3'<<24)| \
-	 ((gnb_u32_t)'0'<<16)| \
-	 ((gnb_u32_t)'3'<<8)| \
-	 ((gnb_u32_t)'p'))
+#define _NEW_VERSION(major, minor, release) \
+     	(((gnb_u32_t)('0'+(major))<<24)| \
+	 ((gnb_u32_t)('0'+(minor)/10)<<16)| \
+	 ((gnb_u32_t)('0'+(minor)%10)<<8)| \
+	 ((gnb_u32_t)(release)))
+#define BBG_VERSION_GCC34    	_NEW_VERSION(3,4,'p')
+#define BBG_VERSION_GCC34_RH	_NEW_VERSION(3,4,'R')   /* RedHat crud */
+#define BBG_VERSION_GCC33   	_NEW_VERSION(3,3,'p')
 #define BBG_VERSION_OLD     	0
 #define BBG_VERSION_OLDPLUS     1
 
@@ -486,7 +489,6 @@ cov_file_t::solve()
 gboolean
 cov_file_t::read_bb_file(const char *bbfilename)
 {
-    FILE *fp;
     gnb_u32_t tag;
     string_var funcname;
     string_var filename;
@@ -498,7 +500,8 @@ cov_file_t::read_bb_file(const char *bbfilename)
     
     dprintf1(D_FILES, "Reading .bb file \"%s\"\n", bbfilename);
 
-    if ((fp = fopen(bbfilename, "r")) == 0)
+    covio_old_t io(bbfilename);
+    if (!io.open_read())
     {
     	perror(bbfilename);
 	return FALSE;
@@ -508,18 +511,18 @@ cov_file_t::read_bb_file(const char *bbfilename)
     funcidx = 0;
     line = 0;
     nlines = 0;
-    while (covio_read_lu32(fp, &tag))
+    while (io.read_u32(&tag))
     {
     	switch (tag)
 	{
 	case BB_FILENAME:
-	    filename = covio_read_bbstring(fp, tag);
+	    filename = io.read_bbstring(tag);
 	    filename = file_make_absolute_to(filename, name_);
 	    dprintf1(D_BB, "BB filename = \"%s\"\n", filename.data());
 	    break;
 	    
 	case BB_FUNCTION:
-	    funcname = covio_read_bbstring(fp, tag);
+	    funcname = io.read_bbstring(tag);
 	    funcname = normalise_mangled(funcname);
 	    dprintf1(D_BB, "BB function = \"%s\"\n", funcname.data());
 	    fn = nth_function(funcidx);
@@ -553,7 +556,6 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	}
     }
     
-    fclose(fp);
     return TRUE;
 }
 
@@ -602,27 +604,27 @@ cov_file_t::read_bb_file(const char *bbfilename)
  */
 
 int
-cov_file_t::skip_oldplus_func_header(FILE *fp, const char *prefix)
+cov_file_t::skip_oldplus_func_header(covio_t *io, const char *prefix)
 {
     gnb_u32_t crud;
     char *funcname;
 
-    if (!covio_read_lu32(fp, &crud))
+    if (!io->read_u32(&crud))
     	return EOF;
     if (crud != BBG_SEPARATOR)
 	bbg_failed1("expecting separator, got %u", crud);
 
-    if ((funcname = covio_read_lstring(fp)) == 0)
+    if ((funcname = io->read_string()) == 0)
 	bbg_failed0("short file");
     dprintf2(D_BBG, "%sskipping function name: \"%s\"\n", prefix, funcname);
     g_free(funcname);
 
-    if (!covio_read_lu32(fp, &crud))
+    if (!io->read_u32(&crud))
 	bbg_failed0("short file");
     if (crud != BBG_SEPARATOR)
 	bbg_failed1("expecting separator, got %u", crud);
 
-    if (!covio_read_lu32(fp, &crud))
+    if (!io->read_u32(&crud))
 	bbg_failed0("short file");
     dprintf2(D_BBG, "%sskipping function flags(?): 0x%08x\n", prefix, crud);
 
@@ -631,7 +633,7 @@ cov_file_t::skip_oldplus_func_header(FILE *fp, const char *prefix)
 
 
 gboolean
-cov_file_t::read_old_bbg_function(FILE *fp)
+cov_file_t::read_old_bbg_function(covio_t *io)
 {
     gnb_u32_t nblocks, totnarcs, narcs;
     gnb_u32_t bidx, aidx;
@@ -645,21 +647,21 @@ cov_file_t::read_old_bbg_function(FILE *fp)
     
     if (format_version_ == BBG_VERSION_OLDPLUS)
     {
-    	switch (skip_oldplus_func_header(fp, "BBG   "))
+    	switch (skip_oldplus_func_header(io, "BBG   "))
 	{
 	case FALSE: return FALSE;
 	case EOF: return TRUE;
 	}
     }
     
-    if (!covio_read_lu32(fp, &nblocks))
+    if (!io->read_u32(&nblocks))
     {
     	if (format_version_ == BBG_VERSION_OLDPLUS)
     	    bbg_failed0("short file");
     	return TRUE;	/* end of file */
     }
 
-    if (!covio_read_lu32(fp, &totnarcs))
+    if (!io->read_u32(&totnarcs))
     	bbg_failed0("short file");
     
     if (nblocks > BBG_MAX_BLOCKS)
@@ -675,7 +677,7 @@ cov_file_t::read_old_bbg_function(FILE *fp)
     {
     	dprintf1(D_BBG, "BBG   block %d\n", bidx);
 	b = fn->nth_block(bidx);
-	if (!covio_read_lu32(fp, &narcs))
+	if (!io->read_u32(&narcs))
     	    bbg_failed0("short file");
 
 	if (narcs > BBG_MAX_ARCS)
@@ -683,8 +685,8 @@ cov_file_t::read_old_bbg_function(FILE *fp)
 
 	for (aidx = 0 ; aidx < narcs ; aidx++)
 	{
-	    covio_read_lu32(fp, &dest);
-	    if (!covio_read_lu32(fp, &flags))
+	    io->read_u32(&dest);
+	    if (!io->read_u32(&flags))
 	    	bbg_failed0("short file");
 
     	    dprintf7(D_BBG, "BBG     arc %u: %u->%u flags %x(%s,%s,%s)\n",
@@ -714,7 +716,7 @@ cov_file_t::read_old_bbg_function(FILE *fp)
 	}
     }
 
-    covio_read_lu32(fp, &sep);
+    io->read_u32(&sep);
     if (sep != BBG_SEPARATOR)
     	bbg_failed2("sep=0x%08x != 0x%08x", sep, BBG_SEPARATOR);
 	
@@ -722,11 +724,15 @@ cov_file_t::read_old_bbg_function(FILE *fp)
 }
 
 gboolean
-cov_file_t::read_old_bbg_file(const char *bbgfilename, FILE *fp)
+cov_file_t::read_old_bbg_file_common(const char *bbgfilename, FILE *fp)
 {
-    while (!feof(fp))
+    covio_old_t io(bbgfilename, fp);
+    
+    io.seek(0L);
+
+    while (!io.eof())
     {
-    	if (!read_old_bbg_function(fp))
+    	if (!read_old_bbg_function(&io))
 	{
 	    /* TODO */
 	    fprintf(stderr, "%s: file is corrupted or in a bad file format.\n",
@@ -736,6 +742,20 @@ cov_file_t::read_old_bbg_file(const char *bbgfilename, FILE *fp)
     }
 
     return TRUE;
+}
+
+gboolean
+cov_file_t::read_old_bbg_file(const char *bbgfilename, FILE *fp)
+{
+    format_version_ = BBG_VERSION_OLD;
+    return read_old_bbg_file_common(bbgfilename, fp);
+}
+
+gboolean
+cov_file_t::read_oldplus_bbg_file(const char *bbgfilename, FILE *fp)
+{
+    format_version_ = BBG_VERSION_OLDPLUS;
+    return read_old_bbg_file_common(bbgfilename, fp);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -788,7 +808,7 @@ gcov_tag_as_string(gnb_u32_t tag)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
-cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
+cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 {
     gnb_u32_t tag, length;
     cov_function_t *fn = 0;
@@ -801,15 +821,26 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
     gnb_u32_t dest, flags;
     gnb_u32_t line, last_line = 0;
 
-    if (!covio_read_bu32(fp, &format_version_))
+    if (!io->read_u32(&format_version_))
     	bbg_failed0("short file");
-    if (format_version_ != BBG_VERSION_3_3p)
-    	bbg_failed2("bad version=0x%08x != 0x%08x",
-	    	    format_version_, BBG_VERSION_3_3p);
-
-    while (covio_read_bu32(fp, &tag))
+    switch (format_version_)
     {
-	if (!covio_read_bu32(fp, &length))
+    case BBG_VERSION_GCC33:
+    	break;
+    case BBG_VERSION_GCC34_RH:
+    case BBG_VERSION_GCC34:
+	io->read_u32(&tmp);	/* ignore the timestamp */
+    	/* TODO: should really do something useful with this */
+    	break;
+    default:
+    	bbg_failed1("unknown version=0x%08x", format_version_);
+    }
+    if (format_version_ != expect_version)
+    	bbg_failed1("unexpected version=0x%08x", format_version_);
+
+    while (io->read_u32(&tag))
+    {
+	if (!io->read_u32(&length))
     	    bbg_failed0("short file");
 	
     	dprintf3(D_BBG, "tag=0x%08x (%s) length=%u\n",
@@ -817,11 +848,11 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    funcname = covio_read_string(fp);
+	    funcname = io->read_string();
 	    funcname = normalise_mangled(funcname);
     	    fn = add_function();
 	    fn->set_name(funcname);
-	    covio_read_bu32(fp, &tmp);	/* ignore the checksum */
+	    io->read_u32(&tmp);	/* ignore the checksum */
 	    nblocks = 0;
 	    break;
 
@@ -834,17 +865,16 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 	    for (bidx = 0 ; bidx < nblocks ; bidx++)
     		fn->add_block();
 	    /* skip the per-block flags */
-	    for ( ; length ; length--)
-		fgetc(fp);
+	    io->skip(length);
 	    break;
 
 	case GCOV_TAG_ARCS:
-	    if (!covio_read_bu32(fp, &bidx))
+	    if (!io->read_u32(&bidx))
 	    	bbg_failed0("short file");
 	    for (length -= 4 ; length > 0 ; length -= 8)
 	    {
-		if (!covio_read_bu32(fp, &dest) ||
-		    !covio_read_bu32(fp, &flags))
+		if (!io->read_u32(&dest) ||
+		    !io->read_u32(&flags))
 	    	    bbg_failed0("short file");
 
     		dprintf6(D_BBG, "BBG     arc %u->%u flags %x(%s,%s,%s)\n",
@@ -877,7 +907,7 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 	    break;
 
 	case GCOV_TAG_LINES:
-	    if (!covio_read_bu32(fp, &bidx))
+	    if (!io->read_u32(&bidx))
 	    	bbg_failed0("short file");
 	    if (bidx >= nblocks)
     	    	bbg_failed2("bidx=%u > nblocks=%u", bidx, nblocks);
@@ -891,11 +921,11 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 		}
 	    }
 	    nlines = 0;
-    	    while (covio_read_bu32(fp, &line))
+    	    while (io->read_u32(&line))
 	    {
 		if (line == 0)
 		{
-		    char *s = covio_read_string(fp);
+		    char *s = io->read_string();
 		    if (s == 0)
 		    	bbg_failed0("short file");
 		    if (*s == '\0')
@@ -920,9 +950,8 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 
 	default:
 	    fprintf(stderr, "%s: skipping unknown tag 0x%08x\n",
-	    	    bbgfilename, tag);
-	    for ( ; length ; length--)
-		fgetc(fp);
+	    	    io->filename(), tag);
+	    io->skip(length);
 	    break;
 	}
     }    
@@ -930,20 +959,70 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
     return TRUE;
 }
 
+gboolean
+cov_file_t::read_gcc33_bbg_file(const char *bbgfilename, FILE *fp)
+{
+    covio_gcc33_t io(bbgfilename, fp);
+    return read_gcc3_bbg_file_common(&io, BBG_VERSION_GCC33);
+}
+
+gboolean
+cov_file_t::read_gcc34l_bbg_file(const char *bbgfilename, FILE *fp)
+{
+    covio_gcc34l_t io(bbgfilename, fp);
+    little_endian_ = TRUE;
+    return read_gcc3_bbg_file_common(&io, BBG_VERSION_GCC34);
+}
+
+gboolean
+cov_file_t::read_gcc34b_bbg_file(const char *bbgfilename, FILE *fp)
+{
+    covio_gcc34b_t io(bbgfilename, fp);
+    little_endian_ = FALSE;
+    return read_gcc3_bbg_file_common(&io, BBG_VERSION_GCC34);
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#define BBG_NEW_MAGIC	    	"gbbg"
-#define BBG_NEW_MAGIC_LEN	4
+cov_file_t::format_rec_t cov_file_t::formats[] = 
+{
+    {
+    	"gcno", 4,
+	&cov_file_t::read_gcc34b_bbg_file,
+	"gcc 3.4 .bbg (big-endian) format"
+    },
+    {
+    	"oncg", 4,
+	&cov_file_t::read_gcc34l_bbg_file,
+	"gcc 3.4 .bbg (little-endian) format"
+    },
+    {
+    	"gbbg", 4,
+	&cov_file_t::read_gcc33_bbg_file,
+	"gcc 3.3 .bbg format"
+    },
+    {
+    	"\x01\x00\x00\x80", 4,
+	&cov_file_t::read_oldplus_bbg_file,
+	"old .bbg format plus function names (e.g. Fedora Core 1)"
+    },
+    {
+    	0, 0,
+	&cov_file_t::read_old_bbg_file,
+	"old .bbg format"
+    },
+};
 
-#define BBG_OLDPLUS_MAGIC	"\x01\x00\x00\x80"
-#define BBG_OLDPLUS_MAGIC_LEN	4
+#define MAX_MAGIC_LEN	    	    4
+
 
 gboolean
 cov_file_t::read_bbg_file(const char *bbgfilename)
 {
     FILE *fp;
-    char magic[BBG_NEW_MAGIC_LEN];
+    char magic[MAX_MAGIC_LEN];
     gboolean ret;
+    format_rec_t *fmt;
     
     dprintf1(D_FILES, "Reading .bbg file \"%s\"\n", bbgfilename);
     
@@ -953,7 +1032,7 @@ cov_file_t::read_bbg_file(const char *bbgfilename)
 	return FALSE;
     }
     
-    if (fread(magic, 1, BBG_NEW_MAGIC_LEN, fp) != BBG_NEW_MAGIC_LEN)
+    if (fread(magic, 1, MAX_MAGIC_LEN, fp) != MAX_MAGIC_LEN)
     {
     	/* TODO */
     	fprintf(stderr, "%s: short file while reading magic number\n",
@@ -962,25 +1041,13 @@ cov_file_t::read_bbg_file(const char *bbgfilename)
 	return FALSE;
     }
     
-    if (!memcmp(magic, BBG_NEW_MAGIC, BBG_NEW_MAGIC_LEN))
+    for (fmt = formats ; fmt->magic_ != 0 ; fmt++)
     {
-	dprintf0(D_FILES, "Detected new .bbg format\n");
-	ret = read_new_bbg_file(bbgfilename, fp);
+    	if (!memcmp(magic, fmt->magic_, fmt->magic_len_))
+	    break;
     }
-    else if (!memcmp(magic, BBG_OLDPLUS_MAGIC, BBG_OLDPLUS_MAGIC_LEN))
-    {
-	dprintf0(D_FILES, "Detected old .bbg format plus function names (e.g. Fedora Core 1)\n");
-	format_version_ = BBG_VERSION_OLDPLUS;
-	fseek(fp, 0L, SEEK_SET);
-	ret = read_old_bbg_file(bbgfilename, fp);
-    }
-    else
-    {
-	dprintf0(D_FILES, "Detected old .bbg format\n");
-	format_version_ = BBG_VERSION_OLD;
-	fseek(fp, 0L, SEEK_SET);
-	ret = read_old_bbg_file(bbgfilename, fp);
-    }
+    dprintf1(D_FILES, "Detected %s\n", fmt->description_);
+    ret = (this->*(fmt->read_func_))(bbgfilename, fp);
     
     fclose(fp);
     return ret;
@@ -991,21 +1058,20 @@ cov_file_t::read_bbg_file(const char *bbgfilename)
 gboolean
 cov_file_t::read_old_da_file(const char *dafilename)
 {
-    FILE *fp;
     gnb_u64_t nents;
     gnb_u64_t ent;
     unsigned int fnidx;
     unsigned int bidx;
     list_iterator_t<cov_arc_t> aiter;
     
-    
-    if ((fp = fopen(dafilename, "r")) == 0)
+    covio_old_t io(dafilename);
+    if (!io.open_read())
     {
     	perror(dafilename);
 	return FALSE;
     }
 
-    covio_read_lu64(fp, &nents);
+    io.read_u64(&nents);
     
     for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
     {
@@ -1023,10 +1089,9 @@ cov_file_t::read_old_da_file(const char *dafilename)
 		    continue;
 
     	    	/* TODO: check that nents is correct */
-    		if (!covio_read_lu64(fp, &ent))
+    		if (!io.read_u64(&ent))
 		{
 		    fprintf(stderr, "%s: short file\n", dafilename);
-		    fclose(fp);
 		    return FALSE;
 		}
 
@@ -1045,7 +1110,6 @@ cov_file_t::read_old_da_file(const char *dafilename)
 	}
     }    
     
-    fclose(fp);
     return TRUE;
 }
 
@@ -1056,19 +1120,16 @@ cov_file_t::read_old_da_file(const char *dafilename)
 #define da_failed0(fmt) \
     { \
 	dprintf1(D_DA, "da:%d, " fmt "\n", __LINE__); \
-	fclose(fp); \
     	return FALSE; \
     }
 #define da_failed1(fmt, a1) \
     { \
 	dprintf2(D_DA, "da:%d, " fmt "\n", __LINE__, a1); \
-	fclose(fp); \
     	return FALSE; \
     }
 #define da_failed2(fmt, a1, a2) \
     { \
 	dprintf3(D_DA, "da:%d, " fmt "\n", __LINE__, a1, a2); \
-	fclose(fp); \
     	return FALSE; \
     }
 
@@ -1077,7 +1138,6 @@ cov_file_t::read_old_da_file(const char *dafilename)
 gboolean
 cov_file_t::read_oldplus_da_file(const char *dafilename)
 {
-    FILE *fp;
     gnb_u32_t crud;
     gnb_u32_t file_narcs;
     gnb_u64_t ent;
@@ -1087,8 +1147,8 @@ cov_file_t::read_oldplus_da_file(const char *dafilename)
     list_iterator_t<cov_arc_t> aiter;
     gboolean ret = TRUE;
     
-    
-    if ((fp = fopen(dafilename, "r")) == 0)
+    covio_old_t io(dafilename);
+    if (!io.open_read())
     {
     	perror(dafilename);
 	return FALSE;
@@ -1098,37 +1158,29 @@ cov_file_t::read_oldplus_da_file(const char *dafilename)
      * I haven't yet looked in the FC1 gcc source to figure out what
      * it's writing in the .da header...this is reverse engineered.
      */
-    if (!covio_read_lu32(fp, &crud))
+    if (!io.read_u32(&crud))
     	da_failed0("short file");
     if (crud != DA_OLDPLUS_MAGIC)
     	da_failed2("bad magic, expecting 0x%08x got 0x%08x\n",
 	    	   DA_OLDPLUS_MAGIC, crud);
     
-    if (!covio_read_lu32(fp, &crud))
+    if (!io.read_u32(&crud))
     	da_failed0("short file");
     if (crud != num_functions())
     	da_failed2("bad num functions, expecting %d got %d\n",
 	    	   num_functions(), crud);
 
-    if (!covio_read_lu32(fp, &crud))
+    if (!io.read_u32(&crud) || !io.skip(crud))
     	da_failed0("short file");
-    while (crud--)
-    {
-    	if (fgetc(fp) == EOF)
-	    da_failed0("short file");
-    }
 
     for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
     {
     	cov_function_t *fn = nth_function(fnidx);
 	
-    	if (!skip_oldplus_func_header(fp, "DA "))
-	{
-	    ret = FALSE;
-    	    break;
-	}
+    	if (!skip_oldplus_func_header(&io, "DA "))
+	    return FALSE;
 
-	if (!covio_read_lu32(fp, &file_narcs))
+	if (!io.read_u32(&file_narcs))
     	    da_failed0("short file");
 	actual_narcs = 0;
 
@@ -1147,7 +1199,7 @@ cov_file_t::read_oldplus_da_file(const char *dafilename)
 		    da_failed2("bad num arcs, expecting %d got >= %d\n",
 		    	    	file_narcs, actual_narcs);
 
-    		if (!covio_read_lu64(fp, &ent))
+    		if (!io.read_u64(&ent))
 		    da_failed0("short file");
 
     	    	if (debug_enabled(D_DA))
@@ -1169,23 +1221,23 @@ cov_file_t::read_oldplus_da_file(const char *dafilename)
 		    	file_narcs, actual_narcs);
     }    
     
-    fclose(fp);
-    return ret;
+    return TRUE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#define DA_NEW_MAGIC	\
-     	(((gnb_u32_t)'g'<<24)| \
-	 ((gnb_u32_t)'c'<<16)| \
-	 ((gnb_u32_t)'o'<<8)| \
-	 ((gnb_u32_t)'v'))
+#define _DA_MAGIC(a,b,c,d) \
+    	(((gnb_u32_t)a<<24)| \
+    	 ((gnb_u32_t)b<<16)| \
+	 ((gnb_u32_t)c<<8)| \
+	 ((gnb_u32_t)d))
 
+#define DA_GCC34_MAGIC	    _DA_MAGIC('g','c','d','a')
+#define DA_GCC33_MAGIC	    _DA_MAGIC('g','c','o','v')
 
 gboolean
-cov_file_t::read_new_da_file(const char *dafilename)
+cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 {
-    FILE *fp;
     gnb_u32_t magic, version;
     gnb_u32_t tag, length;
     string_var funcname;
@@ -1195,28 +1247,27 @@ cov_file_t::read_new_da_file(const char *dafilename)
     unsigned int bidx;
     list_iterator_t<cov_arc_t> aiter;
 
-    
-    if ((fp = fopen(dafilename, "r")) == 0)
-    {
-    	perror(dafilename);
-	return FALSE;
-    }
-
-    if (!covio_read_bu32(fp, &magic) ||
-        !covio_read_bu32(fp, &version))
+    if (!io->read_u32(&magic) ||
+        !io->read_u32(&version))
     	da_failed0("short file");
 
-    if (magic != DA_NEW_MAGIC)
+    if (magic != expect_magic)
     	da_failed2("bad magic=0x%08x != 0x%08x",
-	    	    magic, DA_NEW_MAGIC);
+	    	    magic, expect_magic);
     
     if (version != format_version_)
     	da_failed2("bad version=0x%08x != 0x%08x",
 	    	    version, format_version_);
 
-    while (covio_read_bu32(fp, &tag))
+    if (magic == DA_GCC34_MAGIC)
     {
-	if (!covio_read_bu32(fp, &length))
+    	if (!io->read_u32(&tmp))    	/* ignore timestamp */
+    	    da_failed0("short file");
+    }
+
+    while (io->read_u32(&tag))
+    {
+	if (!io->read_u32(&length))
     	    da_failed0("short file");
 	
     	dprintf3(D_DA, "tag=0x%08x (%s) length=%u\n",
@@ -1224,12 +1275,12 @@ cov_file_t::read_new_da_file(const char *dafilename)
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    funcname = covio_read_string(fp);
+	    funcname = io->read_string();
 	    funcname = normalise_mangled(funcname);
     	    fn = find_function(funcname);
 	    if (fn == 0)
 	    	da_failed1("unexpected function name \"%s\"", funcname.data());
-	    covio_read_bu32(fp, &tmp);	/* ignore the checksum */
+	    io->read_u32(&tmp);	/* ignore the checksum */
 	    break;
 
     	case GCOV_TAG_COUNTER_BASE:
@@ -1246,7 +1297,7 @@ cov_file_t::read_new_da_file(const char *dafilename)
 		    if (a->on_tree_)
 			continue;
 
-		    if (!covio_read_bu64(fp, &count))
+		    if (!io->read_u64(&count))
 		    	da_failed0("short file");
     	    	    if (debug_enabled(D_DA))
 		    {
@@ -1265,17 +1316,15 @@ cov_file_t::read_new_da_file(const char *dafilename)
 
 	default:
 	    fprintf(stderr, "%s: skipping unknown tag 0x%08x\n",
-	    	    dafilename, tag);
+	    	    io->filename(), tag);
 	    /* fall through */
     	case GCOV_TAG_OBJECT_SUMMARY:
     	case GCOV_TAG_PROGRAM_SUMMARY:
-	    for ( ; length ; length--)
-		fgetc(fp);
+	    io->skip(length);
 	    break;
 	}
     }    
 
-    fclose(fp);
     return TRUE;
 }
 
@@ -1285,13 +1334,35 @@ gboolean
 cov_file_t::read_da_file(const char *dafilename)
 {
     dprintf1(D_FILES, "Reading .da file \"%s\"\n", dafilename);
-    
+
     switch (format_version_)
     {
+    case BBG_VERSION_GCC34:
+    case BBG_VERSION_GCC34_RH:
+	if (little_endian_)
+	{
+	    dprintf0(D_FILES, "Detected gcc3.4 (little endian) .da format\n");
+    	    covio_gcc34l_t io(dafilename);
+	    if (io.open_read())
+    	    	return read_gcc3_da_file(&io, DA_GCC34_MAGIC);
+	}
+	else
+	{
+	    dprintf0(D_FILES, "Detected gcc3.4 (big endian) .da format\n");
+    	    covio_gcc34b_t io(dafilename);
+	    if (io.open_read())
+    	    	return read_gcc3_da_file(&io, DA_GCC34_MAGIC);
+	}
+	break;
 
-    case BBG_VERSION_3_3p:
-	dprintf0(D_FILES, "Detected new .da format\n");
-    	return read_new_da_file(dafilename);
+    case BBG_VERSION_GCC33:
+    	{
+	    dprintf0(D_FILES, "Detected gcc3.3 .da format\n");
+    	    covio_gcc33_t io(dafilename);
+	    if (io.open_read())
+    		return read_gcc3_da_file(&io, DA_GCC33_MAGIC);
+	}
+	break;
 
     case BBG_VERSION_OLD:
 	dprintf0(D_FILES, "Detected old .da format\n");
@@ -1306,6 +1377,9 @@ cov_file_t::read_da_file(const char *dafilename)
 	    	dafilename, format_version_);
 	return FALSE;
     }
+
+    perror(dafilename);
+    return FALSE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
