@@ -23,7 +23,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.1 2001-11-23 03:47:48 gnb Exp $");
+CVSID("$Id: filename.c,v 1.2 2001-11-23 09:07:53 gnb Exp $");
 
 #ifndef __set_errno
 #define __set_errno(v)	 errno = (v)
@@ -56,12 +56,6 @@ file_extension_c(const char *filename)
     
     return strrchr(base, '.');
 }
-
-#define estring_truncate_to(e, n) \
-    do { \
-    	if ((n) < (e)->length && (e)->data != 0) \
-    	    (e)->data[(e)->length = (n)] = '\0'; \
-    } while(0)
 
 char *
 file_change_extension(
