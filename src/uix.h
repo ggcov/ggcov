@@ -25,4 +25,12 @@
 
 GdkFont *uix_fixed_width_font(GdkFont *oldfont);
 
+/*
+ * These functions return width and height suitable for
+ * allocating screen space, i.e. overall font characteristics
+ * rather than sizes tied to particular chars or strings.
+ */
+int uix_font_width(GdkFont *);
+int uix_font_height(GdkFont *);
+
 #endif /* _ggcov_uix_h_ */

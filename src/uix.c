@@ -21,7 +21,7 @@
 #include "estring.h"
 #include <gdk/gdkx.h>	/* This is what we want to avoid in the main code */
 
-CVSID("$Id: uix.c,v 1.1 2001-11-23 10:38:14 gnb Exp $");
+CVSID("$Id: uix.c,v 1.2 2001-11-23 13:31:31 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -223,6 +223,22 @@ uix_fixed_width_font(GdkFont *goldfont)
         
     uix_font_desc_free(&origdesc);
     return (newfont == 0 ? goldfont : newfont);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+int
+uix_font_width(GdkFont *gfont)
+{
+    XFontStruct *xfont = GDK_FONT_XFONT(gfont);
+    return xfont->max_bounds.width;
+}
+
+int
+uix_font_height(GdkFont *gfont)
+{
+    XFontStruct *xfont = GDK_FONT_XFONT(gfont);
+    return xfont->ascent + xfont->descent;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

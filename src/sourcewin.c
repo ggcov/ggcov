@@ -22,7 +22,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.4 2001-11-23 12:32:29 gnb Exp $");
+CVSID("$Id: sourcewin.c,v 1.5 2001-11-23 13:31:31 gnb Exp $");
 
 extern GList *filenames;
 
@@ -31,6 +31,7 @@ static gboolean sourcewin_initted = FALSE;
 static GdkColor sourcewin_color0;	    /* colour for lines with count==0 */
 static GdkColor sourcewin_color1;	    /* colour for lines with count>0 */
 static GdkFont *sourcewin_font;
+static int sourcewin_font_width, sourcewin_font_height;
 
 static void sourcewin_populate_filenames(sourcewin_t *sw);
 
@@ -58,6 +59,8 @@ sourcewin_init(GtkWidget *w)
     	    	    	    	    /*writeable*/FALSE, /*best_match*/TRUE);
 
     sourcewin_font = uix_fixed_width_font(gtk_widget_get_style(w)->font);
+    sourcewin_font_height = uix_font_height(sourcewin_font);
+    sourcewin_font_width = uix_font_width(sourcewin_font);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -79,6 +82,11 @@ get_dummy_menu(GladeXML *xml, const char *name)
     
     return menu;
 }
+
+#define SOURCE_COLUMNS	    (8+8+80) 	/* number,count,source */
+#define SOURCE_ROWS	    (35)
+#define MAGIC_MARGINX	    14
+#define MAGIC_MARGINY	    5
 
 sourcewin_t *
 sourcewin_new(void)
@@ -109,6 +117,12 @@ sourcewin_new(void)
     gtk_object_set_data(GTK_OBJECT(sw->window), sourcewin_window_key, sw);
     
     sourcewin_init(sw->window);
+    
+    gtk_widget_set_usize(sw->text,
+    	    SOURCE_COLUMNS * sourcewin_font_width + MAGIC_MARGINX,
+    	    SOURCE_ROWS * sourcewin_font_height + MAGIC_MARGINY);
+    
+    gtk_widget_show(sw->window);
     
     sourcewin_populate_filenames(sw);
 
