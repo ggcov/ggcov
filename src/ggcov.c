@@ -34,7 +34,7 @@
 #include <libgnomeui/libgnomeui.h>
 #endif
 
-CVSID("$Id: ggcov.c,v 1.23 2003-06-06 15:15:49 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.24 2003-06-06 15:30:52 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -180,8 +180,8 @@ dump_callarcs(GList *arcs)
     	cov_callarc_t *ca = (cov_callarc_t *)arcs->data;
 	
 	fprintf(stderr, "        ARC {\n");
-	fprintf(stderr, "            FROM=%s\n", ca->from->name);
-	fprintf(stderr, "            TO=%s\n", ca->to->name);
+	fprintf(stderr, "            FROM=%s\n", ca->from->name.data());
+	fprintf(stderr, "            TO=%s\n", ca->to->name.data());
 	fprintf(stderr, "            COUNT="GNB_U64_DFMT"\n", ca->count);
 	fprintf(stderr, "        }\n");
     }
@@ -191,7 +191,7 @@ static void
 dump_callnode(cov_callnode_t *cn, void *userdata)
 {
     fprintf(stderr, "CALLNODE {\n");
-    fprintf(stderr, "    NAME=%s\n", cn->name);
+    fprintf(stderr, "    NAME=%s\n", cn->name.data());
     if (cn->function == 0)
 	fprintf(stderr, "    FUNCTION=null\n");
     else
