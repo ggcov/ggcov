@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: cvs2changelog,v 1.4 2003-07-05 03:21:28 gnb Exp $
+# $Id: cvs2changelog,v 1.5 2003-07-22 11:49:15 gnb Exp $
 #
 # Shell script to build a change log for a new release
 # from CVS logs. The change log will still need some
@@ -9,7 +9,7 @@
 
 REV1=
 REV2=
-PACKAGE=`basename $PWD`
+PACKAGE=`sed -n -e 's|^AM_INIT_AUTOMAKE(\([^,]\+\),\([^)]\+\))|\1|p' < configure.in`
 DRYRUN=no
 NREVS=0
 ME="Greg Banks"
