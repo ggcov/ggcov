@@ -27,7 +27,7 @@
 #include "mvc.h"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.21 2004-02-16 22:51:41 gnb Exp $");
+CVSID("$Id: cov.C,v 1.22 2004-04-03 03:17:11 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -215,6 +215,7 @@ cov_read_object_file(const char *exefilename)
 {
     cov_bfd_t *b;
     cov_filename_scanner_t *fs;
+    string_var dir;
     string_var file;
     int successes = 0;
     
@@ -227,7 +228,7 @@ cov_read_object_file(const char *exefilename)
     	delete b;
 	return FALSE;
     }
-    
+
     cov_factory_t<cov_filename_scanner_t> factory;
     do
     {
@@ -241,6 +242,9 @@ cov_read_object_file(const char *exefilename)
 
     if (fs == 0)
     	return FALSE;	/* no scanner can open this file */
+
+    dir = file_dirname(exefilename);
+    cov_add_search_directory(dir);
     
     /*
      * TODO: instead of using the first scanner that succeeds open()
