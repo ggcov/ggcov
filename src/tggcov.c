@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2003-2004 Greg Banks <gnb@alphalink.com.au>
  * 
  *
  * TODO: attribution for decode-gcov.c
@@ -37,7 +37,7 @@
 #include "fakepopt.h"
 #include "report.H"
 
-CVSID("$Id: tggcov.c,v 1.12 2004-04-03 01:31:21 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.13 2005-03-14 07:49:16 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */

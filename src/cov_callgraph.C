@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2004 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_callgraph.C,v 1.7 2004-02-22 10:56:51 gnb Exp $");
+CVSID("$Id: cov_callgraph.C,v 1.8 2005-03-14 07:49:15 gnb Exp $");
 
 hashtable_t<const char, cov_callnode_t> *cov_callnode_t::all_;
 

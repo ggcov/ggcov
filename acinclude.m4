@@ -2,7 +2,7 @@ dnl
 dnl This file is included along with aclocal.m4 when building configure.in
 dnl
 dnl ggcov - A GTK frontend for exploring gcov coverage data
-dnl Copyright (c) 2001-2003 Greg Banks
+dnl Copyright (c) 2003 Greg Banks <gnb@alphalink.com.au>
 dnl 
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: acinclude.m4,v 1.2 2003-03-17 03:54:46 gnb Exp $
+dnl $Id: acinclude.m4,v 1.3 2005-03-14 07:49:15 gnb Exp $
 dnl
 
 dnl For gcc, ensure that the given flags are in $CFLAGS

@@ -1,7 +1,7 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Derived from ggui code
- * Copyright (c) 2000 - 2003 Greg Banks
+ * Copyright (c) 2000-2003 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 
 #include "mvc.h"
 
-CVSID("$Id: mvc.c,v 1.1 2003-07-18 13:34:58 gnb Exp $");
+CVSID("$Id: mvc.c,v 1.2 2005-03-14 07:49:16 gnb Exp $");
 
 typedef struct mvc_listener_s	    mvc_listener_t;
 typedef struct mvc_batch_s	    mvc_batch_t;

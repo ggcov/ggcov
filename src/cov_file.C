@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2005 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.40 2005-03-05 15:08:31 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.41 2005-03-14 07:49:15 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
