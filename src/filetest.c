@@ -1,11 +1,15 @@
 #include "filename.h"
 
+char *argv0;
+
 int
 main(int argc, char **argv)
 {
     int i;
     char *in, *out, *expected;
     
+    argv0 = argv[0];
+
     for (i = 1 ; i < argc ; i++)
     {
     	if (!strcmp(argv[i], "make_absolute"))
