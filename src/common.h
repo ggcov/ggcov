@@ -62,6 +62,7 @@ typedef enum
     D_SOLVE,
     D_STABS,
     D_DUMP,
+    D_REPORT,
     /* gui related features */
     D_UICORE,
     D_SUMMARYWIN,
