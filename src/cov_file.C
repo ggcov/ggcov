@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.42 2005-04-03 08:51:21 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.43 2005-04-03 09:43:44 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -879,15 +879,19 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 	    if (format_version_ == BBG_VERSION_GCC34_RH)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
-		funcid = read_rh_funcid(io);
-		funcname = io->read_string();
-		string_var filename = io->read_string();
-		io->read_u32(&tmp);	/* this seems to be a line number */
+		string_var filename;
+		
+		if ((funcid = read_rh_funcid(io)) == (char *)0 ||
+		    (funcname = io->read_string()) == (char *)0 ||
+		    (filename = io->read_string()) == (char *)0 ||
+		    !io->read_u32(&tmp)/* this seems to be a line number */)
+    		    bbg_failed0("short file");
 	    }
 	    else
 	    {
-		funcname = io->read_string();
-		io->read_u32(&tmp);	/* ignore the checksum */
+		if ((funcname = io->read_string()) == (char *)0 ||
+		    !io->read_u32(&tmp)/* ignore the checksum */)
+    		    bbg_failed0("short file");
 	    }
 	    funcname = demangle(funcname);
 	    funcname = normalise_mangled(funcname);

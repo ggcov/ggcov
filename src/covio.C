@@ -20,7 +20,7 @@
 #include "covio.H"
 #include "estring.H"
 
-CVSID("$Id: covio.C,v 1.3 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: covio.C,v 1.4 2005-04-03 09:43:44 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -141,13 +141,14 @@ covio_t::read_string_len(gnb_u32_t len)
     if (len == 0)
     	return g_strdup("");	/* valid empty string */
 
-    if ((buf = (char *)malloc(len)) == 0)
+    if ((buf = (char *)malloc(len+1)) == 0)
     	return 0;   	    	/* memory allocation failure */
-    if (fread(buf, 1, len, fp_) != len || buf[len-1] != '\0')
+    if (fread(buf, 1, len, fp_) != len)
     {
     	g_free(buf);
 	return 0;   	    	/* short file */
     }
+    buf[len] = '\0';	/* JIC */
     dprintf2(D_IO|D_VERBOSE, "covio_t::read_string_len(%d) = \"%s\"\n", len, buf);
     return buf;
 }
