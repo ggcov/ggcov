@@ -1,3 +1,24 @@
+Fri May 30 00:56:06 2003  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.1.2
+
+	* Added title column buttons to source window, and a View menu item
+	to hide them.
+	* Reimplemented Files window's tree mode; now shows accumulated statistics
+	on directories.
+	* Added a menu item to the Source window to save the source with the
+	currently selected annotations.
+	* All directories mentioned on the commandline are searched for
+	all .bb .bbg .da and .o files, in the given order and always
+	starting with the source file's own directory.  This gives the
+	functionality of "gcov -o".
+	* Rewrote file_make_absolute() to normalise out "." and ".." from
+	pathnames.
+	* Removed a stray TAB from a GUI label.
+	* Centralised the File->Close and File->Exit callbacks in class window_t.
+	* Added string_var and tok_t classes for string manipulation.
+	* Portability fixes.
+	* Minor code cleanups.
+
 Mon Mar 17 14:54:46 2003  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.1.1
 	
