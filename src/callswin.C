@@ -21,9 +21,9 @@
 #include "sourcewin.H"
 #include "filename.h"
 #include "cov.h"
-#include "estring.h"
+#include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.1 2002-12-15 15:53:23 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.2 2002-12-22 01:43:35 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -110,13 +110,12 @@ callswin_t::populate_function_combo(GtkCombo *combo)
     
     ui_combo_add_data(combo, _(all_functions), 0);
 
-    estring_init(&label);
     for (iter = functions_ ; iter != 0 ; iter = iter->next)
     {
     	cov_function_t *fn = (cov_function_t *)iter->data;
 
-    	estring_truncate(&label);
-	estring_append_string(&label, fn->name);
+    	label.truncate();
+	label.append_string(fn->name);
 
     	/* see if we need to present some more scope to uniquify the name */
 	if ((iter->next != 0 &&
@@ -124,14 +123,13 @@ callswin_t::populate_function_combo(GtkCombo *combo)
 	    (iter->prev != 0 &&
 	     !strcmp(((cov_function_t *)iter->prev->data)->name, fn->name)))
 	{
-	    estring_append_string(&label, " (");
-	    estring_append_string(&label, file_basename_c(fn->file->name));
-	    estring_append_string(&label, ")");
+	    label.append_string(" (");
+	    label.append_string(cov_file_minimal_name(fn->file));
+	    label.append_string(")");
 	}
 	
-    	ui_combo_add_data(combo, label.data, fn);
+    	ui_combo_add_data(combo, label.data(), fn);
     }
-    estring_free(&label);
 }
 
 void
@@ -154,6 +152,7 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
     unsigned int bidx;
     int row;
     GList *aiter;
+    const cov_location_t *loc;
     char *text[COL_NUM];
     char countbuf[32];
     char arcbuf[64];
@@ -178,9 +177,11 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 
 	    snprintf(arcbuf, sizeof(arcbuf), "B%u A%u", b->idx, a->idx);
 	    text[COL_ARC] = arcbuf;
-	    
-	    snprintf(linebuf, sizeof(linebuf), "%u",
-	    	    cov_arc_get_from_location(a)->lineno);
+
+    	    if ((loc = cov_arc_get_from_location(a)) == 0)
+	    	strncpy(linebuf, "WTF??", sizeof(linebuf));
+	    else
+		snprintf(linebuf, sizeof(linebuf), "%u", loc->lineno);
 	    text[COL_LINE] = linebuf;
 	    
 	    text[COL_FROM] = a->from->function->name;
@@ -205,24 +206,22 @@ callswin_t::update()
 #if DEBUG
     fprintf(stderr, "callswin_t::update\n");
 #endif
-    estring_init(&title);
     switch ((from_fn == 0 ? 0 : 2)|(to_fn == 0 ? 0 : 1))
     {
     case 0:
 	break;
     case 1:
-    	estring_append_printf(&title, _("to %s"), to_fn->name);
+    	title.append_printf(_("to %s"), to_fn->name);
 	break;
     case 2:
-    	estring_append_printf(&title, _("from %s"), from_fn->name);
+    	title.append_printf(_("from %s"), from_fn->name);
 	break;
     case 3:
-    	estring_append_printf(&title, _("from %s to %s"),
+    	title.append_printf(_("from %s to %s"),
 	    	    	      from_fn->name, to_fn->name);
 	break;
     }
-    set_title(title.data);
-    estring_free(&title);
+    set_title(title.data());
 
 
     gtk_clist_freeze(GTK_CLIST(clist_));
@@ -321,7 +320,8 @@ on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data)
 	a = (cov_arc_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
 	
 	loc = cov_arc_get_from_location(a);
-	sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);
+	if (loc != 0)
+	    sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);
     }
 }
 
