@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: cov_function.C,v 1.2 2002-12-31 14:53:56 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.3 2003-03-11 21:26:51 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -169,7 +169,7 @@ cov_function_t::reconcile_calls()
     	    if (a->fake_)
 	    	a->name_ = b->pop_call();
     	}
-#if DEBUG
+#if DEBUG > 1
 	fprintf(stderr, "Reconciled %d calls for %s\n",
 		    	    cov_arc_t::nfake(b->out_arcs_), desc.data());
 #endif
@@ -275,7 +275,7 @@ cov_function_t::solve()
 	    return FALSE;
     }
 
-#if DEBUG    
+#if DEBUG > 1
     fprintf(stderr, "Solved flow graph for %s in %d passes\n",
     	    	    	name(), passes);
 #endif
