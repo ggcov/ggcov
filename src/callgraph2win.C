@@ -18,11 +18,10 @@
  */
 
 #include "callgraph2win.H"
-#if CALLGRAPH2
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: callgraph2win.C,v 1.12 2003-06-03 23:08:16 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.13 2003-07-14 15:55:12 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -173,6 +172,9 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
 		"y2",	    	n->y_+BOX_HEIGHT,
 		"fill_color_gdk",fn_color,
 		"outline_color","black",
+#if GTK2
+		"width_pixels", 1,
+#endif
 		0);
     n->text_item_ = gnome_canvas_item_new(
     	    	root,
@@ -456,6 +458,5 @@ on_callgraph2_show_all_activate(GtkWidget *w, gpointer data)
 }
 
 
-#endif /* CALLGRAPH2 */
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

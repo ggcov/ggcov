@@ -22,15 +22,6 @@
 
 #include "window.H"
 
-#if GTK2
-/*
- * TODO: someone with access to a RH 8.0 box needs to
- * port this feature to GTK2/libgnomecanvas.
- */
-#define CALLGRAPH2 0
-#else
-#define CALLGRAPH2 1
-
 #include "cov.H"
 #include <libgnomeui/libgnomeui.h>
 
@@ -97,5 +88,4 @@ private:
     friend void on_callgraph2_show_all_activate(GtkWidget*, gpointer);
 };
 
-#endif /* !GTK2 */
 #endif /* _ggcov_callgraph2win_H_ */

@@ -20,12 +20,9 @@
 #include "common.h"
 #include "prefswin.H"
 #include "prefs.H"
-#if !GTK2
-/* TODO: someone needs to port this feature to GTK2/libgnomeui2 */
 #include <libgnomeui/libgnomeui.h>
-#endif
 
-CVSID("$Id: prefswin.C,v 1.3 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: prefswin.C,v 1.4 2003-07-14 15:57:52 gnb Exp $");
 
 prefswin_t *prefswin_t::instance_ = 0;
 
@@ -47,7 +44,6 @@ prefswin_t::prefswin_t()
     	    	    	    	    "preferences_general_reuse_srcwin_check");
     reuse_summwin_check_ = glade_xml_get_widget(xml,
     	    	    	    	    "preferences_general_reuse_summwin_check");
-#if !GTK2
     color_pickers_[0] = glade_xml_get_widget(xml,
     	    	    	    	"preferences_colors_covered_foreground");
     color_pickers_[1] = glade_xml_get_widget(xml,
@@ -64,7 +60,6 @@ prefswin_t::prefswin_t()
     	    	    	    	"preferences_colors_uninstrumented_foreground");
     color_pickers_[7] = glade_xml_get_widget(xml,
     	    	    	    	"preferences_colors_uninstrumented_background");
-#endif
 }
 
 
@@ -87,10 +82,8 @@ prefswin_t::instance()
 void
 prefswin_t::update_picker(int i, const GdkColor *col)
 {
-#if !GTK2
     gnome_color_picker_set_i16(GNOME_COLOR_PICKER(color_pickers_[i]),
     			       col->red, col->green, col->blue, 65535);
-#endif
 }
 
 
@@ -106,7 +99,6 @@ prefswin_t::update()
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(reuse_summwin_check_),
     	    	    	    	prefs.reuse_summwin);
 
-#if !GTK2
     update_picker(0, &prefs.covered_foreground);
     update_picker(1, &prefs.covered_background);
     update_picker(2, &prefs.partcovered_foreground);
@@ -115,7 +107,6 @@ prefswin_t::update()
     update_picker(5, &prefs.uncovered_background);
     update_picker(6, &prefs.uninstrumented_foreground);
     update_picker(7, &prefs.uninstrumented_background);
-#endif
 }
 
 void
@@ -139,12 +130,10 @@ prefswin_t::grey_items()
 void
 prefswin_t::apply_picker(int i, GdkColor *col)
 {
-#if !GTK2
     gushort dummy;
     
     gnome_color_picker_get_i16(GNOME_COLOR_PICKER(color_pickers_[i]),
     	    	    	       &col->red, &col->green, &col->blue, &dummy);
-#endif
 }
 
 void
@@ -157,7 +146,6 @@ prefswin_t::apply()
     prefs.reuse_srcwin = GTK_TOGGLE_BUTTON(reuse_srcwin_check_)->active;
     prefs.reuse_summwin = GTK_TOGGLE_BUTTON(reuse_summwin_check_)->active;
     
-#if !GTK2
     apply_picker(0, &prefs.covered_foreground);
     apply_picker(1, &prefs.covered_background);
     apply_picker(2, &prefs.partcovered_foreground);
@@ -166,7 +154,6 @@ prefswin_t::apply()
     apply_picker(5, &prefs.uncovered_background);
     apply_picker(6, &prefs.uninstrumented_foreground);
     apply_picker(7, &prefs.uninstrumented_background);
-#endif
     
     prefs.save();
 }

@@ -68,11 +68,8 @@ private:
     	NUM_COLS
     };
 
-    static void init(GtkWidget *);
-#if GTK2
-    void initialise_tags();
-#endif
     static sourcewin_t *instance();
+    void setup_text();
     void populate_filenames();
     void populate_functions();
     void populate();
@@ -94,11 +91,11 @@ private:
 
     static gboolean initialised_;
 #if GTK2
-    static PangoFontDescription *font_;
+    static PangoFontDescription *font_desc_;
 #else
     static GdkFont *font_;
-    static int font_width_, font_height_;
 #endif
+    int font_width_;
     static const int column_widths_[NUM_COLS];
     static const char *column_names_[NUM_COLS];
     static list_t<sourcewin_t> instances_;
@@ -121,12 +118,10 @@ private:
     GArray *offsets_by_line_;
 #endif
 
-#if !GTK2
     GtkWidget *titles_hbox_;
     GtkWidget *left_pad_label_;
     GtkWidget *title_buttons_[NUM_COLS];
     GtkWidget *right_pad_label_;
-#endif
 
     GtkWidget *saveas_dialog_;
 

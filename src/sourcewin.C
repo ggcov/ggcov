@@ -24,14 +24,18 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.20 2003-07-13 13:22:40 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.21 2003-07-14 15:56:01 gnb Exp $");
 
-gboolean sourcewin_t::initialised_ = FALSE;
+#ifndef GTK_SCROLLED_WINDOW_GET_CLASS
+#define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
+	GTK_SCROLLED_WINDOW_CLASS(GTK_OBJECT_CLASS(GTK_OBJECT(obj)->klass))
+#endif
+
+
 #if GTK2
-PangoFontDescription *sourcewin_t::font_;
+PangoFontDescription *sourcewin_t::font_desc_;
 #else
 GdkFont *sourcewin_t::font_;
-int sourcewin_t::font_width_, sourcewin_t::font_height_;
 #endif
 list_t<sourcewin_t> sourcewin_t::instances_;
 
@@ -44,27 +48,9 @@ const char *sourcewin_t::column_names_[sourcewin_t::NUM_COLS] = {
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-sourcewin_t::init(GtkWidget *w)
+sourcewin_t::setup_text()
 {
-    if (initialised_)
-    	return;
-    initialised_ = TRUE;
-
 #if GTK2
-    font_ = pango_font_description_from_string("monospace");
-#else
-    font_ = uix_fixed_width_font(gtk_widget_get_style(w)->font);
-    font_height_ = uix_font_height(font_);
-    font_width_ = uix_font_width(font_);
-#endif
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-#if GTK2
-void
-sourcewin_t::initialise_tags()
-{
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
     
     text_tags_[cov_line_t::COVERED] =
@@ -86,28 +72,39 @@ sourcewin_t::initialise_tags()
 	gtk_text_buffer_create_tag(buffer, "uninstrumented",
     	"foreground-gdk",   	&prefs.uninstrumented_foreground,
 	(char *)0);
-}
-#endif
 
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+    /*
+     * Override the font in the text window: it needs to be
+     * fixedwidth so the source aligns properly.
+     */
+    if (font_desc_ == 0)
+    	font_desc_ = pango_font_description_from_string("monospace");
+    gtk_widget_modify_font(text_view_, font_desc_);
 
+    /*
+     * Yes this is a deprecated function...but there doesn't
+     * seem to be any other way to get a font width.
+     */
+    GdkFont *font = gtk_style_get_font(gtk_widget_get_style(text_view_));
+    font_width_ = uix_font_width(font);
 
-#define SOURCE_COLUMNS	    (8+8+80) 	/* number,count,source */
-#define SOURCE_ROWS	    (35)
-#define MAGIC_MARGINX	    14
-#define MAGIC_MARGINY	    5
+#else
+    if (font_ == 0)
+	font_ = uix_fixed_width_font(gtk_widget_get_style(text_)->font);
+    font_width_ = uix_font_width(font_);
 
-extern int screenshot_mode;
-
-sourcewin_t::sourcewin_t()
-{
-    GladeXML *xml;
-    
-#if !GTK2
     offsets_by_line_ = g_array_new(/*zero_terminated*/TRUE,
 				      /*clear*/TRUE,
 				      sizeof(unsigned int));
 #endif
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+
+sourcewin_t::sourcewin_t()
+{
+    GladeXML *xml;
     
     /* load the interface & connect signals */
     xml = ui_load_tree("source");
@@ -116,10 +113,10 @@ sourcewin_t::sourcewin_t()
 
 #if GTK2
     text_view_ = glade_xml_get_widget(xml, "source_text");
-    initialise_tags();
 #else
     text_ = glade_xml_get_widget(xml, "source_text");
 #endif
+    setup_text();
     column_checks_[COL_LINE] = glade_xml_get_widget(xml, "source_line_check");
     column_checks_[COL_BLOCK] = glade_xml_get_widget(xml, "source_block_check");
     column_checks_[COL_COUNT] = glade_xml_get_widget(xml, "source_count_check");
@@ -128,7 +125,6 @@ sourcewin_t::sourcewin_t()
     toolbar_ = glade_xml_get_widget(xml, "source_toolbar");
     filenames_combo_ = glade_xml_get_widget(xml, "source_filenames_combo");
     functions_combo_ = glade_xml_get_widget(xml, "source_functions_combo");
-#if !GTK2
     titles_hbox_ = glade_xml_get_widget(xml, "source_titles_hbox");
     left_pad_label_ = glade_xml_get_widget(xml, "source_left_pad_label");
     title_buttons_[COL_LINE] = glade_xml_get_widget(xml, "source_col_line_button");
@@ -136,23 +132,12 @@ sourcewin_t::sourcewin_t()
     title_buttons_[COL_COUNT] = glade_xml_get_widget(xml, "source_col_count_button");
     title_buttons_[COL_SOURCE] = glade_xml_get_widget(xml, "source_col_source_button");
     right_pad_label_ = glade_xml_get_widget(xml, "source_right_pad_label");
-#endif
     ui_register_windows_menu(ui_get_dummy_menu(xml, "source_windows_dummy"));
-        
-    init(window_);
     
-#if GTK2
-    gtk_widget_modify_font(text_view_, font_);
-#ifndef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
-    /* select_region() relies on not having line wrapping */
+#if GTK2 && !defined(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE)
+    /* hacky select_region() implementation relies on not having line wrapping */
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view_), GTK_WRAP_NONE);
-#endif /* !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
-#else
-    if (!screenshot_mode)
-	gtk_widget_set_usize(text_,
-    	    SOURCE_COLUMNS * font_width_ + MAGIC_MARGINX,
-    	    SOURCE_ROWS * font_height_ + MAGIC_MARGINY);
-#endif
+#endif /* GTK2 && !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
 
     xml = ui_load_tree("source_saveas");
     saveas_dialog_ = glade_xml_get_widget(xml, "source_saveas");
@@ -524,8 +509,6 @@ sourcewin_t::update()
 void
 sourcewin_t::update_title_buttons()
 {
-    /* TODO: port the title button feature to GTK2 */
-#if !GTK2
     GtkWidget *scrollw;
     int lpad, rpad, sbwidth;
     int i;
@@ -541,10 +524,15 @@ sourcewin_t::update_title_buttons()
      * Set the left and right padding labels to just the right values
      * to align the title buttons with the main text window body.
      */
+#if GTK2
+    scrollw = text_view_->parent;
+#else
     scrollw = text_->parent;
+#endif
     lpad = rpad = GTK_CONTAINER(scrollw)->border_width;
     sbwidth = GTK_SCROLLED_WINDOW(scrollw)->vscrollbar->allocation.width + 
-    	      GTK_SCROLLED_WINDOW_CLASS(GTK_OBJECT(scrollw)->klass)->scrollbar_spacing;
+    	      GTK_SCROLLED_WINDOW_GET_CLASS(scrollw)->scrollbar_spacing;
+
     switch (GTK_SCROLLED_WINDOW(scrollw)->window_placement)
     {
     case GTK_CORNER_TOP_LEFT:
@@ -582,7 +570,6 @@ sourcewin_t::update_title_buttons()
 	else
 	    gtk_widget_hide(title_buttons_[i]);
     }
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -875,7 +862,6 @@ on_source_toolbar_check_activate(GtkWidget *w, gpointer data)
     	gtk_widget_hide(sw->toolbar_);
 }
 
-#if !GTK2
 GLADE_CALLBACK void
 on_source_titles_check_activate(GtkWidget *w, gpointer data)
 {
@@ -889,7 +875,6 @@ on_source_titles_check_activate(GtkWidget *w, gpointer data)
     else
     	gtk_widget_hide(sw->titles_hbox_);
 }
-#endif
 
 GLADE_CALLBACK void
 on_source_summarise_file_activate(GtkWidget *w, gpointer data)
