@@ -6,3 +6,5 @@ licence.c
 bbdump
 filetest
 mangletest
+newbbgdump
+tggcov
