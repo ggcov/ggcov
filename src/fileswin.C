@@ -25,7 +25,7 @@
 #include "prefs.H"
 #include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.19 2003-07-20 11:20:25 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.20 2003-07-20 11:49:08 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -457,6 +457,8 @@ fileswin_t::update()
     gtk_clist_columns_autosize(GTK_CLIST(ctree_));
     gtk_clist_sort(GTK_CLIST(ctree_));
     gtk_clist_thaw(GTK_CLIST(ctree_));
+#else
+    gtk_tree_view_expand_all(GTK_TREE_VIEW(ctree_));
 #endif
     grey_items();
 }

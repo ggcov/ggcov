@@ -4,9 +4,6 @@
 x  Configuring on RH9 seems to result in *not* getting the new
    text buffer line selection code.  Investigate.
 
-x  Tree mode of Files window in GTK2 port is collapsed by default,
-   should be expanded by default.
-
 x  File->Open dialog needs to allow user to select a directory
    recursively like the --recursive commandline option.
 
@@ -125,6 +122,9 @@ x  ??? Minimise filenames only within the context of a program or library?
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
+
+x  Tree mode of Files window in GTK2 port is collapsed by default,
+   should be expanded by default.
 
 x  Colour coding of list/tree items doesn't work in GTK2 port.
 
