@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.17 2003-02-18 14:41:24 gnb Exp $
+# $Id: Makefile.am,v 1.18 2003-03-11 06:33:34 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
@@ -32,7 +32,7 @@ ggcov_SOURCES=	common.h common.c \
 		cov_arc.H cov_arc.C \
 		cov_callgraph.H cov_callgraph.C \
 		cov_types.H cov.H cov.C \
-		ui.h ui.c uix.h uix.c \
+		uicommon.h ui.h ui.c uix.h uix.c \
 		gnbprogressbar.h gnbprogressbar.c \
 		confsection.H confsection.C \
 		prefs.H prefs.C \
