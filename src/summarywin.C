@@ -26,7 +26,9 @@
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.6 2003-01-04 02:38:14 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.7 2003-03-11 21:37:57 gnb Exp $");
+
+list_t<summarywin_t> summarywin_t::instances_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -72,10 +74,6 @@ summarywin_t::summarywin_t()
     
     ui_register_windows_menu(ui_get_dummy_menu(xml, "summary_windows_dummy"));
 
-    gtk_toggle_button_set_active(
-    	    		    GTK_TOGGLE_BUTTON(scope_radio_[SU_OVERALL]),
-			    TRUE);
-    
 #if 0
     gdk_color_parse("#d01010", &red);
     gdk_color_parse("#10d010", &green);
@@ -97,11 +95,87 @@ summarywin_t::summarywin_t()
 	    	    	    	      &prefs.uncovered_foreground);
     gnb_progress_bar_set_thumb_color(GNB_PROGRESS_BAR(branches_taken_progressbar_),
 	    	    	    	     &prefs.covered_foreground);
+
+    instances_.append(this);
 }
 
 
 summarywin_t::~summarywin_t()
 {
+    instances_.remove(this);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+summarywin_t *
+summarywin_t::instance()
+{
+    summarywin_t *sw = 0;
+
+    if (prefs.reuse_summwin)
+    	sw = instances_.head();
+    if (sw == 0)
+    	sw = new summarywin_t;
+    return sw;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+summarywin_t::show_overall()
+{
+    summarywin_t *sw = instance();
+    
+    sw->scope_ = SU_OVERALL;
+    if (sw->shown_)
+    	sw->update();
+    sw->show();
+}
+
+void
+summarywin_t::show_file(const cov_file_t *f)
+{
+    summarywin_t *sw = instance();
+    
+    sw->scope_ = SU_FILENAME;
+    sw->file_ = f;
+    if (sw->shown_)
+    	sw->update();
+    sw->show();
+}
+
+void
+summarywin_t::show_function(const cov_function_t *fn)
+{
+    summarywin_t *sw = instance();
+    
+    sw->scope_ = SU_FUNCTION;
+    sw->function_ = fn;
+    if (sw->shown_)
+    	sw->update();
+    sw->show();
+}
+
+void
+summarywin_t::show_lines(
+    const char *filename,
+    unsigned long start,
+    unsigned long end)
+{
+    summarywin_t *sw;
+    cov_file_t *f;
+    
+    if ((f = cov_file_t::find(filename)) == 0)
+    	return;
+	
+    sw = instance();
+    sw->scope_ = SU_RANGE;
+    sw->file_ = f;
+    sw->start_ = start;
+    sw->end_ = end;
+    if (sw->shown_)
+    	sw->update();
+    sw->show();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -159,9 +233,19 @@ summarywin_t::populate()
     fprintf(stderr, "summarywin_t::populate\n");
 #endif
 
+    populating_ = TRUE;     /* suppress combo entry callbacks */
     populate_filename_combo(GTK_COMBO(filename_combo_));
     populate_function_combo(GTK_COMBO(function_combo_));
     populate_filename_combo(GTK_COMBO(range_combo_));
+    populating_ = FALSE;
+    
+    if (file_ == 0)
+    	file_ = (cov_file_t *)ui_combo_get_current_data(
+	    	    	    	    GTK_COMBO(filename_combo_));
+    if (function_ == 0)
+    	function_ = (cov_function_t *)ui_combo_get_current_data(
+	    	    	    	    GTK_COMBO(function_combo_));
+
     update();
     spin_update();
 }
@@ -171,15 +255,15 @@ summarywin_t::populate()
 void
 summarywin_t::spin_update()
 {
-    GtkWidget *entry = GTK_COMBO(range_combo_)->entry;
-    char *filename = gtk_entry_get_text(GTK_ENTRY(entry));
     GtkAdjustment *adj;
     unsigned long lastline;
     
-    lastline = cov_file_t::find(filename)->get_last_location()->lineno;
+    assert(file_ != 0);
+    lastline = file_->get_last_location()->lineno;
     
 #if DEBUG
-    fprintf(stderr, "summarywin_t::spin_update: %s[1-%lu]\n", filename, lastline);
+    fprintf(stderr, "summarywin_t::spin_update: %s[1-%lu]\n",
+    	    	file_->minimal_name(), lastline);
 #endif
 
     adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(range_start_spin_));
@@ -191,21 +275,6 @@ summarywin_t::spin_update()
     adj->lower = 1;
     adj->upper = lastline;
     gtk_adjustment_changed(adj);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
-summarywin_t::get_range(
-    char **filenamep,
-    unsigned long *startlinep,
-    unsigned long *endlinep)
-{
-    *filenamep = gtk_entry_get_text(GTK_ENTRY(GTK_COMBO(range_combo_)->entry));
-    *startlinep = gtk_spin_button_get_value_as_int(
-	    	    	    GTK_SPIN_BUTTON(range_start_spin_));
-    *endlinep = gtk_spin_button_get_value_as_int(
-	    	    	    GTK_SPIN_BUTTON(range_end_spin_));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -271,7 +340,22 @@ summarywin_t::update()
 #endif
     
     grey_items();
-    
+
+    populating_ = TRUE;
+    assert(file_ != 0);    
+    ui_combo_set_current_data(GTK_COMBO(filename_combo_), (gpointer)file_);
+    ui_combo_set_current_data(GTK_COMBO(range_combo_), (gpointer)file_);
+    assert(function_ != 0);    
+    ui_combo_set_current_data(GTK_COMBO(function_combo_), (gpointer)function_);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(scope_radio_[scope_]), TRUE);
+    if (start_ > 0)
+    	gtk_spin_button_set_value(GTK_SPIN_BUTTON(range_start_spin_),
+	    	    	    	  (gfloat)start_);
+    if (end_ > 0)
+    	gtk_spin_button_set_value(GTK_SPIN_BUTTON(range_end_spin_),
+	    	    	    	  (gfloat)end_);
+    populating_ = FALSE;
+
     switch (scope_)
     {
 
@@ -281,47 +365,39 @@ summarywin_t::update()
 	break;
 
     case SU_FILENAME:
-    	{
-	    cov_file_t *f = (cov_file_t *)ui_combo_get_current_data(
-	    	    	    	    	    GTK_COMBO(filename_combo_));
-
-	    set_title(f->minimal_name());
-    	    f->calc_stats(&stats);
-	}
+    	assert(file_ != 0);
+	set_title(file_->minimal_name());
+    	file_->calc_stats(&stats);
 	break;
 
     case SU_FUNCTION:
-    	{
-	    cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
-	    	    	    	    	GTK_COMBO(function_combo_));
-
-	    set_title(fn->name());
-    	    fn->calc_stats(&stats);
-	}
+    	assert(function_ != 0);
+	set_title(function_->name());
+    	function_->calc_stats(&stats);
 	break;
 
     case SU_RANGE:
     	{
-	    char *filename;
     	    cov_location_t start, end;
 	    char *title;
 
-    	    get_range(&filename, &start.lineno, &end.lineno);
-    	    end.filename = start.filename = cov_file_t::unminimise_name(filename);
+    	    assert(file_ != 0);
+            start.lineno = start_;
+	    end.lineno = end_;
+    	    end.filename = start.filename = (char *)file_->name();
 
 #if DEBUG
     	    fprintf(stderr, "summarywin_update: SU_RANGE %s %ld-%ld\n",
-	    	    	    	start.filename, start.lineno, end.lineno);
+	    	    	    file_->minimal_name(), start.lineno, end.lineno);
 #endif
 				
     	    title = g_strdup_printf("%s:%lu-%lu",
-	    	    	    	    filename,
+	    	    	    	    file_->minimal_name(),
 	    	    	    	    start.lineno, end.lineno);
 	    set_title(title);
 	    g_free(title);
 	    
     	    cov_range_calc_stats(&start, &end, &stats);
-	    g_free(start.filename);
 	}
 	break;
 	
@@ -369,7 +445,9 @@ on_summary_overall_radio_toggled(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    sw->scope_ = SU_OVERALL;
+    if (sw->populating_)
+    	return;
+    sw->scope_ = summarywin_t::SU_OVERALL;
     sw->update();   
 }
 
@@ -378,7 +456,9 @@ on_summary_filename_radio_toggled(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    sw->scope_ = SU_FILENAME;
+    if (sw->populating_)
+    	return;
+    sw->scope_ = summarywin_t::SU_FILENAME;
     sw->update();   
 }
 
@@ -387,6 +467,11 @@ on_summary_filename_entry_changed(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
+    if (sw->populating_)
+    	return;
+    assert(sw->scope_ == summarywin_t::SU_FILENAME);
+    sw->file_ = (cov_file_t *)ui_combo_get_current_data(
+	    	    	    	    GTK_COMBO(sw->filename_combo_));
     sw->update();   
 }
 
@@ -394,10 +479,11 @@ GLADE_CALLBACK void
 on_summary_filename_view_clicked(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
-    cov_file_t *f = (cov_file_t *)ui_combo_get_current_data(
-	    	    	    	    GTK_COMBO(sw->filename_combo_));
 
-    sourcewin_t::show_file(f);
+    assert(sw->scope_ == summarywin_t::SU_FILENAME);
+    assert(sw->file_ != 0);
+    assert(!sw->populating_);
+    sourcewin_t::show_file(sw->file_);
 }
 
 GLADE_CALLBACK void
@@ -405,7 +491,9 @@ on_summary_function_radio_toggled(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    sw->scope_ = SU_FUNCTION;
+    if (sw->populating_)
+    	return;
+    sw->scope_ = summarywin_t::SU_FUNCTION;
     sw->update();   
 }
 
@@ -414,17 +502,23 @@ on_summary_function_entry_changed(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    sw->update();   
+    if (sw->populating_)
+    	return;
+    assert(sw->scope_ == summarywin_t::SU_FUNCTION);
+    sw->function_ = (cov_function_t *)ui_combo_get_current_data(
+	    	    	    	    	GTK_COMBO(sw->function_combo_));
+    sw->update();
 }
 
 GLADE_CALLBACK void
 on_summary_function_view_clicked(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
-    cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
-	    	    	    	GTK_COMBO(sw->function_combo_));
 
-    sourcewin_t::show_function(fn);
+    assert(sw->scope_ == summarywin_t::SU_FUNCTION);
+    assert(sw->function_ != 0);
+    assert(!sw->populating_);
+    sourcewin_t::show_function(sw->function_);
 }
 
 GLADE_CALLBACK void
@@ -432,7 +526,9 @@ on_summary_range_radio_toggled(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    sw->scope_ = SU_RANGE;
+    if (sw->populating_)
+    	return;
+    sw->scope_ = summarywin_t::SU_RANGE;
     sw->update();   
 }
 
@@ -441,6 +537,11 @@ on_summary_range_entry_changed(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
     
+    if (sw->populating_)
+    	return;
+    assert(sw->scope_ == summarywin_t::SU_RANGE);
+    sw->file_ = (cov_file_t *)ui_combo_get_current_data(
+	    	    	    	    	GTK_COMBO(sw->range_combo_));
     sw->spin_update();
     sw->update();   
 }
@@ -450,6 +551,11 @@ on_summary_range_start_spin_changed(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
+    if (sw->populating_)
+    	return;
+    assert(sw->scope_ == summarywin_t::SU_RANGE);
+    sw->start_ = gtk_spin_button_get_value_as_int(
+	    	    	    GTK_SPIN_BUTTON(sw->range_start_spin_));
     sw->update();   
 }
 
@@ -458,6 +564,11 @@ on_summary_range_end_spin_changed(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
+    if (sw->populating_)
+    	return;
+    assert(sw->scope_ == summarywin_t::SU_RANGE);
+    sw->end_ = gtk_spin_button_get_value_as_int(
+	    	    	    GTK_SPIN_BUTTON(sw->range_end_spin_));
     sw->update();   
 }
 
@@ -465,11 +576,11 @@ GLADE_CALLBACK void
 on_summary_range_view_clicked(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
-    unsigned long start, end;
-    char *filename;
     
-    sw->get_range(&filename, &start, &end);
-    sourcewin_t::show_lines(filename, start, end);
+    assert(sw->scope_ == summarywin_t::SU_RANGE);
+    assert(sw->file_ != 0);
+    assert(!sw->populating_);
+    sourcewin_t::show_lines(sw->file_->name(), sw->start_, sw->end_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

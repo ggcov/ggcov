@@ -21,17 +21,8 @@
 #define _ggcov_summarywin_H_ 1
 
 #include "window.H"
+#include "cov.H"
 
-typedef enum
-{
-    SU_OVERALL,
-    SU_FILENAME,
-    SU_FUNCTION,
-    SU_RANGE,
-
-    SU_NSCOPES
-} summarywin_scope_t;
-    
 GLADE_CALLBACK void on_summary_close_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_exit_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_overall_radio_toggled(GtkWidget *w, gpointer data);
@@ -53,7 +44,24 @@ public:
     summarywin_t();
     ~summarywin_t();
 
+    enum scope_t
+    {
+	SU_OVERALL,
+	SU_FILENAME,
+	SU_FUNCTION,
+	SU_RANGE,
+
+	SU_NSCOPES
+    };
+    
+    static void show_overall();
+    static void show_file(const cov_file_t *);
+    static void show_function(const cov_function_t *);
+    static void show_lines(const char *filename, unsigned long start,
+    	    	    	   unsigned long end);
+    
 private:
+    static summarywin_t *instance();
     void populate();
     void spin_update();
     void update();
@@ -61,11 +69,15 @@ private:
     {
     	return (summarywin_t *)window_t::from_widget(w);
     }
-    void get_range(char **filenamep, unsigned long *startlinep,
-    	    	   unsigned long *endlinep);
     void grey_items();
 
-    summarywin_scope_t scope_;
+    static list_t<summarywin_t> instances_;
+
+    scope_t scope_;
+    const cov_file_t *file_;	    	/* SU_FILENAME, SU_RANGE */
+    const cov_function_t *function_;	/* SU_FUNCTION */
+    unsigned long start_, end_;     	/* SU_RANGE */
+    
     GtkWidget *scope_radio_[SU_NSCOPES];
     
     GtkWidget *filename_combo_;
@@ -76,6 +88,7 @@ private:
     GtkWidget *range_start_spin_;
     GtkWidget *range_end_spin_;
     GtkWidget *range_view_;
+    gboolean populating_;
 
     GtkWidget *lines_label_;
     GtkWidget *lines_progressbar_;
