@@ -92,6 +92,7 @@ private:
     gboolean needs_call() const;
     void add_call(const char *callname);
     char *pop_call();
+    gboolean contains_unsuppressed_lines() const;
 
     cov_function_t *function_;
     unsigned int idx_; 	    /* serial number in function */

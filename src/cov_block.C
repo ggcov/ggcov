@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.10 2003-07-13 00:21:16 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.11 2004-02-08 10:52:58 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -103,6 +103,23 @@ cov_block_t::pop_call()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_block_t::contains_unsuppressed_lines() const
+{
+    list_iterator_t<cov_location_t> liter;
+
+    for (liter = locations_.first() ; liter != (cov_location_t *)0 ; ++liter)
+    {
+	cov_line_t *ln = cov_line_t::find(*liter);
+
+    	if (!ln->is_suppressed())
+	    return TRUE;
+    }
+    return FALSE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
  * Calculate stats on a block.  I don't really understand
  * the meaning of the arc bits, but copied the implications
@@ -112,8 +129,8 @@ cov_block_t::pop_call()
 void
 cov_block_t::calc_stats(cov_stats_t *stats) const
 {
-     list_iterator_t<cov_arc_t> aiter;
-     list_iterator_t<cov_location_t> liter;
+    list_iterator_t<cov_arc_t> aiter;
+    list_iterator_t<cov_location_t> liter;
 
     /*
      * Calculate call and branches coverage.
@@ -124,6 +141,9 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
 
     	if (a->is_fall_through())
 	    continue;	/* control flow does not branch */
+	    
+	if (a->is_suppressed())
+	    continue;	    /* from suppressed line */
 
 	if (a->is_call())
 	{
@@ -146,7 +166,11 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
      */
     for (liter = locations_.first() ; liter != (cov_location_t *)0 ; ++liter)
     {
-	const GList *blocks = cov_line_t::find(*liter)->blocks();
+	cov_line_t *ln = cov_line_t::find(*liter);
+	const GList *blocks = ln->blocks();
+
+    	if (ln->is_suppressed())
+	    continue;
 
 	/*
 	 * Compensate for multiple blocks on a line by
