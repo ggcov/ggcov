@@ -19,9 +19,10 @@
 
 #include "callgraph2win.H"
 #include "cov.H"
+#include "prefs.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: callgraph2win.C,v 1.4 2002-12-29 14:08:33 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.5 2002-12-31 14:39:28 gnb Exp $");
 
 #define CANVAS_WIDTH	    30.0
 #define CANVAS_HEIGHT	    30.0
@@ -114,14 +115,15 @@ callgraph2win_t::add_callnode(
     GnomeCanvasPoints *points;
     cov_stats_t stats;
     char *label;
-    const char *fn_color = 0;
+    const GdkColor *fn_color = 0;
     GnomeCanvasGroup *root = gnome_canvas_root(GNOME_CANVAS(canvas_));
 
-
+#if DEBUG
     fprintf(stderr, "callgraph2win_t::add_callnode: %s:%s\n",
     	(cn->function == 0 ? "library" : cn->function->file()->minimal_name()),
 	cn->name);
-    
+#endif
+
     if (cn->function != 0)
     {
     	double lines_pc;
@@ -136,16 +138,16 @@ callgraph2win_t::add_callnode(
     	    cn->function->file()->minimal_name(),
 	    lines_pc);
 	if (stats.lines_executed == stats.lines)
-	    fn_color = "green";
+	    fn_color = &prefs.covered_background;
 	else if (stats.lines_executed > 0)
-	    fn_color = "yellow";
+	    fn_color = &prefs.partcovered_background;
 	else
-	    fn_color = "red";
+	    fn_color = &prefs.uncovered_background;
     }
     else
     {
 	label = g_strdup_printf("%s", cn->name);
-    	fn_color = "grey50";
+    	fn_color = &prefs.uninstrumented_background;
     }
 
     y = (ystart + yend)/2.0;
@@ -156,7 +158,7 @@ callgraph2win_t::add_callnode(
 		"y1",	    	y,
 		"x2", 	    	x+BOX_WIDTH,
 		"y2",	    	y+BOX_HEIGHT,
-		"fill_color",	fn_color,
+		"fill_color_gdk",fn_color,
 		"outline_color","black",
 		0);
     ctext = gnome_canvas_item_new(
@@ -196,6 +198,11 @@ callgraph2win_t::add_callnode(
 	points->coords[2] = nx,
 	points->coords[3] = ny + ystep/2.0 + BOX_HEIGHT/2.0;
 
+	if (ca->count)
+	    fn_color = &prefs.covered_foreground;
+	else
+	    fn_color = &prefs.uncovered_foreground;
+
 	cline = gnome_canvas_item_new(
     	    	    root,
     	    	    GNOME_TYPE_CANVAS_LINE,
@@ -204,7 +211,7 @@ callgraph2win_t::add_callnode(
 		    "arrow_shape_a",	ARROW_SIZE,
 		    "arrow_shape_b",	ARROW_SIZE,
 		    "arrow_shape_c",	ARROW_SIZE/4.0,
-		    "fill_color",   	(ca->count ? "green" : "red"),
+		    "fill_color_gdk",	fn_color,
 		    0);
 
     	add_callnode(ca->to, nx, ny, ny+ystep);
