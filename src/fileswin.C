@@ -25,7 +25,7 @@
 #include "prefs.H"
 #include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.14 2003-06-09 02:05:02 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.15 2003-06-09 02:44:00 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -573,7 +573,7 @@ on_files_ctree_button_press_event(
     GdkEvent *event,
     gpointer data)
 {
-#if !GTK2   /* TODO */
+#if !GTK2
     int row, col;
     file_rec_t *fr;
 
