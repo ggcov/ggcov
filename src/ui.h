@@ -83,5 +83,11 @@ void ui_clist_init_column_arrow(GtkCList *, int col);
 void ui_clist_set_sort_column(GtkCList *, int col);
 void ui_clist_set_sort_type(GtkCList *, GtkSortType ty);
 
+/* handles clist & ctree */
+gpointer ui_clist_double_click_data(GtkCList *, GdkEvent *);
+#if GTK2
+gpointer ui_tree_view_double_click_data(GtkTreeView *, GdkEvent *, int column);
+#endif
+
 
 #endif /* _ggcov_ui_h_ */

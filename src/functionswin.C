@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: functionswin.C,v 1.9 2003-06-09 02:47:58 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.10 2003-06-09 05:26:02 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -394,52 +394,18 @@ on_functions_clist_button_press_event(
     GdkEvent *event,
     gpointer data)
 {
+    cov_function_scope_t *fs;
+
 #if !GTK2
-    int row, col;
-    cov_function_scope_t *fs;
-
-    if (event->type == GDK_2BUTTON_PRESS &&
-	gtk_clist_get_selection_info(GTK_CLIST(w),
-	    	    	    	     (int)event->button.x,
-				     (int)event->button.y,
-				     &row, &col))
-    {
-#if DEBUG
-    	fprintf(stderr, "on_functions_clist_button_press_event: row=%d col=%d\n",
-	    	    	row, col);
-#endif
-	fs = (cov_function_scope_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
-	
-	sourcewin_t::show_function(fs->function());
-    }
-    return FALSE;
+    fs = (cov_function_scope_t *)ui_clist_double_click_data(GTK_CLIST(w), event);
 #else
-    GtkTreeModel *model;
-    GtkTreePath *path = 0;
-    GtkTreeIter iter;
-    cov_function_scope_t *fs;
+    fs = (cov_function_scope_t *)ui_tree_view_double_click_data(GTK_TREE_VIEW(w),
+    	    	    	    	    event, COL_CLOSURE);
+#endif
 
-    if (event->type == GDK_2BUTTON_PRESS &&
-    	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(w),
-	    	    	    	     (int)event->button.x,
-				     (int)event->button.y,
-				     &path, (GtkTreeViewColumn **)0,
-				     (gint *)0, (gint *)0))
-    {
-#if DEBUG
-    	string_var path_str = gtk_tree_path_to_string(path);
-    	fprintf(stderr, "on_functions_clist_button_press_event: path=\"%s\"\n",
-	    	    	path_str.data());
-#endif
-    	model = gtk_tree_view_get_model(GTK_TREE_VIEW(w));
-    	gtk_tree_model_get_iter(model, &iter, path);
-	gtk_tree_model_get(model, &iter, COL_CLOSURE, &fs, -1);
-	gtk_tree_path_free(path);
-	
+    if (fs != 0)	
 	sourcewin_t::show_function(fs->function());
-    }
     return FALSE;
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

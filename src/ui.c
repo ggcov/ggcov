@@ -22,7 +22,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.18 2003-06-08 06:34:07 gnb Exp $");
+CVSID("$Id: ui.c,v 1.19 2003-06-09 05:26:02 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -607,6 +607,60 @@ ui_clist_set_sort_type(GtkCList *clist, GtkSortType type)
       (clist->sort_type == GTK_SORT_ASCENDING ? GTK_ARROW_DOWN : GTK_ARROW_UP),
       GTK_SHADOW_OUT);
 }
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gpointer
+ui_clist_double_click_data(GtkCList *clist, GdkEvent *event)
+{
+    int row, col;
+
+    if (event->type == GDK_2BUTTON_PRESS &&
+	gtk_clist_get_selection_info(clist,
+	    	    	    	     (int)event->button.x,
+				     (int)event->button.y,
+				     &row, &col))
+    {
+#if DEBUG
+    	fprintf(stderr, "ui_clist_double_click_data: row=%d col=%d\n",
+	    	    	row, col);
+#endif
+	return gtk_clist_get_row_data(clist, row);
+    }
+    return 0;
+}
+
+#if GTK2
+gpointer
+ui_tree_view_double_click_data(GtkTreeView *tv, GdkEvent *event, int column)
+{
+    GtkTreeModel *model;
+    GtkTreePath *path = 0;
+    GtkTreeIter iter;
+    gpointer *data = 0;
+
+    if (event->type == GDK_2BUTTON_PRESS &&
+    	gtk_tree_view_get_path_at_pos(tv,
+	    	    	    	     (int)event->button.x,
+				     (int)event->button.y,
+				     &path, (GtkTreeViewColumn **)0,
+				     (gint *)0, (gint *)0))
+    {
+#if DEBUG
+    	string_var path_str = gtk_tree_path_to_string(path);
+    	fprintf(stderr, "ui_tree_view_double_click_data: path=\"%s\"\n",
+	    	    	path_str.data());
+#endif
+    	model = gtk_tree_view_get_model(tv);
+    	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get(model, &iter, column, &data, -1);
+	gtk_tree_path_free(path);
+	
+	return data;
+    }
+    return 0;
+}
+#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

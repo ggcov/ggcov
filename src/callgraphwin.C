@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.11 2003-06-09 04:56:20 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.12 2003-06-09 05:26:02 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -402,111 +402,43 @@ on_callgraph_function_view_clicked(GtkWidget *w, gpointer data)
 GLADE_CALLBACK gboolean
 on_callgraph_ancestors_clist_button_press_event(
     GtkWidget *w,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer data)
 {
+    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
+    cov_callarc_t *ca;
+
 #if !GTK2
-    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    int row, col;
-    cov_callarc_t *ca;
-
-    if (event->type == GDK_2BUTTON_PRESS &&
-	gtk_clist_get_selection_info(GTK_CLIST(w),
-	    	    	    	     (int)event->x, (int)event->y,
-				     &row, &col))
-    {
-#if DEBUG
-    	fprintf(stderr, "on_callgraph_ancestors_clist_button_press_event: row=%d col=%d\n",
-	    	    	row, col);
-#endif
-	ca = (cov_callarc_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
-	
-	cw->set_node(ca->from);
-    }
-    return FALSE;
+    ca = (cov_callarc_t *)ui_clist_double_click_data(GTK_CLIST(w), event);
 #else
-    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    GtkTreeModel *model;
-    GtkTreePath *path = 0;
-    GtkTreeIter iter;
-    cov_callarc_t *ca;
+    ca = (cov_callarc_t *)ui_tree_view_double_click_data(GTK_TREE_VIEW(w), event,
+    	    	    	    	    	    	      COL_CLOSURE);
+#endif
 
-    if (event->type == GDK_2BUTTON_PRESS &&
-    	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(w),
-	    	    	    	     (int)event->x,
-				     (int)event->y,
-				     &path, (GtkTreeViewColumn **)0,
-				     (gint *)0, (gint *)0))
-    {
-#if DEBUG
-    	string_var path_str = gtk_tree_path_to_string(path);
-    	fprintf(stderr, "on_callgraph_ancestors_clist_button_press_event: path=\"%s\"\n",
-	    	    	path_str.data());
-#endif
-    	model = gtk_tree_view_get_model(GTK_TREE_VIEW(w));
-    	gtk_tree_model_get_iter(model, &iter, path);
-	gtk_tree_model_get(model, &iter, COL_CLOSURE, &ca, -1);
-	gtk_tree_path_free(path);
-	
+    if (ca != 0)
 	cw->set_node(ca->from);
-    }
     return FALSE;
-#endif
 }
 
 GLADE_CALLBACK gboolean
 on_callgraph_descendants_clist_button_press_event(
     GtkWidget *w,
-    GdkEventButton *event,
+    GdkEvent *event,
     gpointer data)
 {
+    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
+    cov_callarc_t *ca;
+
 #if !GTK2
-    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    int row, col;
-    cov_callarc_t *ca;
-
-    if (event->type == GDK_2BUTTON_PRESS &&
-	gtk_clist_get_selection_info(GTK_CLIST(w),
-	    	    	    	     (int)event->x, (int)event->y,
-				     &row, &col))
-    {
-#if DEBUG
-    	fprintf(stderr, "on_callgraph_descendants_clist_button_press_event: row=%d col=%d\n",
-	    	    	row, col);
-#endif
-	ca = (cov_callarc_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
-	
-	cw->set_node(ca->to);
-    }
-    return FALSE;
+    ca = (cov_callarc_t *)ui_clist_double_click_data(GTK_CLIST(w), event);
 #else
-    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    GtkTreeModel *model;
-    GtkTreePath *path = 0;
-    GtkTreeIter iter;
-    cov_callarc_t *ca;
+    ca = (cov_callarc_t *)ui_tree_view_double_click_data(GTK_TREE_VIEW(w), event,
+    	    	    	    	    	    	      COL_CLOSURE);
+#endif
 
-    if (event->type == GDK_2BUTTON_PRESS &&
-    	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(w),
-	    	    	    	     (int)event->x,
-				     (int)event->y,
-				     &path, (GtkTreeViewColumn **)0,
-				     (gint *)0, (gint *)0))
-    {
-#if DEBUG
-    	string_var path_str = gtk_tree_path_to_string(path);
-    	fprintf(stderr, "on_callgraph_descendants_clist_button_press_event: path=\"%s\"\n",
-	    	    	path_str.data());
-#endif
-    	model = gtk_tree_view_get_model(GTK_TREE_VIEW(w));
-    	gtk_tree_model_get_iter(model, &iter, path);
-	gtk_tree_model_get(model, &iter, COL_CLOSURE, &ca, -1);
-	gtk_tree_path_free(path);
-	
+    if (ca != 0)	
 	cw->set_node(ca->to);
-    }
     return FALSE;
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

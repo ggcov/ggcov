@@ -26,9 +26,9 @@
 GLADE_CALLBACK void on_callgraph_function_entry_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_callgraph_function_view_clicked(GtkWidget *w, gpointer data);
 GLADE_CALLBACK gboolean on_callgraph_ancestors_clist_button_press_event(
-			  GtkWidget *w, GdkEventButton *event, gpointer data);
+			  GtkWidget *w, GdkEvent *event, gpointer data);
 GLADE_CALLBACK gboolean on_callgraph_descendants_clist_button_press_event(
-			  GtkWidget *w, GdkEventButton *event, gpointer data);
+			  GtkWidget *w, GdkEvent *event, gpointer data);
 
 class callgraphwin_t : public window_t
 {
@@ -72,9 +72,9 @@ private:
     friend void on_callgraph_function_entry_changed(GtkWidget *w, gpointer data);
     friend void on_callgraph_function_view_clicked(GtkWidget *w, gpointer data);
     friend gboolean on_callgraph_ancestors_clist_button_press_event(
-			      GtkWidget *w, GdkEventButton *event, gpointer data);
+			      GtkWidget *w, GdkEvent *event, gpointer data);
     friend gboolean on_callgraph_descendants_clist_button_press_event(
-			      GtkWidget *w, GdkEventButton *event, gpointer data);
+			      GtkWidget *w, GdkEvent *event, gpointer data);
 };
 
 #endif /* _ggcov_callgraphwin_H_ */

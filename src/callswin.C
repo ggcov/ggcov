@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.9 2003-06-09 04:06:51 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.10 2003-06-09 05:26:02 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -471,58 +471,19 @@ on_calls_to_function_view_clicked(GtkWidget *w, gpointer data)
 GLADE_CALLBACK gboolean
 on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data)
 {
+    cov_arc_t *a;
+    const cov_location_t *loc;
+
 #if !GTK2
-    int row, col;
-    cov_arc_t *a;
-    const cov_location_t *loc;
-
-    if (event->type == GDK_2BUTTON_PRESS &&
-	gtk_clist_get_selection_info(GTK_CLIST(w),
-	    	    	    	     (int)event->button.x,
-				     (int)event->button.y,
-				     &row, &col))
-    {
-#if DEBUG
-    	fprintf(stderr, "on_calls_clist_button_press_event: row=%d col=%d\n",
-	    	    	row, col);
-#endif
-	a = (cov_arc_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
-	
-	loc = a->get_from_location();
-	if (loc != 0)
-	    sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);
-    }
-    return FALSE;
+    a = (cov_arc_t *)ui_clist_double_click_data(GTK_CLIST(w), event);
 #else
-    GtkTreeModel *model;
-    GtkTreePath *path = 0;
-    GtkTreeIter iter;
-    cov_arc_t *a;
-    const cov_location_t *loc;
+    a = (cov_arc_t *)ui_tree_view_double_click_data(GTK_TREE_VIEW(w), event,
+    	    	    	    	    	    	      COL_CLOSURE);
+#endif
 
-    if (event->type == GDK_2BUTTON_PRESS &&
-    	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(w),
-	    	    	    	     (int)event->button.x,
-				     (int)event->button.y,
-				     &path, (GtkTreeViewColumn **)0,
-				     (gint *)0, (gint *)0))
-    {
-#if DEBUG
-    	string_var path_str = gtk_tree_path_to_string(path);
-    	fprintf(stderr, "on_calls_clist_button_press_event: path=\"%s\"\n",
-	    	    	path_str.data());
-#endif
-    	model = gtk_tree_view_get_model(GTK_TREE_VIEW(w));
-    	gtk_tree_model_get_iter(model, &iter, path);
-	gtk_tree_model_get(model, &iter, COL_CLOSURE, &a, -1);
-	gtk_tree_path_free(path);
-	
-	loc = a->get_from_location();
-	if (loc != 0)
-	    sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);
-    }
+    if (a != 0 && (loc = a->get_from_location()) != 0)
+	sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);
     return FALSE;
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
