@@ -50,6 +50,7 @@ private:
     static prefswin_t *instance_;
 
     GtkWidget *reuse_srcwin_check_;
+    GtkWidget *reuse_summwin_check_;
 
     GtkWidget *color_pickers_[8];
 
