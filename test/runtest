@@ -3,7 +3,9 @@
 TESTS=
 SUPPRESS=
 GIVEN=no
-LOGFILE=log.`./platform.sh`.`date +%Y%m%dT%H%M%S`
+PLATFORM=`./platform.sh`
+DATE=`date +%Y%m%dT%H%M%S`
+LOGFILE=log.$PLATFORM.$DATE
 
 usage ()
 {
@@ -80,7 +82,17 @@ TESTS="$T2"
 # exit 1
 
 echo "Running tests, logfile is $LOGFILE"
-rm -f $LOGFILE
+(
+    echo "hostname: \"`hostname`\""
+    echo "date: \"$DATE\""
+    echo "uname -s: \"`uname -s`\""
+    echo "uname -m: \"`uname -m`\""
+    echo "uname -r: \"`uname -r`\""
+    for f in /etc/*-release _dummy ; do
+        [ $f = _dummy ] || echo "head -1 $f: \"`head -1 $f 2>/dev/null`\""
+    done
+    echo "platform: \"$PLATFORM\""
+) > $LOGFILE
 
 NRUN=0
 NPASS=0
@@ -88,16 +100,18 @@ for t in $TESTS ; do
     echo -n $t
     (
 	echo "================================================================================"
-	echo "==== $t"
+	echo "==== $t start"
     	cd $t
 	./runtest
     ) >> $LOGFILE 2>&1
     if [ $? = 0 ]; then
-	echo " PASS"
+	RESULT=PASS
 	NPASS=`expr $NPASS + 1`
     else
-	echo " FAIL"
+	RESULT=FAIL
     fi
+    echo " $RESULT"
+    echo "==== $t $RESULT" >> $LOGFILE
     NRUN=`expr $NRUN + 1`
 done
 
