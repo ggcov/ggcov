@@ -19,10 +19,10 @@
 
 #include "sourcewin.H"
 #include "cov.h"
-#include "estring.h"
+#include "estring.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.1 2002-12-15 15:53:24 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.2 2002-12-22 02:48:26 gnb Exp $");
 
 extern GList *filenames;
 
@@ -114,8 +114,9 @@ sourcewin_t::on_source_filename_activate(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     const char *filename = (const char *)userdata;
+    estring fullname = cov_unminimise_filename(filename);
     
-    sw->set_filename(filename);
+    sw->set_filename(fullname.data(), filename);
 }
 
 
@@ -188,7 +189,7 @@ sourcewin_t::delayed_function_activate(gpointer userdata)
     /* This only selects the span of the lines which contain executable code */		    
     sw->select_region(first->lineno, last->lineno);
 
-    g_free(rec);
+    delete rec;
     return FALSE;   /* and don't call me again! */
 }
 
@@ -197,7 +198,7 @@ sourcewin_t::on_source_function_activate(GtkWidget *w, gpointer userdata)
 {
     sourcewin_hacky_rec_t *rec;
     
-    rec = new(sourcewin_hacky_rec_t);
+    rec = new sourcewin_hacky_rec_t;
     rec->sourcewin = sourcewin_t::from_widget(w);
     rec->function = (cov_function_t *)userdata;
 
@@ -443,9 +444,9 @@ sourcewin_t::update()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-sourcewin_t::set_filename(const char *filename)
+sourcewin_t::set_filename(const char *filename, const char *display_fname)
 {
-    set_title(filename);
+    set_title((display_fname == 0 ? filename : display_fname));
     strassign(filename_, filename);
 
     if (shown_)
@@ -460,6 +461,14 @@ sourcewin_t::set_filename(const char *filename)
 void
 sourcewin_t::select_region(unsigned long startline, unsigned long endline)
 {
+    int endoff;
+    
+    assert(offsets_by_line_->len > 0);
+
+    if (startline < 1)
+    	startline = 1;
+    if (endline < 1)
+    	endline = startline;
     if (startline > offsets_by_line_->len)
     	startline = offsets_by_line_->len;
     if (endline > offsets_by_line_->len)
@@ -467,9 +476,20 @@ sourcewin_t::select_region(unsigned long startline, unsigned long endline)
     if (startline > endline)
     	return;
 	
+    assert(startline >= 1);
+    assert(startline <= offsets_by_line_->len);
+    assert(endline >= 1);
+    assert(endline <= offsets_by_line_->len);
+    
+    /* set endoff to the first location after the last line to be selected */
+    if (endline == offsets_by_line_->len)
+	endoff = -1;
+    else
+	endoff = g_array_index(offsets_by_line_, unsigned int, endline)-1;
+
     gtk_editable_select_region(GTK_EDITABLE(text_),
     	    g_array_index(offsets_by_line_, unsigned int, startline-1),
-    	    g_array_index(offsets_by_line_, unsigned int, endline)-1);
+    	    endoff);
 }
 
 /* This mostly works.  Not totally predictable but good enough for now */
@@ -492,8 +512,16 @@ sourcewin_t::show_lines(
     unsigned long endline)
 {
     sourcewin_t *sw = new sourcewin_t();
+    estring fullname = cov_unminimise_filename(filename);
+    estring displayname = cov_minimise_filename(fullname.data());
+
+#if DEBUG
+    fprintf(stderr, "sourcewin_t::show_lines(\"%s\", %lu, %lu) => \"%s\"\n",
+    	    	filename, startline, endline, fullname.data());
+#endif
     
-    sw->set_filename(filename);
+    sw->set_filename(fullname.data(), displayname.data());
+    sw->show();
     if (startline > 0)
     {
 	sw->ensure_visible(startline);
