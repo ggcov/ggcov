@@ -41,14 +41,15 @@ find $FILES $MAXDEPTH -type f -name '*.[chCH]' | while read file ; do
     echo "=$file"
     egrep '^[ \t]*#[ \t]*(if|ifdef|ifndef)[ \t]' $file |\
     	sed -e 's/^[ \t]*#[ \t]*[a-z]\+//g' \
+	    -e 's|/\*.*\*/||g' \
 	    -e 's/defined[ \t]*(\([^)]\+\))/\1/g' \
 	    -e 's/\<[0-9]\+\>//g' \
 	    -e 's/||//g' \
 	    -e 's/&&//g' \
-	    -e 's/>//g' \
 	    -e 's/>=//g' \
-	    -e 's/<//g' \
+	    -e 's/>//g' \
 	    -e 's/<=//g' \
+	    -e 's/<//g' \
 	    -e 's/==//g' \
 	    -e 's/!=//g' \
 	    -e 's/(//g' \
