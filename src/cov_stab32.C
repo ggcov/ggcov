@@ -20,7 +20,9 @@
 #include "cov_specific.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_stab32.C,v 1.1 2003-06-14 13:57:30 gnb Exp $");
+#ifdef HAVE_LIBBFD
+
+CVSID("$Id: cov_stab32.C,v 1.2 2003-07-09 01:14:01 gnb Exp $");
 
 /*
  * Machine-specific code to read 32-bit .stabs entries from an
@@ -155,5 +157,6 @@ cov_stab32_filename_scanner_t::next()
     return 0;	/* end of iteration */
 }
 
+#endif /*HAVE_LIBBFD*/
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
