@@ -13,11 +13,6 @@ x  Show block boundaries in the Source window using one of:
    3. a column showing block numbers(s) -- clicking on a block
       number selects the block.
    
-x  Reorganise the text widget of the Source window so that there are
-   (passive) column headers like a clist.  May require some trickery,
-   even writing a new widget.  It might be useful to use multiple
-   text widgets side by side to implement columns.
-   
 x  Add a column to the Source window showing a comma-seperated list
    of block execution counts for each line.
    
@@ -86,6 +81,11 @@ x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
 
+x  Reorganise the text widget of the Source window so that there are
+   (passive) column headers like a clist.  May require some trickery,
+   even writing a new widget.  It might be useful to use multiple
+   text widgets side by side to implement columns.
+   
 x  Add a menu command to the Source window to go to the Summary
    window for that source file.
    
