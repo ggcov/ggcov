@@ -11,3 +11,4 @@ Makefile
 buildrpm.d
 ggcov.spec
 ggcov-*.tar.gz
+version.m4
