@@ -6,12 +6,12 @@ VERSION=$2
 
 SPECFILE=${PACKAGE}.spec
 TARBALL=${PACKAGE}-${VERSION}.tar.gz
-BUILDDIR=buildrpm.d
+RPMDIR=rpm.d
 
 #echo PACKAGE=$PACKAGE
 #echo VERSION=$VERSION
 #echo TARBALL=$TARBALL
-#echo BUILDDIR=$BUILDDIR
+#echo RPMDIR=$RPMDIR
 #exit 1
 
 set -x
@@ -35,12 +35,14 @@ if [ ! -f $TARBALL ]; then
     fi
 fi
 
-/bin/rm -rf $BUILDDIR
-mkdir -p $BUILDDIR
-(cd $BUILDDIR ; mkdir -p BUILD RPMS/i386 RPMS/`uname -m` SPECS SRPMS )
+/bin/rm -rf $RPMDIR
+mkdir -p $RPMDIR
+(cd $RPMDIR ; mkdir -p BUILD RPMS/i386 RPMS/`uname -m` SPECS SRPMS )
 
 rpm -bb \
-    --define "_topdir $PWD/$BUILDDIR" \
+    --define "_topdir $PWD/$RPMDIR" \
     --define "_sourcedir $PWD" \
     --verbose \
     $SPECFILE
+
+mv -f $(find $RPMDIR/RPMS -type f -name \*.rpm) .
