@@ -22,7 +22,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.17 2003-06-01 08:49:59 gnb Exp $");
+CVSID("$Id: ui.c,v 1.18 2003-06-08 06:34:07 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -84,6 +84,12 @@ ui_combo_set_current_data(GtkCombo *combo, gpointer data)
 	    return;
 	}
     }
+}
+
+void
+ui_combo_clear(GtkCombo *combo)
+{
+    gtk_list_clear_items(GTK_LIST(combo->list), 0, -1);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

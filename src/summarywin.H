@@ -60,6 +60,8 @@ public:
     
 private:
     static summarywin_t *instance();
+    void populate_filename_combo(GtkCombo *combo);
+    void populate_function_combo(GtkCombo *combo);
     void populate();
     void spin_update();
     void update();

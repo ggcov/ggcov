@@ -80,8 +80,8 @@ private:
     void get_selected_lines(unsigned long *startp, unsigned long *endp);
 #if !GTK2
     unsigned long offset_to_lineno(unsigned int offset);
-    void update_title_buttons();
 #endif
+    void update_title_buttons();
     gboolean save_with_annotations(const char *filename);
     static int delayed_function_activate(gpointer userdata);
     static void on_source_filename_activate(GtkWidget *w, gpointer userdata);

@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.13 2003-06-01 08:49:59 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.14 2003-06-08 06:34:07 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -68,19 +68,19 @@ sourcewin_t::initialise_tags()
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
     
     text_tags_[CS_COVERED] = gtk_text_buffer_create_tag(buffer, "covered",
-    	"foreground-gdk",   	prefs.covered_foreground,
+    	"foreground-gdk",   	&prefs.covered_foreground,
 	(char *)0);
     
     text_tags_[CS_PARTCOVERED] = gtk_text_buffer_create_tag(buffer, "partcovered",
-    	"foreground-gdk",   	prefs.partcovered_foreground,
+    	"foreground-gdk",   	&prefs.partcovered_foreground,
 	(char *)0);
     
     text_tags_[CS_UNCOVERED] = gtk_text_buffer_create_tag(buffer, "uncovered",
-    	"foreground-gdk",   	prefs.uncovered_foreground,
+    	"foreground-gdk",   	&prefs.uncovered_foreground,
 	(char *)0);
     
     text_tags_[CS_UNINSTRUMENTED] = gtk_text_buffer_create_tag(buffer, "uninstrumented",
-    	"foreground-gdk",   	prefs.uninstrumented_foreground,
+    	"foreground-gdk",   	&prefs.uninstrumented_foreground,
 	(char *)0);
 }
 #endif
@@ -182,6 +182,7 @@ sourcewin_t::populate_filenames()
     list_iterator_t<cov_file_t> iter;
    
     populating_ = TRUE; /* suppress combo entry callback */
+    ui_combo_clear(GTK_COMBO(filenames_combo_));    /* stupid glade2 */
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     {
     	cov_file_t *f = *iter;
@@ -257,7 +258,7 @@ sourcewin_t::populate_functions()
     
     /* now build the menu */
 
-    gtk_list_clear_items(GTK_LIST(GTK_COMBO(functions_combo_)->list), 0, -1);
+    ui_combo_clear(GTK_COMBO(functions_combo_));
     populating_ = TRUE; /* suppress combo entry callback */
     
     while (functions != 0)
@@ -406,9 +407,7 @@ sourcewin_t::update()
     char countbuf[32];
     char linebuf[1024];
     
-#if !GTK2
     update_title_buttons();
-#endif
 
     if ((fp = fopen(filename_, "r")) == 0)
     {
@@ -534,10 +533,12 @@ sourcewin_t::update()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if !GTK2
+
 void
 sourcewin_t::update_title_buttons()
 {
+    /* TODO: port the title button feature to GTK2 */
+#if !GTK2
     GtkWidget *scrollw;
     int lpad, rpad, sbwidth;
     int i;
@@ -594,8 +595,8 @@ sourcewin_t::update_title_buttons()
 	else
 	    gtk_widget_hide(title_buttons_[i]);
     }
-}
 #endif
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -856,6 +857,7 @@ on_source_toolbar_check_activate(GtkWidget *w, gpointer data)
     	gtk_widget_hide(sw->toolbar_);
 }
 
+#if !GTK2
 GLADE_CALLBACK void
 on_source_titles_check_activate(GtkWidget *w, gpointer data)
 {
@@ -869,6 +871,7 @@ on_source_titles_check_activate(GtkWidget *w, gpointer data)
     else
     	gtk_widget_hide(sw->titles_hbox_);
 }
+#endif
 
 GLADE_CALLBACK void
 on_source_summarise_file_activate(GtkWidget *w, gpointer data)
@@ -990,7 +993,7 @@ GLADE_CALLBACK void
 on_source_saveas_ok_button_clicked(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
-    char *filename;
+    const char *filename;
 
     filename = gtk_file_selection_get_filename(
     	    	    GTK_FILE_SELECTION(sw->saveas_dialog_));

@@ -26,7 +26,7 @@
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.10 2003-05-31 13:42:57 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.11 2003-06-08 06:34:07 gnb Exp $");
 
 list_t<summarywin_t> summarywin_t::instances_;
 
@@ -180,30 +180,39 @@ summarywin_t::show_lines(
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void
-populate_filename_combo(GtkCombo *combo)
+void
+summarywin_t::populate_filename_combo(GtkCombo *combo)
 {
     list_iterator_t<cov_file_t> iter;
     
+    ui_combo_clear(GTK_COMBO(combo));    /* stupid glade2 */
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     {
     	cov_file_t *f = *iter;
+
+    	if (file_ == 0)
+	    file_ = f;
 	
     	ui_combo_add_data(combo, f->minimal_name(), (gpointer)f);
     }
+    ui_combo_set_current_data(combo, (gpointer)file_);
 }
 
-static void
-populate_function_combo(GtkCombo *combo)
+void
+summarywin_t::populate_function_combo(GtkCombo *combo)
 {
     GList *list, *iter;
     estring label;
     
     list = cov_function_t::list_all();
     
+    ui_combo_clear(GTK_COMBO(combo));    /* stupid glade2 */
     for (iter = list ; iter != 0 ; iter = iter->next)
     {
     	cov_function_t *fn = (cov_function_t *)iter->data;
+
+	if (function_ == 0)
+	    function_ = fn;
 
     	label.truncate();
 	label.append_string(fn->name());
@@ -224,6 +233,8 @@ populate_function_combo(GtkCombo *combo)
     
     while (list != 0)
 	list = g_list_remove_link(list, list);
+
+    ui_combo_set_current_data(combo, (gpointer)function_);
 }
 
 void
@@ -238,13 +249,6 @@ summarywin_t::populate()
     populate_function_combo(GTK_COMBO(function_combo_));
     populate_filename_combo(GTK_COMBO(range_combo_));
     populating_ = FALSE;
-    
-    if (file_ == 0)
-    	file_ = (cov_file_t *)ui_combo_get_current_data(
-	    	    	    	    GTK_COMBO(filename_combo_));
-    if (function_ == 0)
-    	function_ = (cov_function_t *)ui_combo_get_current_data(
-	    	    	    	    GTK_COMBO(function_combo_));
 
     update();
     spin_update();
@@ -424,7 +428,7 @@ on_summary_overall_radio_toggled(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_)
     	return;
     sw->scope_ = summarywin_t::SU_OVERALL;
     sw->update();   
@@ -435,7 +439,7 @@ on_summary_filename_radio_toggled(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_)
     	return;
     sw->scope_ = summarywin_t::SU_FILENAME;
     sw->update();   
@@ -445,13 +449,19 @@ GLADE_CALLBACK void
 on_summary_filename_entry_changed(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
+    cov_file_t *f;
 
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_)
     	return;
     assert(sw->scope_ == summarywin_t::SU_FILENAME);
-    sw->file_ = (cov_file_t *)ui_combo_get_current_data(
+    f = (cov_file_t *)ui_combo_get_current_data(
 	    	    	    	    GTK_COMBO(sw->filename_combo_));
-    sw->update();   
+    if (f != 0)
+    {
+    	/* stupid gtk2 */
+    	sw->file_ = f;
+	sw->update();
+    }
 }
 
 GLADE_CALLBACK void
@@ -470,7 +480,7 @@ on_summary_function_radio_toggled(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_)
     	return;
     sw->scope_ = summarywin_t::SU_FUNCTION;
     sw->update();   
@@ -480,13 +490,19 @@ GLADE_CALLBACK void
 on_summary_function_entry_changed(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
+    cov_function_t *fn;
 
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_)
     	return;
     assert(sw->scope_ == summarywin_t::SU_FUNCTION);
-    sw->function_ = (cov_function_t *)ui_combo_get_current_data(
+    fn = (cov_function_t *)ui_combo_get_current_data(
 	    	    	    	    	GTK_COMBO(sw->function_combo_));
-    sw->update();
+    if (fn != 0)
+    {
+    	/* stupid gtk2 */
+	sw->function_ = fn;
+	sw->update();
+    }
 }
 
 GLADE_CALLBACK void
@@ -505,7 +521,7 @@ on_summary_range_radio_toggled(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_)
     	return;
     sw->scope_ = summarywin_t::SU_RANGE;
     sw->update();   
@@ -515,14 +531,20 @@ GLADE_CALLBACK void
 on_summary_range_entry_changed(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
+    cov_file_t *f;
     
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_)
     	return;
     assert(sw->scope_ == summarywin_t::SU_RANGE);
-    sw->file_ = (cov_file_t *)ui_combo_get_current_data(
+    f = (cov_file_t *)ui_combo_get_current_data(
 	    	    	    	    	GTK_COMBO(sw->range_combo_));
-    sw->spin_update();
-    sw->update();   
+    if (f != 0)
+    {
+    	/* stupid gtk2 */
+	sw->file_ = f;
+	sw->spin_update();
+	sw->update();   
+    }
 }
 
 GLADE_CALLBACK void
@@ -530,7 +552,7 @@ on_summary_range_start_spin_changed(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_)
     	return;
     assert(sw->scope_ == summarywin_t::SU_RANGE);
     sw->start_ = gtk_spin_button_get_value_as_int(
@@ -543,7 +565,7 @@ on_summary_range_end_spin_changed(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
 
-    if (sw->populating_)
+    if (sw->populating_ || !sw->shown_)
     	return;
     assert(sw->scope_ == summarywin_t::SU_RANGE);
     sw->end_ = gtk_spin_button_get_value_as_int(
