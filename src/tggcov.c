@@ -37,13 +37,14 @@
 #include "fakepopt.h"
 #include "report.H"
 
-CVSID("$Id: tggcov.c,v 1.10 2004-03-08 09:54:39 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.11 2004-04-02 14:27:01 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
 
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
 static char *suppressed_ifdefs = 0;
+static char *object_dir = 0;
 static int header_flag = FALSE;
 static int blocks_flag = FALSE;
 static int lines_flag = FALSE;
@@ -75,6 +76,9 @@ read_gcov_files(void)
 
     cov_pre_read();
     
+    if (object_dir != 0)
+    	cov_add_search_directory(object_dir);
+
     if (files == 0)
     {
     	if (!cov_read_directory(".", recursive))
@@ -382,6 +386,15 @@ static struct poptOption popt_options[] =
 	&new_format_flag,     	    	    	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"in annotated source, display count in new gcc 3.3 format", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"object-dir",	    	    	    	/* longname */
+	'o',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&object_dir,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"directory in which to find .o,.bb,.bbg,.da files", /* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {
