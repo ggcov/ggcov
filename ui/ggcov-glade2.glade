@@ -220,7 +220,7 @@
 		<widget class="GtkMenu" id="settings2_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="preferences">
+		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
@@ -695,7 +695,7 @@
 		<widget class="GtkMenu" id="settings1_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="preferences">
+		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
@@ -1767,7 +1767,7 @@
 		<widget class="GtkMenu" id="settings3_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="preferences">
+		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
@@ -2034,7 +2034,7 @@
 		<widget class="GtkMenu" id="settings4_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="preferences">
+		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
@@ -2254,7 +2254,7 @@
 		<widget class="GtkMenu" id="settings5_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="preferences">
+		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
@@ -2640,7 +2640,7 @@
 		<widget class="GtkMenu" id="settings6_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="preferences">
+		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
@@ -3276,7 +3276,7 @@ C programs built with the GNU C Compiler.
 		    <widget class="GtkMenu" id="settings7_menu">
 
 		      <child>
-			<widget class="GtkImageMenuItem" id="preferences">
+			<widget class="GtkImageMenuItem" id="preferences_mitem">
 			  <property name="visible">True</property>
 			  <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
 			  <signal name="activate" handler="on_preferences_activate"/>
@@ -4078,7 +4078,7 @@ C programs built with the GNU C Compiler.
 		<widget class="GtkMenu" id="settings1_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="preferences">
+		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
