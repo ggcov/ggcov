@@ -25,7 +25,7 @@
 #include "prefs.H"
 #include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.17 2003-06-14 13:50:08 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.18 2003-07-18 13:37:50 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -281,6 +281,8 @@ fileswin_t::populate()
     fprintf(stderr, "fileswin_t::populate\n");
 #endif
 
+    if (root_ != 0)
+    	delete root_;
     root_ = new file_rec_t(cov_file_t::common_path(), 0);
     
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
