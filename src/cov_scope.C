@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "filename.h"
 
-CVSID("$Id: cov_scope.C,v 1.2 2003-05-31 14:35:41 gnb Exp $");
+CVSID("$Id: cov_scope.C,v 1.3 2003-07-12 11:18:25 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -184,6 +184,13 @@ cov_range_scope_t::describe() const
     return description_;
 }
 
+
+/*
+ * TODO: the method used here is completely wrong and doesn't
+ * handle inline functions or functions in #included source
+ * properly.  Now that we have per-line records stored in an
+ * array on the cov_file_t we should use that instead.
+ */
 gboolean
 cov_range_scope_t::calc_stats(cov_stats_t *stats)
 {
@@ -191,7 +198,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
     cov_block_t *b;
     unsigned fnidx, bidx;
     unsigned long lastline;
-    const GList *startblocks, *endblocks;
+    cov_linerec_t *startlr, *endlr;
 
     if (!file_)
     	return FALSE;
@@ -207,7 +214,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
     	return FALSE;     	/* invalid range */
     if (start.lineno == 0 || end.lineno == 0)
     	return FALSE;     	/* invalid range */
-    lastline = file_->get_last_location()->lineno;
+    lastline = file_->get_num_lines();
     if (start.lineno > lastline)
     	return FALSE;     	/* range is outside file */
     if (end.lineno > lastline)
@@ -218,18 +225,18 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
      */
     do
     {
-    	startblocks = cov_block_t::find_by_location(&start);
-    } while (startblocks == 0 && ++start.lineno <= end.lineno);
+    	startlr = cov_file_t::find_linerec_by_location(&start);
+    } while (startlr == 0 && ++start.lineno <= end.lineno);
     
-    if (startblocks == 0)
+    if (startlr == 0)
     	return TRUE;     	/* no executable lines in the given range */
 
     do
     {
-    	endblocks = cov_block_t::find_by_location(&end);
-    } while (endblocks == 0 && --end.lineno > start.lineno-1);
+    	endlr = cov_file_t::find_linerec_by_location(&end);
+    } while (endlr == 0 && --end.lineno > start.lineno-1);
     
-    assert(endblocks != 0);
+    assert(endlr != 0);
     assert(start.lineno <= end.lineno);
     
 
@@ -238,7 +245,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
      * gathering stats as we go.  Note that this can
      * span functions.
      */    
-    b = (cov_block_t *)startblocks->data;
+    b = (cov_block_t *)startlr->blocks_->data;
     bidx = b->bindex();
     fnidx = b->function()->findex();
     
@@ -251,7 +258,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
 	    bidx = 0;
 	    ++fnidx;
 	}
-    } while (b != (cov_block_t *)endblocks->data);
+    } while (b != (cov_block_t *)endlr->blocks_->data);
 
     return TRUE;
 }

@@ -30,7 +30,7 @@
 #include "estring.H"
 #include "fakepopt.h"
 
-CVSID("$Id: tggcov.c,v 1.2 2003-06-30 13:52:44 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.3 2003-07-12 11:18:25 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -116,30 +116,34 @@ format_blocks(char *buf, unsigned int width, const cov_location_t *loc)
     const GList *blocks;
     unsigned int len;
     unsigned int start = 0, end = 0;
+    cov_linerec_t *lr;
     
-    for (blocks = cov_block_t::find_by_location(loc) ; 
-    	 blocks != 0 && width > 0 ;
-	 blocks = blocks->next)
+    if ((lr = cov_file_t::find_linerec_by_location(loc)) != 0)
     {
-    	cov_block_t *b = (cov_block_t *)blocks->data;
-	
-	assert(b->bindex() != 0);
-	if (start > 0 && b->bindex() == end+1)
+	for (blocks = lr->blocks_ ; 
+    	     blocks != 0 && width > 0 ;
+	     blocks = blocks->next)
 	{
-	    end++;
-	    continue;
-	}
-	if (start == 0)
-	{
+    	    cov_block_t *b = (cov_block_t *)blocks->data;
+
+	    assert(b->bindex() != 0);
+	    if (start > 0 && b->bindex() == end+1)
+	    {
+		end++;
+		continue;
+	    }
+	    if (start == 0)
+	    {
+		start = end = b->bindex();
+		continue;
+	    }
+
+    	    snprintf(buf, width, "%u-%u,", start, end);
+	    len = strlen(buf);
+	    buf += len;
+	    width -= len;
 	    start = end = b->bindex();
-	    continue;
 	}
-	
-    	snprintf(buf, width, "%u-%u,", start, end);
-	len = strlen(buf);
-	buf += len;
-	width -= len;
-	start = end = b->bindex();
     }
     
     if (width > 0 && start > 0)

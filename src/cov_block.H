@@ -46,9 +46,6 @@ public:
     /* returns a new string */
     char *describe() const;
 
-    /* Returns a constant list of all the blocks at the given location */
-    static const GList *find_by_location(const cov_location_t *loc);
-    
     /* For iterating over outgoing and incoming arcs */
     list_iterator_t<cov_arc_t>
     in_arc_iterator() const
@@ -88,7 +85,6 @@ private:
     cov_block_t();
     ~cov_block_t();
     
-    static void init();
     static count_t total(const GList *list);
     
     void set_count(count_t);
@@ -96,8 +92,6 @@ private:
     gboolean needs_call() const;
     void add_call(const char *callname);
     char *pop_call();
-
-    static hashtable_t<const char *, GList> *by_location_; 	/* GList of blocks keyed on "file:line" */
 
     cov_function_t *function_;
     unsigned int idx_; 	    /* serial number in function */
@@ -116,7 +110,6 @@ private:
     /* used while reading .o files to get arc names */
     string_var call_;
     
-    friend void cov_init(void);
     friend gboolean cov_o_file_add_call(cov_read_state_t *rs,
     	    	    	    		unsigned long address,
 					const char *callname);

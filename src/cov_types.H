@@ -47,10 +47,6 @@ struct cov_location_t
 {
     char *filename;
     unsigned long lineno;
-    
-private:
-    char *make_key() const;
-    friend class cov_block_t;
 };
 
 
@@ -101,5 +97,16 @@ enum cov_status_t
     CS_UNINSTRUMENTED
 };
 #define CS_NUM_STATUS	4
+
+/*
+ * TODO: this structure is private to the cov* library.
+ */
+struct cov_linerec_t
+{
+    GList *blocks_;
+    gboolean count_valid_;  /* covers status_, count_ */
+    cov_status_t status_;
+    unsigned long count_;
+};
 
 #endif /* _ggcov_cov_types_H_ */

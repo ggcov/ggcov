@@ -21,9 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.8 2003-06-08 06:26:23 gnb Exp $");
-
-hashtable_t<const char *, GList> *cov_block_t::by_location_; 	/* GList of blocks keyed on "file:line" */
+CVSID("$Id: cov_block.C,v 1.9 2003-07-12 11:18:25 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -33,46 +31,14 @@ cov_block_t::cov_block_t()
 
 cov_block_t::~cov_block_t()
 {
-    cov_location_t *loc;
     cov_arc_t *a;
     
-    while ((loc = locations_.remove_head()) != 0)
-    {
-    	string_var key = loc->make_key();
-	GList *list, *orig_list = 0;
-	const char *orig_key = 0;
-
-	if (by_location_->lookup_extended(key, &orig_key, &orig_list))
-	{
-	    list = g_list_remove(orig_list, loc);
-	    if (list == 0)
-	    {
-	    	/* removed only item in list */
-		by_location_->remove(orig_key);
-		g_free((char *)orig_key);
-	    }
-	    else if (list != orig_list)
-	    {
-	    	/* removed first item of list, more remain */
-		by_location_->remove(orig_key);
-		by_location_->insert(orig_key, list);
-	    }
-	    /* else, removed 2nd or later item, don't need to update hashtable */
-	}
-	g_free(loc->filename);
-	delete loc;
-    }
+    locations_.delete_all();
     
     while ((a = in_arcs_.head()) != 0)
     	delete a;
     while ((a = out_arcs_.head()) != 0)
     	delete a;
-}
-
-void
-cov_block_t::init()
-{
-    by_location_ = new hashtable_t<const char *, GList>;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -89,43 +55,11 @@ void
 cov_block_t::add_location(const char *filename, unsigned lineno)
 {
     cov_location_t *loc;
-    string_var key;
-    GList *list;
-
-#if DEBUG > 1
-    fprintf(stderr, "Block %s:%d adding location %s:%d\n",
-    	    	function_->name(), idx_,
-		filename, lineno);
-#endif
     
     loc = new(cov_location_t);
-    loc->filename = g_strdup(filename); /* TODO: hashtable to reduce storage */
+    loc->filename = (char *)filename;	/* stored externally */
     loc->lineno = lineno;
-    
     locations_.append(loc);
-
-    key = loc->make_key();
-    list = by_location_->lookup(key);
-    
-    if (list == 0)
-    	by_location_->insert(key.take(), g_list_append(0, this));
-    else
-    {
-    	g_list_append(list, this);
-#if DEBUG > 1
-    	fprintf(stderr, "%s:%ld: this line belongs to %d blocks\n",
-	    	    	    loc->filename, loc->lineno, g_list_length(list));
-#endif
-    }
-    
-    function_->file()->add_location(loc);
-}
-
-const GList *
-cov_block_t::find_by_location(const cov_location_t *loc)
-{
-    string_var key = loc->make_key();
-    return by_location_->lookup(key);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -212,8 +146,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
      */
     for (liter = locations_.first() ; liter != (cov_location_t *)0 ; ++liter)
     {
-	cov_location_t *loc = *liter;
-	const GList *blocks = find_by_location(loc);
+	GList *blocks = cov_file_t::find_linerec_by_location(*liter)->blocks_;
 
 	/*
 	 * Compensate for multiple blocks on a line by

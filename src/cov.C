@@ -26,44 +26,49 @@
 #include "string_var.H"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.15 2003-06-29 04:10:11 gnb Exp $");
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-char *
-cov_location_t::make_key() const
-{
-    return g_strdup_printf("%s:%lu", filename, lineno);
-}
+CVSID("$Id: cov.C,v 1.16 2003-07-12 11:18:25 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_status_t
 cov_get_count_by_location(const cov_location_t *loc, count_t *countp)
 {
-    const GList *blocks = cov_block_t::find_by_location(loc);
-    count_t minc = COV_COUNT_MAX, maxc = 0;
-    int len = 0;
-    
-    for ( ; blocks != 0 ; blocks = blocks->next)
-    {
-    	cov_block_t *b = (cov_block_t *)blocks->data;
-	
-	if (b->count() > maxc)
-	    maxc = b->count();
-	if (b->count() < minc)
-	    minc = b->count();
-	len++;
-    }
-    
-    if (countp != 0)
-	*countp = maxc;
+    cov_linerec_t *lr = cov_file_t::find_linerec_by_location(loc);
 
-    if (len == 0)
+    if (lr == 0)
     	return CS_UNINSTRUMENTED;
-    if (maxc == 0)
-    	return CS_UNCOVERED;
-    return (minc == 0 ? CS_PARTCOVERED : CS_COVERED);
+
+    if (!lr->count_valid_)
+    {
+	count_t minc = COV_COUNT_MAX, maxc = 0;
+	GList *iter;
+	int len = 0;
+
+    	lr->count_valid_ = TRUE;
+	for (iter = lr->blocks_ ; iter != 0 ; iter = iter->next)
+	{
+    	    cov_block_t *b = (cov_block_t *)iter->data;
+
+	    if (b->count() > maxc)
+		maxc = b->count();
+	    if (b->count() < minc)
+		minc = b->count();
+	    len++;
+	}
+    
+    	lr->count_ = maxc;
+
+	if (len == 0)
+    	    lr->status_ = CS_UNINSTRUMENTED;
+	else if (maxc == 0)
+    	    lr->status_ = CS_UNCOVERED;
+	else
+	    lr->status_ = (minc == 0 ? CS_PARTCOVERED : CS_COVERED);
+    }
+
+    if (countp != 0)
+	*countp = lr->count_;
+    return lr->status_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -215,7 +220,6 @@ cov_init(void)
 
     cov_callnode_t::init();
     cov_file_t::init();
-    cov_block_t::init();
 }
 
 void

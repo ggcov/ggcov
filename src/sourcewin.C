@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.17 2003-07-10 15:45:24 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.18 2003-07-12 11:18:25 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -343,30 +343,34 @@ format_blocks(char *buf, unsigned int width, const cov_location_t *loc)
     const GList *blocks;
     unsigned int len;
     unsigned int start = 0, end = 0;
+    cov_linerec_t *lr;
     
-    for (blocks = cov_block_t::find_by_location(loc) ; 
-    	 blocks != 0 && width > 0 ;
-	 blocks = blocks->next)
+    if ((lr = cov_file_t::find_linerec_by_location(loc)) != 0)
     {
-    	cov_block_t *b = (cov_block_t *)blocks->data;
-	
-	assert(b->bindex() != 0);
-	if (start > 0 && b->bindex() == end+1)
+	for (blocks = lr->blocks_ ; 
+    	     blocks != 0 && width > 0 ;
+	     blocks = blocks->next)
 	{
-	    end++;
-	    continue;
-	}
-	if (start == 0)
-	{
+    	    cov_block_t *b = (cov_block_t *)blocks->data;
+
+	    assert(b->bindex() != 0);
+	    if (start > 0 && b->bindex() == end+1)
+	    {
+		end++;
+		continue;
+	    }
+	    if (start == 0)
+	    {
+		start = end = b->bindex();
+		continue;
+	    }
+
+    	    snprintf(buf, width, "%u-%u,", start, end);
+	    len = strlen(buf);
+	    buf += len;
+	    width -= len;
 	    start = end = b->bindex();
-	    continue;
 	}
-	
-    	snprintf(buf, width, "%u-%u,", start, end);
-	len = strlen(buf);
-	buf += len;
-	width -= len;
-	start = end = b->bindex();
     }
     
     if (width > 0 && start > 0)
@@ -933,15 +937,16 @@ on_source_summarise_function_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     cov_location_t loc;
-    const GList *blocks;
+    cov_linerec_t *lr;
     
     loc.filename = (char *)sw->filename_.data();
     sw->get_selected_lines(&loc.lineno, 0);
 
     if (loc.lineno != 0 ||
-    	(blocks = cov_block_t::find_by_location(&loc)) == 0)
+    	(lr = cov_file_t::find_linerec_by_location(&loc)) == 0 ||
+	lr->blocks_ == 0)
     	return;
-    summarywin_t::show_function(((cov_block_t *)blocks->data)->function());
+    summarywin_t::show_function(((cov_block_t *)lr->blocks_->data)->function());
 }
 
 GLADE_CALLBACK void

@@ -80,7 +80,9 @@ public:
     }
     cov_function_t *find_function(const char *name) const;
 
-    const cov_location_t *get_last_location() const;
+    unsigned int get_num_lines() const;
+
+    static cov_linerec_t *find_linerec_by_location(const cov_location_t *);
 
 private:
     cov_file_t(const char *name);
@@ -93,7 +95,8 @@ private:
     static void add_name_tramp(const char *, cov_file_t *, gpointer);
     static void check_common_path();
     cov_function_t *add_function();
-    void add_location(const cov_location_t *);
+    void add_location(cov_block_t *, const char *, unsigned long);
+
     char *try_file(const char *dir, const char *ext) const;
     char *find_file(const char *ext, gboolean quiet) const;
 
@@ -132,7 +135,7 @@ private:
     gnb_u32_t format_version_;	/* file format version */
     ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char*, cov_function_t> *functions_by_name_;
-    const cov_location_t *last_location_;
+    ptrarray_t<cov_linerec_t> *lines_;
 
     /* Fields used to detect gcc 2.96 braindeath */
     unsigned num_missing_fake_;
