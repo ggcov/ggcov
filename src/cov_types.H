@@ -28,8 +28,8 @@ class cov_file_t;
 class cov_function_t;
 class cov_block_t;
 class cov_arc_t;
-typedef struct cov_callnode_s	cov_callnode_t;
-typedef struct cov_callarc_s	cov_callarc_t;
+struct cov_callnode_t;
+struct cov_callarc_t;
 struct cov_read_state_t;
 
 /*
@@ -66,29 +66,6 @@ struct cov_stats_t
     {
     	memset(this, 0, sizeof(*this));
     }
-};
-
-/*
- * Node in the callgraph, representing a function
- * which may be one of the covered functions or
- * may be an external library function.
- */
-struct cov_callnode_s
-{
-    char *name;
-    cov_function_t *function;	/* may be NULL */
-    count_t count;
-    GList *in_arcs, *out_arcs;
-    void *userdata;
-};
-
-/*
- * Arcs between nodes in the callgraph.
- */
-struct cov_callarc_s
-{
-    cov_callnode_t *from, *to;
-    count_t count;
 };
 
 #endif /* _ggcov_cov_types_H_ */

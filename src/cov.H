@@ -25,6 +25,7 @@
 #include "cov_function.H"
 #include "cov_block.H"
 #include "cov_arc.H"
+#include "cov_callgraph.H"
 
 /* Call this to initialise the cov library */
 void cov_init(void);
@@ -48,8 +49,5 @@ void cov_get_count_by_location(const cov_location_t *loc,
 void cov_overall_calc_stats(cov_stats_t *stats);
 void cov_range_calc_stats(const cov_location_t *start,
     	    	    	  const cov_location_t *end, cov_stats_t *stats);
-
-cov_callnode_t *cov_callnode_find(const char *name);
-void cov_callnode_foreach(void (*func)(cov_callnode_t*, void *userdata), void *userdata);
 
 #endif /* _ggcov_cov_H_ */

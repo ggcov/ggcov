@@ -21,7 +21,7 @@
 #include "cov.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: callgraph2win.C,v 1.3 2002-12-29 13:10:28 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.4 2002-12-29 14:08:33 gnb Exp $");
 
 #define CANVAS_WIDTH	    30.0
 #define CANVAS_HEIGHT	    30.0
@@ -219,7 +219,7 @@ callgraph2win_t::populate()
 #if DEBUG
     fprintf(stderr, "callgraph2win_t::populate\n");
 #endif
-    main_node_ = cov_callnode_find("main");
+    main_node_ = cov_callnode_t::find("main");
     
     gnome_canvas_set_scroll_region(GNOME_CANVAS(canvas_),
     				   0.0, 0.0, CANVAS_WIDTH, CANVAS_HEIGHT);

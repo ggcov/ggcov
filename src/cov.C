@@ -28,11 +28,7 @@
 #include <bfd.h>
 #include <elf.h>
 
-CVSID("$Id: cov.C,v 1.1 2002-12-29 13:14:16 gnb Exp $");
-
-/* TODO: ? reorg this */
-GHashTable *cov_callnodes;
-
+CVSID("$Id: cov.C,v 1.2 2002-12-29 14:08:33 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -231,183 +227,6 @@ cov_range_calc_stats(
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-typedef struct
-{
-    void (*func)(cov_callnode_t *, void *);
-    void *userdata;
-} cov_callnode_foreach_rec_t;
-
-static void
-cov_callnode_foreach_tramp(gpointer key, gpointer value, gpointer userdata)
-{
-    cov_callnode_t *cn = (cov_callnode_t *)value;
-    cov_callnode_foreach_rec_t *rec = (cov_callnode_foreach_rec_t *)userdata;
-    
-    (*rec->func)(cn, rec->userdata);
-}
-
-
-void
-cov_callnode_foreach(
-    void (*func)(cov_callnode_t*, void *userdata),
-    void *userdata)
-{
-    cov_callnode_foreach_rec_t rec;
-    
-    rec.func = func;
-    rec.userdata = userdata;
-    g_hash_table_foreach(cov_callnodes, cov_callnode_foreach_tramp, &rec);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-cov_callnode_t *
-cov_callnode_find(const char *name)
-{
-    return (cov_callnode_t *)g_hash_table_lookup(cov_callnodes, name);
-}
-
-static cov_callnode_t *
-cov_callnode_new(const char *name)
-{
-    cov_callnode_t *cn;
-    
-    cn = new(cov_callnode_t);
-    strassign(cn->name, name);
-    
-    g_hash_table_insert(cov_callnodes, cn->name, cn);
-    
-    return cn;
-}
-
-#if 0
-static gboolean
-cov_callnode_delete_one(gpointer key, gpointer value, gpointer userdata)
-{
-    cov_callnode_t *cn = (cov_callnode_t *)value;
-    
-    listdelete(cn->out_arcs, cov_callarc_t, g_free);
-    listclear(cn->in_arcs);
-    strdelete(cn->name);
-    g_free(cn);
-    
-    return TRUE;    /* please remove me */
-}
-
-static void
-cov_callgraph_clear(void)
-{
-    g_hash_table_foreach_remove(cov_callnodes, cov_callnode_delete_one, 0);
-}
-#endif
-
-static cov_callarc_t *
-cov_callnode_find_arc_to(
-    cov_callnode_t *from,
-    cov_callnode_t *to)
-{
-    GList *iter;
-    
-    for (iter = from->out_arcs ; iter != 0 ; iter = iter->next)
-    {
-    	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
-	
-	if (ca->to == to)
-	    return ca;
-    }
-    
-    return 0;
-}
-
-static cov_callarc_t *
-cov_callnode_add_arc_to(
-    cov_callnode_t *from,
-    cov_callnode_t *to)
-{
-    cov_callarc_t *ca;
-    
-    ca = new(cov_callarc_t);
-    
-    ca->from = from;
-    from->out_arcs = g_list_append(from->out_arcs, ca);
-
-    ca->to = to;
-    to->in_arcs = g_list_append(to->in_arcs, ca);
-    
-    return ca;
-}
-
-static void
-cov_callarc_add_count(cov_callarc_t *ca, count_t count)
-{
-    ca->count += count;
-    ca->to->count += count;
-}
-
-static void
-cov_add_callnodes(cov_file_t *f, void *userdata)
-{
-    unsigned int fnidx;
-    cov_callnode_t *cn;
-    
-    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
-    {
-    	cov_function_t *fn = f->nth_function(fnidx);
-	
-    	if (fn->is_suppressed())
-	    continue;
-
-	if ((cn = cov_callnode_find(fn->name())) == 0)
-	{
-	    cn = cov_callnode_new(fn->name());
-	    cn->function = fn;
-	}
-    }
-}
-
-static void
-cov_add_callarcs(cov_file_t *f, void *userdata)
-{
-    unsigned int fnidx;
-    unsigned int bidx;
-    list_iterator_t<cov_arc_t> aiter;
-    cov_callnode_t *from;
-    cov_callnode_t *to;
-    cov_callarc_t *ca;
-    
-    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
-    {
-    	cov_function_t *fn = f->nth_function(fnidx);
-	
-	if (fn->is_suppressed())
-	    continue;
-
-	from = cov_callnode_find(fn->name());
-	assert(from != 0);
-	
-	for (bidx = 0 ; bidx < fn->num_blocks()-2 ; bidx++)
-	{
-    	    cov_block_t *b = fn->nth_block(bidx);
-	
-	    for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
-	    {
-	    	cov_arc_t *a = *aiter;
-
-    	    	if (!a->is_call() || a->name() == 0)
-		    continue;
-		    		
-		if ((to = cov_callnode_find(a->name())) == 0)
-		    to = cov_callnode_new(a->name());
-		    
-		if ((ca = cov_callnode_find_arc_to(from, to)) == 0)
-		    ca = cov_callnode_add_arc_to(from, to);
-		    
-		cov_callarc_add_count(ca, a->from()->count());
-	    }
-	}
-    }
-}
-
 
 /*
  * For N blocks, 0..N-1,
@@ -488,7 +307,7 @@ cov_init(void)
     bfd_init();
     bfd_set_error_handler(cov_bfd_error_handler);
 
-    cov_callnodes = g_hash_table_new(g_str_hash, g_str_equal);
+    cov_callnode_t::init();
     cov_file_t::init();
     cov_block_t::init();
 }

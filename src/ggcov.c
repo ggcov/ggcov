@@ -31,7 +31,7 @@
 #include "fileswin.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.13 2002-12-29 13:20:35 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.14 2002-12-29 14:08:33 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -310,7 +310,7 @@ static void
 summarise(void)
 {
     cov_file_t::foreach(dump_file, 0);
-    cov_callnode_foreach(dump_callnode, 0);
+    cov_callnode_t::foreach(dump_callnode, 0);
 }
 
 #endif
@@ -371,7 +371,7 @@ on_windows_new_callgraphwin_activated(GtkWidget *w, gpointer userdata)
     callgraphwin_t *cgw;
     
     cgw = new callgraphwin_t();
-    cgw->set_node(cov_callnode_find("main"));
+    cgw->set_node(cov_callnode_t::find("main"));
     cgw->show();
 }
 

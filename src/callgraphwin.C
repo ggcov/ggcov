@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.3 2002-12-29 13:11:43 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.4 2002-12-29 14:08:33 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -144,7 +144,7 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
     GList *list = 0, *iter;
     estring label;
     
-    cov_callnode_foreach(add_callnode, &list);
+    cov_callnode_t::foreach(add_callnode, &list);
     list = g_list_sort(list, compare_callnodes);
     
     for (iter = list ; iter != 0 ; iter = iter->next)
