@@ -70,11 +70,55 @@ public:
 	return from_->get_first_location();
     }
 
-    gboolean is_suppressed();
+    gboolean is_suppressed() const;
+    
+    /* TODO: cache the status and move the calculation out of line */
+    cov::status_t status()
+    {
+#if 0
+    /* TODO: verify whether these 2 code fragments are the same */
+    /* I'm assuming that for calls count_ will be the same as from_->count_
+      */
+	if (suppressed_)
+	    return cov::SUPPRESSED;
+	else if (count_)
+	    return cov::COVERED;
+	else if (from_->count_)
+	    return cov::PARTCOVERED;
+	else
+	    return cov::UNCOVERED;
+#else
+    	if (is_fall_through() || is_call())
+	{
+	    if (is_suppressed())
+		return cov::SUPPRESSED;
+	    else if (from_->count_)
+		return cov::COVERED;
+	    else
+		return cov::UNCOVERED;
+	}
+	else
+	{
+	    if (is_suppressed())
+		return cov::SUPPRESSED;
+	    else if (count_)
+		return cov::COVERED;
+	    else if (from_->count_)
+		return cov::PARTCOVERED;
+	    else
+		return cov::UNCOVERED;
+	}
+#endif
+    }
 
 private:
     cov_arc_t(cov_block_t *from, cov_block_t *to);
     ~cov_arc_t();
+
+    void suppress()
+    {
+    	suppressed_ = TRUE;
+    }
 
     void set_count(count_t count);
     static count_t total(const list_t<cov_arc_t> &list);
@@ -94,7 +138,6 @@ private:
 #endif
     gboolean fall_through_:1;
     gboolean count_valid_:1;
-    gboolean suppressed_valid_:1;
     gboolean suppressed_:1;
     
     friend class cov_file_t;

@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_arc.C,v 1.5 2004-02-08 10:50:36 gnb Exp $");
+CVSID("$Id: cov_arc.C,v 1.6 2004-02-16 22:57:26 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -73,19 +73,19 @@ cov_arc_t::is_call() const
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
-cov_arc_t::is_suppressed()
+cov_arc_t::is_suppressed() const
 {
-    if (!suppressed_valid_)
-    {
-    	const cov_location_t *loc;
-	cov_line_t *ln;
+    const cov_location_t *loc;
+    cov_line_t *ln;
 
-	suppressed_ = ((loc = get_from_location()) != 0 &&
-		       (ln = cov_line_t::find(loc)) != 0 &&
-		       ln->is_suppressed());
-    	suppressed_valid_ = TRUE;
-    }
-    return suppressed_;
+    /* externally suppressed, e.g. function suppressed by name */
+    if (suppressed_)
+    	return TRUE;
+    
+    /* originating line suppressed, e.g. by ifdef */
+    return ((loc = get_from_location()) != 0 &&
+	    (ln = cov_line_t::find(loc)) != 0 &&
+	    ln->is_suppressed());
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

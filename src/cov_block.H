@@ -31,6 +31,15 @@ class cov_arc_t;
 class cov_block_t
 {
 public:
+    cov::status_t status() const
+    {
+	cov_stats_t stats;
+	return calc_stats(&stats);
+    }
+    gboolean is_suppressed() const
+    {
+    	return (status() == cov::SUPPRESSED);
+    }
 
     cov_function_t *
     function() const
@@ -79,7 +88,6 @@ public:
     {
     	return count_;
     }
-    void calc_stats(cov_stats_t *) const;
 
 private:
     cov_block_t();
@@ -92,7 +100,10 @@ private:
     gboolean needs_call() const;
     void add_call(const char *callname);
     char *pop_call();
-    gboolean contains_unsuppressed_lines() const;
+    void suppress();
+    cov::status_t calc_stats(cov_stats_t *) const;
+
+    gboolean suppressed_;   /* suppressed from above or by self */
 
     cov_function_t *function_;
     unsigned int idx_; 	    /* serial number in function */
@@ -117,6 +128,7 @@ private:
     friend class cov_file_t;
     friend class cov_function_t;
     friend class cov_arc_t;
+    friend class cov_range_scope_t;
     friend void cov_check_fakeness(cov_file_t*);
 };
 

@@ -19,7 +19,7 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_line.C,v 1.1 2003-07-13 00:21:16 gnb Exp $");
+CVSID("$Id: cov_line.C,v 1.2 2004-02-16 23:03:20 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -62,11 +62,11 @@ cov_line_t::calculate_count()
     count_ = maxc;
 
     if (len == 0)
-    	status_ = UNINSTRUMENTED;
+    	status_ = cov::UNINSTRUMENTED;
     else if (maxc == 0)
-    	status_ = UNCOVERED;
+    	status_ = cov::UNCOVERED;
     else
-	status_ = (minc == 0 ? PARTCOVERED : COVERED);
+	status_ = (minc == 0 ? cov::PARTCOVERED : cov::COVERED);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

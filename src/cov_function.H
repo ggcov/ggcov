@@ -34,7 +34,15 @@ public:
     {
     	return name_;
     }
-    gboolean is_suppressed();
+    cov::status_t status() const
+    {
+    	cov_stats_t stats;
+	return calc_stats(&stats);
+    }
+    gboolean is_suppressed() const
+    {
+    	return (status() == cov::SUPPRESSED);
+    }
     
     cov_file_t *
     file() const
@@ -75,17 +83,18 @@ private:
     
     void set_name(const char *name);
     cov_block_t *add_block();
-    gboolean name_is_suppressed() const;
-    gboolean contains_unsuppressed_lines() const;
+    gboolean is_self_suppressed() const;
+    void suppress();
+    void finalise();
     gboolean reconcile_calls();
     gboolean solve();
-    void calc_stats(cov_stats_t *) const;
+    cov::status_t calc_stats(cov_stats_t *) const;
 
     string_var name_;
+    gboolean suppressed_;   /* suppressed from above or by self */
     unsigned int idx_; 	    /* serial number in file */
     cov_file_t *file_;
     ptrarray_t<cov_block_t> *blocks_;
-    int suppressed_;	    /* 1=yes 0=no -1=don't know */
     
     friend class cov_file_t;
     friend class cov_function_scope_t;

@@ -63,6 +63,16 @@ public:
     /* returns the common initial part of all minimal names */
     static const char *common_path();
 
+    cov::status_t status() const
+    {
+    	cov_stats_t stats;
+	return calc_stats(&stats);
+    }
+    gboolean is_suppressed() const
+    {
+    	return (status() == cov::SUPPRESSED);
+    }
+    
     /* find a file by name, full or minimal */
     static cov_file_t *find(const char *name);
     /* Return an iterator over all the files in minimal filename order */
@@ -147,7 +157,7 @@ private:
     gboolean solve();
     void finalise();
 
-    void calc_stats(cov_stats_t *stats) const;
+    cov::status_t calc_stats(cov_stats_t *stats) const;
 
     static hashtable_t<const char*, cov_file_t> *files_;
     static list_t<cov_file_t> files_list_;

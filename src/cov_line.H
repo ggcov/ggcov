@@ -28,19 +28,6 @@ class cov_line_t
 {
 public:
 
-    enum status_t
-    {
-	COVERED,
-	PARTCOVERED,
-	UNCOVERED,
-	UNINSTRUMENTED,
-	SUPPRESSED
-    };
-    enum _constants
-    {
-    	NUM_STATUS=5
-    };
-
     count_t count()
     {
 	if (!count_valid_)
@@ -48,11 +35,16 @@ public:
 	return count_;
     }
 
-    status_t status()
+    cov::status_t status()
     {
 	if (!count_valid_)
     	    calculate_count();
 	return status_;
+    }
+    /* Check for suppression without the side effect of calculate_count() */
+    gboolean is_suppressed() const
+    {
+    	return (count_valid_ && status_ == cov::SUPPRESSED);
     }
 
     const GList *blocks() const
@@ -69,11 +61,6 @@ public:
      */
     unsigned int format_blocks(char *buf, unsigned int maxlen);
     
-    /* Check for suppression without the side effect of calculate_count() */
-    gboolean is_suppressed() const
-    {
-    	return (count_valid_ && status_ == SUPPRESSED);
-    }
     
 private:
     cov_line_t();
@@ -82,15 +69,16 @@ private:
     void suppress()
     {
     	count_valid_ = TRUE;
-	status_ = SUPPRESSED;
+	status_ = cov::SUPPRESSED;
     }
 
     GList *blocks_;
     gboolean count_valid_;  /* covers status_, count_ */
-    status_t status_;
+    cov::status_t status_;
     count_t count_;
     
     friend class cov_file_t;
+    friend class cov_block_t;
     friend class cov_file_src_parser_t;
 };
 

@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.31 2004-02-09 10:07:02 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.32 2004-02-16 23:00:17 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -111,12 +111,41 @@ cov_file_t::init()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+#if 0
+gboolean
+cov_file_t::is_self_suppressed() const
+{
+    /* TOOO: implement suppression by filename, directory, or library here */
+}
+
+void
+cov_file_t::suppress()
+{
+    unsigned int i;
+
+    suppressed_ = TRUE;
+    for (i = 0 ; i < functions_->length() ; i++)
+    	functions_->nth(i)->suppress();
+}
+#endif
+
 void
 cov_file_t::finalise()
 {
+    unsigned int i;
+
     add_name(name_);
+    
+#if 0
+    /* TODO: push file-level suppression downwards to functions */
+    if (is_self_suppressed())
+    	suppress();
+#endif
 
     finalised_ = TRUE;
+
+    for (i = 0 ; i < functions_->length() ; i++)
+    	functions_->nth(i)->finalise();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -377,15 +406,19 @@ cov_file_t::find_function(const char *fnname) const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
+cov::status_t
 cov_file_t::calc_stats(cov_stats_t *stats) const
 {
     unsigned int fnidx;
+    cov_stats_t mine;
+    
+    assert(finalised_);
     
     for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
-    {
-	nth_function(fnidx)->calc_stats(stats);
-    }
+	nth_function(fnidx)->calc_stats(&mine);
+    
+    stats->accumulate(&mine);
+    return mine.status_by_blocks();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -20,12 +20,11 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.13 2004-02-08 11:01:04 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.14 2004-02-16 23:01:26 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_function_t::cov_function_t()
- :  suppressed_(-1)
 {
     blocks_ = new ptrarray_t<cov_block_t>();
 }
@@ -63,33 +62,37 @@ cov_function_t::add_block()
 }
 
 gboolean
-cov_function_t::is_suppressed()
+cov_function_t::is_self_suppressed() const
 {
-    if (suppressed_ < 0)
-    	suppressed_ = (name_is_suppressed() ||
-	    	       !contains_unsuppressed_lines());
-    return suppressed_;
-}
-
-gboolean
-cov_function_t::name_is_suppressed() const
-{
+    /* TODO: implement suppression by function name here */
     if (!strncmp(name_, "_GLOBAL_", 8))
     	return TRUE;
     return FALSE;
 }
 
-gboolean
-cov_function_t::contains_unsuppressed_lines() const
+void
+cov_function_t::suppress()
 {
     unsigned int bidx;
     
+    /*
+     * If it weren't for the case of compiler-generated functions
+     * which have no corresponding source lines, we could just rely
+     * on suppressions percolating down to cov_line_t's and back up
+     * up again to files.  Instead we have to remember when we're
+     * suppressed externally or by self.
+     */
+    suppressed_ = TRUE;
+
     for (bidx = 0 ; bidx < num_blocks() ; bidx++)
-    {
-    	if (nth_block(bidx)->contains_unsuppressed_lines())
-	    return TRUE;
-    }
-    return FALSE;
+	nth_block(bidx)->suppress();
+}
+
+void
+cov_function_t::finalise()
+{
+    if (is_self_suppressed())
+    	suppress();
 }
 
 const cov_location_t *
@@ -133,13 +136,27 @@ cov_function_t::compare(gconstpointer pa, gconstpointer pb)
     return ret;
 }
 
-void
+cov::status_t
 cov_function_t::calc_stats(cov_stats_t *stats) const
 {
     unsigned int bidx;
+    cov_stats_t mine;
+    cov::status_t st;
     
-    for (bidx = 0 ; bidx < num_blocks() ; bidx++)
-	nth_block(bidx)->calc_stats(stats);
+    assert(file_->finalised_);
+
+    /* skip the 0th and last psuedo-blocks which don't correspond to code */
+    assert(num_blocks() >= 2);
+    for (bidx = 1 ; bidx < num_blocks()-1 ; bidx++)
+	nth_block(bidx)->calc_stats(&mine);
+
+    st = mine.status_by_lines();
+    if (suppressed_)
+    	st = cov::SUPPRESSED;
+    stats->functions_[st]++;
+    stats->accumulate(&mine);
+    
+    return st;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -151,7 +168,7 @@ cov_function_t::reconcile_calls()
     list_iterator_t<cov_arc_t> aiter;
     gboolean ret = TRUE;
 
-    if (is_suppressed())
+    if (is_self_suppressed())
 	return TRUE;	/* ignored */
 
     /*
@@ -357,7 +374,7 @@ cov_function_t::list_all()
 	{
     	    cov_function_t *fn = f->nth_function(fnidx);
 
-	    if (!fn->is_suppressed())
+	    if (fn->status() != cov::SUPPRESSED)
 		list = g_list_prepend(list, fn);
 	}
     }

@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.11 2004-02-08 10:52:58 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.12 2004-02-16 22:58:44 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -104,19 +104,23 @@ cov_block_t::pop_call()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
-cov_block_t::contains_unsuppressed_lines() const
+void
+cov_block_t::suppress()
 {
+    list_iterator_t<cov_arc_t> aiter;
     list_iterator_t<cov_location_t> liter;
 
-    for (liter = locations_.first() ; liter != (cov_location_t *)0 ; ++liter)
-    {
-	cov_line_t *ln = cov_line_t::find(*liter);
+    suppressed_ = TRUE;
 
-    	if (!ln->is_suppressed())
-	    return TRUE;
-    }
-    return FALSE;
+    /* suppress all outbound arcs */
+    for (aiter = out_arcs_.first() ; aiter != (cov_arc_t *)0 ; ++aiter)
+	(*aiter)->suppress();
+    
+    /* TODO: should we suppress inbound arcs also!?? */
+    
+    /* suppress all lines */
+    for (liter = locations_.first() ; liter != (cov_location_t *)0 ; ++liter)
+	cov_line_t::find(*liter)->suppress();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -126,11 +130,15 @@ cov_block_t::contains_unsuppressed_lines() const
  * from gcov.c.
  */
 
-void
+cov::status_t
 cov_block_t::calc_stats(cov_stats_t *stats) const
 {
     list_iterator_t<cov_arc_t> aiter;
     list_iterator_t<cov_location_t> liter;
+    unsigned int bits = 0;
+    cov::status_t st;
+
+    assert(function_->file()->finalised_);
 
     /*
      * Calculate call and branches coverage.
@@ -142,23 +150,10 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
     	if (a->is_fall_through())
 	    continue;	/* control flow does not branch */
 	    
-	if (a->is_suppressed())
-	    continue;	    /* from suppressed line */
-
 	if (a->is_call())
-	{
-	    stats->calls++;
-	    if (count_)
-		stats->calls_executed++;
-	}
+	    stats->calls_[a->status()]++;
 	else
-	{
-	    stats->branches++;
-	    if (count_)
-		stats->branches_executed++;
-	    if (a->count_)
-		stats->branches_taken++;
-	}
+	    stats->branches_[a->status()]++;
     }
 
     /*
@@ -169,8 +164,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
 	cov_line_t *ln = cov_line_t::find(*liter);
 	const GList *blocks = ln->blocks();
 
-    	if (ln->is_suppressed())
-	    continue;
+    	st = ln->status();
 
 	/*
 	 * Compensate for multiple blocks on a line by
@@ -180,13 +174,36 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
 	 * like that *deserves* anomalies.
 	 */
 	if (blocks->data != this)
+	{
+	    if (st == cov::SUPPRESSED)
+		bits |= (1<<st);    /* handle middle block on suppressed line */
 	    continue;
+	}
 
-	stats->lines++;
-	if (total(blocks))
-	    /* any blocks on this line were executed */
-	    stats->lines_executed++;
+    	stats->lines_[st]++;
+	bits |= (1<<st);
     }
+
+    /*
+     * Return the block's status.  Note this can't be achieved
+     * by simply calling cov_stats_t::status() as that works on
+     * lines and may be inaccurate when the first or last line is
+     * shared with other blocks.  Instead we use the block's count_.
+     */
+    if (suppressed_ /*externally suppressed*/ ||
+    	bits == (1<<cov::SUPPRESSED)/* all lines suppressed, none covered */)
+    	st = cov::SUPPRESSED;
+    else if (count_)
+    	st = cov::COVERED;
+    else
+    	st = cov::UNCOVERED;
+
+    /*
+     * Calculate block coverage
+     */
+    stats->blocks_[st]++;
+    
+    return st;
 }
 
 count_t
