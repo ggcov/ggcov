@@ -20,8 +20,9 @@
 #include "window.H"
 #include "cov.H"
 #include "mvc.h"
+#include "tok.H"
 
-CVSID("$Id: window.C,v 1.9 2003-07-18 13:36:55 gnb Exp $");
+CVSID("$Id: window.C,v 1.10 2003-07-19 09:53:43 gnb Exp $");
 
 static const char window_key[] = "ggcov_window_key";
 
@@ -46,6 +47,144 @@ window_t::~window_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+extern gboolean ggcov_read_file(const char *filename);
+
+/*
+ * Parse the given string as a list of URIs and load each file
+ * into the global cov* data structures.
+ */
+static void
+dnd_handle_uri_list(char *uri_list)
+{
+    tok_t tok(uri_list, "\n\r");
+    int nfiles = 0;
+    const char *uri;
+
+    cov_pre_read();
+    while ((uri = tok.next()) != 0)
+    {
+#if DEBUG
+    	fprintf(stderr, "uri=\"%s\"\n", uri);
+#endif
+    	if (!strncmp(uri, "file:", 5) && ggcov_read_file(uri+5))
+	    nfiles++;
+    }
+    if (nfiles)
+    	cov_post_read();
+}
+
+/*
+ * Experiment shows that Nautilus on RH7.3 supports the following targets:
+ * 
+ * x-special/gnome-icon-list
+ *  	some kind of (?) binary formatted list of URLs and other
+ *  	icon-related information which doesn't matter.
+ * text/uri-list
+ *  	list of URLs one per line.
+ * _NETSCAPE_URL
+ *  	single URL (no matter how many files are actually dragged).
+ *
+ * So we support text/uri-list because it's both simple and works.
+ */
+#define URI_LIST     	    2
+static const GtkTargetEntry dnd_targets[] = 
+{
+    {"text/uri-list", 0, URI_LIST}
+};
+
+void
+dnd_drag_data_received(
+    GtkWidget *widget,
+    GdkDragContext *drag_context,
+    gint x,
+    gint y,
+    GtkSelectionData *data,
+    guint info,
+    guint time,
+    gpointer user_data)
+{
+    char *text;
+    
+#if GTK2
+    text = gtk_selection_data_get_text(data);
+#else
+    text = (char *)g_malloc(data->length+1);
+    memcpy(text, data->data, data->length);
+    text[data->length] = '\0';
+#endif
+
+#if DEBUG
+    fprintf(stderr, "dnd_drag_data_received: info=%d, text=\"%s\"\n", info, text);
+#endif
+
+    switch (info)
+    {
+    case URI_LIST:
+	dnd_handle_uri_list(text);
+	break;
+    default:
+    	g_free(text);
+	break;
+    }
+}
+
+/* Define this to 1 to enable debugging of DnD targets from sources */
+#define DEBUG_DND_TARGETS 0
+
+#if DEBUG_DND_TARGETS
+static gboolean
+dnd_drag_motion(
+    GtkWidget *widget,
+    GdkDragContext *drag_context,
+    gint x,
+    gint y,
+    guint time,
+    gpointer user_data)
+{
+    GList *iter;
+    
+    fprintf(stderr, "dnd_drag_motion: x=%d y=%d targets={", x, y);
+
+    for (iter = drag_context->targets ; iter != 0 ; iter = iter->next)
+    {
+	gchar *name = gdk_atom_name(GPOINTER_TO_INT(iter->data));
+	fprintf(stderr, "\"%s\"%s", name, (iter->next == 0 ? "" : ", "));
+	g_free (name);
+    }
+    fprintf(stderr, "}\n");
+    
+    gdk_drag_status(drag_context, GDK_ACTION_COPY, GDK_CURRENT_TIME);
+
+    return TRUE;
+}
+#endif /* DEBUG_DND_TARGETS */
+
+
+static void
+dnd_setup(GtkWidget *w)
+{
+    GtkDestDefaults defaults;
+    
+    defaults = GTK_DEST_DEFAULT_ALL;
+#if DEBUG_DND_TARGETS
+    defaults &= ~GTK_DEST_DEFAULT_MOTION,
+#endif /* DEBUG_DND_TARGETS */
+
+    gtk_drag_dest_set(w, defaults,
+    	    	      dnd_targets, sizeof(dnd_targets)/sizeof(dnd_targets[0]),
+		      GDK_ACTION_COPY);
+
+#if DEBUG_DND_TARGETS
+    gtk_signal_connect(GTK_OBJECT(w), "drag_motion",
+	    GTK_SIGNAL_FUNC(dnd_drag_motion), 0);
+#endif /* DEBUG_DND_TARGETS */
+
+    gtk_signal_connect(GTK_OBJECT(w), "drag-data-received",
+	    GTK_SIGNAL_FUNC(dnd_drag_data_received), 0);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 void
 window_t::attach(GtkWidget *w)
 {
@@ -59,6 +198,7 @@ window_t::set_window(GtkWidget *w)
     window_ = w;
     attach(window_);
     ui_register_window(window_);
+    dnd_setup(w);
 }
 
 void

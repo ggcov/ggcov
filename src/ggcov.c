@@ -35,7 +35,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.34 2003-07-18 12:11:51 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.35 2003-07-19 09:53:42 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -106,11 +106,9 @@ read_gcov_files(void)
 /*
  * Read a file from the File->Open dialog.
  */
-static gboolean
+gboolean
 ggcov_read_file(const char *filename)
 {
-    cov_pre_read();
-
     if (file_is_directory(filename) == 0)
     {
 	if (!cov_read_directory(filename, recursive))
@@ -137,7 +135,6 @@ ggcov_read_file(const char *filename)
 	return FALSE;
     }
 
-    cov_post_read();
     return TRUE;
 }
 
@@ -156,7 +153,11 @@ on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
     	    	    GTK_FILE_SELECTION(open_window));
 
     if (filename != 0 && *filename != '\0')
-    	ggcov_read_file(filename);
+    {
+    	cov_pre_read();
+    	if (ggcov_read_file(filename))
+	    cov_post_read();
+    }
 
     gtk_widget_hide(open_window);
 
