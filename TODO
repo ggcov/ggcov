@@ -19,9 +19,6 @@ x  New gcc 3.3 code is much smarter (or at least more complex)
    will require a calculate-and-store approach, which means a
    data structure re-design.
 
-x  Get libgnome stuff (config, canvas, color picker) working in
-   the gtk2 build.
-
 x  Provide a menu command and window(s) which allows the user to 
    lose the current set of coverage data and read a new set, in
    any of the ways possible from the commandline, i.e. 1) exe
@@ -121,6 +118,9 @@ x  ??? Minimise filenames only within the context of a program or library?
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
+
+x  Get libgnome stuff (config, canvas, color picker) working in
+   the gtk2 build.
 
 x  Handle C & C++ inline functions in header files properly by
    creating cov_file_t objects for header files on demand, i.e.
