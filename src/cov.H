@@ -32,6 +32,8 @@
 /* Call this to initialise the cov library */
 void cov_init(void);
 
+void cov_suppress_conditional(const char *variable);
+
 gboolean cov_is_source_filename(const char *filename);
 
 /* Call this before reading any object or source files */
