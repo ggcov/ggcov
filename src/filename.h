@@ -1,5 +1,5 @@
 /*
- * CANT - A C implementation of the Apache/Tomcat ANT build system
+ * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _cant_filename_h_
-#define _cant_filename_h_ 1
+#ifndef _ggcov_filename_h_
+#define _ggcov_filename_h_ 1
 
 #include "common.h"
 
@@ -39,4 +39,4 @@ mode_t file_mode_from_string(const char *str, mode_t base, mode_t deflt);
 int file_apply_children(const char *filename, file_apply_proc_t, void *userdata);
 int file_is_directory(const char *filename);
 
-#endif /* _cant_filename_h_ */
+#endif /* _ggcov_filename_h_ */
