@@ -22,9 +22,8 @@
 #include "cov.H"
 #include "estring.H"
 #include "prefs.H"
-#include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.21 2003-07-14 15:56:01 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.22 2003-07-19 06:26:28 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -32,11 +31,6 @@ CVSID("$Id: sourcewin.C,v 1.21 2003-07-14 15:56:01 gnb Exp $");
 #endif
 
 
-#if GTK2
-PangoFontDescription *sourcewin_t::font_desc_;
-#else
-GdkFont *sourcewin_t::font_;
-#endif
 list_t<sourcewin_t> sourcewin_t::instances_;
 
 /* column widths, in *characters* */
@@ -50,53 +44,20 @@ const char *sourcewin_t::column_names_[sourcewin_t::NUM_COLS] = {
 void
 sourcewin_t::setup_text()
 {
-#if GTK2
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
-    
+    ui_text_setup(text_);
+    font_width_ = ui_text_font_width(text_);
+
     text_tags_[cov_line_t::COVERED] =
-	gtk_text_buffer_create_tag(buffer, "covered",
-    	"foreground-gdk",   	&prefs.covered_foreground,
-	(char *)0);
+	ui_text_create_tag(text_, "covered", &prefs.covered_foreground);
     
     text_tags_[cov_line_t::PARTCOVERED] =
-	gtk_text_buffer_create_tag(buffer, "partcovered",
-    	"foreground-gdk",   	&prefs.partcovered_foreground,
-	(char *)0);
+	ui_text_create_tag(text_, "partcovered", &prefs.partcovered_foreground);
     
     text_tags_[cov_line_t::UNCOVERED] =
-	gtk_text_buffer_create_tag(buffer, "uncovered",
-    	"foreground-gdk",   	&prefs.uncovered_foreground,
-	(char *)0);
+	ui_text_create_tag(text_, "uncovered", &prefs.uncovered_foreground);
     
     text_tags_[cov_line_t::UNINSTRUMENTED] =
-	gtk_text_buffer_create_tag(buffer, "uninstrumented",
-    	"foreground-gdk",   	&prefs.uninstrumented_foreground,
-	(char *)0);
-
-    /*
-     * Override the font in the text window: it needs to be
-     * fixedwidth so the source aligns properly.
-     */
-    if (font_desc_ == 0)
-    	font_desc_ = pango_font_description_from_string("monospace");
-    gtk_widget_modify_font(text_view_, font_desc_);
-
-    /*
-     * Yes this is a deprecated function...but there doesn't
-     * seem to be any other way to get a font width.
-     */
-    GdkFont *font = gtk_style_get_font(gtk_widget_get_style(text_view_));
-    font_width_ = uix_font_width(font);
-
-#else
-    if (font_ == 0)
-	font_ = uix_fixed_width_font(gtk_widget_get_style(text_)->font);
-    font_width_ = uix_font_width(font_);
-
-    offsets_by_line_ = g_array_new(/*zero_terminated*/TRUE,
-				      /*clear*/TRUE,
-				      sizeof(unsigned int));
-#endif
+	ui_text_create_tag(text_, "uninstrumented", &prefs.uninstrumented_foreground);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -111,11 +72,7 @@ sourcewin_t::sourcewin_t()
     
     set_window(glade_xml_get_widget(xml, "source"));
 
-#if GTK2
-    text_view_ = glade_xml_get_widget(xml, "source_text");
-#else
     text_ = glade_xml_get_widget(xml, "source_text");
-#endif
     setup_text();
     column_checks_[COL_LINE] = glade_xml_get_widget(xml, "source_line_check");
     column_checks_[COL_BLOCK] = glade_xml_get_widget(xml, "source_block_check");
@@ -134,11 +91,6 @@ sourcewin_t::sourcewin_t()
     right_pad_label_ = glade_xml_get_widget(xml, "source_right_pad_label");
     ui_register_windows_menu(ui_get_dummy_menu(xml, "source_windows_dummy"));
     
-#if GTK2 && !defined(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE)
-    /* hacky select_region() implementation relies on not having line wrapping */
-    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(text_view_), GTK_WRAP_NONE);
-#endif /* GTK2 && !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
-
     xml = ui_load_tree("source_saveas");
     saveas_dialog_ = glade_xml_get_widget(xml, "source_saveas");
     attach(saveas_dialog_);
@@ -148,9 +100,6 @@ sourcewin_t::sourcewin_t()
 
 sourcewin_t::~sourcewin_t()
 {
-#if !GTK2
-    g_array_free(offsets_by_line_, /*free_segment*/TRUE);
-#endif
     instances_.remove(this);
 }
 
@@ -349,19 +298,7 @@ sourcewin_t::update()
     cov_line_t *ln;
     int i, nstrs;
     gfloat scrollval;
-#if GTK2
-    GtkTextView *text_view = GTK_TEXT_VIEW(text_view_);
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(text_view);
-    GtkTextTag *tag;
-#else
-    GtkText *text = GTK_TEXT(text_);
-    GdkColor *color;
-    static GdkColor *scolors[cov_line_t::NUM_STATUS] =
-    {
-    	&prefs.covered_foreground, &prefs.partcovered_foreground,
-	&prefs.uncovered_foreground, &prefs.uninstrumented_foreground
-    };
-#endif
+    ui_text_tag *tag;
     const char *strs[NUM_COLS];
     char linenobuf[32];
     char blockbuf[32];
@@ -380,16 +317,8 @@ sourcewin_t::update()
 	return;
     }
 
-#if GTK2
-    scrollval = text_view->vadjustment->value;
-    gtk_text_buffer_set_text(buffer, "", -1);
-#else
-    scrollval = text->vadj->value;
-    gtk_text_freeze(text);
-    gtk_editable_delete_text(GTK_EDITABLE(text), 0, -1);
-    
-    g_array_set_size(offsets_by_line_, 0);
-#endif
+    scrollval = ui_text_vscroll_sample(text_);
+    ui_text_begin(text_);
 
     lineno = 0;
     while (fgets_tabexpand(linebuf, sizeof(linebuf), fp) != 0)
@@ -397,34 +326,10 @@ sourcewin_t::update()
     	++lineno;
     	ln = f->nth_line(lineno);
 	
-#if !GTK2
-	/*
-	 * Stash the offset of this (file) line number.
-	 *
-	 * Felching text widget does this internally, wish we could
-	 * get a hold of that...TODO: not if we start inserting
-	 * phantom lines, then the correspondence between file lineno
-	 * and text widget lineno goes away.
-	 */
-	{
-	    unsigned int offset = gtk_text_get_length(text);
-	    g_array_append_val(offsets_by_line_, offset);
-#if DEBUG > 10
-	    fprintf(stderr, "line=%d offset=%d\n", lineno, offset);
-#endif
-	}
-#endif
-
-#if GTK2
     	/* choose colours */
 	tag = 0;
 	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
 	    tag = text_tags_[ln->status()];
-#else
-	color = 0;
-	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
-	    color = scolors[ln->status()];
-#endif
 
     	/* generate strings */
 	
@@ -469,38 +374,14 @@ sourcewin_t::update()
 	    strs[nstrs++] = "\n";
 
     	for (i = 0 ; i < nstrs ; i++)
-	{
-#if GTK2
-    	    GtkTextIter end;
-
-    	    gtk_text_buffer_get_end_iter(buffer, &end);
-    	    gtk_text_buffer_insert_with_tags(buffer, &end, strs[i], -1,
-	    	    	    	    	     tag, (char*)0);
-#else
-    	    gtk_text_insert(text, font_,
-	    		    color, /*back*/0,
-			    strs[i], strlen(strs[i]));
-#endif
-    	}
+    	    ui_text_add(text_, tag, strs[i], -1);
     }
-    
-    max_lineno_ = lineno;
-#if !GTK2
-    assert(offsets_by_line_->len == max_lineno_);
-#endif
     
     fclose(fp);
 
+    ui_text_end(text_);
     /* scroll back to the line we were at before futzing with the text */
-#if GTK2
-    /* Work around rounding bug in gtk 2.0.2 */
-    if (scrollval + text_view->vadjustment->page_size + 0.5 > text_view->vadjustment->upper)
-    	scrollval = text_view->vadjustment->upper - text_view->vadjustment->page_size - 0.5;
-    gtk_adjustment_set_value(text_view->vadjustment, scrollval);
-#else
-    gtk_text_thaw(text);
-    gtk_adjustment_set_value(text->vadj, scrollval);
-#endif
+    ui_text_vscroll_restore(text_, scrollval);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -524,11 +405,7 @@ sourcewin_t::update_title_buttons()
      * Set the left and right padding labels to just the right values
      * to align the title buttons with the main text window body.
      */
-#if GTK2
-    scrollw = text_view_->parent;
-#else
     scrollw = text_->parent;
-#endif
     lpad = rpad = GTK_CONTAINER(scrollw)->border_width;
     sbwidth = GTK_SCROLLED_WINDOW(scrollw)->vscrollbar->allocation.width + 
     	      GTK_SCROLLED_WINDOW_GET_CLASS(scrollw)->scrollbar_spacing;
@@ -596,98 +473,13 @@ sourcewin_t::select_region(unsigned long startline, unsigned long endline)
     fprintf(stderr, "sourcewin_t::select_region: startline=%ld endline=%ld\n",
     	    	startline, endline);
 #endif
-
-#if GTK2
-#ifdef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
-    GtkTextIter start, end;
-    GtkTextBuffer *buffer;
-
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
-    
-    gtk_text_buffer_get_iter_at_line(buffer, &start, startline);
-    gtk_text_buffer_get_iter_at_line(buffer, &end, endline);
-
-    /* this function appeared sometime after 2.0.2 */
-    gtk_text_buffer_select_range(buffer, &start, &end);
-#else /* !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
-    /*
-     * In GTK late 1.99 there is no way I can see to use the official
-     * API to select a range of rows.  However, we can fake it by
-     * calling TextView class methods as if the user had entered the
-     * keystrokes for cursor movement and selection...this is a HACK!
-     * Unfortunately we can only move down by display lines not
-     * logical text lines, so this technique relies on them being
-     * identical, i.e. no line wrap.
-     */
-    GtkTextViewClass *klass = GTK_TEXT_VIEW_GET_CLASS(text_view_);
-    GtkTextView *tview = GTK_TEXT_VIEW(text_view_);
-    /* first move the cursor to the start of the buffer */
-    (*klass->move_cursor)(tview, GTK_MOVEMENT_BUFFER_ENDS, -1, FALSE);
-    /* move the cursor down to the start line */
-    if (startline > 1)
-	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINES,
-    	    	    	      (gint)startline-1, FALSE);
-    /* select down to the end line */
-    if (endline == startline)
-	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINE_ENDS,
-    	    	    	      1, /*extend_selection*/TRUE);
-    else
-	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINES,
-    	    	    	      (gint)(endline - startline + 1),
-			      /*extend_selection*/TRUE);
-#endif /* !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
-#else /* !GTK2 */
-    int endoff;
-    
-    assert(offsets_by_line_->len > 0);
-
-    if (startline < 1)
-    	startline = 1;
-    if (endline < 1)
-    	endline = startline;
-    if (startline > offsets_by_line_->len)
-    	startline = offsets_by_line_->len;
-    if (endline > offsets_by_line_->len)
-    	endline = offsets_by_line_->len;
-    if (startline > endline)
-    	return;
-	
-    assert(startline >= 1);
-    assert(startline <= offsets_by_line_->len);
-    assert(endline >= 1);
-    assert(endline <= offsets_by_line_->len);
-    
-    /* set endoff to the first location after the last line to be selected */
-    if (endline == offsets_by_line_->len)
-	endoff = -1;
-    else
-	endoff = g_array_index(offsets_by_line_, unsigned int, endline)-1;
-
-    gtk_editable_select_region(GTK_EDITABLE(text_),
-    	    g_array_index(offsets_by_line_, unsigned int, startline-1),
-    	    endoff);
-#endif
+    ui_text_select_lines(text_, startline, endline);
 }
 
 void
 sourcewin_t::ensure_visible(unsigned long line)
 {
-#if GTK2
-    GtkTextIter iter;
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
-    
-    gtk_text_buffer_get_iter_at_line(buffer, &iter, line);
-    gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(text_view_),
-                                 &iter,
-                                 0.0, FALSE, 0.0, 0.0);
-#else
-    /* This mostly works.  Not totally predictable but good enough for now */
-    GtkAdjustment *adj = GTK_TEXT(text_)->vadj;
-
-    gtk_adjustment_set_value(adj,
-	    	adj->upper * (double)line / (double)max_lineno_
-		    - adj->page_size/2.0);
-#endif
+    ui_text_ensure_visible(text_, line);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -756,84 +548,6 @@ sourcewin_t::show_filename(const char *filename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if !GTK2
-unsigned long
-sourcewin_t::offset_to_lineno(unsigned int offset)
-{
-    unsigned int top, bottom;
-    
-    if (offset == 0)
-    	return 0;
-
-    top = offsets_by_line_->len-1;
-    bottom = 0;
-    
-    fprintf(stderr, "offset_to_lineno: { offset=%u top=%u bottom=%u\n",
-    	    offset, top, bottom);
-
-    while (top - bottom > 1)
-    {
-    	unsigned int mid = (top + bottom)/2;
-	unsigned int midoff = g_array_index(offsets_by_line_, unsigned int, mid);
-	
-    	fprintf(stderr, "offset_to_lineno:     top=%d bottom=%d mid=%d midoff=%u\n",
-	    	    	 top, bottom, mid, midoff);
-
-	if (midoff == offset)
-	    top = bottom = mid;
-    	else if (midoff < offset)
-	    bottom = mid;
-	else
-	    top = mid;
-    }
-
-    fprintf(stderr, "offset_to_lineno: offset=%u line=%u }\n",
-    	    offset, bottom);
-
-    return (unsigned long)bottom+1;
-}
-#endif
-
-void
-sourcewin_t::get_selected_lines(unsigned long *startp, unsigned long *endp)
-{
-#if GTK2
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
-    GtkTextIter start_iter, end_iter;
-    
-    if (gtk_text_buffer_get_selection_bounds(buffer, &start_iter, &end_iter))
-    {
-	if (startp != 0)
-	    *startp = 0;
-	if (endp != 0)
-	    *endp = 0;
-    }
-    else
-    {
-	if (startp != 0)
-	    *startp = gtk_text_iter_get_line(&start_iter);
-	if (endp != 0)
-	    *endp = gtk_text_iter_get_line(&end_iter);
-    }
-#else
-    if (GTK_EDITABLE(text_)->selection_start_pos == 0 &&
-    	GTK_EDITABLE(text_)->selection_end_pos == 0)
-    {
-	if (startp != 0)
-	    *startp = 0;
-	if (endp != 0)
-	    *endp = 0;
-    }
-    else
-    {
-	if (startp != 0)
-	    *startp = offset_to_lineno(GTK_EDITABLE(text_)->selection_start_pos);
-	if (endp != 0)
-	    *endp = offset_to_lineno(GTK_EDITABLE(text_)->selection_end_pos-1);
-    }
-#endif
-}
-
 
 GLADE_CALLBACK void
 on_source_column_check_activate(GtkWidget *w, gpointer data)
@@ -892,7 +606,7 @@ on_source_summarise_function_activate(GtkWidget *w, gpointer data)
     cov_line_t *ln;
     
     loc.filename = (char *)sw->filename_.data();
-    sw->get_selected_lines(&loc.lineno, 0);
+    ui_text_get_selected_lines(sw->text_, &loc.lineno, 0);
 
     if (loc.lineno == 0 ||
     	(ln = cov_line_t::find(&loc)) == 0 ||
@@ -907,7 +621,7 @@ on_source_summarise_range_activate(GtkWidget *w, gpointer data)
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     unsigned long start, end;
     
-    sw->get_selected_lines(&start, &end);
+    ui_text_get_selected_lines(sw->text_, &start, &end);
     if (start != 0)
 	summarywin_t::show_lines(sw->filename_, start, end);
 }
@@ -962,19 +676,7 @@ sourcewin_t::save_with_annotations(const char *filename)
     /*
      * Get the contents of the text window, including all visible columns
      */
-#if GTK2
-    {
-	GtkTextBuffer *buffer;
-    	GtkTextIter start, end;
-	
-	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_));
-    	gtk_text_buffer_get_bounds(buffer, &start, &end);
-    	contents = gtk_text_buffer_get_text(buffer, &start, &end,
-                                           /*include_hidden_chars*/FALSE);
-    }
-#else
-    contents = gtk_editable_get_chars(GTK_EDITABLE(text_), 0, -1);
-#endif
+    contents = ui_text_get_contents(text_);
     length = strlen(contents);
 
     /*

@@ -74,10 +74,6 @@ private:
     void populate_functions();
     void populate();
     void update();
-    void get_selected_lines(unsigned long *startp, unsigned long *endp);
-#if !GTK2
-    unsigned long offset_to_lineno(unsigned int offset);
-#endif
     void update_title_buttons();
     gboolean save_with_annotations(const char *filename);
     static int delayed_function_activate(gpointer userdata);
@@ -90,22 +86,13 @@ private:
     }
 
     static gboolean initialised_;
-#if GTK2
-    static PangoFontDescription *font_desc_;
-#else
-    static GdkFont *font_;
-#endif
     int font_width_;
     static const int column_widths_[NUM_COLS];
     static const char *column_names_[NUM_COLS];
     static list_t<sourcewin_t> instances_;
     
-#if GTK2
-    GtkWidget *text_view_;
-    GtkTextTag *text_tags_[cov_line_t::NUM_STATUS];
-#else
-    GtkWidget *text_;
-#endif
+    GtkWidget *text_;	/* GtkText in gtk1.2, GtkTextView in gtk2.0 */
+    ui_text_tag *text_tags_[cov_line_t::NUM_STATUS];
     GtkWidget *column_checks_[NUM_COLS];
     GtkWidget *colors_check_;
     GtkWidget *toolbar_;
@@ -113,10 +100,6 @@ private:
     GtkWidget *functions_combo_;
     gboolean populating_;
     string_var filename_;
-    unsigned int max_lineno_;	/* the largest linenumber */
-#if !GTK2
-    GArray *offsets_by_line_;
-#endif
 
     GtkWidget *titles_hbox_;
     GtkWidget *left_pad_label_;
