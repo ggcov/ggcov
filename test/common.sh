@@ -19,7 +19,14 @@ TGGCOV_ANNOTATE_FORMAT=auto
 TGGCOV_FLAGS=
 SUBTEST=
 srcdir=`/bin/pwd`
-O=o.`../platform.sh`
+if [ -n "$RPLATFORM" ]; then
+    PLATFORM="$RPLATFORM"
+    CANNED=yes
+else
+    PLATFORM=`../platform.sh`
+    CANNED=no
+fi
+O=o.$PLATFORM
 
 TMP1=/tmp/ggcov-test-$$a
 TMP2=/tmp/ggcov-test-$$b
@@ -38,6 +45,16 @@ vdo ()
     eval "$@"
 }
 
+vncdo ()
+{
+    if [ $CANNED = yes ]; then
+	echo "[skipping] $@"
+    else
+	echo "$@"
+	eval "$@"
+    fi
+}
+
 vcapdo ()
 {
     local OUTFILE=$1
@@ -54,23 +71,28 @@ vcmd ()
 
 init ()
 {
-    vcmd "init $*"
-    vdo /bin/rm -fr $O
-    vdo mkdir $O
+    if [ $CANNED = yes ]; then
+	vcmd "init[canned] $*"
+	[ -d $O ] || fatal "$O: No such directory"
+    else
+	vcmd "init $*"
+	vdo /bin/rm -fr $O
+	vdo mkdir $O
+    fi
     vdo cd $O
 }
 
 compile_c ()
 {
     vcmd "compile_c $*"
-    vdo $CC $CWARNFLAGS $CCOVFLAGS $CDEFINES -c $srcdir/$1 || fatal "can't compile $srcdir/$1"
+    vncdo $CC $CWARNFLAGS $CCOVFLAGS $CDEFINES -c $srcdir/$1 || fatal "can't compile $srcdir/$1"
 }
 
 compile_cxx ()
 {
     vcmd "compile_cxx $*"
     CXXLINK=yes
-    vdo $CXX $CXXWARNFLAGS $CXXCOVFLAGS $CXXDEFINES -c $srcdir/$1 || fatal "can't compile $srcdir/$1"
+    vncdo $CXX $CXXWARNFLAGS $CXXCOVFLAGS $CXXDEFINES -c $srcdir/$1 || fatal "can't compile $srcdir/$1"
 }
 
 link ()
@@ -81,10 +103,10 @@ link ()
     
     case "$CXXLINK" in
     yes)
-	vdo $CXX $CXXCOVFLAGS -o "$AOUT" "$@" $LDLIBS || fatal "can't link $AOUT"
+	vncdo $CXX $CXXCOVFLAGS -o "$AOUT" "$@" $LDLIBS || fatal "can't link $AOUT"
     	;;
     no)
-	vdo $CC $CCOVFLAGS -o "$AOUT" "$@" $LDLIB || fatal "can't link $AOUT"
+	vncdo $CC $CCOVFLAGS -o "$AOUT" "$@" $LDLIB || fatal "can't link $AOUT"
     	;;
     esac
 }
@@ -108,6 +130,10 @@ _tggcov_file ()
 run_gcov ()
 {
     vcmd "run_gcov $*"
+    if [ $CANNED = yes ]; then
+	echo "[skipping] gcov -b -f -o $O $SRC"
+	return
+    fi
     local SRC="$1"
     (
         vdo cd $srcdir

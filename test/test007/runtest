@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 . ../common.sh
 
@@ -7,10 +7,10 @@ init
 compile_c foo.c
 link foo foo.o
 
-./foo 1
-./foo 2
-./foo 3
-./foo 4
+vncdo ./foo 1
+vncdo ./foo 2
+vncdo ./foo 3
+vncdo ./foo 4
 
 run_gcov foo.c
 run_tggcov foo.c

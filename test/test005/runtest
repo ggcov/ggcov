@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
 . ../common.sh
 
@@ -8,31 +8,31 @@ compile_cxx foo.C
 link foo foo.o
 
 subtest 1
-./foo 1
+vncdo ./foo 1
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C
 
 subtest 2
-./foo 2
+vncdo ./foo 2
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C
 
 subtest 3
-./foo 3
+vncdo ./foo 3
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C
 
 subtest 42
-./foo 42
+vncdo ./foo 42
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C
 
 subtest -1
-./foo -1
+vncdo ./foo -1
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C
