@@ -1,28 +1,39 @@
 #!/bin/sh
 
-CXX="c++"
-CWARNFLAGS="-Wall"
-CCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
+. ../common.sh
 
-set -x
-/bin/rm -f *.bb *.bbg
-$CXX $CWARNFLAGS $CCOVFLAGS -c foo.C
-$CXX $CCOVFLAGS -o foo foo.o
+init
 
-/bin/rm -f *.da *.gcov
+compile_cxx foo.C
+link foo foo.o
 
+subtest 1
 ./foo 1
-gcov -b -f foo.C && mv foo.c.gcov foo.c.gcov1
+run_gcov foo.C
+run_tggcov foo.C
+compare_lines foo.C
 
+subtest 2
 ./foo 2
-gcov -b -f foo.C && mv foo.c.gcov foo.c.gcov2
+run_gcov foo.C
+run_tggcov foo.C
+compare_lines foo.C
 
+subtest 3
 ./foo 3
-gcov -b -f foo.C && mv foo.c.gcov foo.c.gcov3
+run_gcov foo.C
+run_tggcov foo.C
+compare_lines foo.C
 
+subtest 42
 ./foo 42
-gcov -b -f foo.C && mv foo.c.gcov foo.c.gcov42
+run_gcov foo.C
+run_tggcov foo.C
+compare_lines foo.C
 
+subtest -1
 ./foo -1
-gcov -b -f foo.C && mv foo.c.gcov foo.c.gcov-1
+run_gcov foo.C
+run_tggcov foo.C
+compare_lines foo.C
 

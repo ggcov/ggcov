@@ -1,0 +1,2 @@
+
+Tests how the multiple blocks in a for(;;) statement on a single line are counted.

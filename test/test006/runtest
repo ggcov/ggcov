@@ -1,17 +1,15 @@
 #!/bin/sh
 
-CC="gcc"
-CWARNFLAGS="-Wall"
-CCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
+. ../common.sh
 
-set -x
-/bin/rm -f *.bb *.bbg
-$CC $CWARNFLAGS $CCOVFLAGS -c foo.c || exit 1
-$CC $CCOVFLAGS -o foo foo.o || exit 1
+init
 
-/bin/rm -f *.da *.gcov
+compile_c foo.c
+link foo foo.o
 
 ./foo 1 2
 ./foo 3 4
 
-gcov -b -f foo.c
+run_gcov foo.c
+run_tggcov foo.c
+compare_lines

@@ -14,4 +14,9 @@ link foo foo.o
 
 run_gcov foo.c
 run_tggcov foo.c
-compare_lines
+compare_lines foo.c
+
+# run_gcov bar.c
+# run_tggcov bar.c
+# compare_lines bar.c
+

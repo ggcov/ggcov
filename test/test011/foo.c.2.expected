@@ -1,0 +1,108 @@
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:
+        -:    4:int function_one(int x);
+        -:    5:
+        -:    6:int
+        -:    7:function_two(int x)
+        7:    8:{
+        7:    9:    return function_one(x>>1);
+        7:   10:}
+        -:   11:
+        -:   12:int
+        -:   13:function_three(int x)
+        -:   14:{
+        4:   15:    x += 4;
+        4:   16:    x -= 5;
+        4:   17:    x++;
+        4:   18:    return x>>1;
+        4:   19:}
+        -:   20:
+        -:   21:int
+        -:   22:function_one(int x)
+        -:   23:{
+       11:   24:    if (x & 1)
+        7:   25:    	x += function_two(x);
+        -:   26:    else
+        4:   27:    	x += function_three(x);
+       11:   28:    return x;
+       11:   29:}
+        -:   30:
+        -:   31:#ifdef FOO
+        -:   32:int
+        -:   33:unused_function_FOO(int x)
+        -:   34:{
+        -:   35:    x += 24;
+        -:   36:    x -= 56;
+        -:   37:    return x;
+        -:   38:}
+        -:   39:#endif
+        -:   40:
+        -:   41:# if BAR
+        -:   42:int
+        -:   43:unused_function_BAR(int x)
+        -:   44:{
+        -:   45:    x += 24;
+        -:   46:    x -= 56;
+        -:   47:    return x;
+        -:   48:}
+        -:   49:#endif/* BAR */
+        -:   50:
+        -:   51:# if defined(BAZ)
+        -:   52:int
+        -:   53:unused_function_BAZ(int x)
+        -:   54:{
+        -:   55:    x += 24;
+        -:   56:    x -= 56;
+        -:   57:    return x;
+        -:   58:}
+        -:   59:#else	/*!BAZ*/
+        -:   60:int
+        -:   61:unused_function_notBAZ(int x)
+        -:   62:{
+    #####:   63:    x += 24;
+    #####:   64:    x -= 56;
+    #####:   65:    return x;
+    #####:   66:}
+        -:   67:#endif	/*BAZ*/
+        -:   68:
+        -:   69:#           	if  /*comm/*ent1*/\
+        -:   70:    defined(/* comm//ent2 */QUUX) &&  \
+        -:   71:    !defined(FOONLY)/*comment3*/
+        -:   72:int
+        -:   73:unused_function_QUUX(int x)
+        -:   74:{
+    #####:   75:    x += 24;
+    #####:   76:    x -= 56;
+    #####:   77:    return x;
+    #####:   78:}
+        -:   79:#endif
+        -:   80:
+        -:   81:#ifndef FARNSWORTH
+        -:   82:int
+        -:   83:unused_function_notFARNSWORTH(int x)
+        -:   84:{
+    #####:   85:    x += 24;
+    #####:   86:    x -= 56;
+    #####:   87:    return x;
+    #####:   88:}
+        -:   89:#endif
+        -:   90:
+        -:   91:int
+        -:   92:main(int argc, char **argv)
+        -:   93:{
+        3:   94:    int x, y;
+        -:   95:    int i;
+        -:   96:    
+        7:   97:    for (i = 1 ; i < argc ; i++)
+        -:   98:    {
+        4:   99:    	x = atoi(argv[i]);
+        4:  100:    	y = function_one(x);
+        -:  101:#ifdef FOO
+        -:  102:    	if (x == 42 && x == 31415926)
+        -:  103:	    unused_function_FOO(x);
+        -:  104:#endif
+        4:  105:	printf("%d -> %d\n", x, y);
+        4:  106:    }
+        3:  107:    return 0;
+        3:  108:}

@@ -1,0 +1,2 @@
+This directory tests scanning of source files for conditional variables
+to implement the -X option.
