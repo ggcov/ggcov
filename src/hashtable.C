@@ -19,18 +19,46 @@
 
 #include "hashtable.H"
 
-CVSID("$Id: hashtable.C,v 1.1 2003-06-01 09:30:24 gnb Exp $");
+CVSID("$Id: hashtable.C,v 1.2 2004-02-22 10:59:20 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-GHashFunc hashtable_ops_t<char*>::hash = g_str_hash;
-GCompareFunc hashtable_ops_t<char*>::compare = g_str_equal;
+void
+gnb_hash_table_add_one_key(gpointer key, gpointer value, gpointer closure)
+{
+    list_t<void> *list = (list_t<void> *)closure;
+    
+    list->prepend(key);
+}
 
-GHashFunc hashtable_ops_t<const char*>::hash = g_str_hash;
-GCompareFunc hashtable_ops_t<const char*>::compare = g_str_equal;
+static int
+string_compare(gconstpointer v1, gconstpointer v2)
+{
+    return strcmp((const char *)v1, (const char *)v2);
+}
 
-GHashFunc hashtable_ops_t<void*>::hash = g_direct_hash;
-GCompareFunc hashtable_ops_t<void*>::compare = g_direct_equal;
+static int
+direct_compare(gconstpointer v1, gconstpointer v2)
+{
+    if ((unsigned long)v1 < (unsigned long)v2)
+    	return -1;
+    else if ((unsigned long)v1 > (unsigned long)v2)
+    	return 1;
+    else
+    	return 0;
+}
+
+GHashFunc hashtable_ops_t<char>::hash = g_str_hash;
+GCompareFunc hashtable_ops_t<char>::compare = g_str_equal;
+GCompareFunc hashtable_ops_t<char>::sort_compare = string_compare;
+
+GHashFunc hashtable_ops_t<const char>::hash = g_str_hash;
+GCompareFunc hashtable_ops_t<const char>::compare = g_str_equal;
+GCompareFunc hashtable_ops_t<const char>::sort_compare = string_compare;
+
+GHashFunc hashtable_ops_t<void>::hash = g_direct_hash;
+GCompareFunc hashtable_ops_t<void>::compare = g_direct_equal;
+GCompareFunc hashtable_ops_t<void>::sort_compare = direct_compare;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

@@ -21,6 +21,7 @@
 #define _hashtable_H_ 1
 
 #include "common.h"
+#include "list.H"
 
 /*
  * Wrapper for glib's GHashTable structure.
@@ -40,8 +41,13 @@ template<class K> class hashtable_ops_t
 {
 public:
     static GHashFunc hash;
+    /* for hash, returns 1 iff same */
     static GCompareFunc compare;
+    /* for sorting keys, returns <0, 0, >0 like strcmp */
+    static GCompareFunc sort_compare;
 };
+
+extern void gnb_hash_table_add_one_key(gpointer, gpointer, gpointer);
 
 template<class K/*key*/, class T/*item*/> class hashtable_t : public GHashTable
 {
@@ -67,33 +73,33 @@ public:
     	g_hash_table_destroy((GHashTable *)x);
     }
 
-    void insert(K key, T *value)
+    void insert(K *key, T *value)
     {
     	g_hash_table_insert(this, (gpointer)key, (gpointer)value);
     }
     
-    void remove(K key)
+    void remove(K *key)
     {
     	g_hash_table_remove(this, (gconstpointer)key);
     }
     
-    T *lookup(K key)
+    T *lookup(K *key)
     {
     	return (T *)g_hash_table_lookup(this, (gconstpointer)key);
     }
     
-    gboolean lookup_extended(K key, K *orig_key_ret, T **value_ret)
+    gboolean lookup_extended(K *key, K *orig_key_ret, T **value_ret)
     {
     	return g_hash_table_lookup_extended(this, (gconstpointer)key,
 	    	    	(gpointer *)orig_key_ret, (gpointer *)value_ret);
     }
     
-    void foreach(void (*func)(K, T*, void *closure), void *closure)
+    void foreach(void (*func)(K*, T*, void *closure), void *closure)
     {
     	g_hash_table_foreach(this, (GHFunc)*func, closure);
     }
     
-    void foreach_remove(gboolean (*func)(K, T*, void *closure), void *closure)
+    void foreach_remove(gboolean (*func)(K*, T*, void *closure), void *closure)
     {
     	g_hash_table_foreach_remove(this, (GHRFunc)func, closure);
     }
@@ -101,6 +107,13 @@ public:
     guint size() const
     {
     	return g_hash_table_size((GHashTable*)this);
+    }
+
+    /* Builds a list of all the keys, sorted in increasing key order */
+    void keys(list_t<K> *list) const
+    {
+    	g_hash_table_foreach((GHashTable*)this, gnb_hash_table_add_one_key, list);
+	list->sort((gint (*)(const K*, const K*))hashtable_ops_t<K>::sort_compare);
     }
 };
 
