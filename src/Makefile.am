@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.16 2002-12-31 14:37:56 gnb Exp $
+# $Id: Makefile.am,v 1.17 2003-02-18 14:41:24 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
@@ -31,7 +31,7 @@ ggcov_SOURCES=	common.h common.c \
 		cov_block.H cov_block.C \
 		cov_arc.H cov_arc.C \
 		cov_callgraph.H cov_callgraph.C \
-		cov.H cov.C \
+		cov_types.H cov.H cov.C \
 		ui.h ui.c uix.h uix.c \
 		gnbprogressbar.h gnbprogressbar.c \
 		confsection.H confsection.C \
@@ -46,10 +46,10 @@ ggcov_SOURCES=	common.h common.c \
 		fileswin.H fileswin.C \
 		prefswin.H prefswin.C \
 		help.c ggcov.c
-INCLUDES=	$(LIBGLADE_CFLAGS)
-ggcov_LDADD=	$(LIBGLADE_LIBS) -lbfd -liberty
-CPPFLAGS=	-DPKGDATADIR="\"$(pkgdatadir)\"" \
-		-DDEBUG=$(DEBUG) -DUI_DEBUG=$(UI_DEBUG)
+INCLUDES=	$(GGCOV_CFLAGS) -DPKGDATADIR="\"$(pkgdatadir)\"" \
+ 		-DDEBUG=$(DEBUG) -DUI_DEBUG=$(UI_DEBUG)
+ggcov_LDADD=	$(GGCOV_LIBS) -lbfd -liberty
+
 
 # Note this is an automake conditional *not* a gmake conditional
 if DEBUG
@@ -72,4 +72,4 @@ EXTRA_CLEAN=	licence.c
 noinst_PROGRAMS=	bbdump
 
 bbdump_SOURCES= bbdump.c covio.c estring.C
-bbdump_LDADD=	$(LIBGLADE_LIBS)
+bbdump_LDADD=	$(GGCOV_LIBS)
