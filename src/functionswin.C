@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: functionswin.C,v 1.10 2003-06-09 05:26:02 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.11 2003-07-20 11:20:25 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -34,9 +34,11 @@ CVSID("$Id: functionswin.C,v 1.10 2003-06-09 05:26:02 gnb Exp $");
 #define NUM_COLS    	4
 #else
 #define COL_CLOSURE	4
-#define NUM_COLS    	5
+#define COL_FG_GDK	5
+#define NUM_COLS    	6
 #define COL_TYPES \
-    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER
+    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
+    G_TYPE_POINTER, GDK_TYPE_COLOR
 #endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -168,6 +170,7 @@ functionswin_t::functionswin_t()
 
     col = gtk_tree_view_column_new_with_attributes(_("Lines"), rend,
     	    	"text", COL_LINES,
+		"foreground-gdk", COL_FG_GDK,/* only needed on 1st column */
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_LINES);
     gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
@@ -321,8 +324,8 @@ functionswin_t::update()
 	    COL_CALLS, text[COL_CALLS],
 	    COL_BRANCHES, text[COL_BRANCHES],
 	    COL_CLOSURE, (*iter),
+	    COL_FG_GDK, color,
 	    -1);
-	/* TODO: colour */
 #endif
     }
     

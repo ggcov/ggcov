@@ -25,7 +25,7 @@
 #include "prefs.H"
 #include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.18 2003-07-18 13:37:50 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.19 2003-07-20 11:20:25 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -36,9 +36,11 @@ CVSID("$Id: fileswin.C,v 1.18 2003-07-18 13:37:50 gnb Exp $");
 #define NUM_COLS    	4
 #else
 #define COL_CLOSURE	4
-#define NUM_COLS    	5
+#define COL_FG_GDK	5
+#define NUM_COLS    	6
 #define COL_TYPES \
-    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER
+    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
+    G_TYPE_POINTER, GDK_TYPE_COLOR
 #endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -214,6 +216,7 @@ fileswin_t::fileswin_t()
 
     col = gtk_tree_view_column_new_with_attributes(_("File"), rend,
     	    	"text", COL_FILE,
+		"foreground-gdk", COL_FG_GDK,/* only needed on 1st column */
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_FILE);
     gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
@@ -415,6 +418,7 @@ fileswin_t::add_node(
 	    COL_CALLS, text[COL_CALLS],
 	    COL_BRANCHES, text[COL_BRANCHES],
 	    COL_CLOSURE, fr,
+	    COL_FG_GDK, color,
 	    -1);
 #endif
     }
