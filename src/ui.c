@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.20 2003-07-19 06:26:13 gnb Exp $");
+CVSID("$Id: ui.c,v 1.21 2003-07-19 07:31:17 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -1041,7 +1041,7 @@ ui_text_get_selected_lines(
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
     GtkTextIter start_iter, end_iter;
     
-    if (gtk_text_buffer_get_selection_bounds(buffer, &start_iter, &end_iter))
+    if (!gtk_text_buffer_get_selection_bounds(buffer, &start_iter, &end_iter))
     {
 	if (startp != 0)
 	    *startp = 0;
@@ -1051,9 +1051,9 @@ ui_text_get_selected_lines(
     else
     {
 	if (startp != 0)
-	    *startp = gtk_text_iter_get_line(&start_iter);
+	    *startp = gtk_text_iter_get_line(&start_iter)+1;
 	if (endp != 0)
-	    *endp = gtk_text_iter_get_line(&end_iter);
+	    *endp = gtk_text_iter_get_line(&end_iter)+1;
     }
 #else /* !GTK2 */
     ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
