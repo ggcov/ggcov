@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.h"
 
-CVSID("$Id: ui.c,v 1.4 2001-11-25 15:17:34 gnb Exp $");
+CVSID("$Id: ui.c,v 1.5 2001-11-28 08:08:01 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -349,14 +349,47 @@ ui_add_simple_menu_item(
      
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static const char ui_clist_arrow_key[] = "ui_clist_arrow_key";
+
+static gboolean
+ui_clist_is_sortable_column(GtkCList *clist, int col)
+{
+    GArray *sortables;
+    int i;
+
+    sortables = gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
+    assert(sortables != 0);
+    
+    for (i = 0 ; i < sortables->len ; i++)
+    	if (g_array_index(sortables, int, i) == col)
+	    return TRUE;
+	    
+    return FALSE;   /* this column not sortable */
+}
+
+static void
+ui_clist_sortables_destroy(gpointer userdata)
+{
+    g_array_free((GArray *)userdata, /*free_segment*/TRUE);
+}
+
 static void
 ui_on_clist_click_column(GtkCList *clist, int col, gpointer userdata)
 {
+    /* first, check this is a sortable column */
+    if (!ui_clist_is_sortable_column(clist, col))
+    	return;     	/* this column not sortable */
+
+    /* now we can update the sort specifications */
     if (col == clist->sort_column)
+	/* toggle the sort direction */
     	ui_clist_set_sort_type(clist, (clist->sort_type == GTK_SORT_ASCENDING ?
 	    	    	    	       GTK_SORT_DESCENDING : GTK_SORT_ASCENDING));
     else
+	/* make this the sortable column */
     	ui_clist_set_sort_column(clist, col);
+	
+    /* update the order in the list */
     gtk_clist_sort(clist);
 }
 
@@ -367,8 +400,8 @@ ui_clist_init_column_arrow(GtkCList *clist, int col)
     GtkWidget *label;
     GtkWidget *arrow;
     GtkWidget *oldlabel;
-    char *oldstr = "FOOBAR";
-    static const char ui_clist_arrow_key[] = "ui_clist_arrow_key";
+    char *oldstr = 0;
+    GArray *sortables;
     
     oldlabel = gtk_clist_get_column_widget(clist, col);
     gtk_label_get(GTK_LABEL(oldlabel), &oldstr);
@@ -388,15 +421,19 @@ ui_clist_init_column_arrow(GtkCList *clist, int col)
     gtk_widget_show(arrow);
     
     gtk_clist_set_column_widget(clist, col, hbox);
-    /* TODO: free oldstr */
+    gtk_clist_column_title_active(clist, col);
     
-    /* Setup signal handler -- just once */
-    if (gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key) == 0)
+    /* Setup signal handler and update sortables array */
+    sortables = gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
+    if (sortables == 0)
     {
-    	gtk_object_set_data(GTK_OBJECT(clist), ui_clist_arrow_key, (gpointer)1);
+    	sortables = g_array_new(/*zero_terminated*/FALSE, /*clear*/FALSE, sizeof(int));
+    	gtk_object_set_data_full(GTK_OBJECT(clist), ui_clist_arrow_key,
+	    	    	    	 sortables, ui_clist_sortables_destroy);
 	gtk_signal_connect(GTK_OBJECT(clist), "click_column",
     	    	    	GTK_SIGNAL_FUNC(ui_on_clist_click_column), 0);
     }
+    g_array_append_val(sortables, col);
 }
 
 static GtkWidget *
@@ -413,8 +450,14 @@ ui_clist_set_sort_column(GtkCList *clist, int col)
 {
     GtkWidget *arrow;
     
-    arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
-    gtk_arrow_set(GTK_ARROW(arrow), GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+    if (!ui_clist_is_sortable_column(clist, col))
+    	return;
+	
+    if (ui_clist_is_sortable_column(clist, clist->sort_column))
+    {
+	arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
+	gtk_arrow_set(GTK_ARROW(arrow), GTK_ARROW_DOWN, GTK_SHADOW_NONE);
+    }
     
     gtk_clist_set_sort_column(clist, col);
 
@@ -428,6 +471,9 @@ void
 ui_clist_set_sort_type(GtkCList *clist, GtkSortType type)
 {
     GtkWidget *arrow;
+
+    if (!ui_clist_is_sortable_column(clist, clist->sort_column))
+    	return;
 
     gtk_clist_set_sort_type(clist, type);
     arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
