@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.9 2003-06-28 10:43:53 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.10 2003-06-30 13:52:56 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -186,6 +186,22 @@ cov_function_t::reconcile_calls()
  * structures changed to protect the innocent.  And formatting
  * of course ;-)
  */
+
+#if DEBUG > 5
+#define trace0(fmt) \
+    fprintf(stderr, "%s:%d: " fmt "\n", __FUNCTION__, __LINE__)
+#define trace1(fmt, a1) \
+    fprintf(stderr, "%s:%d: " fmt "\n", __FUNCTION__, __LINE__, a1)
+#define trace2(fmt, a1, a2) \
+    fprintf(stderr, "%s:%d: " fmt "\n", __FUNCTION__, __LINE__, a1, a2)
+#define trace3(fmt, a1, a2, a3) \
+    fprintf(stderr, "%s:%d: " fmt "\n", __FUNCTION__, __LINE__, a1, a2, a3)
+#else
+#define trace0(fmt)
+#define trace1(fmt, a1)
+#define trace2(fmt, a1, a2)
+#define trace3(fmt, a1, a2, a3)
+#endif    
  
 gboolean
 cov_function_t::solve()
@@ -212,9 +228,28 @@ cov_function_t::solve()
 
        This takes an average of slightly more than 3 passes.  */
 
-#if DEBUG > 5
-    fprintf(stderr, "solve: ---> %s\n", name_.data());
-#endif
+    trace1(" ---> %s", name_.data());
+    
+    /*
+     * In the new gcc 3.3 file format we cannot expect to get arcs into
+     * the entry block and out of the exit block.  So if we don't get any,
+     * tweak the {in,out}_ninvalid_ count up to effective infinity to
+     * ensure the solve algorithm doesn't accidentally use the lack of
+     * counts.
+     */
+    assert(num_blocks() >= 2);
+    if ((b = nth_block(0))->in_arcs_.head() == 0)
+    {
+    	assert(file_->format_version_ > 0);
+	b->in_ninvalid_ = ~0U;
+	trace0("entry block tweaked");
+    }
+    if ((b = nth_block(num_blocks()-1))->out_arcs_.head() == 0)
+    {
+    	assert(file_->format_version_ > 0);
+	b->out_ninvalid_ = ~0U;
+	trace0("exit block tweaked");
+    }
 
     changes = 1;
     passes = 0;
@@ -223,43 +258,28 @@ cov_function_t::solve()
 	passes++;
 	changes = 0;
 
-#if DEBUG > 5
-    	fprintf(stderr, "solve:%d pass %d\n", __LINE__, passes);
-#endif
+    	trace1("pass %d", passes);
 
 	for (i = num_blocks() - 1; i >= 0; i--)
 	{
 	    b = nth_block(i);
-#if DEBUG > 5
-    	    fprintf(stderr, "solve:%d[%d]\n", __LINE__, b->bindex());
-#endif
+    	    trace1("[%d]", b->bindex());
 	    
 	    if (!b->count_valid_)
 	    {
-#if DEBUG > 5
-    		fprintf(stderr, "solve:%d[%d] out_ninvalid_=%u in_ninvalid_=%u\n",
-		    	    	__LINE__, b->bindex(),
-				b->out_ninvalid_, b->in_ninvalid_);
-#endif
+    		trace3("[%d] out_ninvalid_=%u in_ninvalid_=%u",
+		    	    b->bindex(), b->out_ninvalid_, b->in_ninvalid_);
 		if (b->out_ninvalid_ == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->out_arcs_));
 		    changes++;
-#if DEBUG > 5
-    	    	    fprintf(stderr, "solve:%d[%d] count=%llu\n",
-		    	    	__LINE__,
-		    	    b->bindex(), b->count());
-#endif
+    	    	    trace2("[%d] count=%llu", b->bindex(), b->count());
 		}
 		else if (b->in_ninvalid_ == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->in_arcs_));
 		    changes++;
-#if DEBUG > 5
-    	    	    fprintf(stderr, "solve:%d[%d] count=%llu\n",
-		    	    	__LINE__,
-		    	    b->bindex(), b->count());
-#endif
+    	    	    trace2("[%d] count=%llu", b->bindex(), b->count());
 		}
 	    }
 	    
@@ -273,14 +293,11 @@ cov_function_t::solve()
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
+		    assert(b->count_ >= cov_arc_t::total(b->out_arcs_));
 		    a->set_count(b->count_ - cov_arc_t::total(b->out_arcs_));
 		    changes++;
-#if DEBUG > 5
-    	    	    fprintf(stderr, "solve:%d[%d->%d] count=%llu\n",
-		    	    	__LINE__,
-		    		a->from()->bindex(), a->to()->bindex(),
-				a->count());
-#endif
+    	    	    trace3("[%d->%d] count=%llu",
+		    	    a->from()->bindex(), a->to()->bindex(), a->count());
 		}
 		if (b->in_ninvalid_ == 1)
 		{
@@ -290,14 +307,11 @@ cov_function_t::solve()
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
+		    assert(b->count_ >= cov_arc_t::total(b->in_arcs_));
 		    a->set_count(b->count_ - cov_arc_t::total(b->in_arcs_));
 		    changes++;
-#if DEBUG > 5
-    	    	    fprintf(stderr, "solve:%d[%d->%d] count=%llu\n",
-		    	    	__LINE__,
-		    		a->from()->bindex(), a->to()->bindex(),
-				a->count());
-#endif
+    	    	    trace3("[%d->%d] count=%llu",
+		    	    a->from()->bindex(), a->to()->bindex(), a->count());
 		}
 	    }
 	}
@@ -308,7 +322,11 @@ cov_function_t::solve()
     for (i = 0 ; i < (int)num_blocks() ; i++)
     {
     	b = nth_block(i);
-	if (b->out_ninvalid_ || b->in_ninvalid_)
+	if (!b->count_valid_)
+	    return FALSE;
+	if (b->out_ninvalid_ > 0 && b->out_ninvalid_ < ~0U)
+	    return FALSE;
+	if (b->in_ninvalid_ > 0 && b->in_ninvalid_ < ~0U)
 	    return FALSE;
     }
 

@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.16 2003-06-28 10:43:53 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.17 2003-06-30 13:52:55 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -703,27 +703,11 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 		if (dest >= nblocks)
     	    	    bbg_failed2("dest=%u > nblocks=%u", dest, nblocks);
 		    
-	    	if (dest == nblocks -1 &&
-		    bidx == nblocks - 2 &&
-		    (flags & (BBG_FAKE|BBG_FALL_THROUGH)) == BBG_FALL_THROUGH)
-		{
-    		    /* HACK HACK HACK */
-		    fprintf(stderr, "Hacking %d->%d to %d->%d\n",
-		    	bidx, dest, nblocks-1, 0);
-		    a = new cov_arc_t(fn->nth_block(nblocks-1), fn->nth_block(0));
+		a = new cov_arc_t(fn->nth_block(bidx), fn->nth_block(dest));
 #ifdef HAVE_BBG_FAKE_FLAG
-		    a->fake_ = TRUE;
+		a->fake_ = !!(flags & BBG_FAKE);
 #endif
-		    a->fall_through_ = FALSE;
-		}
-		else
-		{
-		    a = new cov_arc_t(fn->nth_block(bidx), fn->nth_block(dest));
-#ifdef HAVE_BBG_FAKE_FLAG
-		    a->fake_ = !!(flags & BBG_FAKE);
-#endif
-		    a->fall_through_ = !!(flags & BBG_FALL_THROUGH);
-		}
+		a->fall_through_ = !!(flags & BBG_FALL_THROUGH);
 		a->on_tree_ = (flags & BBG_ON_TREE);
 
     		if (nblocks >= 2 && dest == nblocks-1)
