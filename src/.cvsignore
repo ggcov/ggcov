@@ -4,3 +4,4 @@ Makefile
 ggcov
 licence.c
 bbdump
+filetest
