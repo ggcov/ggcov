@@ -51,7 +51,6 @@
 static void gnb_stacked_bar_class_init(GnbStackedBarClass *klass);
 static void gnb_stacked_bar_init(GnbStackedBar *sbar);
 static void gnb_stacked_bar_paint(GnbStackedBar *sbar);
-static void gnb_stacked_bar_destroy(GtkObject *object);
 #if GTK2
 static void gnb_stacked_bar_finalize(GObject *object);
 #else
@@ -102,7 +101,6 @@ gnb_stacked_bar_class_init(GnbStackedBarClass *klass)
 
     parent_class = (GtkWidgetClass *)gtk_type_class(GTK_TYPE_WIDGET);
 
-    object_class->destroy = gnb_stacked_bar_destroy;
     object_class->finalize = gnb_stacked_bar_finalize;
 
     widget_class->realize = gnb_stacked_bar_realize;
@@ -156,23 +154,6 @@ gnb_stacked_bar_realize(GtkWidget *widget)
 
 
 static void
-gnb_stacked_bar_destroy(GtkObject *object)
-{
-    GnbStackedBar *sbar;
-
-    g_return_if_fail(object != NULL);
-    g_return_if_fail(GNB_IS_STACKED_BAR(object));
-
-    sbar = GNB_STACKED_BAR(object);
-
-    if (sbar->metrics != NULL)
-	g_free(sbar->metrics);
-
-    GTK_OBJECT_CLASS(parent_class)->destroy(object);
-}
-
-
-static void
 gnb_stacked_bar_finalize(
 #if GTK2
     GObject *object
@@ -194,6 +175,12 @@ gnb_stacked_bar_finalize(
     	if (sbar->metrics[i].gc != NULL)
     	    gtk_gc_release(sbar->metrics[i].gc);
     }
+    if (sbar->metrics != NULL)
+    {
+	g_free(sbar->metrics);
+	sbar->metrics = NULL;
+    }
+    sbar->nmetrics = 0;
 }
 
 static gint
@@ -368,8 +355,8 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
 		  widget->allocation.width,
 		  widget->allocation.height);
 
-    if (widget->allocation.width <= 2*xthick ||
-        widget->allocation.height <= 2*ythick)
+    if (widget->allocation.width <= (gint)(2*xthick) ||
+        widget->allocation.height <= (gint)(2*ythick))
     	return;
 
     x = xthick;
