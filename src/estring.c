@@ -21,7 +21,7 @@
 #include <stdarg.h>
 #include <sys/stat.h>
 
-CVSID("$Id: estring.c,v 1.3 2002-01-17 03:49:46 gnb Exp $");
+CVSID("$Id: estring.c,v 1.4 2002-09-28 00:14:57 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -187,13 +187,14 @@ estring_replace_all(estring *e, const char *from, const char *to)
 {
     char *p;
     int i;
+    int tolen = (to == 0 ? 0 : strlen(to));
 
     i = 0;
     while ((p = strstr(e->data+i, from)) != 0)
     {
     	i = (p - e->data);
     	estring_replace_string(e, i, strlen(from), to);
-	i += strlen(to);
+	i += tolen;
     }
 }
 
