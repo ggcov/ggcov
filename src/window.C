@@ -22,7 +22,7 @@
 #include "mvc.h"
 #include "tok.H"
 
-CVSID("$Id: window.C,v 1.10 2003-07-19 09:53:43 gnb Exp $");
+CVSID("$Id: window.C,v 1.11 2003-07-19 09:59:11 gnb Exp $");
 
 static const char window_key[] = "ggcov_window_key";
 
@@ -106,7 +106,7 @@ dnd_drag_data_received(
     char *text;
     
 #if GTK2
-    text = gtk_selection_data_get_text(data);
+    text = (char *)gtk_selection_data_get_text(data);
 #else
     text = (char *)g_malloc(data->length+1);
     memcpy(text, data->data, data->length);
