@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.27 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: ui.c,v 1.28 2005-03-15 12:04:41 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -656,7 +656,6 @@ ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
     return 0;
 #endif
 }
-#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
