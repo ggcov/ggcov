@@ -245,3 +245,43 @@ The only difference to the format described in the comment is that
 the GCOV_TAG_FUNCTION chunk is {name,checksum} instead of
 {ident,checksum,name,source,lineno}.
 
+
+
+Yet Another New Format
+----------------------
+
+The format changed again in gcc 3.4.2 as shipped in Fedora Core 3.
+The differences are much more minor, so are described here as
+changes relative the "New Format" above.  Once again, derived
+from a large C comment in gcov-io.h from gcc-3.4.2-20041018.
+
+*   32b numbers are stored in machine endianness.  was bigendian.
+
+*   64b numbers are stored as the low 32b then the high 32b,
+    each 32b stored in machine endianness.  was bigendian.
+    
+*   String length is in 4-byte units.  was bytes.
+
+*   The file is now
+
+        file : int32:magic int32:version int32:stamp record*
+
+    note the new 32b timestamp:
+
+    The stamp value is used to synchronize
+    note and data files and to synchronize merging within a data
+    file. It need not be an absolute time stamp, merely a ticker that
+    increments fast enough and cycles slow enough to distinguish
+    different compile/run/compile cycles.
+
+    Also, the magic is used to determine the endianness of the file.
+    
+*   In records, the length is now in 4B units.
+
+*   All higher level structures have the same syntax and semantics.
+
+
+
+
+
+
