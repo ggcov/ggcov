@@ -14,3 +14,4 @@ ggcov-*.tar.gz
 version.m4
 core.*
 ggcov-*.rpm
+vg*.log
