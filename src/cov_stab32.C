@@ -22,7 +22,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_stab32.C,v 1.3 2003-11-04 00:29:54 gnb Exp $");
+CVSID("$Id: cov_stab32.C,v 1.4 2004-04-03 03:23:12 gnb Exp $");
 
 /*
  * Machine-specific code to read 32-bit .stabs entries from an
@@ -150,7 +150,7 @@ cov_stab32_filename_scanner_t::next()
 	    else
 	    {
 	    	stabi_++;
-		char *res = g_strconcat(dir_.data(), s, 0);
+		char *res = (s[0] == '/' ? g_strdup(s) : g_strconcat(dir_.data(), s, 0));
 		dprintf1(D_STABS, "Scanned source file \"%s\"\n", res);
 		return res;
 	    }
