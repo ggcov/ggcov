@@ -1,4 +1,4 @@
-#include "covio.h"
+#include "covio.H"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,21 +8,21 @@
 const char *argv0;
 
 static void
-hexdump(FILE *fp, off_t lastoff)
+hexdump(covio_t *io, off_t lastoff)
 {
     off_t here;
     gnb_u32_t d;
     
-    here = ftell(fp);
+    here = io->tell();
     assert((here - lastoff) % 4 == 0);
-    fseek(fp, lastoff, SEEK_SET);
+    io->seek(lastoff);
     for ( ; lastoff < here ; lastoff += 4)
     {
-    	covio_read_lu32(fp, &d);
+    	io->read_u32(&d);
 	printf(GNB_U32_XFMT" ", d);
     }
     assert(here == lastoff);
-    assert(lastoff == ftell(fp));
+    assert(lastoff == io->tell());
 }
 
 
@@ -31,59 +31,57 @@ hexdump(FILE *fp, off_t lastoff)
 #define BB_ENDOFLIST	0x00000000
 
 static void
-do_tags(const char *filename, FILE *fp)
+do_tags(covio_old_t *io)
 {
     gnb_u32_t tag;
     off_t lastoff = 0;
     char *s;
     
-    while (covio_read_lu32(fp, &tag))
+    while (io->read_u32(&tag))
     {
     	printf("%08lx: ", lastoff);
     	switch (tag)
 	{
 	case BB_FILENAME:
-	    s = covio_read_bbstring(fp, tag);
-	    hexdump(fp, lastoff);
+	    s = io->read_bbstring(tag);
+	    hexdump(io, lastoff);
 	    printf("file \"%s\"\n", s);
 	    g_free(s);
 	    break;
 	
 	case BB_FUNCTION:
-	    s = covio_read_bbstring(fp, tag);
-	    hexdump(fp, lastoff);
+	    s = io->read_bbstring(tag);
+	    hexdump(io, lastoff);
 	    printf("func \"%s\"\n", s);
 	    g_free(s);
 	    break;
 	
 	case BB_ENDOFLIST:
-	    hexdump(fp, lastoff);
+	    hexdump(io, lastoff);
 	    printf("eolist\n");
 	    break;
 
 	default:
-	    hexdump(fp, lastoff);
+	    hexdump(io, lastoff);
 	    printf("line "GNB_U32_DFMT"\n", tag);
 	    break;
 	}
-	lastoff = ftell(fp);
+	lastoff = io->tell();
     }
 }
 
 static void
 do_file(const char *filename)
 {
-    FILE *fp;
+    covio_old_t io(filename);
     
-    if ((fp = fopen(filename, "r")) == 0)
+    if (!io.open_read())
     {
     	perror(filename);
 	return;
     }
     
-    do_tags(filename, fp);
-    
-    fclose(fp);
+    do_tags(&io);
 }
 
 

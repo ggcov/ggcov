@@ -1,4 +1,4 @@
-#include "covio.h"
+#include "covio.H"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -8,36 +8,33 @@
 const char *argv0;
 
 static void
-hexdump(FILE *fp, off_t lastoff)
+hexdump(covio_t *io, off_t lastoff)
 {
     off_t here;
     gnb_u32_t d;
     off_t n = 0;
     
-    here = ftell(fp);
+    here = io->tell();
     assert((here - lastoff) % 4 == 0);
-    fseek(fp, lastoff, SEEK_SET);
+    io->seek(lastoff);
     for ( ; lastoff < here ; lastoff += 4, n += 4)
     {
     	if (!(n & 0xf))
 	    printf("%s%08lx: ", (n ? "\n" : ""), lastoff);
-    	covio_read_bu32(fp, &d);
+    	io->read_u32(&d);
 	printf(GNB_U32_XFMT" ", d);
     }
     assert(here == lastoff);
-    assert(lastoff == ftell(fp));
+    assert(lastoff == io->tell());
 }
 
 static void
-fskip(FILE *fp, off_t len)
+fskip(covio_t *io, off_t len)
 {
-    for ( ; len > 0 ; --len)
+    if (!io->skip(len))
     {
-    	if (fgetc(fp) == EOF)
-	{
-    	    fprintf(stderr, "short file while skipping data\n");
-	    exit(1);
-	}
+    	fprintf(stderr, "short file while skipping data\n");
+	exit(1);
     }
 }
 
@@ -81,24 +78,24 @@ gcov_tag_as_string(gnb_u32_t tag)
 
 
 static void
-do_tags(const char *filename, FILE *fp)
+do_tags(covio_t *io)
 {
     gnb_u32_t tag, length;
-    off_t lastoff = ftell(fp);
+    off_t lastoff = io->tell();
     off_t chunkoff;
     
-    while (covio_read_bu32(fp, &tag))
+    while (io->read_u32(&tag))
     {
-	if (!covio_read_bu32(fp, &length))
+	if (!io->read_u32(&length))
 	{
     	    fprintf(stderr, "%s: short file while reading tag header\n",
-		    filename);
+		    io->filename());
 	    exit(1);
 	}
 
-	hexdump(fp, lastoff);
+	hexdump(io, lastoff);
 	printf("tag=%s length=%u\n", gcov_tag_as_string(tag), length);
-	chunkoff = lastoff = ftell(fp);
+	chunkoff = lastoff = io->tell();
 
     	switch (tag)
 	{
@@ -107,23 +104,23 @@ do_tags(const char *filename, FILE *fp)
 	    	gnb_u32_t checksum;
 		char *name;
 		
-		if ((name = covio_read_string(fp)) == 0 ||
-		    !covio_read_bu32(fp, &checksum))
+		if ((name = io->read_string()) == 0 ||
+		    !io->read_u32(&checksum))
 		{
     		    fprintf(stderr, "%s: short file while reading function\n",
-		    	    filename);
+		    	    io->filename());
 		    exit(1);
 		}
-		hexdump(fp, lastoff);
+		hexdump(io, lastoff);
 		printf("name=\"%s\" checksum=0x%08x\n",
 		    	name, checksum);
-		assert((off_t)(lastoff+length) == ftell(fp));
+		assert((off_t)(lastoff+length) == io->tell());
 		g_free(name);
 	    }
 	    break;
 	case GCOV_TAG_BLOCKS:
-	    fskip(fp, (off_t)length);
-	    hexdump(fp, lastoff);
+	    fskip(io, (off_t)length);
+	    hexdump(io, lastoff);
 	    printf("nblocks=%u\n", length/4);
 	    break;
 	case GCOV_TAG_ARCS:
@@ -131,30 +128,30 @@ do_tags(const char *filename, FILE *fp)
 	    	gnb_u32_t src, dst, flags;
 		gnb_u32_t i;
 
-		if (!covio_read_bu32(fp, &src))
+		if (!io->read_u32(&src))
 		{
     		    fprintf(stderr, "%s: short file while reading src block\n",
-		    	    filename);
+		    	    io->filename());
 		    exit(1);
 		}
-		hexdump(fp, lastoff);
+		hexdump(io, lastoff);
 		printf("source-block=%u\n", src);
-		lastoff = ftell(fp);
+		lastoff = io->tell();
 
 		i = 4;
 		while (i < length)
 		{
-		    if (!covio_read_bu32(fp, &dst) ||
-		    	!covio_read_bu32(fp, &flags))
+		    if (!io->read_u32(&dst) ||
+		    	!io->read_u32(&flags))
 		    {
     			fprintf(stderr, "%s: short file while reading arc\n",
-		    		filename);
+		    		io->filename());
 			exit(1);
 		    }
 		    i += 8;
-		    hexdump(fp, lastoff);
+		    hexdump(io, lastoff);
 		    printf("dest-block=%u flags=0x%x\n", dst, flags);
-		    lastoff = ftell(fp);
+		    lastoff = io->tell();
 		}
 	    }
 	    break;
@@ -162,44 +159,44 @@ do_tags(const char *filename, FILE *fp)
 	    {
 	    	gnb_u32_t block, line;
 
-		if (!covio_read_bu32(fp, &block))
+		if (!io->read_u32(&block))
 		{
     		    fprintf(stderr, "%s: short file while reading block number\n",
-		    	    filename);
+		    	    io->filename());
 		    exit(1);
 		}
-		hexdump(fp, lastoff);
+		hexdump(io, lastoff);
 		printf("block=%u\n", block);
-		lastoff = ftell(fp);
+		lastoff = io->tell();
 
-		while (covio_read_bu32(fp, &line))
+		while (io->read_u32(&line))
 		{
 		    if (line == 0)
 		    {
-		    	char *filename = covio_read_string(fp);
-			hexdump(fp, lastoff);
-			lastoff = ftell(fp);
+		    	char *srcfilename = io->read_string();
+			hexdump(io, lastoff);
+			lastoff = io->tell();
 
-			if (filename == 0)
+			if (srcfilename == 0)
 			{
     			    fprintf(stderr, "%s: short file while reading filename\n",
-		    		    filename);
+		    		    io->filename());
 			    exit(1);
 			}
-			if (*filename == '\0')
+			if (*srcfilename == '\0')
 			{
 			    /* end of LINES block */
 			    printf("end-of-lines\n");
-			    g_free(filename);
+			    g_free(srcfilename);
 			    break;
 			}
-			printf("filename=\"%s\"\n", filename);
-			g_free(filename);
+			printf("srcfilename=\"%s\"\n", srcfilename);
+			g_free(srcfilename);
 		    }
 		    else
 		    {
-			hexdump(fp, lastoff);
-			lastoff = ftell(fp);
+			hexdump(io, lastoff);
+			lastoff = io->tell();
 			printf("line=%u\n", line);
 		    }
 		}
@@ -209,35 +206,35 @@ do_tags(const char *filename, FILE *fp)
 	case GCOV_TAG_OBJECT_SUMMARY:
 	case GCOV_TAG_PROGRAM_SUMMARY:
 	default:
-	    fskip(fp, (off_t)length);
-	    hexdump(fp, lastoff);
+	    fskip(io, (off_t)length);
+	    hexdump(io, lastoff);
 	    printf("???\n");
 	    break;
 	}
-	assert((off_t)(chunkoff + length) == ftell(fp));
-	lastoff = ftell(fp);
+	assert((off_t)(chunkoff + length) == io->tell());
+	lastoff = io->tell();
     }
 }
 
 static void
 do_file(const char *filename)
 {
-    FILE *fp;
+    covio_gcc33_t io(filename);
     gnb_u32_t magic, version;
-    
-    if ((fp = fopen(filename, "r")) == 0)
+
+    if (!io.open_read())
     {
     	perror(filename);
 	return;
     }
     
-    if (!covio_read_bu32(fp, &magic) ||
-    	!covio_read_bu32(fp, &version))
+    if (!io.read_u32(&magic) ||
+    	!io.read_u32(&version))
     {
     	fprintf(stderr, "%s: short file while reading header\n", filename);
 	exit(1);
     }
-    hexdump(fp, 0UL);
+    hexdump(&io, 0UL);
     printf("magic=\"%c%c%c%c\" ",
 	(magic>>24)&0xff,
 	(magic>>16)&0xff,
@@ -249,9 +246,7 @@ do_file(const char *filename)
 	(version>>8)&0xff,
 	(version)&0xff);
 
-    do_tags(filename, fp);
-    
-    fclose(fp);
+    do_tags(&io);
 }
 
 
