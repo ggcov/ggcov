@@ -8,8 +8,9 @@ stamp-h
 stamp-h.in
 Makefile.in
 Makefile
-buildrpm.d
+rpm.d
 ggcov.spec
 ggcov-*.tar.gz
 version.m4
 core.*
+ggcov-*.rpm
