@@ -69,6 +69,14 @@
 	} \
     } while(0)
 
+#define listclear(v) \
+    do { \
+	while ((v) != 0) \
+	{ \
+    	    (v) = g_list_remove_link((v), (v)); \
+	} \
+    } while(0)
+
 #define boolassign(bv, s) \
     (bv) = strbool((s), (bv))
 
