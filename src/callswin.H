@@ -61,7 +61,7 @@ private:
 #if GTK2
     GtkListStore *store_;
 #endif
-    GList *functions_;	/* list of cov_function_t */
+    list_t<cov_function_t> *functions_;
 
     friend void on_calls_call_from_check_activate(GtkWidget *w, gpointer data);
     friend void on_calls_call_to_check_activate(GtkWidget *w, gpointer data);

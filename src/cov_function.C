@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.18 2005-03-05 15:11:47 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.19 2005-03-14 07:43:25 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -137,10 +137,8 @@ cov_function_t::get_last_location() const
 }
 
 int
-cov_function_t::compare(gconstpointer pa, gconstpointer pb)
+cov_function_t::compare(const cov_function_t *fa, const cov_function_t *fb)
 {
-    const cov_function_t *fa = (cov_function_t *)pa;
-    const cov_function_t *fb = (cov_function_t *)pb;
     int ret;
     
     ret = strcmp(fa->name_, fb->name_);
@@ -385,10 +383,10 @@ cov_function_t::solve()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-GList *
+list_t<cov_function_t> *
 cov_function_t::list_all()
 {
-    GList *list = 0;
+    list_t<cov_function_t> *list = new list_t<cov_function_t>;
     list_iterator_t<cov_file_t> iter;
     unsigned int fnidx;
     
@@ -401,10 +399,11 @@ cov_function_t::list_all()
     	    cov_function_t *fn = f->nth_function(fnidx);
 
 	    if (fn->status() != cov::SUPPRESSED)
-		list = g_list_prepend(list, fn);
+		list->prepend(fn);
 	}
     }
-    return g_list_sort(list, cov_function_t::compare);
+    list->sort(cov_function_t::compare);
+    return list;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

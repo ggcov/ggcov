@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.17 2005-03-14 07:42:22 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.18 2005-03-14 07:43:25 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -185,7 +185,8 @@ callswin_t::~callswin_t()
 #if GTK2
     g_object_unref(G_OBJECT(store_));
 #endif
-    listclear(functions_);
+    functions_->remove_all();
+    delete functions_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -193,24 +194,26 @@ callswin_t::~callswin_t()
 void
 callswin_t::populate_function_combo(GtkCombo *combo)
 {
-    GList *iter;
+    list_iterator_t<cov_function_t> iter;
     estring label;
     
     ui_combo_clear(combo);    /* stupid glade2 */
     ui_combo_add_data(combo, _(all_functions), 0);
 
-    for (iter = functions_ ; iter != 0 ; iter = iter->next)
+    for (iter = functions_->first() ; iter != (cov_function_t *)0 ; ++iter)
     {
-    	cov_function_t *fn = (cov_function_t *)iter->data;
+    	cov_function_t *fn = *iter;
 
     	label.truncate();
 	label.append_string(fn->name());
 
     	/* see if we need to present some more scope to uniquify the name */
-	if ((iter->next != 0 &&
-	     !strcmp(((cov_function_t *)iter->next->data)->name(), fn->name())) ||
-	    (iter->prev != 0 &&
-	     !strcmp(((cov_function_t *)iter->prev->data)->name(), fn->name())))
+	list_iterator_t<cov_function_t> niter = iter.peek_next();
+	list_iterator_t<cov_function_t> piter = iter.peek_prev();
+	if ((niter != (cov_function_t *)0 &&
+	     !strcmp((*niter)->name(), fn->name())) ||
+	    (piter != (cov_function_t *)0 &&
+	     !strcmp((*piter)->name(), fn->name())))
 	{
 	    label.append_string(" (");
 	    label.append_string(fn->file()->minimal_name());
@@ -346,13 +349,11 @@ callswin_t::update()
     else
     {
     	/* all functions */
-	GList *iter;
+	list_iterator_t<cov_function_t> iter;
 	
-	for (iter = functions_ ; iter != 0 ; iter = iter->next)
+	for (iter = functions_->first() ; iter != (cov_function_t *)0 ; ++iter)
 	{
-	    from_fn = (cov_function_t *)iter->data;
-	    
-	    update_for_func(from_fn, to_fn);
+	    update_for_func(*iter, to_fn);
 	}
     }
     

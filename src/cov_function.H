@@ -69,13 +69,13 @@ public:
     const cov_location_t *get_first_location() const;
     const cov_location_t *get_last_location() const;
 
-    static int compare(gconstpointer, gconstpointer);
+    static int compare(const cov_function_t*, const cov_function_t*);
     
     /*
      * Returns a new list of all unsuppressed functions
      * sorted by the compare function.
      */
-    static GList *list_all();
+    static list_t<cov_function_t> *list_all();
 
 private:
     cov_function_t();

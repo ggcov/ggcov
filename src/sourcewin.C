@@ -23,7 +23,7 @@
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.25 2004-02-18 11:24:19 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.26 2005-03-14 07:43:26 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -181,7 +181,7 @@ on_source_functions_entry_changed(GtkWidget *w, gpointer userdata)
 void
 sourcewin_t::populate_functions()
 {
-    GList *functions = 0;
+    list_t<cov_function_t> functions;
     unsigned fnidx;
     cov_file_t *f;
     cov_function_t *fn;
@@ -196,23 +196,17 @@ sourcewin_t::populate_functions()
 	if (fn->is_suppressed() ||
 	    fn->get_first_location() == 0)
 	    continue;
-	functions = g_list_prepend(functions, fn);
+	functions.prepend(fn);
     }
-    functions = g_list_sort(functions, cov_function_t::compare);
+    functions.sort(cov_function_t::compare);
     
     /* now build the menu */
 
     ui_combo_clear(GTK_COMBO(functions_combo_));
     populating_ = TRUE; /* suppress combo entry callback */
     
-    while (functions != 0)
-    {
-    	fn = (cov_function_t *)functions->data;
-	
+    while ((fn = functions.remove_head()) != 0)
 	ui_combo_add_data(GTK_COMBO(functions_combo_), fn->name(), fn);
-	
-	functions = g_list_remove_link(functions, functions);
-    }
     populating_ = FALSE;
 }
 
