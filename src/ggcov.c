@@ -32,11 +32,10 @@
 #include "fileswin.H"
 #if !GTK2
 #include <libgnomeui/libgnomeui.h>
-#else
-#include <popt.h>
 #endif
+#include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.25 2003-06-07 03:05:53 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.26 2003-06-12 00:52:09 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -402,12 +401,14 @@ ui_create(void)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 /*
- * With the old GTK, we're forced to parse our own arguments
- * the way the library wants, with popt and in such a way
- * that we can't use the return from poptGetNextOpt() to
- * implement multiple-valued options (e.g. -o dir1 -o dir2).
- * This limits our ability to parse arguments for both old
- * and new GTK builds.
+ * With the old GTK, we're forced to parse our own arguments the way
+ * the library wants, with popt and in such a way that we can't use the
+ * return from poptGetNextOpt() to implement multiple-valued options
+ * (e.g. -o dir1 -o dir2).  This limits our ability to parse arguments
+ * for both old and new GTK builds.  Worse, gtk2 doesn't depend on popt
+ * at all, so some systems will have gtk2 and not popt, so we have to
+ * parse arguments in a way which avoids potentially buggy duplicate
+ * specification of options, i.e. we simulate popt in fakepopt.c!
  */
 static poptContext popt_context;
 static struct poptOption popt_options[] =
@@ -452,6 +453,21 @@ parse_args(int argc, char **argv)
 	files = g_list_append(files, (gpointer)file);
 	
     poptFreeContext(popt_context);
+    
+#if 0
+    {
+    	GList *iter;
+
+	fprintf(stderr, "parse_args: recursive=%d\n", recursive);
+
+	fprintf(stderr, "parse_args: files = {\n");
+	for (iter = files ; iter != 0 ; iter = iter->next)
+	    fprintf(stderr, "parse_args:     %s\n", (char *)iter->data);
+	fprintf(stderr, "parse_args: }\n");
+
+	exit(1);
+    }
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -1,8 +1,6 @@
 
 --- OPEN ---
 
-x  In gtk2 build, check for popt library.
-
 x  The gtk2 version check at sourcewin.C:622 may be bogus...stay tuned.
    Hmm, the text buffer function is missing in gtk2-devel-2.2.1-29 on
    suse8.2.  Will have to add a special check.
@@ -101,6 +99,8 @@ x  ??? Minimise filenames only within the context of a program or library?
 x  ??? Add option to only coverage shared libraries and ignore programs.
 
 --- CLOSED ---
+
+x  In gtk2 build, check for popt library.
 
 x  Add an option to do a recursive find of source files instead of
    a local find, e.g. "ggcov -r dir" being equivalent to

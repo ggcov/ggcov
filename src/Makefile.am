@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.25 2003-06-09 06:12:13 gnb Exp $
+# $Id: Makefile.am,v 1.26 2003-06-12 00:52:09 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -25,6 +25,7 @@ bin_PROGRAMS=	ggcov
 
 ggcov_SOURCES=	demangle.h demangle.c \
 		common.h common.c \
+		fakepopt.h fakepopt.c \
 		estring.H estring.C string_var.H tok.H tok.C \
 		filename.h filename.c \
 		list.H \
