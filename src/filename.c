@@ -25,7 +25,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.7 2003-05-11 00:28:20 gnb Exp $");
+CVSID("$Id: filename.c,v 1.8 2003-07-09 01:05:23 gnb Exp $");
 
 #ifndef __set_errno
 #define __set_errno(v)	 errno = (v)
@@ -136,7 +136,7 @@ file_open_mode(const char *filename, const char *rw, mode_t mode)
  */
 
 char *
-file_make_absolute(const char *filename)
+file_make_absolute_to(const char *filename, const char *absfile)
 {
     estring abs;
     tok_t tok(filename, "/");
@@ -145,6 +145,12 @@ file_make_absolute(const char *filename)
     if (*filename == '/')
     {
     	abs.append_string("/");
+    }
+    else if (absfile != 0)
+    {
+    	const char *t = strrchr(absfile, '/');
+	assert(t != 0);
+    	abs.append_chars(absfile, t-absfile);
     }
     else
     {
@@ -172,6 +178,12 @@ file_make_absolute(const char *filename)
     }
     
     return abs.take();
+}
+
+char *
+file_make_absolute(const char *filename)
+{
+    return file_make_absolute_to(filename, 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

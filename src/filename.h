@@ -31,6 +31,7 @@ char *file_change_extension(const char *filename, const char *oldext,
 char *file_dirname(const char *filename);
 int file_mode(const char *filename);
 FILE *file_open_mode(const char *filename, const char *rw, mode_t mode);
+char *file_make_absolute_to(const char *filename, const char *absfile);
 char *file_make_absolute(const char *filename);
 int file_exists(const char *filename);
 int file_is_regular(const char *filename);

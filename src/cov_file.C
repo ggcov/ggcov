@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.19 2003-07-04 10:10:31 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.20 2003-07-09 01:05:23 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -365,9 +365,7 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	{
 	case BB_FILENAME:
 	    filename = covio_read_bbstring(fp, tag);
-	    if (strchr(filename, '/') == 0 &&
-	    	!strcmp(filename, file_basename_c(name_)))
-		filename = name_.data();
+	    filename = file_make_absolute_to(filename, name_);
 #if DEBUG > 1
 	    fprintf(stderr, "BB filename = \"%s\"\n", filename.data());
 #endif
@@ -763,10 +761,7 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 			break;
 		    }
 
-		    filename = s;
-		    if (strchr(filename, '/') == 0 &&
-	    		!strcmp(filename, file_basename_c(name_)))
-			filename = name_.data();
+    	    	    filename = file_make_absolute_to(s, name_);
 		}
 		else
 		{
