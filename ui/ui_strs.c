@@ -6,6 +6,7 @@
 
 gchar *s = N_("GGCov: Source @FILE@");
 gchar *s = N_("_Number");
+gchar *s = N_("_Block");
 gchar *s = N_("_Count");
 gchar *s = N_("_Source");
 gchar *s = N_("Co_lors");
@@ -48,3 +49,10 @@ gchar *s = N_("Lines");
 gchar *s = N_("Calls");
 gchar *s = N_("Branches");
 gchar *s = N_("File");
+gchar *s = N_("GGCov: Calls @FILE@");
+gchar *s = N_("dummy");
+gchar *s = N_("Function:");
+gchar *s = N_("View...");
+gchar *s = N_("Calls");
+gchar *s = N_("Arc");
+gchar *s = N_("Name");
