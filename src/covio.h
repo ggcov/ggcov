@@ -24,7 +24,11 @@
 
 /* TODO: use uint32 where available */
 typedef unsigned long	    	covio_u32_t;
+#define COVIO_U32_DFMT	    	"%ld"
+#define COVIO_U32_XFMT	    	"%08lx"
 typedef unsigned long long  	covio_u64_t;
+#define COVIO_U64_DFMT	    	"%lld"
+#define COVIO_U64_XFMT	    	"%016llx"
 
 /* These functions return TRUE unless EOF */
 gboolean covio_read_u32(FILE *fp, covio_u32_t*);
