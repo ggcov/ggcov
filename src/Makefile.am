@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.30 2003-07-13 00:21:16 gnb Exp $
+# $Id: Makefile.am,v 1.31 2003-07-18 13:34:58 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -31,7 +31,8 @@ libcommon_a_SOURCES= \
 		filename.h filename.c \
 		list.H \
 		hashtable.H hashtable.C \
-		ptrarray.H
+		ptrarray.H \
+		mvc.h mvc.c
 
 libcov_a_SOURCES= \
 		covio.h covio.c \
