@@ -35,7 +35,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root)
 /usr/bin/ggcov
-/usr/share/ggcov/ggcov.glade
+/usr/share/ggcov/@GGCOV_GLADE_FILE@
 /usr/share/ggcov/logo.xpm
 %doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
 
