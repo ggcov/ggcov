@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.26.2.1 2003-11-03 08:56:58 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.26.2.2 2003-11-04 12:41:20 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -56,6 +56,8 @@ cov_file_t::cov_file_t(const char *name)
     functions_by_name_ = new hashtable_t<const char*, cov_function_t>;
     lines_ = new ptrarray_t<cov_line_t>();
     null_line_ = new cov_line_t();
+
+    files_->insert(name_, this);
 }
 
 cov_file_t::~cov_file_t()
@@ -65,8 +67,8 @@ cov_file_t::~cov_file_t()
     if (finalised_)
     {
         files_list_.remove(this);
-        files_->remove(name_);
     }
+    files_->remove(name_);
 
     for (i = 0 ; i < functions_->length() ; i++)
     	delete functions_->nth(i);
@@ -100,8 +102,6 @@ cov_file_t::init()
 void
 cov_file_t::finalise()
 {
-    files_->insert(name_, this);
-
     add_name(name_);
 
     finalised_ = TRUE;
