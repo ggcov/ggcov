@@ -35,7 +35,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.29 2003-06-28 10:21:13 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.30 2003-07-05 02:57:20 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -314,6 +314,20 @@ log_func(
     	exit(1);
 }
 
+
+static void
+log_init(void)
+{
+    static const char * const domains[] = 
+	{ "GLib", "GLib-GObject", "Gtk", "libglade", /*application*/0 };
+    unsigned int i;
+    
+    for (i = 0 ; i < sizeof(domains)/sizeof(domains[0]) ; i++)
+	g_log_set_handler(domains[i],
+    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
+    	    	      log_func, /*user_data*/0);
+}
+
 #endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -321,18 +335,7 @@ int
 main(int argc, char **argv)
 {
 #if DEBUG_GTK
-    g_log_set_handler("GLib",
-    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
-    	    	      log_func, /*user_data*/0);
-    g_log_set_handler("Gtk",
-    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
-    	    	      log_func, /*user_data*/0);
-    g_log_set_handler("libglade",
-    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
-    	    	      log_func, /*user_data*/0);
-    g_log_set_handler(0,
-    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
-    	    	      log_func, /*user_data*/0);
+    log_init();
 #endif
 
 #if GTK2
