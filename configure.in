@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.16 2003-05-04 06:00:07 gnb Exp $
+dnl $Id: configure.in,v 1.17 2003-05-11 00:18:36 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -60,7 +60,7 @@ dnl A bunch of warning options for gcc
 dnl -Wshadow
 AC_GCC_ADD_CFLAGS([-Wall -Wchar-subscripts -Wmissing-declarations
     -Wmissing-prototypes -Wnested-externs -Wpointer-arithmetic
-    -Wcast-align -Wsign-compare -pedantic])
+    -Wcast-align -Wsign-compare -pedantic -Wno-long-long])
 
 dnl Compile C and C++ with the same (C++) compiler.
 CXXFLAGS="$CFLAGS"
