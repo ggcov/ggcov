@@ -44,6 +44,9 @@
 #include "gnbprogressbar.h"
 #include <gtk/gtkgc.h>
 
+#ifndef PROGRESSBAR_DEBUG
+#define PROGRESSBAR_DEBUG 0
+#endif
 
 static void gnb_progress_bar_class_init    (GnbProgressBarClass *klass);
 static void gnb_progress_bar_init          (GnbProgressBar      *pbar);
@@ -193,14 +196,14 @@ gnb_progress_bar_paint (GtkProgress *progress)
 
     percentage = gtk_progress_get_current_percentage(progress);
     
-#if DEBUG > 3
+#if PROGRESSBAR_DEBUG
     fprintf(stderr, "\n");
 #endif
 
     if (progress->offscreen_pixmap)
     {
     	/* paint the outside shadow */
-#if DEBUG > 3
+#if PROGRESSBAR_DEBUG
 	fprintf(stderr, "PAINTBOX(trough, %d, %d, %d, %d)\n",
 		       0, 0,
 		       widget->allocation.width,
@@ -237,7 +240,7 @@ gnb_progress_bar_paint (GtkProgress *progress)
 					     (GdkGCValuesMask)gcmask);
 	    }
 	    
-#if DEBUG > 3
+#if PROGRESSBAR_DEBUG
 	    fprintf(stderr, "FILLRECT(trough, 2, 2, %d, %d)\n",
 			widget->allocation.width - 4,
 			widget->allocation.height - 4);
@@ -315,7 +318,7 @@ gnb_progress_bar_paint (GtkProgress *progress)
 						 (GdkGCValuesMask)gcmask);
 		}
 
-#if DEBUG > 3
+#if PROGRESSBAR_DEBUG
 		fprintf(stderr, "FILLRECT(bar, %d, %d, %d, %d)\n",
 	    	    	    (int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
 #endif
@@ -327,7 +330,7 @@ gnb_progress_bar_paint (GtkProgress *progress)
 	    }
 	    else
 	    {
-#if DEBUG > 3
+#if PROGRESSBAR_DEBUG
 		fprintf(stderr, "PAINTBOX(bar, %d, %d, %d, %d)\n",
 	    	    	    (int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
 #endif
@@ -346,7 +349,7 @@ gnb_progress_bar_real_update(GtkProgress *progress)
 {
     GtkProgressClass *progress_class;
     
-#if DEBUG > 3
+#if PROGRESSBAR_DEBUG
     fprintf(stderr, "gnb_progress_bar_real_update\n");
 #endif
 
