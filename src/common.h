@@ -58,6 +58,7 @@ typedef enum
     D_BB,
     D_BBG,
     D_DA,
+    D_IO,
     D_CGRAPH,
     D_SOLVE,
     D_STABS,

@@ -20,7 +20,7 @@
 #include "covio.H"
 #include "estring.H"
 
-CVSID("$Id: covio.C,v 1.1 2004-11-20 09:13:38 gnb Exp $");
+CVSID("$Id: covio.C,v 1.2 2005-02-27 06:15:24 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -59,6 +59,8 @@ covio_t::read_lu32(gnb_u32_t *wp)
     
     *wp = w;
 
+    dprintf1(D_IO|D_VERBOSE, "covio_t::read_lu32() = 0x%08lx\n", w);
+
     return (!feof(fp_));
 }
 
@@ -74,6 +76,8 @@ covio_t::read_bu32(gnb_u32_t *wp)
     w |= (unsigned int)fgetc(fp_) & 0xff;
     
     *wp = w;
+
+    dprintf1(D_IO|D_VERBOSE, "covio_t::read_bu32() = 0x%08lx\n", w);
 
     return (!feof(fp_));
 }
@@ -98,6 +102,8 @@ covio_t::read_lu64(gnb_u64_t *wp)
 
     *wp = w;
 
+    dprintf1(D_IO|D_VERBOSE, "covio_t::read_lu64() = 0x%016llx\n", w);
+
     return (!feof(fp_));
 }
 
@@ -118,6 +124,8 @@ covio_t::read_bu64(gnb_u64_t *wp)
     w |= (gnb_u64_t)fgetc(fp_) & 0xff;
 
     *wp = w;
+
+    dprintf1(D_IO|D_VERBOSE, "covio_t::read_bu64() = 0x%016llx\n", w);
 
     return (!feof(fp_));
 }
@@ -140,6 +148,7 @@ covio_t::read_string_len(gnb_u32_t len)
     	g_free(buf);
 	return 0;   	    	/* short file */
     }
+    dprintf2(D_IO|D_VERBOSE, "covio_t::read_string_len(%d) = \"%s\"\n", len, buf);
     return buf;
 }
 
@@ -148,6 +157,7 @@ covio_t::read_string_len(gnb_u32_t len)
 gboolean
 covio_t::skip(unsigned int length)
 {
+    dprintf1(D_IO|D_VERBOSE, "covio_t::skip(%d)\n", length);
     for ( ; length ; length--)
     {
 	if (fgetc(fp_) == EOF)
