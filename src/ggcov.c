@@ -35,7 +35,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.26 2003-06-12 00:52:09 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.27 2003-06-14 13:48:57 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -436,7 +436,6 @@ parse_args(int argc, char **argv)
 #if GTK2
     popt_context = poptGetContext(PACKAGE, argc, (const char**)argv,
     	    	    	    	  popt_options, 0);
-#endif
 
     while ((rc = poptGetNextOpt(popt_context)) > 0)
     	;
@@ -448,6 +447,7 @@ parse_args(int argc, char **argv)
 	    poptBadOption(popt_context, POPT_BADOPTION_NOALIAS));
     	exit(1);
     }
+#endif
     
     while ((file = poptGetArg(popt_context)) != 0)
 	files = g_list_append(files, (gpointer)file);
