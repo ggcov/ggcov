@@ -16,20 +16,23 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.27 2003-06-14 13:57:29 gnb Exp $
+# $Id: Makefile.am,v 1.28 2003-06-28 10:19:01 gnb Exp $
 #
 
 SUBDIRS=	libiberty
 
-bin_PROGRAMS=	ggcov
+noinst_LIBRARIES=	libcommon.a libcov.a
 
-ggcov_SOURCES=	demangle.h demangle.c \
+libcommon_a_SOURCES= \
+		demangle.h demangle.c \
 		common.h common.c \
 		fakepopt.h fakepopt.c \
 		estring.H estring.C string_var.H tok.H tok.C \
 		filename.h filename.c \
 		list.H \
-		hashtable.H hashtable.C \
+		hashtable.H hashtable.C
+
+libcov_a_SOURCES= \
 		covio.h covio.c \
 		cov_specific.H cov_specific.C \
 		cov_stab32.C \
@@ -39,8 +42,11 @@ ggcov_SOURCES=	demangle.h demangle.c \
 		cov_arc.H cov_arc.C \
 		cov_callgraph.H cov_callgraph.C \
 		cov_scope.H cov_scope.C \
-		cov_types.H cov.H cov.C \
-		uicommon.h ui.h ui.c uix.h uix.c \
+		cov_types.H cov.H cov.C
+
+bin_PROGRAMS=	ggcov
+
+ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		gnbprogressbar.h gnbprogressbar.c \
 		confsection.H confsection.C \
 		prefs.H prefs.C \
@@ -54,9 +60,11 @@ ggcov_SOURCES=	demangle.h demangle.c \
 		fileswin.H fileswin.C \
 		prefswin.H prefswin.C \
 		help.c ggcov.c
-INCLUDES=	$(GGCOV_CFLAGS) -DPKGDATADIR="\"$(pkgdatadir)\"" \
+
+INCLUDES=	$(GGCOV_GUI_CFLAGS) -DPKGDATADIR="\"$(pkgdatadir)\"" \
  		-DDEBUG=$(DEBUG) -DUI_DEBUG=$(UI_DEBUG)
-ggcov_LDADD=	$(GGCOV_LIBS)
+ggcov_LDADD=	libcov.a libcommon.a $(GGCOV_GUI_LIBS)
+CLI_LIBS=	libcov.a libcommon.a $(GGCOV_CLI_LIBS)
 
 
 # Note this is an automake conditional *not* a gmake conditional
@@ -80,16 +88,22 @@ licence.c: $(top_srcdir)/COPYING
 	    -e 's/^\(.*\)$$/"\1\\n"/' \
 	    < $(top_srcdir)/COPYING > $@
 
-EXTRA_CLEAN=	licence.c
+EXTRA_CLEAN=		licence.c
 
-noinst_PROGRAMS=	bbdump filetest mangletest
+noinst_PROGRAMS=	bbdump filetest mangletest \
+			newbbgdump tggcov
 
-bbdump_SOURCES= bbdump.c covio.c estring.C
-bbdump_LDADD=	$(GGCOV_LIBS)
+bbdump_SOURCES= 	bbdump.c
+bbdump_LDADD=		$(CLI_LIBS)
 
-filetest_SOURCES= filetest.c filename.c estring.C tok.C
-filetest_LDADD=	$(GGCOV_LIBS)
+filetest_SOURCES=	filetest.c
+filetest_LDADD= 	$(CLI_LIBS)
 
-mangletest_SOURCES= mangletest.c demangle.c estring.C
-mangletest_LDADD=	$(GGCOV_LIBS)
+mangletest_SOURCES=	mangletest.c
+mangletest_LDADD=	$(CLI_LIBS)
 
+newbbgdump_SOURCES=	newbbgdump.c
+newbbgdump_LDADD=	$(CLI_LIBS)
+
+tggcov_SOURCES= 	tggcov.c
+tggcov_LDADD=		$(CLI_LIBS)
