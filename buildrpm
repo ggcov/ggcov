@@ -141,7 +141,7 @@ if [ $FORCE = yes ]; then
     echo "Removing files to force rebuild"
     (
     	set -x
-	/bin/rm -rf config.status config.cache autom4te.cache
+	/bin/rm -rf config.status config.cache autom4te.cache configure
 	/bin/rm -f $SPECFILE $TARBALL
     )
 fi
