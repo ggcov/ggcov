@@ -19,10 +19,9 @@
 
 #include "callgraph2win.H"
 #include "cov.h"
-#include "estring.h"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: callgraph2win.C,v 1.1 2002-12-15 15:53:23 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.2 2002-12-22 01:40:37 gnb Exp $");
 
 #define CANVAS_WIDTH	    30.0
 #define CANVAS_HEIGHT	    30.0
@@ -120,7 +119,7 @@ callgraph2win_t::add_callnode(
 
 
     fprintf(stderr, "callgraph2win_t::add_callnode: %s:%s\n",
-    	(cn->function == 0 ? "library" : cn->function->file->name),
+    	(cn->function == 0 ? "library" : cov_file_minimal_name(cn->function->file)),
 	cn->name);
     
     if (cn->function != 0)
@@ -135,7 +134,7 @@ callgraph2win_t::add_callnode(
 	
 	label = g_strdup_printf("%s\n%s\n%g%%",
 	    cn->name,
-    	    cn->function->file->name,
+    	    cov_file_minimal_name(cn->function->file),
 	    lines_pc);
 	if (stats.lines_executed == stats.lines)
 	    fn_color = "green";
