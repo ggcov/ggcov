@@ -186,11 +186,12 @@ compare_lines ()
 {
     vcmd "compare_lines $*"
     local SRC="$1"
+    local GCOV_FILE=`_gcov_file $SRC`
+    local TGGCOV_FILE=`_tggcov_file $SRC`
 
-    egrep -v '^(call|branch|        -:    0:)' `_gcov_file $SRC` > $TMP1
-    cat `_tggcov_file $SRC` > $TMP2
-    echo "diff -u filtered-gcov-output filtered-tggcov-output"
-    diff -u $TMP1 $TMP2 || fatal "tggcov line coverage differs from gcov"
+    egrep -v '^(call|branch|        -:    0:)' $GCOV_FILE > $TMP1
+    echo "diff -u filter($GCOV_FILE) filter($TGGCOV_FILE)"
+    diff -u $TMP1 $TGGCOV_FILE || fatal "tggcov line coverage differs from gcov"
 }
 
 compare_file ()
