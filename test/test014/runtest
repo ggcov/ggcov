@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+
+. ../common.sh
+
+init
+
+subdir_push bar
+compile_c -pic bar.c
+link_shlib bar bar.o
+subdir_pop
+
+subdir_push baz
+compile_c -pic baz.c
+link_shlib baz baz.o
+subdir_pop
+
+compile_c foo.c
+add_shlib bar/bar
+add_shlib -abs baz/baz
+link foo foo.o
+
+vncdo ./foo 1
+vncdo ./foo 2
+vncdo ./foo 3
+vncdo ./foo 4
+
+run_gcov foo.c
+run_tggcov foo.c
+compare_lines foo.c
+
+subdir_push bar
+run_gcov bar.c
+run_tggcov bar.c
+compare_lines bar.c
+subdir_pop
+
+subdir_push baz
+run_gcov baz.c
+run_tggcov baz.c
+compare_lines baz.c
+subdir_pop

@@ -1,0 +1,3 @@
+
+Simple test based on test002 but with most of the code moved
+into a shared library.
