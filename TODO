@@ -1,6 +1,24 @@
 
 --- OPEN ---
 
+x  New gcc 3.3 code is much smarter (or at least more complex)
+   about calculating a "line coverage" number for lines which
+   have certain configurations of multiple blocks, e.g. a
+   loop entirely contained on a line.  Gcov uses some graph
+   theory to subtract the intra-line counts, but ggcov just
+   stupidly takes the maximum of all the block counts.  The
+   textbook example is
+   
+   for (i=0 ; i<3 ; i++) { j++ }
+
+   Gcov reports that this line is executed once, ggcov that it's
+   executed 4 times, once for each time through the loop and once
+   for the final terminating test.  The problem is that the maximum
+   technique is so cheap that ggcov just does it on the fly;
+   the graph technique is more computationally expensive and
+   will require a calculate-and-store approach, which means a
+   data structure re-design.
+
 x  Get libgnome stuff (config, canvas, color picker) working in
    the gtk2 build.
 

@@ -29,7 +29,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.17 2003-06-30 13:52:55 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.18 2003-07-02 12:06:00 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -636,10 +636,11 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
     string_var filename, funcname;
     gnb_u32_t tmp;
     unsigned int nblocks = 0;
-    unsigned int bidx;
+    unsigned int bidx, last_bidx = 0;
+    unsigned int nlines = 0;
     cov_arc_t *a;
     gnb_u32_t dest, flags;
-    gnb_u32_t line;
+    gnb_u32_t line, last_line = 0;
 
 #if DEBUG > 1
     fprintf(stderr, "Reading new format .bbg file \"%s\"\n", bbgfilename);
@@ -722,6 +723,20 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 	case GCOV_TAG_LINES:
 	    if (!covio_read_bu32(fp, &bidx))
 	    	bbg_failed0("short file");
+	    if (bidx >= nblocks)
+    	    	bbg_failed2("bidx=%u > nblocks=%u", bidx, nblocks);
+	    if (bidx > 0 && bidx < nblocks-1)
+	    {
+	    	/* may need to interpolate some block->line assignments */
+		for (last_bidx++ ; last_bidx < bidx ; last_bidx++)
+		{
+#if DEBUG > 1
+    		    fprintf(stderr, "BBG     interpolating line:\n");
+#endif
+		    fn->nth_block(last_bidx)->add_location(filename, last_line);
+		}
+	    }
+	    nlines = 0;
     	    while (covio_read_bu32(fp, &line))
 	    {
 		if (line == 0)
@@ -744,8 +759,11 @@ cov_file_t::read_new_bbg_file(const char *bbgfilename, FILE *fp)
 		else
 		{
 		    fn->nth_block(bidx)->add_location(filename, line);
+		    nlines++;
+		    last_line = line;
 		}
 	    }
+	    last_bidx = bidx;
 	    break;
 
 	default:
