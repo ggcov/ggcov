@@ -10,7 +10,7 @@ function_one(int x)
     printf("    function_one begins\n");
     if (!x)
     	longjmp(jb, 1);
-    printf("    function_one ends\n");
+    printf("    ...ends\n");
 }
 
 void
@@ -19,7 +19,7 @@ function_two(int x)
     printf("    function_two begins\n");
     if (!x)
     	longjmp(jb, 2);
-    printf("    function_two ends\n");
+    printf("    ...ends\n");
 }
 
 void
@@ -28,7 +28,7 @@ function_three(int x)
     printf("    function_three begins\n");
     if (!x)
     	longjmp(jb, 3);
-    printf("    function_three ends\n");
+    printf("    ...ends\n");
 }
 
 int
