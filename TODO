@@ -48,15 +48,6 @@ x  Option to watch mtimes of .da files and reload them when they
    change, so that user can watch coverage stats update in realtime
    as their testsuite is run.
    
-x  Add a menu command to the Source window to go to the Summary
-   window for that source file.
-   
-x  Add a menu command to the Source window to go to the Summary
-   window for the function containing the first selected line.
-
-x  Add a menu command to the Source window to go to the Summary
-   window for the range of selected lines.
-
 x  In the Summary window, typing into the entry or popped-up list
    of the filename and function name combo boxes should seek in
    the list.
@@ -98,6 +89,15 @@ x   The File->Close and File->Exit callbacks in each window can now be
     cleaning up.
 
 --- CLOSED ---
+
+x  Add a menu command to the Source window to go to the Summary
+   window for that source file.
+   
+x  Add a menu command to the Source window to go to the Summary
+   window for the function containing the first selected line.
+
+x  Add a menu command to the Source window to go to the Summary
+   window for the range of selected lines.
 
 x  Add a View menu to the Calls List window, with at least the ability
    to show/hide the various columns in the list and the colour coding.
