@@ -5,6 +5,10 @@ CVSUP=no
 BUILDHOST=
 LOCALHOST=$(uname -n|cut -d. -f1)
 RPMDEST=
+# This file is both controlled and also emitted as part of the build,
+# which is probably a bad idea, but regardless it needs to be ignored
+# when checking for modified files.
+CVSIGNORES="aclocal.m4"
 
 fatal ()
 {
@@ -93,15 +97,20 @@ fi
 #echo RPMDIR=$RPMDIR
 #echo DISTRO=$DISTRO
 #echo RPMBUILD=$RPMBUILD
+#echo CVSIGNORES=\"$CVSIGNORES\"
 #echo FORCE=$FORCE
 #exit 1
 
 
 if [ $CVSUP = yes ]; then
     echo "Checking for locally changed files"
-    NCHANGES=$(cvs -nq up | awk 'BEGIN{c=0} $1~/^[MC]$/{c++} END{print c}')
-    [ $NCHANGES -eq 0 ] || \
-    	fatal "There are $NCHANGES changed files in this work area."
+
+    CVSIGNORES_RE=$(echo $CVSIGNORES | sed -e 's/^[ \t]*/^(/g'  -e 's/[ \t]*$/)$/g' -e 's/[ \t][ \t]*/|/g')
+
+    set -x
+    CHANGED=$(cvs -nq up | awk '$1~/^[MC]$/ && $2!~/'$CVSIGNORES_RE'/{print $2}')
+    [ -z "$CHANGED" ] || \
+    	fatal "These files are changed in this work area: $CHANGED"
     echo "Updating files from CVS"
     (
     	set -x
