@@ -34,13 +34,16 @@
 #include <libgnomeui/libgnomeui.h>
 #endif
 
-CVSID("$Id: ggcov.c,v 1.22 2003-06-01 07:56:27 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.23 2003-06-06 15:15:49 gnb Exp $");
 
 #define DEBUG_GTK 1
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
 int screenshot_mode = 0;
+
+/* TODO: need to parse commandline for -r or --recursive */
+static gboolean recursive = TRUE;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -54,7 +57,7 @@ read_gcov_files(void)
     
     if (files == 0)
     {
-    	if (!cov_read_directory("."))
+    	if (!cov_read_directory(".", /*recursive*/FALSE))
 	    exit(1);
     }
     else
@@ -73,7 +76,7 @@ read_gcov_files(void)
 	    
 	    if (file_is_directory(filename) == 0)
 	    {
-	    	if (!cov_read_directory(filename))
+	    	if (!cov_read_directory(filename, recursive))
 		    exit(1);
 	    }
 	    else if (file_is_regular(filename) == 0)

@@ -31,7 +31,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov.C,v 1.11 2003-06-01 07:56:27 gnb Exp $");
+CVSID("$Id: cov.C,v 1.12 2003-06-06 15:15:49 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -408,20 +408,23 @@ cov_read_object_file(const char *exefilename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
-cov_read_directory(const char *dirname)
+static unsigned int
+cov_read_directory_2(
+    const char *dirname,
+    gboolean recursive,
+    gboolean quiet)
 {
     DIR *dir;
     struct dirent *de;
     int dirlen;
-    int successes = 0;
+    unsigned int successes = 0;
     
     estring child = file_make_absolute(dirname);
 
     if ((dir = opendir(child.data())) == 0)
     {
     	perror(child.data());
-    	return FALSE;
+    	return 0;
     }
     
     if (child.last() != '/')
@@ -437,16 +440,30 @@ cov_read_directory(const char *dirname)
 	child.truncate_to(dirlen);
 	child.append_string(de->d_name);
 	
-    	if (file_is_regular(child.data()) == 0 &&
-	    cov_is_source_filename(child.data()))
-	    successes += cov_read_source_file(child.data());
+    	if (file_is_regular(child) == 0 &&
+	    cov_is_source_filename(child))
+	    successes += cov_read_source_file_2(child, /*quiet*/TRUE);
+	else if (recursive && file_is_directory(child) == 0)
+	    successes += cov_read_directory_2(child, recursive, /*quiet*/TRUE);
     }
     
     closedir(dir);
-    if (successes == 0)
-    	fprintf(stderr, "found no coveraged source files in directory \"%s\"\n",
-	    	dirname);
-    return (successes > 0);
+    if (successes == 0 && !quiet)
+    {
+	if (recursive)
+    	    fprintf(stderr, "found no coveraged source files in or under directory \"%s\"\n",
+	    	    dirname);
+	else
+    	    fprintf(stderr, "found no coveraged source files in directory \"%s\"\n",
+	    	    dirname);
+    }
+    return successes;
+}
+
+unsigned int
+cov_read_directory(const char *dirname, gboolean recursive)
+{
+    return cov_read_directory_2(dirname, recursive, /*quiet*/FALSE);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

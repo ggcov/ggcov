@@ -42,7 +42,7 @@ gboolean cov_read_source_file(const char *cfilename);
 /* Read all the coveraged source files for the given object file or executable */
 gboolean cov_read_object_file(const char *exefilename);
 /* Read all the coveraged source files in the given directory */
-gboolean cov_read_directory(const char *dirname);
+unsigned int cov_read_directory(const char *dirname, gboolean recursive);
 /* Call this after reading all files; mostly just calculates callgraph */
 void cov_post_read(void);
 
