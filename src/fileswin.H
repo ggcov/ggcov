@@ -23,7 +23,9 @@
 #include "window.H"
 #include "cov.H"
 
+GLADE_CALLBACK void on_files_blocks_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_lines_check_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_files_functions_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_calls_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_branches_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_percent_check_activate(GtkWidget *w, gpointer data);
@@ -52,7 +54,9 @@ private:
 
     file_rec_t *root_;
     
+    GtkWidget *blocks_check_;
     GtkWidget *lines_check_;
+    GtkWidget *functions_check_;
     GtkWidget *calls_check_;
     GtkWidget *branches_check_;
     GtkWidget *percent_check_;
@@ -64,7 +68,9 @@ private:
     GtkTreeStore *store_;
 #endif
 
+    friend void on_files_blocks_check_activate(GtkWidget *w, gpointer data);
     friend void on_files_lines_check_activate(GtkWidget *w, gpointer data);
+    friend void on_files_functions_check_activate(GtkWidget *w, gpointer data);
     friend void on_files_calls_check_activate(GtkWidget *w, gpointer data);
     friend void on_files_branches_check_activate(GtkWidget *w, gpointer data);
     friend void on_files_percent_check_activate(GtkWidget *w, gpointer data);

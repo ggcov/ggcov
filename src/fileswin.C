@@ -25,22 +25,24 @@
 #include "prefs.H"
 #include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.21 2003-11-03 23:19:48 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.22 2004-02-18 11:20:17 gnb Exp $");
 
 
 #define COL_FILE	0
-#define COL_LINES   	1
-#define COL_CALLS   	2
-#define COL_BRANCHES	3
+#define COL_BLOCKS   	1
+#define COL_LINES   	2
+#define COL_FUNCTIONS	3
+#define COL_CALLS   	4
+#define COL_BRANCHES	5
 #if !GTK2
-#define NUM_COLS    	4
-#else
-#define COL_CLOSURE	4
-#define COL_FG_GDK	5
 #define NUM_COLS    	6
+#else
+#define COL_CLOSURE	6
+#define COL_FG_GDK	7
+#define NUM_COLS    	8
 #define COL_TYPES \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
-    G_TYPE_POINTER, GDK_TYPE_COLOR
+    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, GDK_TYPE_COLOR
 #endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -108,20 +110,30 @@ fileswin_compare(file_rec_t *fr1, file_rec_t *fr2, int column)
     	    fr1->name.data(), fr2->name.data());
     switch (column)
     {
+    case COL_BLOCKS:
+    	return ratiocmp(
+    	    	    ratio(s1->blocks_executed(), s1->blocks_total()),
+    	    	    ratio(s2->blocks_executed(), s2->blocks_total()));
+	
     case COL_LINES:
     	return ratiocmp(
-    	    	    ratio(s1->lines_executed, s1->lines),
-    	    	    ratio(s2->lines_executed, s2->lines));
+    	    	    ratio(s1->lines_executed(), s1->lines_total()),
+    	    	    ratio(s2->lines_executed(), s2->lines_total()));
+	
+    case COL_FUNCTIONS:
+    	return ratiocmp(
+    	    	    ratio(s1->functions_executed(), s1->functions_total()),
+    	    	    ratio(s2->functions_executed(), s2->functions_total()));
 	
     case COL_CALLS:
     	return ratiocmp(
-    	    	    ratio(s1->calls_executed, s1->calls),
-    	    	    ratio(s2->calls_executed, s2->calls));
+    	    	    ratio(s1->calls_executed(), s1->calls_total()),
+    	    	    ratio(s2->calls_executed(), s2->calls_total()));
 	
     case COL_BRANCHES:
     	return ratiocmp(
-    	    	    ratio(s1->branches_executed, s1->branches),
-    	    	    ratio(s2->branches_executed, s2->branches));
+    	    	    ratio(s1->branches_executed(), s1->branches_total()),
+    	    	    ratio(s2->branches_executed(), s2->branches_total()));
 	
     case COL_FILE:
     	return strcmp(fr1->name, fr2->name);
@@ -173,7 +185,9 @@ fileswin_t::fileswin_t()
     
     set_window(glade_xml_get_widget(xml, "files"));
     
+    blocks_check_ = glade_xml_get_widget(xml, "files_blocks_check");
     lines_check_ = glade_xml_get_widget(xml, "files_lines_check");
+    functions_check_ = glade_xml_get_widget(xml, "files_functions_check");
     calls_check_ = glade_xml_get_widget(xml, "files_calls_check");
     branches_check_ = glade_xml_get_widget(xml, "files_branches_check");
     percent_check_ = glade_xml_get_widget(xml, "files_percent_check");
@@ -183,7 +197,11 @@ fileswin_t::fileswin_t()
 
     ctree_ = glade_xml_get_widget(xml, "files_ctree");
 #if !GTK2
+    gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_BLOCKS,
+    	    	    	    	       GTK_JUSTIFY_RIGHT);
     gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_LINES,
+    	    	    	    	       GTK_JUSTIFY_RIGHT);
+    gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_FUNCTIONS,
     	    	    	    	       GTK_JUSTIFY_RIGHT);
     gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_CALLS,
     	    	    	    	       GTK_JUSTIFY_RIGHT);
@@ -193,17 +211,23 @@ fileswin_t::fileswin_t()
     	    	    	    	       GTK_JUSTIFY_LEFT);
     gtk_clist_set_compare_func(GTK_CLIST(ctree_), fileswin_clist_compare);
 
+    ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_BLOCKS);
     ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_LINES);
+    ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_FUNCTIONS);
     ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_CALLS);
     ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_BRANCHES);
     ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_FILE);
-    ui_clist_set_sort_column(GTK_CLIST(ctree_), COL_LINES);
+    ui_clist_set_sort_column(GTK_CLIST(ctree_), COL_BLOCKS);
     ui_clist_set_sort_type(GTK_CLIST(ctree_), GTK_SORT_DESCENDING);
 #else
     store_ = gtk_tree_store_new(NUM_COLS, COL_TYPES);
     /* default alphabetic sort is adequate for COL_FILE */
+    gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_BLOCKS,
+	  fileswin_tree_iter_compare, GINT_TO_POINTER(COL_BLOCKS), 0);
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_LINES,
 	  fileswin_tree_iter_compare, GINT_TO_POINTER(COL_LINES), 0);
+    gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_FUNCTIONS,
+	  fileswin_tree_iter_compare, GINT_TO_POINTER(COL_FUNCTIONS), 0);
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_CALLS,
 	  fileswin_tree_iter_compare, GINT_TO_POINTER(COL_CALLS), 0);
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_BRANCHES,
@@ -220,10 +244,22 @@ fileswin_t::fileswin_t()
     gtk_tree_view_column_set_sort_column_id(col, COL_FILE);
     gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
     
+    col = gtk_tree_view_column_new_with_attributes(_("Blocks"), rend,
+    	    	"text", COL_BLOCKS,
+		(char *)0);
+    gtk_tree_view_column_set_sort_column_id(col, COL_BLOCKS);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
+    
     col = gtk_tree_view_column_new_with_attributes(_("Lines"), rend,
     	    	"text", COL_LINES,
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_LINES);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
+    
+    col = gtk_tree_view_column_new_with_attributes(_("Functions"), rend,
+    	    	"text", COL_FUNCTIONS,
+		(char *)0);
+    gtk_tree_view_column_set_sort_column_id(col, COL_FUNCTIONS);
     gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
     
     col = gtk_tree_view_column_new_with_attributes(_("Calls"), rend,
@@ -285,6 +321,11 @@ fileswin_t::populate()
     
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     {
+    	cov::status_t st = (*iter)->status();
+	
+	if (st == cov::SUPPRESSED || st == cov::UNINSTRUMENTED)
+	    continue;
+
 	file_rec_t *parent, *fr;
 	char *buf = g_strdup((*iter)->minimal_name());
 	char *end = buf + strlen(buf);
@@ -353,7 +394,9 @@ fileswin_t::add_node(
 {
     GdkColor *color;
     char *text[NUM_COLS];
+    char blocks_pc_buf[16];
     char lines_pc_buf[16];
+    char functions_pc_buf[16];
     char calls_pc_buf[16];
     char branches_pc_buf[16];
     gboolean is_leaf;
@@ -366,26 +409,27 @@ fileswin_t::add_node(
 
 	text[COL_FILE] = (char *)fr->name.data();
 
+	format_stat(blocks_pc_buf, sizeof(blocks_pc_buf), percent_flag,
+	    	    stats->blocks_executed(), stats->blocks_total());
+	text[COL_BLOCKS] = blocks_pc_buf;
+
 	format_stat(lines_pc_buf, sizeof(lines_pc_buf), percent_flag,
-	    	    stats->lines_executed, stats->lines);
+	    	    stats->lines_executed(), stats->lines_total());
 	text[COL_LINES] = lines_pc_buf;
 
+	format_stat(functions_pc_buf, sizeof(functions_pc_buf), percent_flag,
+	    	    stats->functions_executed(), stats->functions_total());
+	text[COL_FUNCTIONS] = functions_pc_buf;
+
 	format_stat(calls_pc_buf, sizeof(calls_pc_buf), percent_flag,
-	    	    stats->calls_executed, stats->calls);
+	    	    stats->calls_executed(), stats->calls_total());
 	text[COL_CALLS] = calls_pc_buf;
 
 	format_stat(branches_pc_buf, sizeof(branches_pc_buf), percent_flag,
-	    	    stats->branches_executed, stats->branches);
+	    	    stats->branches_executed(), stats->branches_total());
 	text[COL_BRANCHES] = branches_pc_buf;
 
-	if (stats->lines == 0)
-	    color = &prefs.uninstrumented_foreground;
-	else if (stats->lines_executed == 0)
-	    color = &prefs.uncovered_foreground;
-	else if (stats->lines_executed < stats->lines)
-	    color = &prefs.partcovered_foreground;
-	else
-	    color = &prefs.covered_foreground;
+	color = foregrounds_by_status[fr->scope->status()];
 
 #if !GTK2
 	fr->node = gtk_ctree_insert_node(
@@ -408,7 +452,9 @@ fileswin_t::add_node(
 	    (parent == 0 || !tree_flag ? 0 : &parent->iter));
 	gtk_tree_store_set(store_,  &fr->iter,
 	    COL_FILE, text[COL_FILE],
+	    COL_BLOCKS, text[COL_BLOCKS],
 	    COL_LINES, text[COL_LINES],
+	    COL_FUNCTIONS, text[COL_FUNCTIONS],
 	    COL_CALLS, text[COL_CALLS],
 	    COL_BRANCHES, text[COL_BRANCHES],
 	    COL_CLOSURE, fr,
@@ -470,6 +516,23 @@ fileswin_t::grey_items()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
+on_files_blocks_check_activate(GtkWidget *w, gpointer data)
+{
+    fileswin_t *fw = fileswin_t::from_widget(w);
+
+    dprintf0(D_FILESWIN, "on_files_blocks_check_activate\n");
+
+#if !GTK2
+    gtk_clist_set_column_visibility(GTK_CLIST(fw->ctree_), COL_BLOCKS,
+    	    	    GTK_CHECK_MENU_ITEM(fw->blocks_check_)->active);
+#else
+    gtk_tree_view_column_set_visible(
+    	    gtk_tree_view_get_column(GTK_TREE_VIEW(fw->ctree_), COL_BLOCKS),
+    	    GTK_CHECK_MENU_ITEM(fw->blocks_check_)->active);
+#endif
+}
+
+GLADE_CALLBACK void
 on_files_lines_check_activate(GtkWidget *w, gpointer data)
 {
     fileswin_t *fw = fileswin_t::from_widget(w);
@@ -482,6 +545,23 @@ on_files_lines_check_activate(GtkWidget *w, gpointer data)
 #else
     gtk_tree_view_column_set_visible(
     	    gtk_tree_view_get_column(GTK_TREE_VIEW(fw->ctree_), COL_LINES),
+    	    GTK_CHECK_MENU_ITEM(fw->lines_check_)->active);
+#endif
+}
+
+GLADE_CALLBACK void
+on_files_functions_check_activate(GtkWidget *w, gpointer data)
+{
+    fileswin_t *fw = fileswin_t::from_widget(w);
+
+    dprintf0(D_FILESWIN, "on_files_functions_check_activate\n");
+
+#if !GTK2
+    gtk_clist_set_column_visibility(GTK_CLIST(fw->ctree_), COL_FUNCTIONS,
+    	    	    GTK_CHECK_MENU_ITEM(fw->lines_check_)->active);
+#else
+    gtk_tree_view_column_set_visible(
+    	    gtk_tree_view_get_column(GTK_TREE_VIEW(fw->ctree_), COL_FUNCTIONS),
     	    GTK_CHECK_MENU_ITEM(fw->lines_check_)->active);
 #endif
 }
