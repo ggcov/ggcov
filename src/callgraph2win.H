@@ -21,7 +21,7 @@
 #define _ggcov_callgraph2win_H_ 1
 
 #include "window.H"
-#include "cov.h"
+#include "cov.H"
 
 typedef struct
 {

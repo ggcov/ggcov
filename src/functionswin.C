@@ -20,9 +20,9 @@
 #include "functionswin.H"
 #include <math.h>
 #include "sourcewin.H"
-#include "cov.h"
+#include "cov.H"
 
-CVSID("$Id: functionswin.C,v 1.2 2002-12-22 02:11:41 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.3 2002-12-29 13:18:37 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -41,8 +41,7 @@ struct func_rec_t
     func_rec_t(cov_function_t *fn)
     {
 	function = fn;
-	cov_stats_init(&stats);
-	cov_function_calc_stats(fn, &stats);
+	fn->calc_stats(&stats);
     }
     
     ~func_rec_t()
@@ -85,7 +84,7 @@ functionswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
     	    	    ratio(fr2->stats.branches_executed, fr2->stats.branches));
 	
     case COL_FUNCTION:
-    	return strcmp(fr1->function->name, fr2->function->name);
+    	return strcmp(fr1->function->name(), fr2->function->name());
 	
     default:
 	return 0;
@@ -140,13 +139,13 @@ void
 functionswin_t::add_functions(cov_file_t *f, void *userdata)
 {
     functionswin_t *fw = (functionswin_t *)userdata;
-    unsigned fnidx;
+    unsigned int fnidx;
     
-    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
+    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
     {
-    	cov_function_t *fn = cov_file_nth_function(f, fnidx);
+    	cov_function_t *fn = f->nth_function(fnidx);
 	
-	if (!strncmp(fn->name, "_GLOBAL_", 8))
+	if (fn->is_suppressed())
 	    continue;
 	
 	fw->functions_ = g_list_prepend(fw->functions_, new func_rec_t(fn));
@@ -160,7 +159,7 @@ functionswin_t::populate()
     fprintf(stderr, "functionswin_t::populate\n");
 #endif
 
-    cov_file_foreach(add_functions, this);
+    cov_file_t::foreach(add_functions, this);
     update();
 }
 
@@ -219,7 +218,7 @@ functionswin_t::update()
 	    	       fr->stats.branches_executed, fr->stats.branches);
 	text[COL_BRANCHES] = branches_pc_buf;
 	
-	text[COL_FUNCTION] = fr->function->name;
+	text[COL_FUNCTION] = (char *)fr->function->name();
 	
 	row = gtk_clist_prepend(GTK_CLIST(clist_), text);
 	gtk_clist_set_row_data(GTK_CLIST(clist_), row, fr);

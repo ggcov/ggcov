@@ -19,10 +19,10 @@
 
 #include "callgraphwin.H"
 #include "sourcewin.H"
-#include "cov.h"
+#include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.2 2002-12-22 01:41:22 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.3 2002-12-29 13:11:43 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -121,7 +121,7 @@ compare_callnodes(const void *a, const void *b)
     
     ret = strcmp(cna->name, cnb->name);
     if (ret == 0 && cna->function != 0 && cnb->function != 0)
-    	ret = strcmp(cna->function->file->name, cnb->function->file->name);
+    	ret = strcmp(cna->function->file()->name(), cnb->function->file()->name());
     return ret;
 }
 
@@ -162,7 +162,7 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
 	{
 	    label.append_string(" (");
 	    if (cn->function != 0)
-		label.append_string(cov_file_minimal_name(cn->function->file));
+		label.append_string(cn->function->file()->minimal_name());
 	    else
 		label.append_string("library");
 	    label.append_string(")");

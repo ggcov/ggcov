@@ -18,10 +18,10 @@
  */
 
 #include "window.H"
-#include "cov.h"
+#include "cov.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: window.C,v 1.2 2002-12-22 02:56:10 gnb Exp $");
+CVSID("$Id: window.C,v 1.3 2002-12-29 13:19:56 gnb Exp $");
 
 static const char window_key[] = "callgraph2win_key";
 

@@ -21,7 +21,7 @@
 #define _ggcov_functionswin_H_ 1
 
 #include "window.H"
-#include "cov.h"
+#include "cov.H"
 
 GLADE_CALLBACK void on_functions_close_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_functions_exit_activate(GtkWidget *w, gpointer data);

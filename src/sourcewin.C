@@ -18,11 +18,11 @@
  */
 
 #include "sourcewin.H"
-#include "cov.h"
+#include "cov.H"
 #include "estring.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.2 2002-12-22 02:48:26 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.3 2002-12-29 13:21:45 gnb Exp $");
 
 extern GList *filenames;
 
@@ -114,7 +114,7 @@ sourcewin_t::on_source_filename_activate(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     const char *filename = (const char *)userdata;
-    estring fullname = cov_unminimise_filename(filename);
+    estring fullname = cov_file_t::unminimise_name(filename);
     
     sw->set_filename(fullname.data(), filename);
 }
@@ -159,11 +159,11 @@ sourcewin_t::delayed_function_activate(gpointer userdata)
     const cov_location_t *first;
     const cov_location_t *last;
 
-    first = cov_function_get_first_location(fn);
-    last = cov_function_get_last_location(fn);
+    first = fn->get_first_location();
+    last = fn->get_last_location();
 #if DEBUG
     fprintf(stderr, "Function %s -> %s:%ld to %s:%ld\n",
-    	    	    	fn->name,
+    	    	    	fn->name(),
 			first->filename, first->lineno,
 			last->filename, last->lineno);
 #endif
@@ -205,15 +205,6 @@ sourcewin_t::on_source_function_activate(GtkWidget *w, gpointer userdata)
     gtk_idle_add(delayed_function_activate, rec);
 }
 
-static int
-compare_functions(const void *a, const void *b)
-{
-    const cov_function_t *fa = (const cov_function_t *)a;
-    const cov_function_t *fb = (const cov_function_t *)b;
-    
-    return strcmp(fa->name, fb->name);
-}
-
 void
 sourcewin_t::populate_functions()
 {
@@ -223,18 +214,18 @@ sourcewin_t::populate_functions()
     cov_function_t *fn;
     
     /* build an alphabetically sorted list of functions */
-    f = cov_file_find(filename_);
+    f = cov_file_t::find(filename_);
     assert(f != 0);
-    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
+    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
     {
-    	fn = cov_file_nth_function(f, fnidx);
+    	fn = f->nth_function(fnidx);
 	
-	if (!strncmp(fn->name, "_GLOBAL_", 8))
+	if (fn->is_suppressed())
 	    continue;
 	functions = g_list_prepend(functions, fn);
     }
     
-    functions = g_list_sort(functions, compare_functions);
+    functions = g_list_sort(functions, cov_function_t::compare);
     
     /* now build the menu */
 
@@ -244,7 +235,7 @@ sourcewin_t::populate_functions()
     {
     	fn = (cov_function_t *)functions->data;
 	
-	ui_menu_add_simple_item(functions_menu_, fn->name,
+	ui_menu_add_simple_item(functions_menu_, fn->name(),
 	    	    on_source_function_activate, fn);
 	
 	functions = g_list_remove_link(functions, functions);
@@ -316,12 +307,12 @@ format_blocks(char *buf, unsigned int width, const cov_location_t *loc)
     const GList *blocks;
     unsigned int len;
     
-    for (blocks = cov_blocks_find_by_location(loc) ; 
+    for (blocks = cov_block_t::find_by_location(loc) ; 
     	 blocks != 0 && width > 0 ;
 	 blocks = blocks->next)
     {
     	cov_block_t *b = (cov_block_t *)blocks->data;
-    	len = snprintf(buf, width, "%u%s", b->idx, (blocks->next == 0 ? "" : ","));
+    	len = snprintf(buf, width, "%u%s", b->bindex(), (blocks->next == 0 ? "" : ","));
 	buf += len;
 	width -= len;
     }
@@ -512,8 +503,8 @@ sourcewin_t::show_lines(
     unsigned long endline)
 {
     sourcewin_t *sw = new sourcewin_t();
-    estring fullname = cov_unminimise_filename(filename);
-    estring displayname = cov_minimise_filename(fullname.data());
+    estring fullname = cov_file_t::unminimise_name(filename);
+    estring displayname = cov_file_t::minimise_name(fullname.data());
 
 #if DEBUG
     fprintf(stderr, "sourcewin_t::show_lines(\"%s\", %lu, %lu) => \"%s\"\n",
@@ -534,8 +525,8 @@ sourcewin_t::show_function(const cov_function_t *fn)
 {
     const cov_location_t *start, *end;
 
-    start = cov_function_get_first_location(fn);
-    end = cov_function_get_last_location(fn);
+    start = fn->get_first_location();
+    end = fn->get_last_location();
 
     show_lines(start->filename, start->lineno, end->lineno);
 }

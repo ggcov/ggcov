@@ -20,12 +20,12 @@
 #include "summarywin.H"
 #include "sourcewin.H"
 #include "filename.h"
-#include "cov.h"
+#include "cov.H"
 #include "estring.H"
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.2 2002-12-22 02:49:19 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.3 2002-12-29 13:22:40 gnb Exp $");
 
 extern GList *filenames;
 
@@ -110,32 +110,18 @@ populate_filename_combo(GtkCombo *combo)
     }
 }
 
-static int
-compare_functions(const void *a, const void *b)
-{
-    const cov_function_t *fa = (const cov_function_t *)a;
-    const cov_function_t *fb = (const cov_function_t *)b;
-    int ret;
-    
-    ret = strcmp(fa->name, fb->name);
-    if (ret == 0)
-    	ret = strcmp(fa->file->name, fb->file->name);
-    return ret;
-}
-
 static void
 add_functions(cov_file_t *f, void *userdata)
 {
     GList **listp = (GList **)userdata;
-    unsigned fnidx;
+    unsigned int fnidx;
     
-    for (fnidx = 0 ; fnidx < cov_file_num_functions(f) ; fnidx++)
+    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
     {
-    	cov_function_t *fn = cov_file_nth_function(f, fnidx);
+    	cov_function_t *fn = f->nth_function(fnidx);
 	
-	if (!strncmp(fn->name, "_GLOBAL_", 8))
-	    continue;
-	*listp = g_list_prepend(*listp, fn);
+	if (!fn->is_suppressed())
+	    *listp = g_list_prepend(*listp, fn);
     }
 }
 
@@ -145,8 +131,8 @@ populate_function_combo(GtkCombo *combo)
     GList *list = 0, *iter;
     estring label;
     
-    cov_file_foreach(add_functions, &list);
-    list = g_list_sort(list, compare_functions);
+    cov_file_t::foreach(add_functions, &list);
+    list = g_list_sort(list, cov_function_t::compare);
     
     for (iter = list ; iter != 0 ; iter = iter->next)
     {
@@ -157,12 +143,12 @@ populate_function_combo(GtkCombo *combo)
 
     	/* see if we need to present some more scope to uniquify the name */
 	if ((iter->next != 0 &&
-	     !strcmp(((cov_function_t *)iter->next->data)->name, fn->name)) ||
+	     !strcmp(((cov_function_t *)iter->next->data)->name(), fn->name())) ||
 	    (iter->prev != 0 &&
-	     !strcmp(((cov_function_t *)iter->prev->data)->name, fn->name)))
+	     !strcmp(((cov_function_t *)iter->prev->data)->name(), fn->name())))
 	{
 	    label.append_string(" (");
-	    label.append_string(cov_file_minimal_name(fn->file));
+	    label.append_string(fn->file()->minimal_name());
 	    label.append_string(")");
 	}
 	
@@ -197,7 +183,7 @@ summarywin_t::spin_update()
     GtkAdjustment *adj;
     unsigned long lastline;
     
-    lastline = cov_file_get_last_location(cov_file_find(filename))->lineno;
+    lastline = cov_file_t::find(filename)->get_last_location()->lineno;
     
 #if DEBUG
     fprintf(stderr, "summarywin_t::spin_update: %s[1-%lu]\n", filename, lastline);
@@ -293,7 +279,6 @@ summarywin_t::update()
     
     grey_items();
     
-    cov_stats_init(&stats);
     switch (scope_)
     {
 
@@ -306,10 +291,10 @@ summarywin_t::update()
     	{
 	    GtkWidget *entry = GTK_COMBO(filename_combo_)->entry;
 	    char *filename = gtk_entry_get_text(GTK_ENTRY(entry));
-	    cov_file_t *f = cov_file_find(filename);
+	    cov_file_t *f = cov_file_t::find(filename);
 
-	    set_title(cov_file_minimal_name(f));
-    	    cov_file_calc_stats(f, &stats);
+	    set_title(f->minimal_name());
+    	    f->calc_stats(&stats);
 	}
 	break;
 
@@ -318,8 +303,8 @@ summarywin_t::update()
 	    cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
 	    	    	    	    	GTK_COMBO(function_combo_));
 
-	    set_title(fn->name);
-    	    cov_function_calc_stats(fn, &stats);
+	    set_title(fn->name());
+    	    fn->calc_stats(&stats);
 	}
 	break;
 
@@ -330,7 +315,7 @@ summarywin_t::update()
 	    char *title;
 
     	    get_range(&filename, &start.lineno, &end.lineno);
-    	    end.filename = start.filename = cov_unminimise_filename(filename);
+    	    end.filename = start.filename = cov_file_t::unminimise_name(filename);
 
 #if DEBUG
     	    fprintf(stderr, "summarywin_update: SU_RANGE %s %ld-%ld\n",

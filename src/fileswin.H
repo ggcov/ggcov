@@ -21,7 +21,7 @@
 #define _ggcov_fileswin_H_ 1
 
 #include "window.H"
-#include "cov.h"
+#include "cov.H"
 
 GLADE_CALLBACK void on_files_close_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_exit_activate(GtkWidget *w, gpointer data);

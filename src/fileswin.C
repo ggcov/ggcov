@@ -20,9 +20,9 @@
 #include "fileswin.H"
 #include <math.h>
 #include "sourcewin.H"
-#include "cov.h"
+#include "cov.H"
 
-CVSID("$Id: fileswin.C,v 1.2 2002-12-22 02:10:44 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.3 2002-12-29 13:17:33 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -38,11 +38,10 @@ struct file_rec_t
     cov_file_t *file;
     cov_stats_t stats;
 
-    file_rec_t(cov_file_t *fn)
+    file_rec_t(cov_file_t *f)
     {
-	file = fn;
-	cov_stats_init(&stats);
-	cov_file_calc_stats(fn, &stats);
+	file = f;
+	f->calc_stats(&stats);
     }
     
     ~file_rec_t()
@@ -85,7 +84,7 @@ fileswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
     	    	    ratio(fr2->stats.branches_executed, fr2->stats.branches));
 	
     case COL_FILE:
-    	return strcmp(fr1->file->name, fr2->file->name);
+    	return strcmp(fr1->file->name(), fr2->file->name());
 	
     default:
 	return 0;
@@ -151,7 +150,7 @@ fileswin_t::populate()
     fprintf(stderr, "fileswin_t::populate\n");
 #endif
 
-    cov_file_foreach(add_file, this);
+    cov_file_t::foreach(add_file, this);
     update();
 }
 
@@ -210,7 +209,7 @@ fileswin_t::update()
 	    	    fr->stats.branches_executed, fr->stats.branches);
 	text[COL_BRANCHES] = branches_pc_buf;
 	
-	text[COL_FILE] = (char *)cov_file_minimal_name(fr->file);
+	text[COL_FILE] = (char *)fr->file->minimal_name();
 	
 	row = gtk_clist_prepend(GTK_CLIST(clist_), text);
 	gtk_clist_set_row_data(GTK_CLIST(clist_), row, fr);
@@ -294,7 +293,7 @@ on_files_clist_button_press_event(
 #endif
 	fr = (file_rec_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
 	
-	sourcewin_t::show_file(cov_file_minimal_name(fr->file));
+	sourcewin_t::show_file(fr->file->minimal_name());
     }
 }
 
