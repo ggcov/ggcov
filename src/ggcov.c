@@ -25,10 +25,11 @@
 #include "sourcewin.h"
 #include "summarywin.h"
 #include "functionswin.h"
+#include "fileswin.h"
 #include <dirent.h>
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.4 2001-11-25 15:17:46 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.5 2001-11-30 01:07:59 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -291,18 +292,45 @@ ui_init(int argc, char **argv)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-ui_create(void)
+on_windows_new_summarywin_activated(GtkWidget *w, gpointer userdata)
+{
+    summarywin_new();
+}
+
+static void
+on_windows_new_fileswin_activated(GtkWidget *w, gpointer userdata)
+{
+    fileswin_new();
+}
+
+static void
+on_windows_new_functionswin_activated(GtkWidget *w, gpointer userdata)
+{
+    functionswin_new();
+}
+
+static void
+on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *srcw;
-    summarywin_t *sumw;
-    functionswin_t *funcw;
-        
+
     srcw = sourcewin_new();
     sourcewin_set_filename(srcw, (const char *)filenames->data);
-    
-    sumw = summarywin_new();
-    
-    funcw = functionswin_new();
+}
+
+static void
+ui_create(void)
+{
+    ui_register_windows_entry("New Summary...",
+    			      on_windows_new_summarywin_activated, 0);
+    ui_register_windows_entry("New File List...",
+    			      on_windows_new_fileswin_activated, 0);
+    ui_register_windows_entry("New Function List...",
+    			      on_windows_new_functionswin_activated, 0);
+    ui_register_windows_entry("New Source...",
+    			      on_windows_new_sourcewin_activated, 0);
+
+    summarywin_new();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -48,6 +48,10 @@ GtkWidget *ui_get_window(GtkWidget *w);
 void ui_register_window(GtkWidget *w);
 /* remember a menu which is updated when windows are registered & destroyed */
 void ui_register_windows_menu(GtkWidget *menu);
+/* add a predefined menu entry to all Windows menus */
+void ui_register_windows_entry(const char *label,
+    	    	    	       void (*callback)(GtkWidget *, gpointer userdata),
+			       gpointer userdata);
 
 /*
  * Update the window's title to reflect `filename'.  The
@@ -58,8 +62,9 @@ void ui_window_set_title(GtkWidget *w, const char *filename);
 
 /* delete every item in the menu except a tearoff */
 void ui_delete_menu_items(GtkWidget *menu);
-GtkWidget *ui_add_simple_menu_item(GtkWidget *menu, const char *label,
+GtkWidget *ui_menu_add_simple_item(GtkWidget *menu, const char *label,
 	       void (*callback)(GtkWidget*, gpointer), gpointer calldata);
+GtkWidget *ui_menu_add_seperator(GtkWidget *menu);
 
 /* Functions for making the column labels in a clist have sort arrows */
 void ui_clist_init_column_arrow(GtkCList *, int col);

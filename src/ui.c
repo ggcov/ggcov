@@ -20,7 +20,7 @@
 #include "ui.h"
 #include "estring.h"
 
-CVSID("$Id: ui.c,v 1.5 2001-11-28 08:08:01 gnb Exp $");
+CVSID("$Id: ui.c,v 1.6 2001-11-30 01:07:59 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -172,8 +172,16 @@ ui_get_window(GtkWidget *w)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+typedef struct
+{
+    char *label;
+    void (*callback)(GtkWidget*, gpointer);
+    void *userdata;
+} ui_windows_entry_t;
+
 static GList *ui_windows;
 static GList *ui_windows_menus;
+static GList *ui_windows_entries;   /* predefined entries, ui_windows_entry_t */
 
 static void
 ui_on_windows_menu_activate(GtkWidget *w, gpointer userdata)
@@ -189,13 +197,28 @@ ui_on_windows_menu_activate(GtkWidget *w, gpointer userdata)
     gdk_window_raise(win->window);
 }
 
-
 static void
 ui_update_windows_menu(GtkWidget *menu)
 {
     GList *iter;
     
     ui_delete_menu_items(menu);
+    
+    for (iter = ui_windows_entries ; iter != 0 ; iter = iter->next)
+    {
+    	ui_windows_entry_t *we = (ui_windows_entry_t *)iter->data;
+	
+	/*
+	 * Presumably a side effect of the callback will be
+	 * the creation of a new window which is registered
+	 * by calling ui_register_window().
+	 */
+	ui_menu_add_simple_item(menu, we->label,
+	    	    we->callback, we->userdata);
+    }
+    
+    if (ui_windows_entries != 0)
+	ui_menu_add_seperator(menu);
     
     for (iter = ui_windows ; iter != 0 ; iter = iter->next)
     {
@@ -211,7 +234,7 @@ ui_update_windows_menu(GtkWidget *menu)
 	if (title == 0 || *title == '\0')
 	    title = GTK_WINDOW(win)->title;
 	
-	ui_add_simple_menu_item(menu, title,
+	ui_menu_add_simple_item(menu, title,
 	    	    ui_on_windows_menu_activate, win);
     }
 }
@@ -257,6 +280,23 @@ ui_register_windows_menu(GtkWidget *menu)
     gtk_signal_connect(GTK_OBJECT(menu), "destroy", 
     	GTK_SIGNAL_FUNC(ui_on_windows_menu_destroy), 0);
     ui_update_windows_menu(menu);
+}
+
+void
+ui_register_windows_entry(
+    const char *label,
+    void (*callback)(GtkWidget *w, gpointer userdata),
+    gpointer userdata)
+{
+    ui_windows_entry_t *we;
+    
+    we = new(ui_windows_entry_t);
+    strassign(we->label, label);
+    we->callback = callback;
+    we->userdata = userdata;
+    
+    ui_windows_entries = g_list_append(ui_windows_entries, we);
+    ui_update_windows_menus();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -329,7 +369,7 @@ ui_delete_menu_items(GtkWidget *menu)
 }
 
 GtkWidget *
-ui_add_simple_menu_item(
+ui_menu_add_simple_item(
     GtkWidget *menu,
     const char *label,
     void (*callback)(GtkWidget*, gpointer),
@@ -342,6 +382,18 @@ ui_add_simple_menu_item(
     gtk_signal_connect(GTK_OBJECT(butt), "activate", 
     		       GTK_SIGNAL_FUNC(callback),
 		       (gpointer)calldata);
+    gtk_widget_show(butt);
+    
+    return butt;
+}
+
+GtkWidget *
+ui_menu_add_seperator(GtkWidget *menu)
+{
+    GtkWidget *butt;
+
+    butt = gtk_menu_item_new();
+    gtk_menu_append(GTK_MENU(menu), butt);
     gtk_widget_show(butt);
     
     return butt;

@@ -22,7 +22,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.8 2001-11-25 07:32:12 gnb Exp $");
+CVSID("$Id: sourcewin.c,v 1.9 2001-11-30 01:07:59 gnb Exp $");
 
 extern GList *filenames;
 
@@ -159,7 +159,7 @@ sourcewin_populate_filenames(sourcewin_t *sw)
     {
     	const char *filename = (const char *)iter->data;
 
-	ui_add_simple_menu_item(sw->filenames_menu, filename,
+	ui_menu_add_simple_item(sw->filenames_menu, filename,
 	    	    on_source_filename_activate, (gpointer)filename);
     }
 }
@@ -272,7 +272,7 @@ sourcewin_populate_functions(sourcewin_t *sw)
     {
     	fn = (cov_function_t *)functions->data;
 	
-	ui_add_simple_menu_item(sw->functions_menu, fn->name,
+	ui_menu_add_simple_item(sw->functions_menu, fn->name,
 	    	    on_source_function_activate, fn);
 	
 	functions = g_list_remove_link(functions, functions);
