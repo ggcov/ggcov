@@ -22,10 +22,12 @@
 #include "covio.h"
 #include "estring.H"
 #include "string_var.H"
+#include "hashtable.H"
 #include "filename.h"
 #include "demangle.h"
+#include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.27 2003-11-04 00:40:25 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.28 2004-02-08 10:58:18 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -34,6 +36,20 @@ list_t<char> cov_file_t::search_path_;
 char *cov_file_t::common_path_;
 int cov_file_t::common_len_;
 void *cov_file_t::files_model_;
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static hashtable_t<char*, char> *suppressed = 0;
+
+void
+cov_suppress_conditional(const char *variable)
+{
+    char *v = g_strdup(variable);
+
+    if (suppressed == 0)
+    	suppressed = new hashtable_t<char*, char>;
+    suppressed->insert(v, v);
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -280,6 +296,17 @@ cov_file_t::nth_line(unsigned int n) const
     return ln;
 }
 
+cov_line_t *
+cov_file_t::get_nth_line(unsigned int lineno)
+{
+    cov_line_t *ln;
+    
+    if (lineno > lines_->length() ||
+    	(ln = lines_->nth(lineno-1)) == 0)
+	lines_->set(lineno-1, ln = new cov_line_t());
+    return ln;
+}
+
 void
 cov_file_t::add_location(
     cov_block_t *b,
@@ -311,9 +338,7 @@ cov_file_t::add_location(
     assert(f->name_[0] == '/');    
     assert(lineno > 0);
     
-    if (lineno > f->lines_->length() ||
-    	(ln = f->lines_->nth(lineno-1)) == 0)
-	f->lines_->set(lineno-1, ln = new cov_line_t());
+    ln = f->get_nth_line(lineno);
     
     if (debug_enabled(D_BB))
     {
@@ -1183,6 +1208,78 @@ cov_file_t::read_o_file(const char *ofilename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+class cov_file_src_parser_t : public cpp_parser_t
+{
+private:
+    cov_file_t *file_;
+    unsigned long last_line_;
+    gboolean is_suppressed_;
+
+    // TODO: need a "parse ended" callback which is not the dtor
+
+    static void
+    check_one_suppressed(char *key, char *val, void *closure)
+    {
+	cov_file_src_parser_t *self = (cov_file_src_parser_t *)closure;
+
+	if (self->depends(key))
+	    self->is_suppressed_ = TRUE;
+    }
+
+    void
+    depends_changed()
+    {
+	unsigned long start, end, l;
+
+    	if (debug_enabled(D_CPP|D_VERBOSE))
+	    dump();
+
+	start = last_line_+1;
+	end = lineno();
+	last_line_ = end;
+	
+	if (end > file_->lines_->length())
+    	    end = file_->lines_->length();
+	if (start > end)
+	    return;
+
+	is_suppressed_ = FALSE;
+	suppressed->foreach(check_one_suppressed, this);
+    	dprintf3(D_CPP, "depends_changed start=%ld end=%ld suppressed=%d\n",
+	    	    start, end, is_suppressed_);
+	if (is_suppressed_)
+	{
+	    if (start > 1)
+	    	start--;    /* include the leading #ifdef */
+	    for (l = start ; l <= end ; l++)
+		file_->get_nth_line(l)->suppress();
+	}
+    }
+
+public:
+    cov_file_src_parser_t(cov_file_t *f)
+     :  cpp_parser_t(f->name()),
+     	file_(f),
+    	last_line_(0)
+    {
+    }
+    ~cov_file_src_parser_t()
+    {
+    	depends_changed();
+    }
+};
+
+gboolean
+cov_file_t::read_src_file()
+{
+    cov_file_src_parser_t parser(this);
+    if (!parser.parse())
+    	return FALSE;
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 void
 cov_file_t::search_path_append(const char *dir)
 {
@@ -1271,6 +1368,16 @@ cov_file_t::read(gboolean quiet)
     if ((filename = find_file(".da", quiet)) == 0 ||
 	 !read_da_file(filename))
 	return FALSE;
+
+    if (suppressed != 0 && !read_src_file())
+    {
+	static const char warnmsg[] = 
+	"could not scan source file for cpp conditionals, "
+	"reports may be inaccurate.\n";
+
+    	/* TODO: save and report in alert to user */
+    	fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
+    }
 
     /*
      * If the data files were written by broken versions of gcc 2.96

@@ -116,6 +116,7 @@ private:
     static void check_common_path();
     cov_function_t *add_function();
     void add_location(cov_block_t *, const char *, unsigned long);
+    cov_line_t *get_nth_line(unsigned int lineno);
 
     char *try_file(const char *dir, const char *ext) const;
     char *find_file(const char *ext, gboolean quiet) const;
@@ -142,6 +143,7 @@ private:
     gboolean scan_o_file_calls(const char *filename);
     gboolean read_o_file(const char *filename);
 #endif
+    gboolean read_src_file();
     gboolean solve();
     void finalise();
 
@@ -174,6 +176,7 @@ private:
     friend class cov_block_t;
     friend class cov_overall_scope_t;
     friend class cov_file_scope_t;
+    friend class cov_file_src_parser_t;
 };
 
 
