@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.28 2004-02-08 10:58:18 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.29 2004-02-09 10:01:07 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -42,7 +42,7 @@ void *cov_file_t::files_model_;
 static hashtable_t<char*, char> *suppressed = 0;
 
 void
-cov_suppress_conditional(const char *variable)
+cov_suppress_ifdef(const char *variable)
 {
     char *v = g_strdup(variable);
 

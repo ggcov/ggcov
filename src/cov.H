@@ -32,7 +32,7 @@
 /* Call this to initialise the cov library */
 void cov_init(void);
 
-void cov_suppress_conditional(const char *variable);
+void cov_suppress_ifdef(const char *variable);
 
 gboolean cov_is_source_filename(const char *filename);
 

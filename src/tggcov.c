@@ -31,7 +31,7 @@
 #include "tok.H"
 #include "fakepopt.h"
 
-CVSID("$Id: tggcov.c,v 1.7 2004-02-08 11:06:32 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.8 2004-02-09 10:01:07 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -62,7 +62,7 @@ read_gcov_files(void)
 	const char *v;
 	
 	while ((v = tok.next()) != 0)
-    	    cov_suppress_conditional(v);
+    	    cov_suppress_ifdef(v);
     }
 
     cov_pre_read();

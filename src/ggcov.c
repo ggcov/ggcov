@@ -36,7 +36,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.37 2004-02-08 11:03:41 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.38 2004-02-09 10:01:07 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -100,7 +100,7 @@ read_gcov_files(void)
 	const char *v;
 	
 	while ((v = tok.next()) != 0)
-    	    cov_suppress_conditional(v);
+    	    cov_suppress_ifdef(v);
     }
 
     cov_pre_read();
