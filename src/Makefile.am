@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.13 2002-12-22 01:37:17 gnb Exp $
+# $Id: Makefile.am,v 1.14 2002-12-29 13:09:50 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
@@ -24,8 +24,13 @@ bin_PROGRAMS=	ggcov
 ggcov_SOURCES=	common.h common.c \
 		estring.H estring.C \
 		filename.h filename.c \
+		list.H \
 		covio.h covio.c \
-		cov.h cov.c \
+		cov_file.H cov_file.C \
+		cov_function.H cov_function.C \
+		cov_block.H cov_block.C \
+		cov_arc.H cov_arc.C \
+		cov.H cov.C \
 		ui.h ui.c uix.h uix.c \
 		gnbprogressbar.h gnbprogressbar.c \
 		window.H window.C \
@@ -59,3 +64,8 @@ licence.c: $(top_srcdir)/COPYING
 	sed -e 's///g' -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/^\(.*\)$$/"\1\\n"/' <$< >$@
 
 EXTRA_CLEAN=	licence.c
+
+noinst_PROGRAMS=	bbdump
+
+bbdump_SOURCES= bbdump.c covio.c estring.C
+bbdump_LDADD=	$(LIBGLADE_LIBS)
