@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.39 2005-02-27 06:09:17 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.40 2005-03-05 15:08:31 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -889,6 +889,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 		funcname = io->read_string();
 		io->read_u32(&tmp);	/* ignore the checksum */
 	    }
+	    funcname = demangle(funcname);
 	    funcname = normalise_mangled(funcname);
     	    fn = add_function();
 	    fn->set_name(funcname);
