@@ -26,12 +26,12 @@
 #include "summarywin.h"
 #include "callswin.h"
 #include "callgraphwin.h"
+#include "callgraph2win.h"
 #include "functionswin.h"
 #include "fileswin.h"
-#include <dirent.h>
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.9 2002-01-21 08:29:05 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.10 2002-12-12 00:10:27 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -62,49 +62,9 @@ static struct poptOption popt_options[] =
     { 0, 0, 0, 0, 0, 0, 0 }
 };
 
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+static void summarise(void);
 
-static gboolean
-read_gcov_directory(const char *dirname)
-{
-    DIR *dir;
-    struct dirent *de;
-    estring child;
-    const char *ext;
-    int successes = 0;
-    
-    if ((dir = opendir(dirname)) == 0)
-    {
-    	perror(dirname);
-    	return FALSE;
-    }
-    
-    estring_init(&child);
-    while ((de = readdir(dir)) != 0)
-    {
-    	if (!strcmp(de->d_name, ".") || 
-	    !strcmp(de->d_name, ".."))
-	    continue;
-	    
-	estring_truncate(&child);
-	if (strcmp(dirname, "."))
-	{
-	    estring_append_string(&child, dirname);
-	    if (child.data[child.length-1] != '/')
-		estring_append_char(&child, '/');
-	}
-	estring_append_string(&child, de->d_name);
-	
-    	if (file_is_regular(child.data) == 0 &&
-	    (ext = file_extension_c(child.data)) != 0 &&
-	    !strcmp(ext, ".c"))
-	    successes += cov_handle_c_file(child.data);
-    }
-    
-    estring_free(&child);
-    closedir(dir);
-    return (successes > 0);
-}
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 
 static void
@@ -125,22 +85,44 @@ read_gcov_files(void)
     GList *iter;
     
     cov_init();
+    cov_pre_read();
     
     if (files == 0)
     {
-    	if (!read_gcov_directory("."))
+    	if (!cov_read_directory("."))
 	    exit(1);
     }
     else
     {
 	for (iter = files ; iter != 0 ; iter = iter->next)
 	{
-	    const char *cfilename = (const char *)iter->data;
+	    const char *filename = (const char *)iter->data;
+	    const char *ext;
 	    
-	    if (file_is_directory(cfilename) == 0)
-    		read_gcov_directory(cfilename);
-	    else if (!cov_handle_c_file(cfilename))
+	    if (file_is_directory(filename) == 0)
+	    {
+	    	if (!cov_read_directory(filename))
+		    exit(1);
+	    }
+	    else if (file_is_regular(filename) == 0)
+	    {
+	    	if (cov_is_source_filename(filename))
+		{
+		    if (!cov_read_source_file(filename))
+			exit(1);
+		}
+		else
+		{
+		    if (!cov_read_object_file(filename))
+			exit(1);
+		}
+	    }
+	    else
+	    {
+	    	fprintf(stderr, "%s: don't know how to handle this filename\n",
+		    	filename);
 		exit(1);
+	    }
 	}
     }
     
@@ -379,6 +361,14 @@ on_windows_new_callgraphwin_activated(GtkWidget *w, gpointer userdata)
 }
 
 static void
+on_windows_new_callgraph2win_activated(GtkWidget *w, gpointer userdata)
+{
+    callgraph2win_t *cgw;
+    
+    cgw = callgraph2win_new();
+}
+
+static void
 on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *srcw;
@@ -402,6 +392,8 @@ ui_create(void)
     			      on_windows_new_callswin_activated, 0);
     ui_register_windows_entry("New Call Graph...",
     			      on_windows_new_callgraphwin_activated, 0);
+    ui_register_windows_entry("New Call Graph2...",
+    			      on_windows_new_callgraph2win_activated, 0);
     ui_register_windows_entry("New Source...",
     			      on_windows_new_sourcewin_activated, 0);
 
