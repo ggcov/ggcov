@@ -8,10 +8,17 @@ SPECFILE=${PACKAGE}.spec
 TARBALL=${PACKAGE}-${VERSION}.tar.gz
 RPMDIR=rpm.d
 
+# Calculate a string which identifies the Linux distro
+DISTRO=
+if [ -f /etc/redhat-release ]; then
+    DISTRO=rh$(sed -e 's|.*release[ \t]\+\([^ \t]\+\).*|\1|g' < /etc/redhat-release)
+fi
+
 #echo PACKAGE=$PACKAGE
 #echo VERSION=$VERSION
 #echo TARBALL=$TARBALL
 #echo RPMDIR=$RPMDIR
+#echo DISTRO=$DISTRO
 #exit 1
 
 set -x
@@ -45,4 +52,9 @@ rpm -bb \
     --verbose \
     $SPECFILE
 
-mv -f $(find $RPMDIR/RPMS -type f -name \*.rpm) .
+for f in $(find $RPMDIR/RPMS -type f -name \*.rpm) ; do
+    f2=$(echo $(basename $f) | sed -e 's|^\([a-z-]\+-\)|\1'${DISTRO}${DISTRO:+-}'|')
+    echo "Renaming $(basename $f) -> $f2"
+    mv $f $f2
+done
+
