@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.14 2005-03-05 14:59:30 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.15 2005-03-05 15:02:48 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -126,7 +126,6 @@ callswin_t::callswin_t()
     gtk_clist_set_compare_func(GTK_CLIST(clist_), callswin_clist_compare);
     ui_clist_set_sort_column(GTK_CLIST(clist_), COL_ARC);
     ui_clist_set_sort_type(GTK_CLIST(clist_), GTK_SORT_ASCENDING);
-    gtk_clist_set_column_visibility(GTK_CLIST(clist_), COL_ARC, FALSE);
 #else
     store_ = gtk_list_store_new(NUM_COLS, COL_TYPES);
     /* default alphabetic sort is adequate for COL_FROM, COL_TO */
@@ -175,7 +174,9 @@ callswin_t::callswin_t()
     gtk_tree_view_set_enable_search(GTK_TREE_VIEW(clist_), TRUE);
     gtk_tree_view_set_search_column(GTK_TREE_VIEW(clist_), COL_FROM);
 #endif
-    
+
+    ui_list_set_column_visibility(clist_, COL_ARC, FALSE);
+
     ui_register_windows_menu(ui_get_dummy_menu(xml, "calls_windows_dummy"));
 }
 
