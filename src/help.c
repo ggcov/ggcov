@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "ui.h"
 
-CVSID("$Id: help.c,v 1.5 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: help.c,v 1.6 2003-07-19 06:26:39 gnb Exp $");
 
 static GtkWidget *about_window;
 static GtkWidget *licence_window;
@@ -50,27 +50,16 @@ on_about_licence_clicked(GtkWidget *w, gpointer data)
     if (licence_window == 0)
     {
 	GladeXML *xml = ui_load_tree("licence");
-#if GTK2
-    	GtkWidget *text_view;
-	GtkTextBuffer *buffer;
-#else
-    	GtkWidget *licence_text;
-#endif
-	licence_window = glade_xml_get_widget(xml, "licence");
+    	GtkWidget *text;    /* GtkText in gtk1.2, GtkTextView in gtk2.0 */
 
-#if GTK2
-    	text_view = glade_xml_get_widget(xml, "licence_text");
-    	buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-	gtk_text_buffer_set_text(buffer, licence_str, sizeof(licence_str)-1);
-#else
-	licence_text = glade_xml_get_widget(xml, "licence_text");
-	gtk_text_freeze(GTK_TEXT(licence_text));
-	gtk_editable_delete_text(GTK_EDITABLE(licence_text), 0, -1);
-	gtk_text_insert(GTK_TEXT(licence_text), /*font*/0,
-	    	    	/*fore*/0, /*back*/0,
-			licence_str, sizeof(licence_str)-1);
-	gtk_text_thaw(GTK_TEXT(licence_text));
-#endif
+	licence_window = glade_xml_get_widget(xml, "licence");
+    	text = glade_xml_get_widget(xml, "licence_text");
+
+    	ui_text_setup(text);
+	ui_text_begin(text);
+	ui_text_add(text, /*tag*/0, licence_str, sizeof(licence_str)-1);
+	ui_text_end(text);
+	ui_text_ensure_visible(text, 1);    /* show the start of the text */
     }
     
     gtk_widget_show(licence_window);
