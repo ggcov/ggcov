@@ -99,5 +99,54 @@ private:
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#endif /* HAVE_LIBBFD */
+#else /* !HAVE_LIBBFD */
+
+/* just enough to get other code compiling but not running */
+typedef struct _asymbol asymbol;
+typedef struct _arelent arelent;
+typedef uint32_t bfd_size_type;
+
+class cov_bfd_section_t
+{
+public:
+    arelent **get_relocs(unsigned int *lenp) { return 0; }
+    
+    unsigned char *get_contents(bfd_size_type *lenp) { return 0; }
+    unsigned char *get_contents(unsigned long startaddr, unsigned long length) { return 0; }
+
+    gboolean find_nearest_line(unsigned long address,
+    	    	    	       cov_location_t *locp/*return*/,
+			       const char **functionp/*return*/)
+    { return FALSE; }
+			       
+    unsigned long raw_size() const { return 0; }
+};
+
+class cov_bfd_t
+{
+public:
+    cov_bfd_t() {}
+    
+    ~cov_bfd_t() {}
+    
+    gboolean open(const char *filename) { return FALSE; }
+    const char *filename() const { return 0; }
+    
+    unsigned int num_symbols() { return 0; }
+    
+    const asymbol *nth_symbol(unsigned int) { return 0; }
+    
+    unsigned int num_code_sections() { return 0; }
+    cov_bfd_section_t *nth_code_section(unsigned int) { return 0; }
+
+    cov_bfd_section_t *find_section(const char *secname) { return 0; }
+
+    /* Dump various structures, for debugging;  idx==0 dumps header */
+    static void dump_symbol(unsigned int idx, asymbol *sym) {}
+    static void dump_reloc(unsigned int idx, arelent *rel) {}
+
+private:
+};
+
+#endif /* !HAVE_LIBBFD */
 #endif /* _ggcov_bfd_H_ */
