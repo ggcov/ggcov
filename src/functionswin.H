@@ -23,6 +23,7 @@
 #include "window.H"
 #include "cov.H"
 
+GLADE_CALLBACK void on_functions_blocks_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_functions_lines_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_functions_calls_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_functions_branches_check_activate(GtkWidget *w, gpointer data);
@@ -46,6 +47,7 @@ private:
 
     list_t<cov_function_scope_t> functions_;
     
+    GtkWidget *blocks_check_;
     GtkWidget *lines_check_;
     GtkWidget *calls_check_;
     GtkWidget *branches_check_;
@@ -55,6 +57,7 @@ private:
     GtkListStore *store_;
 #endif
 
+    friend void on_functions_blocks_check_activate(GtkWidget *w, gpointer data);
     friend void on_functions_lines_check_activate(GtkWidget *w, gpointer data);
     friend void on_functions_calls_check_activate(GtkWidget *w, gpointer data);
     friend void on_functions_branches_check_activate(GtkWidget *w, gpointer data);

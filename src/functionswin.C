@@ -23,21 +23,22 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: functionswin.C,v 1.12 2003-11-03 23:10:38 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.13 2004-02-18 11:22:07 gnb Exp $");
 
 
-#define COL_LINES   	0
-#define COL_CALLS   	1
-#define COL_BRANCHES	2
-#define COL_FUNCTION	3
+#define COL_BLOCKS   	0
+#define COL_LINES   	1
+#define COL_CALLS   	2
+#define COL_BRANCHES	3
+#define COL_FUNCTION	4
 #if !GTK2
-#define NUM_COLS    	4
+#define NUM_COLS    	5
 #else
-#define COL_CLOSURE	4
-#define COL_FG_GDK	5
-#define NUM_COLS    	6
+#define COL_CLOSURE	5
+#define COL_FG_GDK	6
+#define NUM_COLS    	7
 #define COL_TYPES \
-    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
+    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
     G_TYPE_POINTER, GDK_TYPE_COLOR
 #endif
 
@@ -60,6 +61,7 @@ functionswin_compare(
 {
     const cov_stats_t *s1 = fs1->get_stats();
     const cov_stats_t *s2 = fs2->get_stats();
+    int ret = 0;
 
     dprintf2(D_FUNCSWIN|D_VERBOSE,
     	    "functionswin_compare: fs1=\"%s\" fs2=\"%s\"\n",
@@ -67,27 +69,42 @@ functionswin_compare(
 
     switch (column)
     {
+    case COL_BLOCKS:
+    	ret = ratiocmp(
+    	    	    ratio(s1->blocks_executed(), s1->blocks_total()),
+    	    	    ratio(s2->blocks_executed(), s2->blocks_total()));
+	break;
+	
     case COL_LINES:
-    	return ratiocmp(
-    	    	    ratio(s1->lines_executed, s1->lines),
-    	    	    ratio(s2->lines_executed, s2->lines));
+    	ret = ratiocmp(
+    	    	    ratio(s1->lines_executed(), s1->lines_total()),
+    	    	    ratio(s2->lines_executed(), s2->lines_total()));
+	break;
 	
     case COL_CALLS:
-    	return ratiocmp(
-    	    	    ratio(s1->calls_executed, s1->calls),
-    	    	    ratio(s2->calls_executed, s2->calls));
+    	ret = ratiocmp(
+    	    	    ratio(s1->calls_executed(), s1->calls_total()),
+    	    	    ratio(s2->calls_executed(), s2->calls_total()));
+	break;
 	
     case COL_BRANCHES:
-    	return ratiocmp(
-    	    	    ratio(s1->branches_executed, s1->branches),
-    	    	    ratio(s2->branches_executed, s2->branches));
+    	ret = ratiocmp(
+    	    	    ratio(s1->branches_executed(), s1->branches_total()),
+    	    	    ratio(s2->branches_executed(), s2->branches_total()));
+	break;
 	
     case COL_FUNCTION:
-    	return strcmp(fs1->function()->name(), fs2->function()->name());
+    	ret = 0;
+	break;
 	
     default:
 	return 0;
     }
+    
+    if (ret == 0)
+    	ret = strcmp(fs1->function()->name(), fs2->function()->name());
+
+    return ret;
 }
 
 #if !GTK2
@@ -131,12 +148,15 @@ functionswin_t::functionswin_t()
     
     set_window(glade_xml_get_widget(xml, "functions"));
     
+    blocks_check_ = glade_xml_get_widget(xml, "functions_blocks_check");
     lines_check_ = glade_xml_get_widget(xml, "functions_lines_check");
     calls_check_ = glade_xml_get_widget(xml, "functions_calls_check");
     branches_check_ = glade_xml_get_widget(xml, "functions_branches_check");
     percent_check_ = glade_xml_get_widget(xml, "functions_percent_check");
     clist_ = glade_xml_get_widget(xml, "functions_clist");
 #if !GTK2
+    gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_BLOCKS,
+    	    	    	    	       GTK_JUSTIFY_RIGHT);
     gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_LINES,
     	    	    	    	       GTK_JUSTIFY_RIGHT);
     gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_CALLS,
@@ -147,15 +167,18 @@ functionswin_t::functionswin_t()
     	    	    	    	       GTK_JUSTIFY_LEFT);
     gtk_clist_set_compare_func(GTK_CLIST(clist_), functionswin_clist_compare);
 
+    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_BLOCKS);
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_LINES);
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_CALLS);
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_BRANCHES);
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_FUNCTION);
-    ui_clist_set_sort_column(GTK_CLIST(clist_), COL_LINES);
+    ui_clist_set_sort_column(GTK_CLIST(clist_), COL_BLOCKS);
     ui_clist_set_sort_type(GTK_CLIST(clist_), GTK_SORT_DESCENDING);
 #else
     store_ = gtk_list_store_new(NUM_COLS, COL_TYPES);
     /* default alphabetic sort is adequate for COL_FUNCTION */
+    gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_BLOCKS,
+	  functionswin_tree_iter_compare, GINT_TO_POINTER(COL_BLOCKS), 0);
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_LINES,
 	  functionswin_tree_iter_compare, GINT_TO_POINTER(COL_LINES), 0);
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_CALLS,
@@ -167,9 +190,15 @@ functionswin_t::functionswin_t()
 
     rend = gtk_cell_renderer_text_new();
 
+    col = gtk_tree_view_column_new_with_attributes(_("Blocks"), rend,
+    	    	"text", COL_BLOCKS,
+		"foreground-gdk", COL_FG_GDK,/* only needed on 1st column */
+		(char *)0);
+    gtk_tree_view_column_set_sort_column_id(col, COL_BLOCKS);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
+    
     col = gtk_tree_view_column_new_with_attributes(_("Lines"), rend,
     	    	"text", COL_LINES,
-		"foreground-gdk", COL_FG_GDK,/* only needed on 1st column */
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_LINES);
     gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
@@ -225,8 +254,9 @@ functionswin_t::populate()
 	for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
 	{
     	    cov_function_t *fn = f->nth_function(fnidx);
+	    cov::status_t st = fn->status();
 
-	    if (!fn->is_suppressed())
+	    if (st != cov::SUPPRESSED && st != cov::UNINSTRUMENTED)
 		functions_.prepend(new cov_function_scope_t(fn));
 	}
     }
@@ -260,6 +290,7 @@ functionswin_t::update()
     gboolean percent_flag;
     GdkColor *color;
     char *text[NUM_COLS];
+    char blocks_pc_buf[16];
     char lines_pc_buf[16];
     char calls_pc_buf[16];
     char branches_pc_buf[16];
@@ -284,28 +315,25 @@ functionswin_t::update()
     	GtkTreeIter titer;
 #endif
 
+    	format_stat(blocks_pc_buf, sizeof(blocks_pc_buf), percent_flag,
+	    	       stats->blocks_executed(), stats->blocks_total());
+	text[COL_BLOCKS] = blocks_pc_buf;
+	
     	format_stat(lines_pc_buf, sizeof(lines_pc_buf), percent_flag,
-	    	       stats->lines_executed, stats->lines);
+	    	       stats->lines_executed(), stats->lines_total());
 	text[COL_LINES] = lines_pc_buf;
 	
     	format_stat(calls_pc_buf, sizeof(calls_pc_buf), percent_flag,
-	    	       stats->calls_executed, stats->calls);
+	    	       stats->calls_executed(), stats->calls_total());
 	text[COL_CALLS] = calls_pc_buf;
 	
     	format_stat(branches_pc_buf, sizeof(branches_pc_buf), percent_flag,
-	    	       stats->branches_executed, stats->branches);
+	    	       stats->branches_executed(), stats->branches_total());
 	text[COL_BRANCHES] = branches_pc_buf;
 	
 	text[COL_FUNCTION] = (char *)(*iter)->function()->name();
 	
-	if (stats->lines == 0)
-	    color = &prefs.uninstrumented_foreground;
-	else if (stats->lines_executed == 0)
-	    color = &prefs.uncovered_foreground;
-	else if (stats->lines_executed < stats->lines)
-	    color = &prefs.partcovered_foreground;
-	else
-	    color = &prefs.covered_foreground;
+	color = foregrounds_by_status[(*iter)->function()->status()];
 	
 #if !GTK2
 	row = gtk_clist_prepend(GTK_CLIST(clist_), text);
@@ -315,6 +343,7 @@ functionswin_t::update()
     	gtk_list_store_append(store_, &titer);
 	gtk_list_store_set(store_,  &titer,
 	    COL_FUNCTION, text[COL_FUNCTION],
+	    COL_BLOCKS, text[COL_BLOCKS],
 	    COL_LINES, text[COL_LINES],
 	    COL_CALLS, text[COL_CALLS],
 	    COL_BRANCHES, text[COL_BRANCHES],
@@ -332,6 +361,21 @@ functionswin_t::update()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+GLADE_CALLBACK void
+on_functions_blocks_check_activate(GtkWidget *w, gpointer data)
+{
+    functionswin_t *fw = functionswin_t::from_widget(w);
+
+#if !GTK2
+    gtk_clist_set_column_visibility(GTK_CLIST(fw->clist_), COL_BLOCKS,
+    	    	    GTK_CHECK_MENU_ITEM(fw->blocks_check_)->active);
+#else
+    gtk_tree_view_column_set_visible(
+    	    gtk_tree_view_get_column(GTK_TREE_VIEW(fw->clist_), COL_LINES),
+    	    GTK_CHECK_MENU_ITEM(fw->blocks_check_)->active);
+#endif
+}
 
 GLADE_CALLBACK void
 on_functions_lines_check_activate(GtkWidget *w, gpointer data)
