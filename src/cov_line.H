@@ -33,11 +33,12 @@ public:
 	COVERED,
 	PARTCOVERED,
 	UNCOVERED,
-	UNINSTRUMENTED
+	UNINSTRUMENTED,
+	SUPPRESSED
     };
     enum _constants
     {
-    	NUM_STATUS=4
+    	NUM_STATUS=5
     };
 
     count_t count()
@@ -67,11 +68,22 @@ public:
      * for tggcov.  Width should be at least 8.
      */
     unsigned int format_blocks(char *buf, unsigned int maxlen);
-
+    
+    /* Check for suppression without the side effect of calculate_count() */
+    gboolean is_suppressed() const
+    {
+    	return (count_valid_ && status_ == SUPPRESSED);
+    }
+    
 private:
     cov_line_t();
     ~cov_line_t();
     void calculate_count();
+    void suppress()
+    {
+    	count_valid_ = TRUE;
+	status_ = SUPPRESSED;
+    }
 
     GList *blocks_;
     gboolean count_valid_;  /* covers status_, count_ */
@@ -79,6 +91,7 @@ private:
     count_t count_;
     
     friend class cov_file_t;
+    friend class cov_file_src_parser_t;
 };
 
 
