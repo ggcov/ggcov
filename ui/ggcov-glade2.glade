@@ -745,10 +745,9 @@
 		<widget class="GtkMenu" id="help8_menu">
 
 		  <child>
-		    <widget class="GtkMenuItem" id="about_mitem">
+		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">_About</property>
-		      <property name="use_underline">True</property>
+		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
 		      <signal name="activate" handler="on_about_activate"/>
 		    </widget>
 		  </child>
