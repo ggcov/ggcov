@@ -18,11 +18,11 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.36 2003-07-22 11:43:30 gnb Exp $
+dnl $Id: configure.in,v 1.37 2003-08-04 10:41:58 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
-AM_INIT_AUTOMAKE(ggcov, 0.2)
+AM_INIT_AUTOMAKE(ggcov, 0.2.1)
 AM_CONFIG_HEADER(config.h)
 
 AM_MAINTAINER_MODE
@@ -64,7 +64,6 @@ dnl AM_GNU_GETTEXT
 dnl Checks for libraries.
 AC_CHECK_LIB(iberty, obstack_free)
 AC_CHECK_LIB(bfd, bfd_init)
-AC_CHECK_LIB(popt, poptGetContext)
 
 dnl Checks for header files.
 AC_HEADER_STDC
@@ -74,8 +73,6 @@ AC_CHECK_HEADERS(signal.h sys/filio.h stdint.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_PID_T
-
-dnl Check for the libglade, libxml, and GTK libraries
 
 
 dnl A bunch of warning options for gcc
@@ -89,6 +86,7 @@ dnl Use the latest version of gtk which actually is complete and works.
 dnl Should result in: gtk 1.2 on RedHat 7.3, gtk 2 on RedHat 8 & greater.
 
 # try gtk 2.0
+libpopt=no
 PKG_CHECK_MODULES(GGCOV_GUI, libglade-2.0 >= 2.0.0 libgnomeui-2.0 >= 2.0.0,
     	    	  [gtk2=yes],[gtk2=no])
 if test $gtk2 = yes ; then
@@ -100,19 +98,33 @@ dnl	# default, which is needed by libglade.
 dnl    	GGCOV_GUI_LIBS="$GGCOV_GUI_LIBS -rdynamic"
 dnl    fi
     AC_CHECK_LIB(gtk-x11-2.0, gtk_text_buffer_select_range,
-	      AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE),,
+	      AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE,,[
+ * The function gtk_text_buffer_select_range may or may
+ * not be present in the gtk2 libraries...we have to work
+ * around it if not.
+]),,
 	      [$GGCOV_GUI_LIBS])
     GGCOV_GLADE_FILE=ggcov-glade2.glade
+    # gnome2 doesn't need popt, so it may or may not be present
+    AC_CHECK_LIB(popt,poptGetContext,
+    	    	 [ libpopt=yes ;  LIBS="$LIBS -lpopt" ],,
+		 $GGCOV_GUI_CFLAGS $GGCOV_GUI_LIBS)
 else
     # fall back to gtk 1.2
+    AC_MSG_WARN([GNOME version 2 libraries not found, falling back to 1.2])
     AM_PATH_LIBGLADE(,AC_MSG_ERROR(ggcov requires the libglade library),gnome)
     AM_PATH_IMLIB(,,AC_MSG_ERROR(ggcov requires the libgdk_imlib library))
     AM_PATH_GLIB(,,AC_MSG_ERROR(ggcov requires the glib library))
     GGCOV_GUI_CFLAGS="$LIBGLADE_CFLAGS $IMLIB_CFLAGS"
     GGCOV_GUI_LIBS="$LIBGLADE_LIBS $IMLIB_LIBS"
     GGCOV_CLI_CFLAGS="$GLIB_CFLAGS"
-    GGCOV_CLI_LIBS="$GLIB_LIBS"
+    GGCOV_CLI_LIBS="$GLIB_LIBS -lpopt"
     GGCOV_GLADE_FILE=ggcov.glade
+    # gnome1.2 requires popt so we can assume it's present
+    libpopt=yes
+fi
+if test $libpopt = yes ; then
+    AC_DEFINE(HAVE_LIBPOPT,,[Define to 1 if the popt library is present])
 fi
 AC_SUBST(GGCOV_GUI_CFLAGS)
 AC_SUBST(GGCOV_GUI_LIBS)
@@ -131,9 +143,6 @@ AC_TYPE_SIGNAL
 AC_FUNC_WAIT3
 AC_CHECK_FUNCS(putenv regcomp strchr)
 
-AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE")
-AC_DEFINE_UNQUOTED(VERSION, "$VERSION")
-AC_DEFINE(HAVE_WAIT3)
 dnl AC_SUBST(ALL_LINGUAS)
 AC_SUBST(PACKAGE)
 AC_SUBST(VERSION)

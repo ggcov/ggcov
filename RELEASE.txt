@@ -2,37 +2,63 @@
 Description of release procedure for ggcov
 ------------------------------------------
 
-1.  Be in the ggcov top_srcdir
-    cd ~/proj/ggcov
+1.  Choose release
+    export RELEASE=maint
+    # OR
+    export RELEASE=dev
 
-2.  Ensure all changes are checked in
-    cvs -n up
+2.  Be in the ggcov top_srcdir
+    cd ~/proj/ggcov/ggcov-$RELEASE
 
-3.  Bump revision number in configure.in 
+3.  Ensure all changes are checked in
+
+4.  Choose a release number, e.g. 0.5 and hence tag GGCOV_0_5
+
+5.  Bump revision number in configure.in 
     nc configure.in
-    
-4.  Check in configure.in.  Log message "Release x.y.z".
+    # edit the AM_INIT_AUTOMAKE line
     cvs ci configure.in
     
-5.  Update ChangeLog
-    ./cvs2changelog
-    
-6.  Edit ChangeLog, modify the log entries in any way
-    necessary for readability, uniqueness etc.  First
-    item should read "Release x.y.z".
+6.  Tag the source:
+    cvs tag GGCOV_0_5
 
-7.  Check in ChangeLog
+7.  Build a list of change from the previous release (e.g. 0.4)
+    ./cvs2changelog 0.4 0.5
+    
+8.  Manually edit the ChangeLog file to remove, re-express and
+    re-order the change log items in the first section (just
+    created by the cvs2changelog script). Maintain the formatting.
+
+9.  Checkin and re-tag ChangeLog
     cvs ci ChangeLog
+    cvs tag -d GGCOV_0_5 ChangeLog
+    cvs tag GGCOV_0_5 ChangeLog
+
+10. Build a new RH7.3 tarball and RPM
+    ./buildrpm --force
+
+11. Build a new RH9 RPM on gozer
+    ./buildrpm --force --cvs-update --build-host=gozer
+
+12. In website directory
+    cd ../www
+
+13. Update local install of web pages
+    make clean install
     
-8.  Tag the release
-    cvs tag GGCOV_x_y_z
+14. Manually check pages; point browser at
+    http://localhost/gnb/ggcov/
+
+15. Connect to alphalink
+
+16. Install the web pages on alphalink
+    make upload
     
-9.  Test the release for buildability from CVS:
-    cd ..
-    cvs -d $CVSROOT_HO co -d ggcov-x.y.z -r GGCOV_x_y_z gnb/ggcov
-    cd ggcov-x.y.z
-    ./buildrpm
-    
-10. Gather the release products:
-    cp ggcov-x.y.z.tar.gz ..
-    cp buildrpm.d/RPMS/*/ggcov-x.y.z*.rpm ..
+17. Manually check pages for updates, Valid HTML, downloadables
+    http://www.alphalink.com.au/~gnb/ggcov/
+
+18. Notify freshmeat.net
+
+19. Archive the binaries
+    mv ../ggcov-$RELEASE/{*.rpm,*.tar.gz} ../archive/
+

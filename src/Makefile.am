@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.31 2003-07-18 13:34:58 gnb Exp $
+# $Id: Makefile.am,v 1.32 2003-08-04 10:42:05 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -37,7 +37,6 @@ libcommon_a_SOURCES= \
 libcov_a_SOURCES= \
 		covio.h covio.c \
 		cov_specific.H cov_specific.C \
-		cov_stab32.C \
 		cov_file.H cov_file.C \
 		cov_line.H cov_line.C \
 		cov_function.H cov_function.C \
@@ -46,6 +45,12 @@ libcov_a_SOURCES= \
 		cov_callgraph.H cov_callgraph.C \
 		cov_scope.H cov_scope.C \
 		cov_types.H cov.H cov.C
+# This is a sad hack to work around the problem where some
+# objects need to be unconditionally linked instead of pulled
+# in from libcov.a on demand.
+LIBCOV_STATIC_SOURCES= \
+		cov_stab32.C
+		
 
 bin_PROGRAMS=	ggcov
 
@@ -62,6 +67,7 @@ ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		functionswin.H functionswin.C \
 		fileswin.H fileswin.C \
 		prefswin.H prefswin.C \
+		$(LIBCOV_STATIC_SOURCES) \
 		help.c ggcov.c
 
 INCLUDES=	$(GGCOV_GUI_CFLAGS) -DPKGDATADIR="\"$(pkgdatadir)\"" \
@@ -108,5 +114,5 @@ mangletest_LDADD=	$(CLI_LIBS)
 newbbgdump_SOURCES=	newbbgdump.c
 newbbgdump_LDADD=	$(CLI_LIBS)
 
-tggcov_SOURCES= 	tggcov.c
+tggcov_SOURCES= 	tggcov.c $(LIBCOV_STATIC_SOURCES)
 tggcov_LDADD=		$(CLI_LIBS)

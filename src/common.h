@@ -47,6 +47,21 @@
 
 #include <glib.h>
 
+/*
+ * Define as non-zero to turn on debugging prints.
+ */
+#ifndef DEBUG 
+#define DEBUG 0
+#endif
+
+/*
+ * The fake flag used to be present in the .bbg file format, but
+ * disappeared sometime before gcc 2.96.  It was always redundant
+ * information, but convenient.  On the bright side, we don't need
+ * to cross-check it anymore.
+ */
+#undef HAVE_BBG_FAKE_FLAG
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #define listdelete(v,type,dtor) \

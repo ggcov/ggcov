@@ -1,3 +1,15 @@
+Sun Aug  3 18:37:40 2003  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.2.1
+
+	* Fixed bug where stabs32 filename scanning code was never linked in,
+	so ggcov couldn't be given an executable as an argument.
+	* Added a warning when configure falls back from GNOME v2 to v1.2.
+	* configure check for the popt library works on platforms where
+	libpopt.so is not in /usr/lib but in the same nonstandard
+	location as the GNOME libraries.
+	* Removed acconfig.h.  We can do without it on autoconf 2.13 and it
+	makes autoconf 2.57 whine mightily.
+
 Tue Jul 22 21:43:30 2003  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.2
 
