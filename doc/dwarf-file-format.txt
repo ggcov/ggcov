@@ -1,0 +1,200 @@
+
+Enough about the DWARF debug information format to scan a gcc-3.3
+produced object file for source filenames.
+
+DWARF adds multiple ELF sections all called .debug_* of which four
+are of interest.  For a section FOO, the command
+
+readelf --debug-dump=FOO file.o
+
+can be used to dump the contents of the section.  Structures herein
+are from binutils/include/elf/dwarf2.h.
+
+"External" structures i.e. in-file format are unaligned and unpadded
+so cannot (portably) be used directly.  For this reason dwarf2.h defines
+all their fields as unsigned char[].
+
+Integers outside the predefined external structures are variable-length,
+encoded littlendian in the bottom 7 bits of multiple bytes with the
+top bit indicating that more bytes are to come.  For example,
+
+Value	Encoding
+-----	--------
+0   	00
+127 	7f
+128 	80 01
+2049	90 01
+
+
+.debug_abbrev
+    Seems to be a sort of series of structure definitions for the
+    .debug_info sectiom
+
+
+  Number TAG
+   1      DW_TAG_compile_unit    [has children]
+    DW_AT_stmt_list    DW_FORM_data4
+    DW_AT_high_pc      DW_FORM_addr
+    DW_AT_low_pc       DW_FORM_addr
+    DW_AT_name         DW_FORM_strp
+    DW_AT_comp_dir     DW_FORM_strp
+    DW_AT_producer     DW_FORM_strp
+    DW_AT_language     DW_FORM_data1
+
+    The DW_AT_* are predefined attribute enums, and the DW_FORM_* are
+    predefined basic type enums.  So the above says Abbreviation #1
+    comprises a statement list, high & low PC values, filename,
+    compilation directory, producing program, and language enum.
+
+
+.debug_info
+    Contains a sequence of DWARF2_External_CompUnit structures followed
+    by a sequence of structures defined by abbreviations in .debug_abbrev.
+    Each structure is proceeded by an abbrev number, or 0 to indicate the
+    end of the structures.
+    
+    typedef struct
+    {
+      unsigned char  cu_length        [4];
+      unsigned char  cu_version       [2];
+      unsigned char  cu_abbrev_offset [4];
+      unsigned char  cu_pointer_size  [1];
+    }
+    DWARF2_External_CompUnit;
+
+  Compilation Unit @ 0:
+   Length:        4723
+   Version:       2
+   Abbrev Offset: 0
+   Pointer Size:  4
+ <0><b>: Abbrev Number: 1 (DW_TAG_compile_unit)
+     DW_AT_stmt_list   : 0      
+     DW_AT_high_pc     : 0x8048880 134514816    
+     DW_AT_low_pc      : 0x80486c0 134514368    
+     DW_AT_name        : (indirect string, offset: 0x321): foo.c        
+     DW_AT_comp_dir    : (indirect string, offset: 0x62c): /home/gnb/proj/ggcov/ggcov-dev/test/test002  
+     DW_AT_producer    : (indirect string, offset: 0xa70): GNU C 3.3.2 20031022 (Red Hat Linux 3.3.2-1) 
+     DW_AT_language    : 1      (ANSI C)
+ [...]
+ 
+    The interesting abbrev is DW_TAG_compile_unit, which has the filename
+    and directory for the compilation unit.
+
+
+.debug_line
+    Contains line numbering information.  Like everything else in DWARF
+    this appears to be amazingly complex; a state machine is fed opcodes
+    to generate the line numbering information, rather than just encoding
+    it.  The section comprises multiple concatenated parts each of which
+    starts with a LineInfo struct.
+    
+    typedef struct
+    {
+      unsigned char li_length          [4];
+      unsigned char li_version         [2];
+      unsigned char li_prologue_length [4];
+      unsigned char li_min_insn_length [1];
+      unsigned char li_default_is_stmt [1];
+      unsigned char li_line_base       [1];
+      unsigned char li_line_range      [1];
+      unsigned char li_opcode_base     [1];
+    }
+    DWARF2_External_LineInfo;
+
+    The li_length field contains the length in bytes of the part, starting
+    the byte *after* the length itself, and including the remainder of the
+    LineInfo structure and all the other information following it.  This
+    appears to be designed to allow skipping through multiple of these
+    structures without completely parsing them (which is GOOD!) while
+    still preserving simple concatenation semantics in the linker.
+    
+    The last field li_opcode_base defines the number of different opcodes
+    used...and the LineInfo structure is immediately followed by that many
+    opcode lengths, each an unsigned byte.
+    
+    Then we get the directory table, which is simply a number of abutted
+    nul-terminated strings followed by a nul byte to mark the end of the
+    table.  Indexes into this table are used by the following file name
+    table.
+    
+    The filename table comprises a number of tuples (name, dir, time, size).
+    The name field is a nul-terminated string, the other fields are variable
+    length encoded unsigned integers.  The dir field is a 1-based index
+    into the directory table (0 seems to mean "empty").  A nul byte marks
+    the end of the file table.
+    
+    After this is a sequence of opcodes which when fed through the right
+    state machine will generate the mappings between addresses and lines.
+    
+
+.debug_str
+    Contains strings for the other sections to point into.  The DW_FORM_strp
+    form is an offset into this section.  The strings are abutted and nul-
+    teminated.
+
+
+Here's me picking apart a binary dump of an actual executable's
+.debug_line section.
+
+
+foo:     file format elf32-i386
+
+Contents of section .debug_line:
+ 0000 6e010000	    	    	    	    DWARF2_External_LineInfo{ length = 366
+               0200 	    	    	    version = 2
+	           3801 0000	    	    prologue length = 312
+		            01	    	    min_insn_length = 1
+			      01    	    default_is_stmt = 1
+			         fb 	    line_base = -5
+				   0e	    line_range = 14
+				     0a     opcode_base = 10 }
+
+
+ 000f				       00   opcode arg lengths
+ 0010 01010101 00000001
+
+    	    	    	    	    	    directory[0]="/usr/lib/gcc-lib/i386-redhat-linux/3.3.2"
+                        2f757372 2f6c6962  ......../usr/lib
+ 0020 2f676363 2d6c6962 2f693338 362d7265  /gcc-lib/i386-re
+ 0030 64686174 2d6c696e 75782f33 2e332e32  dhat-linux/3.3.2
+ 0040 2f696e63 6c756465 00
+    	    	    	    	    	    directory[1]="/usr/include/bits"
+                          2f7573 722f696e  /include./usr/in
+ 0050 636c7564 652f6269 747300
+    	    	    	    	    	    directory[2]="/usr/include"
+    	    	    	      2f 7573722f  clude/bits./usr/
+ 0060 696e636c 75646500
+    	    	    	    	    	    directory[3]="/usr/include/sys"
+    	    	        2f757372 2f696e63  include./usr/inc
+ 0070 6c756465 2f737973 00
+    	    	    	  00	    	    end of directory table
+    	    	    	    	    	    
+    	    	    	    666f 6f2e6300   [0]name="foo.c" dir=0 time=0 size=0
+ 0080 000000	    	    	    	    
+
+            73 74646465 662e6800 010000     [1]name="stddef.h" dir=1 time=0 size=0
+	    	    	    02	       74   [2]name="types.h" dir=2 time=0 size=0
+ 0090 79706573 2e680002 0000
+                            7374 64696f2e   [3]name="stdio.h" dir=3 time=0 size=0
+ 00a0 68000300 00
+                 776368 61722e68 00030000   [4]name="wchar.h" dir=3 time=0 size=0
+ 00b0 5f475f63 6f6e6669 672e6800 03000067  _G_config.h....g
+ 00c0 636f6e76 2e680003 00007374 64617267  conv.h....stdarg
+ 00d0 2e680001 00006c69 62696f2e 68000300  .h....libio.h...
+ 00e0 00737464 6c69622e 68000300 00747970  .stdlib.h....typ
+ 00f0 65732e68 00040000 74696d65 2e680003  es.h....time.h..
+ 0100 00007369 67736574 2e680002 00007365  ..sigset.h....se
+ 0110 6c656374 2e680004 00007469 6d652e68  lect.h....time.h
+ 0120 00020000 73636865 642e6800 02000070  ....sched.h....p
+ 0130 74687265 61647479 7065732e 68000200  threadtypes.h...
+ 0140 00
+        00  	    	    	    	    end of filename table.
+
+
+	  0005 02c08604 08
+	    	    	  146408 aa640864  ..........d..d.d
+ 0150 e56408b8 640864e5 6408b864 0864e508  .d..d.d.d..d.d..
+ 0160 ba08b808 56026010 653a2b08 63020200  ....V.`.e:+.c...
+ 0170 0101                                 ..              
+
+
