@@ -1,3 +1,14 @@
+Sat Jun 14 00:22:17 2003  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.1.5
+
+	* Autoconf detects presence of gtk_text_buffer_select_range() and handles
+	its absence as gracefully as possible.
+	* If libpopt is missing, supply our own trivial implementation.  This allows
+	only parse_args() to exist while handling building on systems with gtk2
+	and no libpopt.
+	* Fixed a couple of bugs gtk2 in the Source window where selecting items
+	from the Filename or function menus would SEGV.
+
 Sun Jun  8 16:23:01 2003  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.1.4
 
