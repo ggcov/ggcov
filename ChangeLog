@@ -1,3 +1,55 @@
+Sun Jun  8 16:23:01 2003  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.1.4
+
+	* Made ggcov more robust when faced with problems finding or loading
+	data from object files; emits warning messages and keeps going rather
+	than failing asserts.
+	* Recognise file extensions .cc .cxx and .cpp as source code.
+	* Added a wrapper for the C++ demangling code in libiberty and a
+	function to normalise mangled names.
+	* Demangle names from .o files, normalise mangled names from .bb files.
+	* Ggcov doesn't use the "fake" arc flag from the .bbg data file anymore
+	but detects call arcs using the arc's destination block.  With a
+	working gcc this makes no difference; with the braindead 2.96 ggcov
+	can detect most rather than none of the call arcs.
+	* Ggcov now detects broken data files written by braindead gcc 2.96,
+	and emits a warning message and skips reading the object file.
+	* Ggcov will search directories for source files recursively;  disabled
+	by default, enabled with the --recursive/-r option.
+	* cov_file_t and related objects can be deleted, correctly & efficiently.
+	Needed for directory scanning to be robust in the presence of source
+	which isn't compiled, or is compiled but not linked.
+
+	* Added hashtable_t templated wrapper for GHashTable, and replaced
+	all uses of GHashTable with the wrapper.
+	* Functions window can use a typesafe list now.
+	* Replaced all uses of the strassign() & strdelete() macros with
+	class string_var.
+	* Fileswin uses tok_t tokenizer instead of strtok().
+	* Added operator to cast estring to const char*.
+	* Minor de-crufting.
+
+	* Created a cov_scope_t class which abstracts the scoped statistics
+	summary.  Moved the overall and range scope code from global functions
+	into private members of derived classes of cov_scope_t.
+	* Call Graph window uses scope objects instead of calling calc_stats().
+	* Added cov_compound_scope_t for aggregating multiple scopes, cached.
+	* Files window and functions window use scope objects instead of
+	calling calc_stats() methods and caching the results.
+	* cov_file_t::calc_stats() and cov_function_t::calc_stats() are now
+	private; they are only needed by the scope objects, which are friends.
+
+	* Fixed bug where double-click in Files List window didn't work.
+	* Fixed memleak in the Call Graph window.
+	* Fixed argument parsing code.
+	* Fixed memleak destroying cov_blocks during recursive source scan.
+	* Fixed bug in debug output.
+	* Fixed broken view menu checkboxes in gtk2 build.
+	* Fixed many bugs with gtk2 port.  Most windows now work passably
+	rather than coredump when first shown.
+	* Simplified coding of list & tree double-click handlers, also hides
+	most of the gtk/gtk2 differences.
+
 Sat May 31 17:32:17 2003  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.1.3
 
