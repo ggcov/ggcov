@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.42 2004-09-26 15:07:52 gnb Exp $
+dnl $Id: configure.in,v 1.43 2004-10-03 13:02:30 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -62,8 +62,13 @@ dnl ALL_LINGUAS="la"
 dnl AM_GNU_GETTEXT
 
 dnl Checks for libraries.
+AC_ARG_WITH(bfd,
+[  --without-bfd           Don't use BFD library (callgraphs will not work)],
+[],[with_bfd=yes])
+if test $with_bfd = yes ; then
 AC_CHECK_LIB(iberty, obstack_free)
 AC_CHECK_LIB(bfd, bfd_init)
+fi
 
 dnl Checks for header files.
 AC_HEADER_STDC
