@@ -1,0 +1,4 @@
+
+Simple test featuring early exit()s like test002 but with an
+unconditional line following each exit() call instead of them
+being the last block in the function.
