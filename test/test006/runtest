@@ -12,4 +12,4 @@ link foo foo.o
 
 run_gcov foo.c
 run_tggcov foo.c
-compare_lines
+compare_lines foo.c
