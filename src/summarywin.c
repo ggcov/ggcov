@@ -23,7 +23,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: summarywin.c,v 1.3 2001-11-25 07:32:12 gnb Exp $");
+CVSID("$Id: summarywin.c,v 1.4 2001-11-25 07:43:11 gnb Exp $");
 
 extern GList *filenames;
 
@@ -194,7 +194,9 @@ summary_populate_function_combo(GtkCombo *combo)
 static void
 summarywin_populate(summarywin_t *sw)
 {
+#if DEBUG
     fprintf(stderr, "summarywin_populate\n");
+#endif
     
     summary_populate_filename_combo(GTK_COMBO(sw->filename_combo));
     summary_populate_function_combo(GTK_COMBO(sw->function_combo));
@@ -213,7 +215,9 @@ summarywin_spin_update(summarywin_t *sw)
     
     lastline = cov_file_get_last_location(cov_file_find(filename))->lineno;
     
+#if DEBUG
     fprintf(stderr, "summarywin_spin_update: %s[1-%lu]\n", filename, lastline);
+#endif
 
     adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(sw->range_start_spin));
     adj->lower = 1;
@@ -267,7 +271,9 @@ summarywin_update(summarywin_t *sw)
 {
     cov_stats_t stats;
     
+#if DEBUG
     fprintf(stderr, "summarywin_update\n");
+#endif
     
     gtk_widget_set_sensitive(sw->filename_combo, (sw->scope == SU_FILENAME));
     gtk_widget_set_sensitive(sw->filename_view, (sw->scope == SU_FILENAME));
@@ -316,8 +322,10 @@ summarywin_update(summarywin_t *sw)
     	    summarywin_get_range(sw, &start.filename, &start.lineno, &end.lineno);
     	    end.filename = start.filename;
 
+#if DEBUG
     	    fprintf(stderr, "summarywin_update: SU_RANGE %s %ld-%ld\n",
 	    	    	    	start.filename, start.lineno, end.lineno);
+#endif
 				
     	    title = g_strdup_printf("%s:%lu-%lu", start.filename,
 	    	    	    	    	    	  start.lineno, end.lineno);
