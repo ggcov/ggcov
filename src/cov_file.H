@@ -56,6 +56,8 @@ public:
     static char *minimise_name(const char *name);
     /* returns a new string */
     static char *unminimise_name(const char *name);
+    /* returns the common initial part of all minimal names */
+    static const char *common_path();
 
     /* find a file by name, full or minimal */
     static cov_file_t *find(const char *name);

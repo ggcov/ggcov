@@ -10,17 +10,6 @@
   <language>C</language>
   <gnome_support>True</gnome_support>
   <gettext_support>True</gettext_support>
-  <use_widget_names>False</use_widget_names>
-  <output_main_file>True</output_main_file>
-  <output_support_files>True</output_support_files>
-  <output_build_files>True</output_build_files>
-  <backup_source_files>True</backup_source_files>
-  <main_source_file>interface.c</main_source_file>
-  <main_header_file>interface.h</main_header_file>
-  <handler_source_file>callbacks.c</handler_source_file>
-  <handler_header_file>callbacks.h</handler_header_file>
-  <support_source_file>support.c</support_source_file>
-  <support_header_file>support.h</support_header_file>
   <output_translatable_strings>True</output_translatable_strings>
   <translatable_strings_file>ui_strs.c</translatable_strings_file>
 </project>
@@ -110,7 +99,7 @@
 	    </signal>
 	    <label>_Number</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -123,7 +112,7 @@
 	    </signal>
 	    <label>_Block</label>
 	    <active>False</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -136,7 +125,7 @@
 	    </signal>
 	    <label>_Count</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -149,7 +138,7 @@
 	    </signal>
 	    <label>_Source</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -162,7 +151,7 @@
 	    </signal>
 	    <label>Co_lors</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -175,7 +164,7 @@
 	    </signal>
 	    <label>_Toolbar</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -943,6 +932,7 @@
 	  <last_modification_time>Sun, 25 Nov 2001 05:58:57 GMT</last_modification_time>
 	</signal>
 	<label>View...</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
 	<child>
 	  <left_attach>4</left_attach>
 	  <right_attach>5</right_attach>
@@ -969,6 +959,7 @@
 	  <last_modification_time>Sun, 25 Nov 2001 05:59:04 GMT</last_modification_time>
 	</signal>
 	<label>View...</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
 	<child>
 	  <left_attach>4</left_attach>
 	  <right_attach>5</right_attach>
@@ -995,6 +986,7 @@
 	  <last_modification_time>Sun, 25 Nov 2001 05:59:10 GMT</last_modification_time>
 	</signal>
 	<label>View...</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
 	<child>
 	  <left_attach>4</left_attach>
 	  <right_attach>5</right_attach>
@@ -1416,7 +1408,7 @@
 	    </signal>
 	    <label>_Lines</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -1429,7 +1421,7 @@
 	    </signal>
 	    <label>_Calls</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -1442,7 +1434,7 @@
 	    </signal>
 	    <label>_Branches</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -1455,7 +1447,7 @@
 	    </signal>
 	    <label>_Percentages</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 	</widget>
       </widget>
@@ -1695,7 +1687,7 @@
 	    </signal>
 	    <label>_Lines</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -1708,7 +1700,7 @@
 	    </signal>
 	    <label>_Calls</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -1721,7 +1713,7 @@
 	    </signal>
 	    <label>_Branches</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -1734,7 +1726,50 @@
 	    </signal>
 	    <label>_Percentages</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkMenuItem</class>
+	    <name>separator1</name>
+	    <right_justify>False</right_justify>
+	  </widget>
+
+	  <widget>
+	    <class>GtkCheckMenuItem</class>
+	    <name>files_tree_check</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_files_tree_check_activate</handler>
+	      <last_modification_time>Fri, 28 Mar 2003 08:02:31 GMT</last_modification_time>
+	    </signal>
+	    <label>_Tree</label>
+	    <active>False</active>
+	    <always_show_toggle>True</always_show_toggle>
+	  </widget>
+
+	  <widget>
+	    <class>GtkMenuItem</class>
+	    <name>files_collapse_all</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_files_collapse_all_activate</handler>
+	      <last_modification_time>Sun, 30 Mar 2003 04:11:43 GMT</last_modification_time>
+	    </signal>
+	    <label>C_ollapse All</label>
+	    <right_justify>False</right_justify>
+	  </widget>
+
+	  <widget>
+	    <class>GtkMenuItem</class>
+	    <name>files_expand_all</name>
+	    <signal>
+	      <name>activate</name>
+	      <handler>on_files_expand_all_activate</handler>
+	      <last_modification_time>Sun, 30 Mar 2003 04:11:43 GMT</last_modification_time>
+	    </signal>
+	    <label>E_xpand All</label>
+	    <right_justify>False</right_justify>
 	  </widget>
 	</widget>
       </widget>
@@ -1805,7 +1840,7 @@
 
     <widget>
       <class>GtkScrolledWindow</class>
-      <name>scrolledwindow3</name>
+      <name>scrolledwindow9</name>
       <border_width>4</border_width>
       <hscrollbar_policy>GTK_POLICY_AUTOMATIC</hscrollbar_policy>
       <vscrollbar_policy>GTK_POLICY_AUTOMATIC</vscrollbar_policy>
@@ -1818,14 +1853,9 @@
       </child>
 
       <widget>
-	<class>GtkCList</class>
-	<name>files_clist</name>
+	<class>GtkCTree</class>
+	<name>files_ctree</name>
 	<can_focus>True</can_focus>
-	<signal>
-	  <name>button_press_event</name>
-	  <handler>on_files_clist_button_press_event</handler>
-	  <last_modification_time>Thu, 29 Nov 2001 13:09:14 GMT</last_modification_time>
-	</signal>
 	<columns>4</columns>
 	<column_widths>80,80,80,80</column_widths>
 	<selection_mode>GTK_SELECTION_SINGLE</selection_mode>
@@ -1834,8 +1864,21 @@
 
 	<widget>
 	  <class>GtkLabel</class>
-	  <child_name>CList:title</child_name>
-	  <name>label16</name>
+	  <child_name>CTree:title</child_name>
+	  <name>label65</name>
+	  <label>File</label>
+	  <justify>GTK_JUSTIFY_CENTER</justify>
+	  <wrap>False</wrap>
+	  <xalign>0.5</xalign>
+	  <yalign>0.5</yalign>
+	  <xpad>0</xpad>
+	  <ypad>0</ypad>
+	</widget>
+
+	<widget>
+	  <class>GtkLabel</class>
+	  <child_name>CTree:title</child_name>
+	  <name>label66</name>
 	  <label>Lines</label>
 	  <justify>GTK_JUSTIFY_CENTER</justify>
 	  <wrap>False</wrap>
@@ -1847,8 +1890,8 @@
 
 	<widget>
 	  <class>GtkLabel</class>
-	  <child_name>CList:title</child_name>
-	  <name>label17</name>
+	  <child_name>CTree:title</child_name>
+	  <name>label67</name>
 	  <label>Calls</label>
 	  <justify>GTK_JUSTIFY_CENTER</justify>
 	  <wrap>False</wrap>
@@ -1860,25 +1903,12 @@
 
 	<widget>
 	  <class>GtkLabel</class>
-	  <child_name>CList:title</child_name>
-	  <name>label18</name>
+	  <child_name>CTree:title</child_name>
+	  <name>label68</name>
 	  <label>Branches</label>
 	  <justify>GTK_JUSTIFY_CENTER</justify>
 	  <wrap>False</wrap>
 	  <xalign>0.5</xalign>
-	  <yalign>0.5</yalign>
-	  <xpad>0</xpad>
-	  <ypad>0</ypad>
-	</widget>
-
-	<widget>
-	  <class>GtkLabel</class>
-	  <child_name>CList:title</child_name>
-	  <name>label19</name>
-	  <label>File</label>
-	  <justify>GTK_JUSTIFY_LEFT</justify>
-	  <wrap>False</wrap>
-	  <xalign>0</xalign>
 	  <yalign>0.5</yalign>
 	  <xpad>0</xpad>
 	  <ypad>0</ypad>
@@ -1973,7 +2003,7 @@
 	    </signal>
 	    <label>Call _From</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -1986,7 +2016,7 @@
 	    </signal>
 	    <label>Call _To</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -1999,7 +2029,7 @@
 	    </signal>
 	    <label>_Line</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -2012,7 +2042,7 @@
 	    </signal>
 	    <label>_Arc</label>
 	    <active>False</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 
 	  <widget>
@@ -2025,7 +2055,7 @@
 	    </signal>
 	    <label>_Count</label>
 	    <active>True</active>
-	    <always_show_toggle>False</always_show_toggle>
+	    <always_show_toggle>True</always_show_toggle>
 	  </widget>
 	</widget>
       </widget>
@@ -2186,6 +2216,7 @@
 	  <last_modification_time>Wed, 25 Sep 2002 11:50:28 GMT</last_modification_time>
 	</signal>
 	<label>View...</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
 	<child>
 	  <left_attach>4</left_attach>
 	  <right_attach>5</right_attach>
@@ -2238,6 +2269,7 @@
 	  <last_modification_time>Wed, 25 Sep 2002 11:50:21 GMT</last_modification_time>
 	</signal>
 	<label>View...</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
 	<child>
 	  <left_attach>4</left_attach>
 	  <right_attach>5</right_attach>
@@ -2618,6 +2650,7 @@
 	  <last_modification_time>Sun, 02 Dec 2001 12:40:56 GMT</last_modification_time>
 	</signal>
 	<label>View...</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
 	<child>
 	  <left_attach>4</left_attach>
 	  <right_attach>5</right_attach>
@@ -2889,6 +2922,7 @@ C programs built with the GNU C Compiler.
 	  <last_modification_time>Sat, 29 Dec 2001 00:49:06 GMT</last_modification_time>
 	</signal>
 	<stock_button>GNOME_STOCK_BUTTON_CLOSE</stock_button>
+	<relief>GTK_RELIEF_NORMAL</relief>
       </widget>
 
       <widget>
@@ -2902,6 +2936,7 @@ C programs built with the GNU C Compiler.
 	  <last_modification_time>Sat, 29 Dec 2001 00:49:41 GMT</last_modification_time>
 	</signal>
 	<label>Licence...</label>
+	<relief>GTK_RELIEF_NORMAL</relief>
       </widget>
     </widget>
   </widget>
@@ -2991,6 +3026,7 @@ C programs built with the GNU C Compiler.
 	  <last_modification_time>Sat, 29 Dec 2001 01:45:57 GMT</last_modification_time>
 	</signal>
 	<stock_button>GNOME_STOCK_BUTTON_CLOSE</stock_button>
+	<relief>GTK_RELIEF_NORMAL</relief>
       </widget>
     </widget>
   </widget>
@@ -3741,6 +3777,7 @@ C programs built with the GNU C Compiler.
 	  <last_modification_time>Tue, 31 Dec 2002 05:56:37 GMT</last_modification_time>
 	</signal>
 	<stock_button>GNOME_STOCK_BUTTON_OK</stock_button>
+	<relief>GTK_RELIEF_NORMAL</relief>
       </widget>
 
       <widget>
@@ -3754,6 +3791,7 @@ C programs built with the GNU C Compiler.
 	  <last_modification_time>Sun, 29 Dec 2002 08:53:30 GMT</last_modification_time>
 	</signal>
 	<stock_button>GNOME_STOCK_BUTTON_APPLY</stock_button>
+	<relief>GTK_RELIEF_NORMAL</relief>
       </widget>
 
       <widget>
@@ -3767,6 +3805,7 @@ C programs built with the GNU C Compiler.
 	  <last_modification_time>Sun, 29 Dec 2002 08:53:49 GMT</last_modification_time>
 	</signal>
 	<stock_button>GNOME_STOCK_BUTTON_CANCEL</stock_button>
+	<relief>GTK_RELIEF_NORMAL</relief>
       </widget>
     </widget>
   </widget>

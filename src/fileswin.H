@@ -29,6 +29,9 @@ GLADE_CALLBACK void on_files_lines_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_calls_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_branches_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_percent_check_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_files_tree_check_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_files_collapse_all_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_files_expand_all_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_files_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
 
 class fileswin_t : public window_t
@@ -40,6 +43,7 @@ public:
 private:
     void populate();
     void update();
+    void grey_items();
     static fileswin_t *from_widget(GtkWidget *w)
     {
     	return (fileswin_t *)window_t::from_widget(w);
@@ -52,7 +56,11 @@ private:
     GtkWidget *calls_check_;
     GtkWidget *branches_check_;
     GtkWidget *percent_check_;
-    GtkWidget *clist_;
+    GtkWidget *tree_check_;
+    GtkWidget *collapse_all_btn_;
+    GtkWidget *expand_all_btn_;
+    GtkWidget *ctree_;
+    GtkCTreeNode *root_;
 
     friend void on_files_close_activate(GtkWidget *w, gpointer data);
     friend void on_files_exit_activate(GtkWidget *w, gpointer data);
@@ -60,6 +68,9 @@ private:
     friend void on_files_calls_check_activate(GtkWidget *w, gpointer data);
     friend void on_files_branches_check_activate(GtkWidget *w, gpointer data);
     friend void on_files_percent_check_activate(GtkWidget *w, gpointer data);
+    friend void on_files_tree_check_activate(GtkWidget *w, gpointer data);
+    friend void on_files_collapse_all_activate(GtkWidget *w, gpointer data);
+    friend void on_files_expand_all_activate(GtkWidget *w, gpointer data);
     friend void on_files_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
 };
 

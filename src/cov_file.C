@@ -26,7 +26,7 @@
 #include <elf.h>
 
 
-CVSID("$Id: cov_file.C,v 1.4 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.5 2003-03-30 04:47:56 gnb Exp $");
 
 
 GHashTable *cov_file_t::files_;
@@ -188,6 +188,12 @@ cov_file_t::unminimise_name(const char *name)
     	/* partial, presumably minimal, name */
 	return g_strconcat(common_path_, name, 0);
     }
+}
+
+const char *
+cov_file_t::common_path()
+{
+    return common_path_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
