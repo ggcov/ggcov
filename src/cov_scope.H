@@ -51,8 +51,9 @@ class cov_overall_scope_t : public cov_scope_t
 public:
     cov_overall_scope_t();
     ~cov_overall_scope_t();
-private:
+
     virtual const char *describe() const;
+private:
     virtual gboolean calc_stats(cov_stats_t *);
 };
 
@@ -65,8 +66,8 @@ public:
     cov_file_scope_t(const cov_file_t *);
     ~cov_file_scope_t();
 
-private:
     virtual const char *describe() const;
+private:
     virtual gboolean calc_stats(cov_stats_t *);
 
     const cov_file_t *file_;
@@ -86,8 +87,8 @@ public:
     	return function_;
     }
     
-private:
     virtual const char *describe() const;
+private:
     virtual gboolean calc_stats(cov_stats_t *);
 
     const cov_function_t *function_;
@@ -102,8 +103,8 @@ public:
     	    	      unsigned long start, unsigned long end);
     ~cov_range_scope_t();
 
-private:
     virtual const char *describe() const;
+private:
     virtual gboolean calc_stats(cov_stats_t *);
     void set_description();
 
@@ -123,8 +124,8 @@ public:
     void add_child(cov_scope_t *);
     void remove_child(cov_scope_t *);
 
-private:
     virtual const char *describe() const;
+private:
     virtual gboolean calc_stats(cov_stats_t *);
 
     list_t<cov_scope_t> children_;
