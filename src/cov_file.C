@@ -22,13 +22,14 @@
 #include "estring.H"
 #include "string_var.H"
 #include "filename.h"
+#include "demangle.h"
 
 #ifdef HAVE_LIBBFD
 #include <bfd.h>
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.12 2003-06-01 09:49:13 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.13 2003-06-03 14:46:49 gnb Exp $");
 
 
 hashtable_t<const char*, cov_file_t> *cov_file_t::files_;
@@ -277,7 +278,7 @@ cov_file_t::read_bb_file(const char *bbfilename)
 {
     FILE *fp;
     gnb_u32_t tag;
-    char *funcname = 0;
+    string_var funcname;
     string_var filename;
     cov_function_t *fn = 0;
     int funcidx;
@@ -315,8 +316,9 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	    
 	case BB_FUNCTION:
 	    funcname = covio_read_bbstring(fp, tag);
+	    funcname = normalise_mangled(funcname);
 #if DEBUG > 1
-	    fprintf(stderr, "BB function = \"%s\"\n", funcname);
+	    fprintf(stderr, "BB function = \"%s\"\n", funcname.data());
 #endif
 	    fn = nth_function(funcidx);
 	    funcidx++;
@@ -324,7 +326,6 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	    line = 0;
 	    nlines = 0;
 	    fn->set_name(funcname);
-	    g_free(funcname);
 	    break;
 	
 	case BB_ENDOFLIST:
@@ -542,13 +543,19 @@ cov_o_file_add_call(
     unsigned int lineno = 0;
     cov_location_t loc;
     const GList *blocks;
+    string_var callname_dem = demangle(callname);
 
     if (!bfd_find_nearest_line(rs->abfd, rs->section, rs->symbols, address,
 		    	       &filename, &function, &lineno))
 	return FALSE;
 #if DEBUG > 1
-    fprintf(stderr, "%s:%d: %s calls %s\n",
-		file_basename_c(filename), lineno, function, callname);
+    {
+    	string_var function_dem = demangle(function);
+	fprintf(stderr, "%s:%d: %s calls %s\n",
+		file_basename_c(filename), lineno,
+		function_dem.data(),
+		callname_dem.data());
+    }
 #endif
 
     loc.filename = (char *)filename;
@@ -558,7 +565,7 @@ cov_o_file_add_call(
     if (blocks == 0)
     {
 	fprintf(stderr, "No blocks for call to %s at %s:%ld\n",
-		    callname, loc.filename, loc.lineno);
+		    callname_dem.data(), loc.filename, loc.lineno);
 	return FALSE;
     }
     else
@@ -586,7 +593,7 @@ cov_o_file_add_call(
 #if DEBUG > 1
     	        fprintf(stderr, "    block %s\n", desc.data());
 #endif
-		b->add_call(callname);
+		b->add_call(callname_dem);
 		return TRUE;
 	    }
 #if DEBUG > 1
@@ -601,7 +608,7 @@ cov_o_file_add_call(
 	 * .bbg files, or we've encountered the braindead gcc 2.96.
 	 */
 	fprintf(stderr, "Could not assign block for call to %s at %s:%ld\n",
-		    callname, loc.filename, loc.lineno);
+		    callname_dem.data(), loc.filename, loc.lineno);
 	return FALSE;
     }
 }
@@ -785,6 +792,7 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
 #if DEBUG > 1
     	    {
 		char *type;
+		string_var name_dem = demangle(sym->name);
 
 		if ((sym->flags & BSF_FUNCTION))
 	    	    type = "FUN";
@@ -801,7 +809,7 @@ cov_file_t::read_o_file_relocs(const char *ofilename)
 			(unsigned long)sym->flags,
 			rel->howto->type,
 			rel->howto->name,
-			type, sym->name);
+			type, name_dem.data());
     	    }
 #endif
 

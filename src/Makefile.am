@@ -16,12 +16,16 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.23 2003-06-01 09:30:24 gnb Exp $
+# $Id: Makefile.am,v 1.24 2003-06-03 14:46:49 gnb Exp $
 #
 
 bin_PROGRAMS=	ggcov
 
-ggcov_SOURCES=	common.h common.c \
+# libiberty/demangle.h is from the GNU libiberty library,
+# for some reason the RedHat distro doesn't install it.
+
+ggcov_SOURCES=	libiberty/demangle.h demangle.h demangle.c \
+		common.h common.c \
 		estring.H estring.C string_var.H tok.H tok.C \
 		filename.h filename.c \
 		list.H \
@@ -76,10 +80,14 @@ licence.c: $(top_srcdir)/COPYING
 
 EXTRA_CLEAN=	licence.c
 
-noinst_PROGRAMS=	bbdump filetest
+noinst_PROGRAMS=	bbdump filetest mangletest
 
 bbdump_SOURCES= bbdump.c covio.c estring.C
 bbdump_LDADD=	$(GGCOV_LIBS)
 
 filetest_SOURCES= filetest.c filename.c estring.C tok.C
 filetest_LDADD=	$(GGCOV_LIBS)
+
+mangletest_SOURCES= mangletest.c demangle.c estring.C
+mangletest_LDADD=	$(GGCOV_LIBS)
+
