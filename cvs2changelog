@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $Id: cvs2changelog,v 1.5.2.2 2003-08-03 09:56:16 gnb Exp $
+# $Id: cvs2changelog,v 1.5.2.3 2003-08-03 10:10:43 gnb Exp $
 #
 # Shell script to build a change log for a new release
 # from CVS logs. The change log will still need some
@@ -178,9 +178,10 @@ function same_branch(r1, r2,     a1, a2, n1, n2, i) {
 	next;
     }
 }
-#/^Working / {
+/^Working file:/ {
 #    printf "******* %s\n", $0;
-#}
+    fname=$3;
+}
 /^RCS file: .*\/Attic\// {
     if (state == 0) {
     	inattic = 1;
@@ -207,11 +208,12 @@ function same_branch(r1, r2,     a1, a2, n1, n2, i) {
     inattic = 0;
     nlines = 0;
     tag1rev = "";
+    tag2rev = "";
 }
 {
-#    printf "197: state=%d inattic=%d rev=\"%s\" tag1rev=\"%s\"\n", state, inattic, rev, tag1rev;
+#    printf "197: fname=\"%s\" state=%d inattic=%d rev=\"%s\" tag1rev=\"%s\" tag2rev=\"%s\"\n", fname, state, inattic, rev, tag1rev, tag2rev >"/dev/stderr";
     if (state == 1 && !inattic && rev != tag1rev && same_branch(rev, tag2rev)) {
-#    	printf "229: using rev=%s\n", rev >"/dev/stderr";
+#    	printf "229: using %s:%s\n", fname, rev >"/dev/stderr";
 	lines[nlines++] = $0;
     } else if (state == 2 && $1 == TAG1":") {
     	tag1rev = $2;
