@@ -31,12 +31,13 @@
 #include "callgraph2win.H"
 #include "functionswin.H"
 #include "fileswin.H"
+#include "reportwin.H"
 #if !GTK2
 #include <libgnomeui/libgnomeui.h>
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.38 2004-02-09 10:01:07 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.39 2004-03-08 09:54:39 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -312,6 +313,15 @@ on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
     srcw->show();
 }
 
+static void
+on_windows_new_reportwin_activated(GtkWidget *w, gpointer userdata)
+{
+    reportwin_t *rw;
+
+    rw = new reportwin_t();
+    rw->show();
+}
+
 #include "ui/icon.xpm"
 
 static void
@@ -331,6 +341,8 @@ ui_create(void)
     			      on_windows_new_callgraph2win_activated, 0);
     ui_register_windows_entry("New Source...",
     			      on_windows_new_sourcewin_activated, 0);
+    ui_register_windows_entry("New Report...",
+    			      on_windows_new_reportwin_activated, 0);
 
     ui_set_default_icon(icon_xpm);
 
