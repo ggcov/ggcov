@@ -22,7 +22,7 @@
 #include "sourcewin.H"
 #include "cov.H"
 
-CVSID("$Id: fileswin.C,v 1.3 2002-12-29 13:17:33 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.4 2002-12-31 14:48:52 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -136,21 +136,17 @@ fileswin_t::~fileswin_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-fileswin_t::add_file(cov_file_t *f, void *userdata)
-{
-    fileswin_t *fw = (fileswin_t *)userdata;
-    
-    fw->files_ = g_list_prepend(fw->files_, new file_rec_t(f));
-}
-
-void
 fileswin_t::populate()
 {
+    list_iterator_t<cov_file_t> iter;
+
 #if DEBUG
     fprintf(stderr, "fileswin_t::populate\n");
 #endif
+    
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    	files_ = g_list_prepend(files_, new file_rec_t(*iter));
 
-    cov_file_t::foreach(add_file, this);
     update();
 }
 

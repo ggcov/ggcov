@@ -44,7 +44,6 @@ private:
     {
     	return (fileswin_t *)window_t::from_widget(w);
     }
-    static void add_file(cov_file_t *f, void *userdata);
 
 
     GList *files_;	    /* list of file_rec_t */

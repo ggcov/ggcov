@@ -40,7 +40,6 @@ public:
 private:
     void populate();
     void update();
-    static void add_functions(cov_file_t *f, void *userdata);
     static functionswin_t *from_widget(GtkWidget *w)
     {
     	return (functionswin_t *)window_t::from_widget(w);

@@ -22,7 +22,7 @@
 #include "sourcewin.H"
 #include "cov.H"
 
-CVSID("$Id: functionswin.C,v 1.3 2002-12-29 13:18:37 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.4 2002-12-31 14:50:57 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -136,30 +136,28 @@ functionswin_t::~functionswin_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-functionswin_t::add_functions(cov_file_t *f, void *userdata)
-{
-    functionswin_t *fw = (functionswin_t *)userdata;
-    unsigned int fnidx;
-    
-    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
-    {
-    	cov_function_t *fn = f->nth_function(fnidx);
-	
-	if (fn->is_suppressed())
-	    continue;
-	
-	fw->functions_ = g_list_prepend(fw->functions_, new func_rec_t(fn));
-    }
-}
-
-void
 functionswin_t::populate()
 {
+    list_iterator_t<cov_file_t> iter;
+    unsigned int fnidx;
+
 #if DEBUG
     fprintf(stderr, "functionswin_t::populate\n");
 #endif
+    
+    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    {
+    	cov_file_t *f = *iter;
 
-    cov_file_t::foreach(add_functions, this);
+	for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
+	{
+    	    cov_function_t *fn = f->nth_function(fnidx);
+
+	    if (!fn->is_suppressed())
+		functions_ = g_list_prepend(functions_, new func_rec_t(fn));
+	}
+    }
+
     update();
 }
 
