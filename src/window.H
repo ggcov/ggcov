@@ -41,6 +41,7 @@ public:
 
 protected:
     virtual void populate();
+    static void files_changed(void *, unsigned int, void *);
     static window_t *from_widget(GtkWidget *);
     virtual void grey_items();
     void attach(GtkWidget *);

@@ -19,8 +19,9 @@
 
 #include "window.H"
 #include "cov.H"
+#include "mvc.h"
 
-CVSID("$Id: window.C,v 1.8 2003-04-26 14:50:13 gnb Exp $");
+CVSID("$Id: window.C,v 1.9 2003-07-18 13:36:55 gnb Exp $");
 
 static const char window_key[] = "ggcov_window_key";
 
@@ -28,6 +29,7 @@ static const char window_key[] = "ggcov_window_key";
 
 window_t::window_t()
 {
+    mvc_listen(cov_file_t::files_model(), ~0, files_changed, this);
 }
 
 window_t::~window_t()
@@ -35,6 +37,8 @@ window_t::~window_t()
     /* JIC of strange gui stuff */
     assert(!deleting_);
     deleting_ = TRUE;
+
+    mvc_unlisten(cov_file_t::files_model(), ~0, files_changed, this);
     
     assert(window_ != 0);
     gtk_widget_destroy(window_);
@@ -84,6 +88,16 @@ window_t::grey_items()
 void
 window_t::populate()
 {
+}
+
+/*
+ * Call the populate() method when the set of files changes,
+ * e.g. a new is loaded from the File->Open dialog.
+ */
+void
+window_t::files_changed(void *obj, unsigned int features, void *closure)
+{
+    ((window_t *)closure)->populate();
 }
 
 void
