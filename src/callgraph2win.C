@@ -21,7 +21,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: callgraph2win.C,v 1.13 2003-07-14 15:55:12 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.14 2003-11-03 23:10:20 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -108,13 +108,11 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
     if (n->rect_item_ != 0)
     	return;     /* already been here */
 
-#if DEBUG
-    fprintf(stderr, "callgraph2win_t::show_box: %s:%s y={%g,%g} spread_=%d\n",
+    dprintf5(D_GRAPH2WIN, "callgraph2win_t::show_box: %s:%s y={%g,%g} spread_=%d\n",
     	(cn->function == 0 ? "library" : cn->function->file()->minimal_name()),
 	cn->name.data(),
 	ystart, yend,
 	n->spread_);
-#endif
 
     if (cn->function != 0)
     {
@@ -156,12 +154,12 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
     	bounds_.x2 = n->x_+BOX_WIDTH;
     if (n->y_+BOX_HEIGHT > bounds_.y2)
     	bounds_.y2 = n->y_+BOX_HEIGHT;
-#if DEBUG > 2
-    fprintf(stderr, "callgraph2win_t::show_box {x=%g, y=%g, w=%g, h=%g}\n",
-    	    n->x_, n->y_, n->x_+BOX_WIDTH, n->y_+BOX_HEIGHT);
-    fprintf(stderr, "callgraph2win_t::show_box: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
+    dprintf4(D_GRAPH2WIN|D_VERBOSE,
+    	    "callgraph2win_t::show_box {x=%g, y=%g, w=%g, h=%g}\n",
+    		n->x_, n->y_, n->x_+BOX_WIDTH, n->y_+BOX_HEIGHT);
+    dprintf4(D_GRAPH2WIN|D_VERBOSE,
+    	    "callgraph2win_t::show_box: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
     	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
-#endif
 
     n->rect_item_ = gnome_canvas_item_new(
     	    	root,
@@ -239,10 +237,8 @@ callgraph2win_t::adjust_rank(callgraph2win_t::node_t *n, int delta)
 
     if (n->generation_ == generation_)
     {
-#if DEBUG
-    	fprintf(stderr, "callgraph2win_t::adjust_rank: avoiding loop at \"%s\"\n",
+    	dprintf1(D_GRAPH2WIN, "callgraph2win_t::adjust_rank: avoiding loop at \"%s\"\n",
 	    	    n->callnode_->name.data());
-#endif
     	return;
     }
 
@@ -272,9 +268,7 @@ callgraph2win_t::build_node(cov_callnode_t *cn, int rank)
     node_t *n;
     GList *iter;
 
-#if DEBUG
-    fprintf(stderr, "callgraph2win_t::build_node(\"%s\")\n", cn->name.data());
-#endif
+    dprintf1(D_GRAPH2WIN, "callgraph2win_t::build_node(\"%s\")\n", cn->name.data());
 
     if ((n = node_t::from_callnode(cn)) != 0)
     {
@@ -320,10 +314,8 @@ callgraph2win_t::add_spread(callgraph2win_t::node_t *n)
     n->spread_++;
     n->generation_ = generation_;
 
-#if DEBUG
-    fprintf(stderr, "callgraph2win_t::add_spread(\"%s\") => spread_=%d generation_=%lu\n",
+    dprintf3(D_GRAPH2WIN, "callgraph2win_t::add_spread(\"%s\") => spread_=%d generation_=%lu\n",
     	    n->callnode_->name.data(), n->spread_, n->generation_);
-#endif
 
     for (iter = n->callnode_->in_arcs ; iter != 0 ; iter = iter->next)
     {
@@ -345,17 +337,13 @@ callgraph2win_t::build_ranks(callgraph2win_t::node_t *n, GPtrArray *ranks)
     if (n->file_)
     	return;     /* already been here on another branch in the graph */
 
-#if DEBUG
-    fprintf(stderr, "callgraph2win_t::build_ranks(\"%s\")\n",
+    dprintf1(D_GRAPH2WIN, "callgraph2win_t::build_ranks(\"%s\")\n",
     	    	n->callnode_->name.data());
-#endif
 
     if (n->rank_ >= ranks->len)
     {
-#if DEBUG
-	fprintf(stderr, "callgraph2win_t::build_ranks: expanding ranks to %d\n",
+	dprintf1(D_GRAPH2WIN, "callgraph2win_t::build_ranks: expanding ranks to %d\n",
 	    	    n->rank_);
-#endif
     	g_ptr_array_set_size(ranks, n->rank_+1);
     }
     rlp = (GList **)&g_ptr_array_index(ranks, n->rank_);
@@ -386,9 +374,7 @@ callgraph2win_t::build_ranks(callgraph2win_t::node_t *n, GPtrArray *ranks)
 void
 callgraph2win_t::populate()
 {
-#if DEBUG
-    fprintf(stderr, "callgraph2win_t::populate\n");
-#endif
+    dprintf0(D_GRAPH2WIN, "callgraph2win_t::populate\n");
     main_node_ = build_node(cov_callnode_t::find("main"), 0);
     
     GPtrArray *ranks = g_ptr_array_new();
@@ -406,10 +392,8 @@ callgraph2win_t::populate()
     bounds_.x2 += FILE_GAP;
     bounds_.y1 -= RANK_GAP;
     bounds_.y2 += RANK_GAP;
-#if DEBUG
-    fprintf(stderr, "callgraph2win_t::populate: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
+    dprintf4(D_GRAPH2WIN, "callgraph2win_t::populate: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
     	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
-#endif
 
     gnome_canvas_set_scroll_region(GNOME_CANVAS(canvas_),
 				   bounds_.x1, bounds_.y1,
@@ -424,9 +408,7 @@ on_callgraph2_zoom_in_activate(GtkWidget *w, gpointer data)
 {
     callgraph2win_t *cw = callgraph2win_t::from_widget(w);
 
-#if DEBUG
-    fprintf(stderr, "on_callgraph2_zoom_in_activate\n");
-#endif
+    dprintf0(D_GRAPH2WIN, "on_callgraph2_zoom_in_activate\n");
 
     cw->zoom_to(cw->zoom_*2.0);
 }
@@ -437,9 +419,7 @@ on_callgraph2_zoom_out_activate(GtkWidget *w, gpointer data)
 {
     callgraph2win_t *cw = callgraph2win_t::from_widget(w);
 
-#if DEBUG
-    fprintf(stderr, "on_callgraph2_zoom_out_activate\n");
-#endif
+    dprintf0(D_GRAPH2WIN, "on_callgraph2_zoom_out_activate\n");
 
     cw->zoom_to(cw->zoom_/2.0);
 }
@@ -450,9 +430,7 @@ on_callgraph2_show_all_activate(GtkWidget *w, gpointer data)
 {
     callgraph2win_t *cw = callgraph2win_t::from_widget(w);
 
-#if DEBUG
-    fprintf(stderr, "on_callgraph2_show_all_activate\n");
-#endif
+    dprintf0(D_GRAPH2WIN, "on_callgraph2_show_all_activate\n");
 
     cw->zoom_all();
 }

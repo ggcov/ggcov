@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.12 2003-06-09 05:26:02 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.13 2003-11-03 23:09:59 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -256,9 +256,7 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
 void
 callgraphwin_t::populate()
 {
-#if DEBUG
-    fprintf(stderr, "callgraphwin_t::populate\n");
-#endif
+    dprintf0(D_GRAPHWIN, "callgraphwin_t::populate\n");
     
     populate_function_combo(GTK_COMBO(function_combo_));
 
@@ -355,9 +353,7 @@ callgraphwin_t::update()
 {
     cov_callnode_t *cn = callnode_;
     
-#if DEBUG
-    fprintf(stderr, "callgraphwin_t::update\n");
-#endif
+    dprintf0(D_GRAPHWIN, "callgraphwin_t::update\n");
     gtk_widget_set_sensitive(function_view_, (cn->function != 0));
     set_title(cn->name);
 

@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: functionswin.C,v 1.11 2003-07-20 11:20:25 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.12 2003-11-03 23:10:38 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -61,10 +61,9 @@ functionswin_compare(
     const cov_stats_t *s1 = fs1->get_stats();
     const cov_stats_t *s2 = fs2->get_stats();
 
-#if DEBUG > 2
-    fprintf(stderr, "functionswin_compare: fs1=\"%s\" fs2=\"%s\"\n",
-    	    	    fs1->describe(), fs2->describe());
-#endif
+    dprintf2(D_FUNCSWIN|D_VERBOSE,
+    	    "functionswin_compare: fs1=\"%s\" fs2=\"%s\"\n",
+    	    fs1->describe(), fs2->describe());
 
     switch (column)
     {
@@ -217,9 +216,7 @@ functionswin_t::populate()
     list_iterator_t<cov_file_t> iter;
     unsigned int fnidx;
 
-#if DEBUG
-    fprintf(stderr, "functionswin_t::populate\n");
-#endif
+    dprintf0(D_FUNCSWIN, "functionswin_t::populate\n");
     
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     {
@@ -267,9 +264,7 @@ functionswin_t::update()
     char calls_pc_buf[16];
     char branches_pc_buf[16];
     
-#if DEBUG
-    fprintf(stderr, "functionswin_t::update\n");
-#endif
+    dprintf0(D_FUNCSWIN, "functionswin_t::update\n");
 
     percent_flag = GTK_CHECK_MENU_ITEM(percent_check_)->active;
 

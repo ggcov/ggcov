@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.10 2003-06-09 05:26:02 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.11 2003-11-03 23:11:00 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -223,9 +223,7 @@ callswin_t::populate_function_combo(GtkCombo *combo)
 void
 callswin_t::populate()
 {
-#if DEBUG
-    fprintf(stderr, "callswin_t::populate\n");
-#endif
+    dprintf0(D_CALLSWIN, "callswin_t::populate\n");
     functions_ = cov_function_t::list_all();
     populate_function_combo(GTK_COMBO(from_function_combo_));
     populate_function_combo(GTK_COMBO(to_function_combo_));
@@ -307,9 +305,7 @@ callswin_t::update()
 	    	    	    	GTK_COMBO(to_function_combo_));
     estring title;
     
-#if DEBUG
-    fprintf(stderr, "callswin_t::update\n");
-#endif
+    dprintf0(D_CALLSWIN, "callswin_t::update\n");
     switch ((from_fn == 0 ? 0 : 2)|(to_fn == 0 ? 0 : 1))
     {
     case 0:
