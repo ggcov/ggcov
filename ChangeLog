@@ -1,3 +1,28 @@
+Wed Jul  2 22:30:45 2003  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.1.6
+
+	* Initial support for new gcc 3.3 bbg and da formats.
+	* Make cov_file_t::read_bbg_function() more robust in the face
+	of bad data (e.g. the new .bbg file format).
+	* Added support for moving machine-specific code into subclasses
+	of abstract generic classes, including a factory class.  Moved the
+	stab32 parsing code into a machine-specific subclass.
+	* Updated strings to mention ggcov not cant.
+	* Improved debugging prints.
+	* Reorganised Makefile to build two archive libraries and link ggcov
+	and test programs from there, rather than specifying all the source
+	for every test program.
+	* Added test program newbbgdump to dump the new gcc 3.3 bbg format.
+	* Added test program tggcov to write coveraged like gcov, for automated
+	comparison of basic block accounting.
+	* Moved the summarise() debug code to cov.C:cov_dump().
+	* Fixed FMR while parsing arguments in gtk1.2 build.
+	* Fixed unused variable warning in argument parsing.
+	* Fixed compile bug in debug message in fileswin.C.
+	* Fixed bug in declarations of describe() methods in subclasses
+	of cov_scope_t which only showed up in high debug levels.
+	* Strip '&' as well as '*' when normalising mangled .bbg names.
+
 Sat Jun 14 00:22:17 2003  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.1.5
 
