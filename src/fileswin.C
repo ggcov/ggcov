@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: fileswin.C,v 1.5 2003-01-01 04:22:07 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.6 2003-01-04 02:36:49 gnb Exp $");
 
 
 #define COL_LINES   	0
@@ -301,7 +301,7 @@ on_files_clist_button_press_event(
 #endif
 	fr = (file_rec_t *)gtk_clist_get_row_data(GTK_CLIST(w), row);
 	
-	sourcewin_t::show_file(fr->file->minimal_name());
+	sourcewin_t::show_file(fr->file);
     }
 }
 

@@ -26,7 +26,7 @@
 #include "uix.h"
 #include "gnbprogressbar.h"
 
-CVSID("$Id: summarywin.C,v 1.5 2002-12-31 14:48:22 gnb Exp $");
+CVSID("$Id: summarywin.C,v 1.6 2003-01-04 02:38:14 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -113,9 +113,9 @@ populate_filename_combo(GtkCombo *combo)
     
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     {
-    	const char *filename = (*iter)->minimal_name();
+    	cov_file_t *f = *iter;
 	
-    	ui_combo_add_data(combo, filename, (gpointer)filename);
+    	ui_combo_add_data(combo, f->minimal_name(), (gpointer)f);
     }
 }
 
@@ -282,9 +282,8 @@ summarywin_t::update()
 
     case SU_FILENAME:
     	{
-	    GtkWidget *entry = GTK_COMBO(filename_combo_)->entry;
-	    char *filename = gtk_entry_get_text(GTK_ENTRY(entry));
-	    cov_file_t *f = cov_file_t::find(filename);
+	    cov_file_t *f = (cov_file_t *)ui_combo_get_current_data(
+	    	    	    	    	    GTK_COMBO(filename_combo_));
 
 	    set_title(f->minimal_name());
     	    f->calc_stats(&stats);
@@ -395,10 +394,10 @@ GLADE_CALLBACK void
 on_summary_filename_view_clicked(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
-    GtkWidget *entry = GTK_COMBO(sw->filename_combo_)->entry;
-    char *filename = gtk_entry_get_text(GTK_ENTRY(entry));
+    cov_file_t *f = (cov_file_t *)ui_combo_get_current_data(
+	    	    	    	    GTK_COMBO(sw->filename_combo_));
 
-    sourcewin_t::show_file(filename);
+    sourcewin_t::show_file(f);
 }
 
 GLADE_CALLBACK void
