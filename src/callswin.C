@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.16 2005-03-05 15:04:37 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.17 2005-03-14 07:42:22 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -328,6 +328,9 @@ callswin_t::update()
 	break;
     }
     set_title(title.data());
+    
+    gtk_widget_set_sensitive(from_function_view_, (from_fn != 0));
+    gtk_widget_set_sensitive(to_function_view_, (to_fn != 0));    
 
 #if !GTK2
     gtk_clist_freeze(GTK_CLIST(clist_));
@@ -428,6 +431,7 @@ on_calls_from_function_view_clicked(GtkWidget *w, gpointer data)
     callswin_t *cw = callswin_t::from_widget(w);
     cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
 	    	    	    	GTK_COMBO(cw->from_function_combo_));
+    g_return_if_fail(fn != 0);
     sourcewin_t::show_function(fn);
 }
 
@@ -437,6 +441,7 @@ on_calls_to_function_view_clicked(GtkWidget *w, gpointer data)
     callswin_t *cw = callswin_t::from_widget(w);
     cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
 	    	    	    	GTK_COMBO(cw->to_function_combo_));
+    g_return_if_fail(fn != 0);
     sourcewin_t::show_function(fn);
 }
 
