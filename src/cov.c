@@ -26,11 +26,12 @@
 #include <bfd.h>
 #include <elf.h>
 
-CVSID("$Id: cov.c,v 1.5 2001-12-02 07:27:29 gnb Exp $");
+CVSID("$Id: cov.c,v 1.6 2001-12-03 01:02:41 gnb Exp $");
 
 GHashTable *cov_files;
 /* TODO: ? reorg this */
 GHashTable *cov_blocks_by_location; 	/* GList of blocks keyed on "file:line" */
+GHashTable *cov_callnodes;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -1354,6 +1355,190 @@ cov_range_calc_stats(
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+typedef struct
+{
+    void (*func)(cov_callnode_t *, void *);
+    void *userdata;
+} cov_callnode_foreach_rec_t;
+
+static void
+cov_callnode_foreach_tramp(gpointer key, gpointer value, gpointer userdata)
+{
+    cov_callnode_t *cn = (cov_callnode_t *)value;
+    cov_callnode_foreach_rec_t *rec = (cov_callnode_foreach_rec_t *)userdata;
+    
+    (*rec->func)(cn, rec->userdata);
+}
+
+
+void
+cov_callnode_foreach(
+    void (*func)(cov_callnode_t*, void *userdata),
+    void *userdata)
+{
+    cov_callnode_foreach_rec_t rec;
+    
+    rec.func = func;
+    rec.userdata = userdata;
+    g_hash_table_foreach(cov_callnodes, cov_callnode_foreach_tramp, &rec);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+cov_callnode_t *
+cov_callnode_find(const char *name)
+{
+    return g_hash_table_lookup(cov_callnodes, name);
+}
+
+static cov_callnode_t *
+cov_callnode_new(const char *name)
+{
+    cov_callnode_t *cn;
+    
+    cn = new(cov_callnode_t);
+    strassign(cn->name, name);
+    
+    g_hash_table_insert(cov_callnodes, cn->name, cn);
+    
+    return cn;
+}
+
+static gboolean
+cov_callnode_delete_one(gpointer key, gpointer value, gpointer userdata)
+{
+    cov_callnode_t *cn = (cov_callnode_t *)value;
+    
+    listdelete(cn->out_arcs, cov_callarc_t, g_free);
+    listclear(cn->in_arcs);
+    strdelete(cn->name);
+    g_free(cn);
+    
+    return TRUE;    /* please remove me */
+}
+
+static void
+cov_callgraph_clear(void)
+{
+    g_hash_table_foreach_remove(cov_callnodes, cov_callnode_delete_one, 0);
+}
+
+static cov_callarc_t *
+cov_callnode_find_arc_to(
+    cov_callnode_t *from,
+    cov_callnode_t *to)
+{
+    GList *iter;
+    
+    for (iter = from->out_arcs ; iter != 0 ; iter = iter->next)
+    {
+    	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
+	
+	if (ca->to == to)
+	    return ca;
+    }
+    
+    return 0;
+}
+
+static cov_callarc_t *
+cov_callnode_add_arc_to(
+    cov_callnode_t *from,
+    cov_callnode_t *to)
+{
+    cov_callarc_t *ca;
+    
+    ca = new(cov_callarc_t);
+    
+    ca->from = from;
+    from->out_arcs = g_list_append(from->out_arcs, ca);
+
+    ca->to = to;
+    to->in_arcs = g_list_append(to->in_arcs, ca);
+    
+    return ca;
+}
+
+static void
+cov_callarc_add_count(cov_callarc_t *ca, count_t count)
+{
+    ca->count += count;
+    ca->to->count += count;
+}
+
+static void
+cov_file_add_callnodes(cov_file_t *f, void *userdata)
+{
+    unsigned int fnidx;
+    cov_callnode_t *cn;
+    
+    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    {
+    	cov_function_t *fn = cov_file_nth_function(f, fnidx);
+	
+	if (!strncmp(fn->name, "_GLOBAL_", 8))
+	    continue;
+
+	if ((cn = cov_callnode_find(fn->name)) == 0)
+	{
+	    cn = cov_callnode_new(fn->name);
+	    cn->function = fn;
+	}
+    }
+}
+
+static void
+cov_file_add_callarcs(cov_file_t *f, void *userdata)
+{
+    unsigned int fnidx;
+    unsigned int bidx;
+    GList *aiter;
+    cov_callnode_t *from;
+    cov_callnode_t *to;
+    cov_callarc_t *ca;
+    
+    for (fnidx = 0 ; fnidx < f->functions->len ; fnidx++)
+    {
+    	cov_function_t *fn = cov_file_nth_function(f, fnidx);
+	
+	if (!strncmp(fn->name, "_GLOBAL_", 8))
+	    continue;
+
+	from = cov_callnode_find(fn->name);
+	assert(from != 0);
+	
+	for (bidx = 0 ; bidx < fn->blocks->len-2 ; bidx++)
+	{
+    	    cov_block_t *b = cov_function_nth_block(fn, bidx);
+	
+	    for (aiter = b->out_arcs ; aiter != 0 ; aiter = aiter->next)
+	    {
+	    	cov_arc_t *a = (cov_arc_t *)aiter->data;
+
+    	    	if (!a->fake || a->name == 0)
+		    continue;
+		    		
+		if ((to = cov_callnode_find(a->name)) == 0)
+		    to = cov_callnode_new(a->name);
+		    
+		if ((ca = cov_callnode_find_arc_to(from, to)) == 0)
+		    ca = cov_callnode_add_arc_to(from, to);
+		    
+		cov_callarc_add_count(ca, a->from->count);
+	    }
+	}
+    }
+}
+
+static void
+cov_callgraph_build(void)
+{
+    cov_file_foreach(cov_file_add_callnodes, 0);
+    cov_file_foreach(cov_file_add_callarcs, 0);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 static void
 cov_bfd_error_handler(const char *fmt, ...)
 {
@@ -1369,6 +1554,14 @@ cov_init(void)
 {
     bfd_init();
     bfd_set_error_handler(cov_bfd_error_handler);
+
+    cov_callnodes = g_hash_table_new(g_str_hash, g_str_equal);
+}
+
+void
+cov_post_read(void)
+{
+    cov_callgraph_build();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

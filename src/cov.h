@@ -29,6 +29,8 @@ typedef struct cov_arc_s	cov_arc_t;
 typedef struct cov_block_s	cov_block_t;
 typedef struct cov_location_s	cov_location_t;
 typedef struct cov_stats_s	cov_stats_t;
+typedef struct cov_callnode_s	cov_callnode_t;
+typedef struct cov_callarc_s	cov_callarc_t;
 
 
 struct cov_file_s
@@ -96,6 +98,28 @@ struct cov_stats_s
     unsigned long branches_taken;
 };
 
+/*
+ * Node in the callgraph, representing a function
+ * which may be one of the covered functions or
+ * may be an external library function.
+ */
+struct cov_callnode_s
+{
+    char *name;
+    cov_function_t *function;	/* may be NULL */
+    count_t count;
+    GList *in_arcs, *out_arcs;
+};
+
+/*
+ * Arcs between nodes in the callgraph.
+ */
+struct cov_callarc_s
+{
+    cov_callnode_t *from, *to;
+    count_t count;
+};
+
 #define cov_file_nth_function(f, n) \
     	    ((cov_function_t *)(f)->functions->pdata[(n)])
 #define cov_function_nth_block(fn, n) \
@@ -103,6 +127,8 @@ struct cov_stats_s
 
 void cov_init(void);
 gboolean cov_handle_c_file(const char *cfilename);
+/* mostly just calculates callgraph */
+void cov_post_read(void);
 cov_file_t *cov_file_find(const char *name);
 void cov_get_count_by_location(const cov_location_t *loc,
 			       count_t *countp, gboolean *existsp);
@@ -119,5 +145,8 @@ void cov_file_calc_stats(const cov_file_t *f, cov_stats_t *stats);
 void cov_overall_calc_stats(cov_stats_t *stats);
 void cov_range_calc_stats(const cov_location_t *start,
     	    	    	  const cov_location_t *end, cov_stats_t *stats);
+
+cov_callnode_t *cov_callnode_find(const char *name);
+void cov_callnode_foreach(void (*func)(cov_callnode_t*, void *userdata), void *userdata);
 
 #endif /* _ggcov_cov_h_ */
