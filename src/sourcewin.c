@@ -22,7 +22,7 @@
 #include "estring.h"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.c,v 1.10 2001-12-02 07:26:08 gnb Exp $");
+CVSID("$Id: sourcewin.c,v 1.11 2002-01-17 03:51:31 gnb Exp $");
 
 extern GList *filenames;
 
@@ -71,6 +71,8 @@ sourcewin_init(GtkWidget *w)
 #define MAGIC_MARGINX	    14
 #define MAGIC_MARGINY	    5
 
+extern int screenshot_mode;
+
 sourcewin_t *
 sourcewin_new(void)
 {
@@ -102,7 +104,8 @@ sourcewin_new(void)
     
     sourcewin_init(sw->window);
     
-    gtk_widget_set_usize(sw->text,
+    if (!screenshot_mode)
+	gtk_widget_set_usize(sw->text,
     	    SOURCE_COLUMNS * sourcewin_font_width + MAGIC_MARGINX,
     	    SOURCE_ROWS * sourcewin_font_height + MAGIC_MARGINY);
     

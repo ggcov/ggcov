@@ -31,11 +31,12 @@
 #include <dirent.h>
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: ggcov.c,v 1.7 2001-12-03 01:05:15 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.8 2002-01-17 03:51:16 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
 GList *filenames;   /* filenames of all .c files which have .bb etc read */
+int screenshot_mode = 0;
 
 static poptContext popt_context;
 static struct poptOption popt_options[] =
@@ -48,6 +49,15 @@ static struct poptOption popt_options[] =
 	0,  	    	    	    	    	/* val 0=don't return */
 	"where to locate ggcov.glade",	    	/* descrip */
 	"colon-seperated list of directories"	/* argDescrip */
+    },
+    {
+    	"screenshot-mode",  	    	    	/* longname */
+	0,  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&screenshot_mode,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"behaviour tweaks for screenshots", 	/* descrip */
+	0   	    	    	    		/* argDescrip */
     },
     { 0, 0, 0, 0, 0, 0, 0 }
 };
