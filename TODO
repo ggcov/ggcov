@@ -74,9 +74,6 @@ x  Add menu item to Source window to save the text with annotations.
 x  Add column titles to Source window, with the ability to hide them,
    visible by default, state saved automatically.
    
-x  Colour code red/green the entries in the Function List, Calls List
-   etc windows.
-   
 x  Add a View menu to the Calls List window, with at least the ability
    to show/hide the various columns in the list and the colour coding.
    Column "Arc" to be hidden by default.
@@ -110,6 +107,9 @@ x   Callgraphwin should label the two lists something easier to
 
 --- CLOSED ---
 
+x  Colour code red/green the entries in the Function List, Calls List
+   etc windows.
+   
 x  Colour-code the coverage stats cells in the Function List and
    File List windows.
    
