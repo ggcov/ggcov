@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: callgraph2win.C,v 1.10 2003-05-31 14:51:02 gnb Exp $");
+CVSID("$Id: callgraph2win.C,v 1.11 2003-06-01 08:49:59 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -112,7 +112,7 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
 #if DEBUG
     fprintf(stderr, "callgraph2win_t::show_box: %s:%s y={%g,%g} spread_=%d\n",
     	(cn->function == 0 ? "library" : cn->function->file()->minimal_name()),
-	cn->name,
+	cn->name.data(),
 	ystart, yend,
 	n->spread_);
 #endif
@@ -128,7 +128,7 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
 		    0.0);
 	
 	label = g_strdup_printf("%s\n%s\n%g%%",
-	    cn->name,
+	    cn->name.data(),
     	    cn->function->file()->minimal_name(),
 	    lines_pc);
 	if (stats->lines_executed == stats->lines)
@@ -140,7 +140,7 @@ callgraph2win_t::show_box(node_t *n, double ystart, double yend)
     }
     else
     {
-	label = g_strdup_printf("%s", cn->name);
+	label = g_strdup_printf("%s", cn->name.data());
     	fn_color = &prefs.uninstrumented_background;
     }
 
@@ -238,7 +238,7 @@ callgraph2win_t::adjust_rank(callgraph2win_t::node_t *n, int delta)
     {
 #if DEBUG
     	fprintf(stderr, "callgraph2win_t::adjust_rank: avoiding loop at \"%s\"\n",
-	    	    n->callnode_->name);
+	    	    n->callnode_->name.data());
 #endif
     	return;
     }
@@ -270,7 +270,7 @@ callgraph2win_t::build_node(cov_callnode_t *cn, int rank)
     GList *iter;
 
 #if DEBUG
-    fprintf(stderr, "callgraph2win_t::build_node(\"%s\")\n", cn->name);
+    fprintf(stderr, "callgraph2win_t::build_node(\"%s\")\n", cn->name.data());
 #endif
 
     if ((n = node_t::from_callnode(cn)) != 0)
@@ -280,7 +280,7 @@ callgraph2win_t::build_node(cov_callnode_t *cn, int rank)
 	{
 	    /* loop avoidance */
 	    fprintf(stderr, "build_node: avoided loop at %s\n",
-	    	    	n->callnode_->name);
+	    	    	n->callnode_->name.data());
 	    return n;
 	}
 	++generation_;
@@ -319,7 +319,7 @@ callgraph2win_t::add_spread(callgraph2win_t::node_t *n)
 
 #if DEBUG
     fprintf(stderr, "callgraph2win_t::add_spread(\"%s\") => spread_=%d generation_=%lu\n",
-    	    n->callnode_->name, n->spread_, n->generation_);
+    	    n->callnode_->name.data(), n->spread_, n->generation_);
 #endif
 
     for (iter = n->callnode_->in_arcs ; iter != 0 ; iter = iter->next)
@@ -344,7 +344,7 @@ callgraph2win_t::build_ranks(callgraph2win_t::node_t *n, GPtrArray *ranks)
 
 #if DEBUG
     fprintf(stderr, "callgraph2win_t::build_ranks(\"%s\")\n",
-    	    	n->callnode_->name);
+    	    	n->callnode_->name.data());
 #endif
 
     if (n->rank_ >= ranks->len)

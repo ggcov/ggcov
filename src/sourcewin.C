@@ -24,7 +24,7 @@
 #include "prefs.H"
 #include "uix.h"
 
-CVSID("$Id: sourcewin.C,v 1.12 2003-04-26 14:50:13 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.13 2003-06-01 08:49:59 gnb Exp $");
 
 gboolean sourcewin_t::initialised_ = FALSE;
 #if GTK2
@@ -155,7 +155,6 @@ sourcewin_t::sourcewin_t()
 
 sourcewin_t::~sourcewin_t()
 {
-    strdelete(filename_);
 #if !GTK2
     g_array_free(offsets_by_line_, /*free_segment*/TRUE);
 #endif
@@ -219,13 +218,13 @@ on_source_functions_entry_changed(GtkWidget *w, gpointer userdata)
     if (strcmp(first->filename, sw->filename_))
     {
     	fprintf(stderr, "WTF?  Wrong filename for first loc: %s vs %s\n",
-	    	    	first->filename, sw->filename_);
+	    	    	first->filename, sw->filename_.data());
 	return;
     }
     if (strcmp(last->filename, sw->filename_))
     {
     	fprintf(stderr, "WTF?  Wrong filename for last loc: %s vs %s\n",
-	    	    	last->filename, sw->filename_);
+	    	    	last->filename, sw->filename_.data());
 	return;
     }
 
@@ -427,7 +426,7 @@ sourcewin_t::update()
     g_array_set_size(offsets_by_line_, 0);
 #endif
 
-    loc.filename = filename_;
+    loc.filename = (char *)filename_.data();
     loc.lineno = 0;
     while (fgets_tabexpand(linebuf, sizeof(linebuf), fp) != 0)
     {
@@ -604,7 +603,7 @@ void
 sourcewin_t::set_filename(const char *filename, const char *display_fname)
 {
     set_title((display_fname == 0 ? filename : display_fname));
-    strassign(filename_, filename);
+    filename_ = filename;
 
     if (shown_)
     {
@@ -886,7 +885,7 @@ on_source_summarise_function_activate(GtkWidget *w, gpointer data)
     cov_location_t loc;
     const GList *blocks;
     
-    loc.filename = sw->filename_;
+    loc.filename = (char *)sw->filename_.data();
     sw->get_selected_lines(&loc.lineno, 0);
 
     if (loc.lineno != 0 ||
@@ -1014,7 +1013,7 @@ on_source_save_as_activate(GtkWidget *w, gpointer data)
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     char *txt_filename;
     
-    txt_filename = g_strconcat(sw->filename_, ".cov.txt", (char *)0);
+    txt_filename = g_strconcat(sw->filename_.data(), ".cov.txt", (char *)0);
     gtk_file_selection_set_filename(GTK_FILE_SELECTION(sw->saveas_dialog_),
     	    	    	    	    txt_filename);
     g_free(txt_filename);

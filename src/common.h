@@ -49,29 +49,6 @@
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#define strassign(v, s) \
-    do { \
-	if ((v) != 0) \
-	    g_free((v)); \
-	(v) = g_strdup((s)); \
-    } while(0)
-    
-#define strdelete(v) \
-    do { \
-    	if ((v) != 0) \
-	    g_free((v)); \
-	(v) = 0; \
-    } while(0)
-
-#define strnullnorm(v) \
-    do { \
-	if ((v) != 0 && *(v) == '\0') \
-	{ \
-	    g_free((v)); \
-	    (v) = 0; \
-	} \
-    } while(0)
-
 #define listdelete(v,type,dtor) \
     do { \
 	while ((v) != 0) \

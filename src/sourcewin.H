@@ -22,6 +22,7 @@
 
 #include "window.H"
 #include "cov.H"
+#include "string_var.H"
 
 GLADE_CALLBACK void on_source_saveas_ok_button_clicked(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_saveas_cancel_button_clicked(GtkWidget *w, gpointer data);
@@ -114,7 +115,7 @@ private:
     GtkWidget *filenames_combo_;
     GtkWidget *functions_combo_;
     gboolean populating_;
-    char *filename_;
+    string_var filename_;
     unsigned int max_lineno_;	/* the largest linenumber */
 #if !GTK2
     GArray *offsets_by_line_;

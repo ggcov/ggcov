@@ -20,6 +20,8 @@
 #ifndef _ggcov_cov_arc_H_
 #define _ggcov_cov_arc_H_ 1
 
+#include "string_var.H"
+
 class cov_file_t;
 class cov_function_t;
 class cov_block_t;
@@ -83,7 +85,7 @@ private:
     cov_block_t *from_, *to_;
     unsigned int idx_; 	    /* serial number in from->out_arcs */
     count_t count_;
-    char *name_;     	    /* name of function called (if known) or NULL */
+    string_var name_;     	    /* name of function called (if known) or NULL */
     gboolean on_tree_:1;
 #ifdef HAVE_BBG_FAKE_FLAG
     gboolean fake_:1;

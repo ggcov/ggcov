@@ -58,6 +58,11 @@ public:
      :  data_(s)
     {
     }
+    // copy c'tor
+    string_var(const string_var &o)
+    {
+    	data_ = (o.data_ == 0 ? 0 : g_strdup(o.data_));
+    }
     // dtor    
     ~string_var()
     {
@@ -81,7 +86,7 @@ public:
     {
     	if (data_ != 0)
 	    g_free(data_);
-	return data_ = g_strdup(s);
+	return data_ = (s == 0 ? 0 : g_strdup(s));
     }
     const char *operator=(char *s)
     {

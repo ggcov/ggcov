@@ -18,9 +18,9 @@
  */
 
 #include "cov.H"
-#include "estring.H"
+#include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.5 2003-06-01 07:56:27 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.6 2003-06-01 08:49:59 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -45,8 +45,8 @@ void
 cov_function_t::set_name(const char *name)
 {
     assert(name_ == 0);
-    strassign(name_, name);
-    g_hash_table_insert(file_->functions_by_name_, name_, this);
+    name_ = name;
+    g_hash_table_insert(file_->functions_by_name_, (void *)name_.data(), this);
 }
 
 cov_block_t *
@@ -147,7 +147,7 @@ cov_function_t::reconcile_calls()
     for (bidx = 0 ; bidx < num_blocks()-2 ; bidx++)
     {
     	cov_block_t *b = nth_block(bidx);
-	estring desc = b->describe();
+	string_var desc = b->describe();
 
 	if (cov_arc_t::ncalls(b->out_arcs_) != (b->call_ == 0 ? 0U : 1U))
 	{
@@ -157,7 +157,7 @@ cov_function_t::reconcile_calls()
 	    fprintf(stderr, "    %d call arcs, %d recorded calls\n",
 		    	    cov_arc_t::ncalls(b->out_arcs_),
 			    (b->call_ == 0 ? 0 : 1));
-	    strdelete(b->call_);
+	    b->call_ = (const char *)0;   /* free and null out */
 	    ret = FALSE;
 	    continue;
 	}

@@ -19,7 +19,7 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_callgraph.C,v 1.3 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: cov_callgraph.C,v 1.4 2003-06-01 08:49:59 gnb Exp $");
 
 GHashTable *cov_callnode_t::all_;
 
@@ -27,17 +27,17 @@ GHashTable *cov_callnode_t::all_;
 
 cov_callnode_t::cov_callnode_t(const char *nname)
 {
-    strassign(name, nname);
+    name = nname;
     
-    g_hash_table_insert(all_, name, this);
+    g_hash_table_insert(all_, (void *)name.data(), this);
 }
 
 cov_callnode_t::~cov_callnode_t()
 {
 #if 0
+    g_hash_table_remove(all_, name.data());
     listdelete(out_arcs, cov_callarc_t, delete);
     listclear(in_arcs);
-    strdelete(name);
 #else
     assert(0);
 #endif

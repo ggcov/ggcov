@@ -28,7 +28,7 @@
 #include <elf.h>
 #endif
 
-CVSID("$Id: cov_file.C,v 1.9 2003-06-01 07:56:27 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.10 2003-06-01 08:49:59 gnb Exp $");
 
 
 GHashTable *cov_file_t::files_;
@@ -41,21 +41,20 @@ int cov_file_t::common_len_;
 
 
 cov_file_t::cov_file_t(const char *name)
+ :  name_(name)
 {
-    strassign(name_, name);
     functions_ = g_ptr_array_new();
     functions_by_name_ = g_hash_table_new(g_str_hash, g_str_equal);
     
-    g_hash_table_insert(files_, name_, this);
+    g_hash_table_insert(files_, (void *)name_.data(), this);
     add_name(name_);
 }
 
 cov_file_t::~cov_file_t()
 {
 #if 0
-    g_hash_table_remove(files_, name_);
+    g_hash_table_remove(files_, name_.data());
 
-    strdelete(name_);
     g_ptr_array_free(functions_, /*free_seg*/TRUE);
     g_ptr_array_free(blocks_, /*free_seg*/TRUE);
     g_ptr_array_free(arcs_, /*free_seg*/TRUE);
@@ -161,7 +160,7 @@ cov_file_t::add_name(const char *name)
 const char *
 cov_file_t::minimal_name() const
 {
-    return name_ + common_len_;
+    return name_.data() + common_len_;
 }
 
 char *
@@ -280,7 +279,7 @@ cov_file_t::read_bb_file(const char *bbfilename)
     FILE *fp;
     gnb_u32_t tag;
     char *funcname = 0;
-    char *filename = 0;
+    string_var filename;
     cov_function_t *fn = 0;
     int funcidx;
     int bidx = 0;
@@ -306,17 +305,12 @@ cov_file_t::read_bb_file(const char *bbfilename)
     	switch (tag)
 	{
 	case BB_FILENAME:
-	    if (filename != 0)
-	    	g_free(filename);
 	    filename = covio_read_bbstring(fp, tag);
 	    if (strchr(filename, '/') == 0 &&
 	    	!strcmp(filename, file_basename_c(name_)))
-	    {
-	    	g_free(filename);
-		filename = g_strdup(name_);
-	    }
+		filename = name_.data();
 #if DEBUG > 1
-	    fprintf(stderr, "BB filename = \"%s\"\n", filename);
+	    fprintf(stderr, "BB filename = \"%s\"\n", filename.data());
 #endif
 	    break;
 	    
@@ -339,7 +333,7 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	    {
 		assert(fn != 0);
 		assert(bidx != 0);
-		assert(filename != 0);
+		assert(filename != (const char*)0);
 		fn->nth_block(bidx)->add_location(filename, line);
 	    }
 	    bidx++;
@@ -359,7 +353,6 @@ cov_file_t::read_bb_file(const char *bbfilename)
 	}
     }
     
-    strdelete(filename);
     fclose(fp);
     return TRUE;
 }

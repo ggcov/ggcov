@@ -21,6 +21,7 @@
 #define _ggcov_confsection_H_ 1
 
 #include "common.h"
+#include "string_var.H"
 
 struct confenum_t
 {
@@ -58,7 +59,7 @@ private:
 
     static GHashTable *all_;
 
-    char *secname_;
+    string_var secname_;
 };
 
 

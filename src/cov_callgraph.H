@@ -20,6 +20,8 @@
 #ifndef _ggcov_cov_callgraph_H_
 #define _ggcov_cov_callgraph_H_ 1
 
+#include "string_var.H"
+
 class cov_function_t;
 
 /*
@@ -29,7 +31,7 @@ class cov_function_t;
  */
 struct cov_callnode_t
 {
-    char *name;
+    string_var name;
     cov_function_t *function;	/* may be NULL */
     count_t count;
     GList *in_arcs, *out_arcs;

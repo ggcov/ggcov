@@ -21,6 +21,7 @@
 #define _ggcov_cov_function_H_ 1
 
 #include "common.h"
+#include "string_var.H"
 
 class cov_file_t;
 
@@ -78,7 +79,7 @@ private:
     gboolean solve();
     void calc_stats(cov_stats_t *) const;
 
-    char *name_;
+    string_var name_;
     unsigned int idx_; 	    /* serial number in file */
     cov_file_t *file_;
     GPtrArray *blocks_;

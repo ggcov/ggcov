@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.4 2003-06-01 07:56:27 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.5 2003-06-01 08:49:59 gnb Exp $");
 
 GHashTable *cov_block_t::by_location_; 	/* GList of blocks keyed on "file:line" */
 
@@ -69,7 +69,7 @@ cov_block_t::add_location(const char *filename, unsigned lineno)
 #endif
     
     loc = new(cov_location_t);
-    strassign(loc->filename, filename); /* TODO: hashtable to reduce storage */
+    loc->filename = g_strdup(filename); /* TODO: hashtable to reduce storage */
     loc->lineno = lineno;
     
     locations_.append(loc);
@@ -133,16 +133,14 @@ void
 cov_block_t::add_call(const char *callname)
 {
     assert(call_ == 0);
-    call_ = g_strdup(callname);
+    call_ = callname;
 }
 
 char *
 cov_block_t::pop_call()
 {
     assert(call_ != 0);
-    char *name = call_;
-    call_ = 0;
-    return name;
+    return call_.take();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.9 2003-04-05 23:53:20 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.10 2003-06-01 08:49:59 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -245,7 +245,7 @@ callgraphwin_t::update_clist(GtkWidget *clist, GList *arcs, gboolean isin)
 	    	    /*numerator*/ca->count, /*denominator*/total);
 	text[COL_COUNT] = countbuf;
 
-	text[COL_NAME] = (isin ? ca->from : ca->to)->name;
+	text[COL_NAME] = (char *)(isin ? ca->from : ca->to)->name.data();
 
 	row = gtk_clist_prepend(GTK_CLIST(clist), text);
 	gtk_clist_set_row_data(GTK_CLIST(clist), row, ca);

@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "list.H"
+#include "string_var.H"
 
 class cov_function_t;
 
@@ -116,7 +117,7 @@ private:
     static char *common_path_;
     static int common_len_;
 
-    char *name_;
+    string_var name_;
     GPtrArray *functions_;
     GHashTable *functions_by_name_;
     const cov_location_t *last_location_;

@@ -23,7 +23,7 @@
 #endif
 #include "estring.H"
 
-CVSID("$Id: confsection.C,v 1.3 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: confsection.C,v 1.4 2003-06-01 08:49:59 gnb Exp $");
 
 GHashTable *confsection_t::all_;
 static const char filename[] = "ggcov";
@@ -31,12 +31,11 @@ static const char filename[] = "ggcov";
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 confsection_t::confsection_t(const char *secname)
+ :  secname_(secname)
 {
-    strassign(secname_, secname);
-
     if (all_ == 0)
     	all_ = g_hash_table_new(g_str_hash, g_str_equal);
-    g_hash_table_insert(all_, secname_, this);
+    g_hash_table_insert(all_, (void *)secname_.data(), this);
 }
 
 confsection_t::~confsection_t()
@@ -64,7 +63,7 @@ char *
 confsection_t::make_key(const char *name) const
 {
     assert(strchr(name, '/') == 0);
-    return g_strconcat(filename, "/", secname_, "/", name, 0);
+    return g_strconcat(filename, "/", secname_.data(), "/", name, 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -113,7 +113,7 @@ private:
     list_t<cov_location_t> locations_;
     
     /* used while reading .o files to get arc names */
-    char *call_;
+    string_var call_;
     
     friend void cov_init(void);
     friend gboolean cov_o_file_add_call(cov_read_state_t *rs,

@@ -22,7 +22,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.16 2003-05-11 00:52:39 gnb Exp $");
+CVSID("$Id: ui.c,v 1.17 2003-06-01 08:49:59 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -368,7 +368,7 @@ ui_register_windows_entry(
     ui_windows_entry_t *we;
     
     we = new(ui_windows_entry_t);
-    strassign(we->label, label);
+    we->label = g_strdup(label);
     we->callback = callback;
     we->userdata = userdata;
     
