@@ -1,3 +1,11 @@
+Tue Nov  4 23:55:52 2003  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.2.2
+
+	* Added simple man page to document commandline usage.
+	* Fixed bug where callgraph scanning found no calls ever.
+	* Replaced most #ifdef DEBUG debugging prints with runtime prints.
+	with commandline selection of debug features.
+
 Sun Aug  3 18:37:40 2003  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.2.1
 
