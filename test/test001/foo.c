@@ -45,6 +45,8 @@ main(int argc, char **argv)
     for (i = 1 ; i < argc ; i++)
     {
     	x = atoi(argv[i]);
+	if (x == 42)
+	    unused_function(x);
     	y = function_one(x);
 	printf("%d -> %d\n", x, y);
     }
