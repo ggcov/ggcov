@@ -262,7 +262,7 @@
 		<widget class="GtkMenu" id="help7_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="about">
+		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
 		      <signal name="activate" handler="on_about_activate"/>
@@ -737,7 +737,7 @@
 		<widget class="GtkMenu" id="help8_menu">
 
 		  <child>
-		    <widget class="GtkMenuItem" id="about">
+		    <widget class="GtkMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_About</property>
 		      <property name="use_underline">True</property>
@@ -1809,7 +1809,7 @@
 		<widget class="GtkMenu" id="help9_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="about">
+		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
 		      <signal name="activate" handler="on_about_activate"/>
@@ -2076,7 +2076,7 @@
 		<widget class="GtkMenu" id="help10_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="about">
+		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
 		      <signal name="activate" handler="on_about_activate"/>
@@ -2296,7 +2296,7 @@
 		<widget class="GtkMenu" id="help11_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="about">
+		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
 		      <signal name="activate" handler="on_about_activate"/>
@@ -2682,7 +2682,7 @@
 		<widget class="GtkMenu" id="help12_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="about">
+		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
 		      <signal name="activate" handler="on_about_activate"/>
@@ -4120,7 +4120,7 @@ C programs built with the GNU C Compiler.
 		<widget class="GtkMenu" id="help8_menu">
 
 		  <child>
-		    <widget class="GtkImageMenuItem" id="about">
+		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
 		      <signal name="activate" handler="on_about_activate"/>
