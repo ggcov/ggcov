@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.21.2.1 2003-11-03 08:56:59 gnb Exp $");
+CVSID("$Id: ui.c,v 1.21.2.2 2003-11-04 12:55:08 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -100,7 +100,7 @@ ui_combo_clear(GtkCombo *combo)
 #endif
 
 const char *ui_glade_path = 
-#if DEBUG || UI_DEBUG
+#if UI_DEBUG
 "ui:../../ui:"
 #endif
 PKGDATADIR;
