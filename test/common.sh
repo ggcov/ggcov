@@ -27,7 +27,6 @@ trap "/bin/rm -f $TMP1 $TMP2" 0 1 11 13 15
 
 fatal ()
 {
-    set +x
     echo "$0: FATAL: $*"
     exit 1
 }
@@ -134,7 +133,7 @@ _tggcov_Nflag ()
     old)
     	;;
     auto)
-        egrep '^[ \t]+(-|[0-9]+):[ \t+][01]:' `_gcov_file $SRC` 2>/dev/null && echo "-N"
+        egrep '^[ \t]+(-|[0-9]+):[ \t]+[01]:' `_gcov_file $SRC` >/dev/null && echo "-N"
     	;;
     *)
     	fatal "unknown annotate format \"$TGGCOV_ANNOTATE_FORMAT\""
@@ -154,11 +153,12 @@ run_tggcov ()
 {
     vcmd "run_tggcov $*"
     local SRC="$1"
+    local NFLAG=`_tggcov_Nflag $SRC`
 
     (
         vdo cd $srcdir
 
-	if vcapdo $TMP1 ../../src/tggcov -a `_tggcov_Nflag $SRC` $TGGCOV_FLAGS -o $O $SRC ; then
+	if vcapdo $TMP1 ../../src/tggcov -a $NFLAG $TGGCOV_FLAGS -o $O $SRC ; then
 	    cat $TMP1
 	    TGGCOV_FILES=`sed -n -e 's:^Writing[ \t][ \t]*'$srcdir'/\([^ \t]*\)\.tggcov$:\1:p' < $TMP1`
     	    [ -z "$TGGCOV_FILES" ] && fatal "no output files from tggcov"
