@@ -38,6 +38,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/ggcov/
 %{_datadir}/gnome/apps/Development/ggcov.desktop
 %doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
+%docdir %{_mandir}
+%{_mandir}/man1/ggcov.1*
 
 %changelog
 * Thu Jul 17 2003 Greg Banks <gnb@alphalink.com.au>
