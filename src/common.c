@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.5 2002-12-22 01:49:09 gnb Exp $");
+CVSID("$Id: common.c,v 1.6 2003-02-18 14:47:04 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -75,7 +75,7 @@ operator delete(void *p)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 int
-ulcmp(unsigned long ul1, unsigned long ul2)
+u32cmp(gnb_u32_t ul1, gnb_u32_t ul2)
 {
     if (ul1 > ul2)
     	return 1;
@@ -85,7 +85,7 @@ ulcmp(unsigned long ul1, unsigned long ul2)
 }
 
 int
-ullcmp(unsigned long long ull1, unsigned long long ull2)
+u64cmp(gnb_u64_t ull1, gnb_u64_t ull2)
 {
     if (ull1 > ull2)
     	return 1;

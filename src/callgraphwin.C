@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.4 2002-12-29 14:08:33 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.5 2003-02-18 14:46:45 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -39,7 +39,7 @@ callgraphwin_ancestors_compare(GtkCList *clist, const void *ptr1, const void *pt
     switch (clist->sort_column)
     {
     case COL_COUNT:
-    	return ullcmp(ca1->count, ca2->count);
+    	return u64cmp(ca1->count, ca2->count);
 	
     case COL_NAME:
     	return strcmp(ca1->from->name, ca2->from->name);
@@ -58,7 +58,7 @@ callgraphwin_descendants_compare(GtkCList *clist, const void *ptr1, const void *
     switch (clist->sort_column)
     {
     case COL_COUNT:
-    	return ullcmp(ca1->count, ca2->count);
+    	return u64cmp(ca1->count, ca2->count);
 	
     case COL_NAME:
     	return strcmp(ca1->to->name, ca2->to->name);

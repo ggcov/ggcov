@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.4 2003-01-04 03:01:57 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.5 2003-02-18 14:46:20 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -45,11 +45,11 @@ callswin_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
     switch (clist->sort_column)
     {
     case COL_COUNT:
-    	return ullcmp(a1->from()->count(), a2->from()->count());
+    	return u64cmp(a1->from()->count(), a2->from()->count());
 	
     case COL_ARC:
 #define arcno(a)    (((a)->from()->bindex() << 16)|(a)->aindex())
-    	return ulcmp(arcno(a1), arcno(a2));
+    	return u32cmp(arcno(a1), arcno(a2));
 #undef arcno
 	
     case COL_TO:

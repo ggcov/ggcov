@@ -9,7 +9,7 @@ static void
 hexdump(FILE *fp, off_t lastoff)
 {
     off_t here;
-    covio_u32_t d;
+    gnb_u32_t d;
     
     here = ftell(fp);
     assert((here - lastoff) % 4 == 0);
@@ -31,7 +31,7 @@ hexdump(FILE *fp, off_t lastoff)
 static void
 do_tags(const char *filename, FILE *fp)
 {
-    covio_u32_t tag;
+    gnb_u32_t tag;
     off_t lastoff = 0;
     char *s;
     
