@@ -20,7 +20,7 @@
 #include "estring.H"
 #include <stdarg.h>
 
-CVSID("$Id: estring.C,v 1.2 2003-03-17 03:54:49 gnb Exp $");
+CVSID("$Id: estring.C,v 1.2.4.1 2003-11-03 23:06:00 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -112,7 +112,7 @@ estring::replace_chars(
 {
     unsigned int remain;
     
-#if DEBUG > 40
+#if 0
     fputs("estring::replace_chars: replacing \"", stderr);
     if (data_ != 0)
 	fwrite(data_+start, 1, len, stderr);
