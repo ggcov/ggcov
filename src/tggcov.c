@@ -30,11 +30,10 @@
 #include "estring.H"
 #include "fakepopt.h"
 
-CVSID("$Id: tggcov.c,v 1.4 2003-07-13 00:21:16 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.5 2003-07-14 15:57:17 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
-int screenshot_mode = 0;
 
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
 static int header_flag = FALSE;
