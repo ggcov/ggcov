@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "prefs.H"
 
-CVSID("$Id: functionswin.C,v 1.14 2004-02-23 11:09:50 gnb Exp $");
+CVSID("$Id: functionswin.C,v 1.15 2005-03-05 14:56:33 gnb Exp $");
 
 
 #define COL_BLOCKS   	0
@@ -431,12 +431,7 @@ on_functions_clist_button_press_event(
 {
     cov_function_scope_t *fs;
 
-#if !GTK2
-    fs = (cov_function_scope_t *)ui_clist_double_click_data(GTK_CLIST(w), event);
-#else
-    fs = (cov_function_scope_t *)ui_tree_view_double_click_data(GTK_TREE_VIEW(w),
-    	    	    	    	    event, COL_CLOSURE);
-#endif
+    fs = (cov_function_scope_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
 
     if (fs != 0)	
 	sourcewin_t::show_function(fs->function());

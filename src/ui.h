@@ -83,11 +83,12 @@ void ui_clist_init_column_arrow(GtkCList *, int col);
 void ui_clist_set_sort_column(GtkCList *, int col);
 void ui_clist_set_sort_type(GtkCList *, GtkSortType ty);
 
-/* handles clist & ctree */
-gpointer ui_clist_double_click_data(GtkCList *, GdkEvent *);
-#if GTK2
-gpointer ui_tree_view_double_click_data(GtkTreeView *, GdkEvent *, int column);
-#endif
+/*
+ * Functions to abstract some of the differences between
+ * gtk1's GtkCList/GtkCTree and gtk2's GtkTreeView.
+ */
+gpointer ui_list_double_click_data(GtkWidget *, GdkEvent *,
+    	    	    	    	   int col/*gtk2 closure column*/);
 
 /*
  * Abstraction of GtkText (gtk 1.2) and GtkTextView et al (gtk 2.0).

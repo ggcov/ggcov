@@ -23,7 +23,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.12 2004-02-08 10:48:15 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.13 2005-03-05 14:56:32 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -472,12 +472,7 @@ on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data)
     cov_arc_t *a;
     const cov_location_t *loc;
 
-#if !GTK2
-    a = (cov_arc_t *)ui_clist_double_click_data(GTK_CLIST(w), event);
-#else
-    a = (cov_arc_t *)ui_tree_view_double_click_data(GTK_TREE_VIEW(w), event,
-    	    	    	    	    	    	      COL_CLOSURE);
-#endif
+    a = (cov_arc_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
 
     if (a != 0 && (loc = a->get_from_location()) != 0)
 	sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);

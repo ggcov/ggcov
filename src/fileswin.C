@@ -25,7 +25,7 @@
 #include "prefs.H"
 #include "tok.H"
 
-CVSID("$Id: fileswin.C,v 1.23 2004-02-23 11:09:50 gnb Exp $");
+CVSID("$Id: fileswin.C,v 1.24 2005-03-05 14:56:32 gnb Exp $");
 
 
 #define COL_FILE	0
@@ -640,12 +640,7 @@ on_files_ctree_button_press_event(
 {
     file_rec_t *fr;
     
-#if !GTK2
-    fr = (file_rec_t *)ui_clist_double_click_data(GTK_CLIST(w), event);
-#else
-    fr = (file_rec_t *)ui_tree_view_double_click_data(GTK_TREE_VIEW(w), event,
-    	    	    	    	    	    	      COL_CLOSURE);
-#endif
+    fr = (file_rec_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
 
     if (fr != 0 && fr->file != 0)
 	sourcewin_t::show_file(fr->file);

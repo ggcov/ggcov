@@ -22,7 +22,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.13 2003-11-03 23:09:59 gnb Exp $");
+CVSID("$Id: callgraphwin.C,v 1.14 2005-03-05 14:56:32 gnb Exp $");
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -404,12 +404,7 @@ on_callgraph_ancestors_clist_button_press_event(
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
     cov_callarc_t *ca;
 
-#if !GTK2
-    ca = (cov_callarc_t *)ui_clist_double_click_data(GTK_CLIST(w), event);
-#else
-    ca = (cov_callarc_t *)ui_tree_view_double_click_data(GTK_TREE_VIEW(w), event,
-    	    	    	    	    	    	      COL_CLOSURE);
-#endif
+    ca = (cov_callarc_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
 
     if (ca != 0)
 	cw->set_node(ca->from);
@@ -425,12 +420,7 @@ on_callgraph_descendants_clist_button_press_event(
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
     cov_callarc_t *ca;
 
-#if !GTK2
-    ca = (cov_callarc_t *)ui_clist_double_click_data(GTK_CLIST(w), event);
-#else
-    ca = (cov_callarc_t *)ui_tree_view_double_click_data(GTK_TREE_VIEW(w), event,
-    	    	    	    	    	    	      COL_CLOSURE);
-#endif
+    ca = (cov_callarc_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
 
     if (ca != 0)	
 	cw->set_node(ca->to);

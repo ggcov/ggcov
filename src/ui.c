@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.22 2003-11-03 23:02:50 gnb Exp $");
+CVSID("$Id: ui.c,v 1.23 2005-03-05 14:56:33 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -608,8 +608,10 @@ ui_clist_set_sort_type(GtkCList *clist, GtkSortType type)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gpointer
-ui_clist_double_click_data(GtkCList *clist, GdkEvent *event)
+ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
 {
+#if !GTK2
+    GtkCList *clist = GTK_CLIST(w);
     int row, col;
 
     if (event->type == GDK_2BUTTON_PRESS &&
@@ -618,16 +620,12 @@ ui_clist_double_click_data(GtkCList *clist, GdkEvent *event)
 				     (int)event->button.y,
 				     &row, &col))
     {
-    	dprintf2(D_UICORE, "ui_clist_double_click_data: row=%d col=%d\n", row, col);
+    	dprintf2(D_UICORE, "ui_list_double_click_data: row=%d col=%d\n", row, col);
 	return gtk_clist_get_row_data(clist, row);
     }
     return 0;
-}
-
-#if GTK2
-gpointer
-ui_tree_view_double_click_data(GtkTreeView *tv, GdkEvent *event, int column)
-{
+#else
+    GtkTreeView *tv = GTK_TREE_VIEW(w);
     GtkTreeModel *model;
     GtkTreePath *path = 0;
     GtkTreeIter iter;
@@ -643,7 +641,7 @@ ui_tree_view_double_click_data(GtkTreeView *tv, GdkEvent *event, int column)
     	if (debug_enabled(D_UICORE))
 	{
     	    string_var path_str = gtk_tree_path_to_string(path);
-    	    duprintf1("ui_tree_view_double_click_data: path=\"%s\"\n",
+    	    duprintf1("ui_list_double_click_data: path=\"%s\"\n",
 	    	    	    path_str.data());
     	}
     	model = gtk_tree_view_get_model(tv);
@@ -654,6 +652,7 @@ ui_tree_view_double_click_data(GtkTreeView *tv, GdkEvent *event, int column)
 	return data;
     }
     return 0;
+#endif
 }
 #endif
 
