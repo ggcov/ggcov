@@ -20,16 +20,18 @@
 #include "estring.H"
 #include <stdarg.h>
 
-CVSID("$Id: estring.C,v 1.3 2003-11-03 23:07:07 gnb Exp $");
+CVSID("$Id: estring.C,v 1.4 2005-05-18 12:58:00 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#define AVAIL_ROUND	    256
 
 void inline
 estring::expand_by(unsigned int dl)
 {
    if (length_ + dl + 1 > available_)
    {
-   	available_ += MIN(1024, (length_ + dl + 1 - available_));
+	available_ = ((length_ + dl + 1) + AVAIL_ROUND-1) & ~(AVAIL_ROUND-1);
    	data_ = (data_ == 0 ?
 	    	    g_new(char, available_) :
 		    g_renew(char, data_, available_));
