@@ -1,6 +1,6 @@
 #
 # ggcov - A GTK frontend for exploring gcov coverage data
-# Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
+# Copyright (c) 2005 Greg Banks <gnb@alphalink.com.au>
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,9 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.6 2005-05-18 13:14:18 gnb Exp $
+# $Id: Makefile.am,v 1.1 2005-05-18 13:14:18 gnb Exp $
 #
 
-SUBDIRS=	src ui php doc test
-
-EXTRA_DIST=	.cvsignore .gdbinit
+SUBDIRS=    lib
