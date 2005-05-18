@@ -16,13 +16,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.1 2005-05-18 13:23:46 gnb Exp $
+# $Id: Makefile.am,v 1.2 2005-05-18 13:58:10 gnb Exp $
 #
 
-phpdir=		$(HOME)/public_html/alphalink/ggcov/test/basic
+phpdir=			$(pkgdatadir)/php
+phpincludedir=		$(phpdir)/include/ggcov/basic
+phpwwwdir=		$(phpdir)/www
 
-php_DATA=	basic.php basic.css ../../ui/ggcov64.png \
-		tests.php summary.php covbar.php files.php \
-		reports.php functions.php calls.php \
-		callbutterfly.php callgraph.php source.php 
+dist_phpinclude_DATA=	basic.php 
+
+dist_phpwww_DATA=	basic.css ../../ui/ggcov64.png \
+			tests.php summary.php covbar.php files.php \
+			reports.php functions.php calls.php \
+			callbutterfly.php callgraph.php source.php 
 
