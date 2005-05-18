@@ -77,6 +77,8 @@ typedef enum
     D_GRAPHWIN,
     D_GRAPH2WIN,
     D_REPORTWIN,
+    /* web related features */
+    D_WEB,
     /* bitwise OR in D_VERBOSE to enable printing only when verbose */
 #define _D_VERBOSE_SHIFT    7
     D_VERBOSE=(1<<_D_VERBOSE_SHIFT)

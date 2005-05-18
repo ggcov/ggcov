@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.15 2005-04-03 09:07:26 gnb Exp $");
+CVSID("$Id: common.c,v 1.16 2005-05-18 12:55:26 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -133,6 +133,8 @@ static struct
 {"graphwin", 	F(D_GRAPHWIN)},
 {"graph2win",	F(D_GRAPH2WIN)},
 {"reportwin",	F(D_REPORTWIN)},
+
+{"web",  	F(D_WEB)},
 
 #define SPECIALS_START     (const char *)1
 {SPECIALS_START, 0},
