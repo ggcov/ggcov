@@ -52,7 +52,17 @@ public:
     // const initialisation ctor
     estring(const char *s)
     {
-    	append_string(s);
+    	if (s == 0)
+	{
+	    data_ = 0;
+	    length_ = available_ = 0;
+	}
+	else
+	{
+	    data_ = g_strdup(s);
+	    length_ = strlen(s);
+	    available_ = length_+1;
+	}
     }
     // non-const initialisation ctor
     estring(char *s)
