@@ -20,7 +20,7 @@
 #include "estring.H"
 #include <stdarg.h>
 
-CVSID("$Id: estring.C,v 1.4 2005-05-18 12:58:00 gnb Exp $");
+CVSID("$Id: estring.C,v 1.5 2005-05-18 13:00:43 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -247,6 +247,13 @@ estring::truncate_to(unsigned int len)
 	length_ = len;
 	if (data_ != 0)
 	    data_[length_] = '\0';
+    }
+    else if (len > length_)
+    {
+	expand_by(len - length_);
+	memset(data_+length_, 0, len - length_);
+	length_ = len;
+	data_[length_] = '\0';
     }
 }
 
