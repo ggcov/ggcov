@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.45 2005-04-03 09:07:25 gnb Exp $
+# $Id: Makefile.am,v 1.46 2005-05-18 13:07:50 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -60,7 +60,7 @@ else
 BASEINCLUDES=	$(GGCOV_CLI_CFLAGS)
 endif
 
-bin_PROGRAMS=	@GUIPROG@ tggcov
+bin_PROGRAMS=	@GUIPROG@ tggcov ggcov-webdb
 EXTRA_PROGRAMS= ggcov
 
 ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
@@ -91,6 +91,12 @@ CLI_LIBS=	libcov.a libcommon.a $(GGCOV_CLI_LIBS)
 
 tggcov_SOURCES= tggcov.c $(LIBCOV_STATIC_SOURCES)
 tggcov_LDADD=	$(CLI_LIBS)
+
+ggcov_webdb_SOURCES= \
+		ggcov-webdb.c \
+		php_serializer.H php_serializer.C \
+		$(LIBCOV_STATIC_SOURCES)
+ggcov_webdb_LDADD=	$(CLI_LIBS) -ldb
 
 # Note this is an automake conditional *not* a gmake conditional
 if DEBUG
