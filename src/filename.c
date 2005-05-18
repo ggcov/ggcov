@@ -25,7 +25,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.8 2003-07-09 01:05:23 gnb Exp $");
+CVSID("$Id: filename.c,v 1.9 2005-05-18 13:05:13 gnb Exp $");
 
 #ifndef __set_errno
 #define __set_errno(v)	 errno = (v)
@@ -83,6 +83,18 @@ file_change_extension(
     }
     
     return e.take();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+int
+fd_length(int fd)
+{
+    struct stat sb;
+
+    if (fstat(fd, &sb) < 0)
+	return -1;
+    return sb.st_size;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

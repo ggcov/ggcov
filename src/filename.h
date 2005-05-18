@@ -29,6 +29,7 @@ const char *file_extension_c(const char *filename);
 char *file_change_extension(const char *filename, const char *oldext,
     	    	    	    const char *newext);
 char *file_dirname(const char *filename);
+int fd_length(int fd);
 int file_mode(const char *filename);
 FILE *file_open_mode(const char *filename, const char *rw, mode_t mode);
 char *file_make_absolute_to(const char *filename, const char *absfile);
