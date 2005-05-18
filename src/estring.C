@@ -20,7 +20,7 @@
 #include "estring.H"
 #include <stdarg.h>
 
-CVSID("$Id: estring.C,v 1.5 2005-05-18 13:00:43 gnb Exp $");
+CVSID("$Id: estring.C,v 1.6 2005-05-18 13:02:49 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -65,22 +65,28 @@ estring::append_chars(const char *buf, unsigned int buflen)
 }
 
 void
-estring::append_printf(const char *fmt, ...)
+estring::append_vprintf(const char *fmt, va_list args)
 {
-    va_list args;
+    va_list args2 = args;
     int len;
 
     /* ensure enough space exists for result, possibly too much */    
-    va_start(args, fmt);
     len = g_printf_string_upper_bound(fmt, args);
-    va_end(args);
     expand_by(len);
 
     /* format the string into the new space */    
-    va_start(args, fmt);
-    vsprintf(data_+length_, fmt, args);
-    va_end(args);
+    vsprintf(data_+length_, fmt, args2);
     length_ += strlen(data_+length_);
+}
+
+void
+estring::append_printf(const char *fmt, ...)
+{
+    va_list args;
+
+    va_start(args, fmt);
+    append_vprintf(fmt, args);
+    va_end(args);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -209,6 +215,12 @@ void
 estring::insert_chars(unsigned int start, const char *buf, int buflen)
 {
     replace_chars(start, 0, buf, buflen);
+}
+
+void
+estring::insert_vprintf(unsigned int start, const char *fmt, va_list args)
+{
+    replace_vprintf(start, 0, fmt, args);
 }
 
 void

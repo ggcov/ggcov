@@ -39,8 +39,6 @@ private:
     unsigned int available_;	/* total bytes available, >= length+1 */
 
     void inline expand_by(unsigned int dl);
-    void replace_vprintf(unsigned int start, unsigned int len,
-			 const char *fmt, va_list args);
 
     
 public:
@@ -147,6 +145,7 @@ public:
     void append_string(const char *str);
     void append_char(char c);
     void append_chars(const char *buf, unsigned int buflen);
+    void append_vprintf(const char *fmt, va_list);
     void append_printf(const char *fmt, ...) _printf_fmt(2,3);
 
     void replace_string(unsigned int start, unsigned int len,
@@ -155,6 +154,8 @@ public:
     	    	    		char c);
     void replace_chars(unsigned int start, unsigned int len,
     	    	    		const char *buf, unsigned int buflen);
+    void replace_vprintf(unsigned int start, unsigned int len,
+    	    	    		const char *fmt, va_list);
     void replace_printf(unsigned int start, unsigned int len,
     	    	    		const char *fmt, ...) _printf_fmt(4,5);
     void replace_all(const char *from, const char *to);
@@ -162,6 +163,7 @@ public:
     void insert_string(unsigned int start, const char *str);
     void insert_char(unsigned int start, char c);
     void insert_chars(unsigned int start, const char *buf, int len);
+    void insert_vprintf(unsigned int start, const char *fmt, va_list);
     void insert_printf(unsigned int start, const char *fmt, ...)
     	    	    		_printf_fmt(3,4);
 
