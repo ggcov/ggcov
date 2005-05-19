@@ -17,8 +17,8 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: callgraph.php,v 1.1 2005-05-18 13:23:46 gnb Exp $
+// $Id: callgraph.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
 //
-require_once 'basic.php';
+require_once 'ggcov/basic/basic.php';
 basic_page();
 ?>

@@ -17,9 +17,9 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: tests.php,v 1.1 2005-05-18 13:23:46 gnb Exp $
+// $Id: tests.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
 //
-require_once 'basic.php';
+require_once 'ggcov/basic/basic.php';
 basic_header('Choose a Test');
 
 echo "<table border=\"0\" cellpadding=\"5\" cellspacing=\"0\">\n";

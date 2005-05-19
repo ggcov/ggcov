@@ -17,10 +17,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: basic.php,v 1.1 2005-05-18 13:23:46 gnb Exp $
+// $Id: basic.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
 //
 
-require_once '../lib/cov.php';
+require_once 'ggcov/lib/cov.php';
 
 function basic_valid_test($t)
 {

@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: cov.php,v 1.1 2005-05-18 13:14:18 gnb Exp $
+// $Id: cov.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
 //
 
 // Status defines
@@ -196,36 +196,23 @@ class cov
     {
 	$url = basename($url);
 	$url = preg_replace('/\?.*$/', '', $url);
+	$map = array(
+	    'callbutterfly.php' =>  'cov_callbutterfly_page',
+	    'callgraph.php'	=>  'cov_callgraph_page',
+	    'calls.php'		=>  'cov_calls_page',
+	    'covbar.php'	=>  'cov_covbar_page',
+	    'files.php'		=>  'cov_files_page',
+	    'functions.php'	=>  'cov_functions_page',
+	    'reports.php'	=>  'cov_reports_page',
+	    'source.php'	=>  'cov_source_page',
+	    'summary.php'	=>  'cov_summary_page'
+	);
 
-	switch ($url)
-	{
-	case 'summary.php':
-	    require_once '../lib/summary.php';
-	    return new cov_summary_page($this);
-	case 'source.php':
-	    require_once '../lib/source.php';
-	    return new cov_source_page($this);
-	case 'files.php':
-	    require_once '../lib/files.php';
-	    return new cov_files_page($this);
-	case 'reports.php':
-	    require_once '../lib/reports.php';
-	    return new cov_reports_page($this);
-	case 'functions.php':
-	    require_once '../lib/functions.php';
-	    return new cov_functions_page($this);
-	case 'calls.php':
-	    require_once '../lib/calls.php';
-	    return new cov_calls_page($this);
-	case 'callbutterfly.php':
-	    require_once '../lib/callbutterfly.php';
-	    return new cov_callbutterfly_page($this);
-	case 'callgraph.php':
-	    require_once '../lib/callgraph.php';
-	    return new cov_callgraph_page($this);
-	default:
+	if (!array_key_exists($url, $map))
 	    $this->cb_->fatal("create_page: unknown url");
-	}
+	$classname = $map[$url];
+	require_once "ggcov/lib/$url";
+	return new $classname($this);
     }
 }
 
