@@ -6,12 +6,28 @@ Copyright: GPL
 Group: Development/C
 Source: http://www.alphalink.com.au/~gnb/%{name}/%{name}-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-root
+BuildPreReq: gdbm-devel
 Vendor: Greg Banks <gnb@alphalink.com.au>
 
 %description
 Ggcov is a simple GUI program for browsing test coverage data
 from C programs, and is intended to be a graphical replacement
-for the gcov program.
+for the gcov program.  See the ggcov-web package for a WWW
+interface.
+
+Test coverage data is produced by programs which have been built
+with "gcc -fprofile-arcs -ftest-coverage", and indicate how
+many times each line and branch has been executed, cumulatively
+over multiple test runs.
+
+%package web
+Summary: WWW interface to ggcov
+Group: Development/C
+
+%description web
+The ggcov-web package provides a WWW interface for browsing
+test coverage data from C programs.  See the ggcov package
+for text-based and GNOME interfaces.
 
 Test coverage data is produced by programs which have been built
 with "gcc -fprofile-arcs -ftest-coverage", and indicate how
@@ -40,7 +56,8 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %{_bindir}/ggcov
 %{_bindir}/tggcov
-%{_datadir}/ggcov/
+%{_datadir}/ggcov/*.glade
+%{_datadir}/ggcov/*.png
 %{_datadir}/gnome/apps/Development/ggcov.desktop
 %{_datadir}/pixmaps/ggcov64.png
 @GCONF@%{_sysconfdir}/gconf/schemas/ggcov.schemas
@@ -48,7 +65,15 @@ rm -rf $RPM_BUILD_ROOT
 %docdir %{_mandir}
 %{_mandir}/man1/ggcov.1*
 
+%files web
+%defattr(-,root,root)
+%{_bindir}/ggcov-webdb
+%{_datadir}/ggcov/php
+%doc php/ggcov.conf
+
 %changelog
+* Sat Apr 30 2005 Greg Banks <gnb@alphalink.com.au>
+- Added new subpackage for web stuff
 * Mon Mar 14 2005 Greg Banks <gnb@alphalink.com.au>
 - Added gconf schema
 * Thu Jul 17 2003 Greg Banks <gnb@alphalink.com.au>
