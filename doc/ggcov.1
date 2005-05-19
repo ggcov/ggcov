@@ -16,9 +16,9 @@
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 .\" 
-.\" $Id: ggcov.1,v 1.3 2005-03-14 07:49:15 gnb Exp $
+.\" $Id: ggcov.1,v 1.4 2005-05-18 14:20:42 gnb Exp $
 .\"
-.TH GGCOV "1" "November 2003" "GGCOV" "Greg Banks"
+.TH GGCOV "1" "May 2005" "GGCOV" "Greg Banks"
 .SH NAME
 ggcov \- a GNOME frontend for exploring gcov coverage data
 .SH SYNOPSIS
@@ -45,18 +45,19 @@ be specified and are scanned in the order given.
 The executable file is scanned for debugging records which contain
 source file names, and each source file which exists is handled as if
 it had been specified on the command line (except that missing coverage
-data files are silently ignored).  Multiple executables can
+data files are silently ignored).  Any shared libraries on which the
+executable depends are also scanned.  Multiple executables can
 be specified and are scanned in the order given.  This feature is
-only available on some platforms (currently i386-linux).
+only available on some platforms (for example, i386-linux).
 .IP \fIsource-file\fP
-Is any regular file ending in one of the file 
-extensions \fI.c\fP, \fI.cc\fP, \fI.cxx\fP, \fI.cpp\fP, or \fI.C\fP.
-Source files are matched to their corresponding coverage data
-files (\fI.bb\fP, \fI.bbg\fP, and \fI.da\fP files) and object files
-by searching for a file of the same basename and the appropriate
-extension first in the same directory as the source file and then
-in all the directories specified on the command line (in the order
-they were specified).
+Is any regular file ending in one of the file extensions \fI.c\fP,
+\fI.cc\fP, \fI.cxx\fP, \fI.cpp\fP, or \fI.C\fP.  Source files are
+matched to their corresponding coverage data files (\fI.gcno\fP and
+\fI.gcda\fP files, or \fI.bb\fP, \fI.bbg\fP, and \fI.da\fP files with
+older compilers) and object files by searching for a file of the same
+basename and the appropriate extension first in the same directory
+as the source file and then in all the directories specified on the
+command line (in the order they were specified).
 .PP
 If no arguments are given, \fBggcov\fP shows a file selection
 dialog so you can select one directory, executable, or source file.
@@ -65,6 +66,10 @@ Directories, executables, or source files can also be added after
 \fBggcov\fP is started by dragging and dropping them from a GNOME
 Nautilus window onto any \fBggcov\fP window.
 .SH OPTIONS
+.TP
+\fB\-o\fP \fIdir\fP, \fB\-\-object\-directory\fP=\fIdir\fP
+Add the directory \fIdir\fP to the search path for object
+files and coverage data files.
 .TP
 \fB\-r\fP, \fB\-\-recursive\fP
 When a directory is specified on the command line, search for
@@ -99,9 +104,11 @@ some platforms only):
 .IP
 .B ggcov a.out
 .PP
-View coverage data for all the C source in the current directory:
+View coverage data for all the C source in the current directory,
+suppressing code which depends on the symbols \fBDEBUG\fP or
+\fBTEST\fP:
 .IP
-.B ggcov *.c
+.B ggcov -X DEBUG,TEST *.c
 .PP
 View coverage data for all the C source in one directory where the
 object files and test coverage data files are in different directories:
