@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: summary.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
+// $Id: summary.php,v 1.4 2005-05-18 14:17:54 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -241,6 +241,7 @@ HTML;
 		<a href="<?php echo $this->env_->url('source.php', 'function', $this->function_, 'file', $this->func_file_name_); ?>">View</a>
 	    </td>
 	  </tr>
+<!--
 	  <tr>
 	    <td>
 	      <input name="scope" value="range" type="radio"<?php echo ($this->scope_ == 'range' ? ' checked' : ''); ?>>Range
@@ -249,6 +250,7 @@ HTML;
 		TODO
 	    </td>
 	  </tr>
+-->
 	  <tr>
 	    <td colspan="3">
 	      <table border="0" cellspacing="0" cellpadding="2">
