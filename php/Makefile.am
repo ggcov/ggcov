@@ -16,7 +16,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.2 2005-05-18 13:23:46 gnb Exp $
+# $Id: Makefile.am,v 1.3 2005-05-18 14:14:57 gnb Exp $
 #
 
 SUBDIRS=    lib basic
+
+LOCALTESTDIR=	/tmp/ggcov
+localtest:
+	$(MAKE) DESTDIR=$(LOCALTESTDIR) install
