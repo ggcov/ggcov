@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: covbar.php,v 1.2 2005-05-18 13:52:55 gnb Exp $
+// $Id: covbar.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -37,7 +37,7 @@ class cov_covbar_page extends cov_page
 
     function get_number($get, $name, $def)
     {
-	if (array_key_exists($name, $get))
+	if (array_key_exists($name, $get) && cov_valid::integer($get[$name]))
 	    $x = (int)$get[$name];
 	else
 	    $x = $def;

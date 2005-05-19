@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: summary.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
+// $Id: summary.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -56,8 +56,10 @@ class cov_summary_page extends cov_page
 	// get scope from args
 	if (array_key_exists('scope', $get))
 	{
-	    // TODO: input filtering
 	    $this->scope_ = $get['scope'];
+
+	    if (!cov_valid::scope($this->scope_))
+		$cb->fatal("Invalid scope");
 	}
 
 	// verify scope and get further variables from args
@@ -73,8 +75,10 @@ class cov_summary_page extends cov_page
 	    if (!array_key_exists('file', $get))
 		$cb->fatal("No file name given");
 
-	    // TODO: input filtering
 	    $this->file_name_ = $get['file'];
+
+	    if (!cov_valid::filename($this->file_name_))
+		$cb->fatal("Invalid file name");
 
 	    if (!array_key_exists($this->file_name_, $file_index))
 		$cb->fatal("Unknown file");
@@ -88,14 +92,18 @@ class cov_summary_page extends cov_page
 	    if (!array_key_exists('function', $get))
 		$cb->fatal("No function name given");
 
-	    // TODO: input filtering
 	    $this->function_ = $get['function'];
+
+	    if (!cov_valid::funcname($this->function_))
+		$cb->fatal("Invalid function");
 
 	    if (array_key_exists('file', $get))
 	    {
 		// optional filename, to disambiguate
-		// TODO: input filtering
 		$this->func_file_name_ = $get['file'];
+
+		if (!cov_valid::filename($this->func_file_name_))
+		    $cb->fatal("Invalid file name");
 
 		if (!array_key_exists($this->func_file_name_, $file_index))
 		    $cb->fatal("Unknown file");
@@ -219,8 +227,13 @@ HTML;
 	    <td>
 	      <select name="function">
 		<?php
+		    $sellab = $this->function_ . ' [' . $this->func_file_name_ . ']';
 		    foreach ($func_list as $label => $f)
-			echo "<option>$label</option>\n";
+		    {
+			$sel = ($label == $this->function_ ||
+			        $label == $sellab ? ' selected' : '');
+			echo "<option$sel>$label</option>\n";
+		    }
 		?>
 	      </select>
 	    </td>

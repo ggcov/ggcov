@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: reports.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
+// $Id: reports.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -39,8 +39,10 @@ class cov_reports_page extends cov_page
 
 	if (array_key_exists('report', $get))
 	{
-	    // TODO: input filtering
 	    $this->name_ = $get['report'];
+
+	    if (!cov_valid::report($this->name_))
+		$cb->fatal("Invalid report name");
 
 	    $report_index = $this->env_->report_index();
 

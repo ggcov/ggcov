@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: callbutterfly.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
+// $Id: callbutterfly.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -42,8 +42,10 @@ class cov_callbutterfly_page extends cov_page
 	$this->node_name_ = null;
 	if (array_key_exists('node', $get))
 	{
-	    // TODO: input filtering
 	    $this->node_name_ = $get['node'];
+
+	    if (!cov_valid::callnode($this->node_name_))
+		$cb->fatal("Invalid callnode");
 
 	    if (!array_key_exists($this->node_name_, $node_index))
 		$cb->fatal("Unknown node");

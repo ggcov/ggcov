@@ -17,15 +17,10 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: basic.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
+// $Id: basic.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
-
-function basic_valid_test($t)
-{
-    return preg_match('/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/', $t);
-}
 
 function basic_test_dir()
 {
@@ -40,6 +35,12 @@ function basic_test_dir()
     return $test_dir;
 }
 
+function basic_valid_test($t)
+{
+    return (preg_match('/^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/', $t) &&
+	    cov::database_exists(basic_test_dir() . '/' . $t));
+}
+
 function basic_test()
 {
     static $test = null;
@@ -48,14 +49,14 @@ function basic_test()
     {
 	if (array_key_exists('test', $_GET))
 	{
-	    $t = $_GET['test'];
-	    if (basic_valid_test($t))
-		$test = $t;
+	    $test = $_GET['test'];
+	    if (!basic_valid_test($test))
+		cov_callbacks::fatal("Invalid test");
 	}
 	if ($test === null)
 	{
 	    $t = ini_get('ggcov.basic_default_test');
-	    if ($t)
+	    if ($t && basic_valid_test($t))
 		$test = $t;
 	}
 	if ($test === null)

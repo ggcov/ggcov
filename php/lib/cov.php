@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: cov.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
+// $Id: cov.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
 //
 
 // Status defines
@@ -83,6 +83,12 @@ class cov
 	    dba_close($this->db_);
 	    $this->db_ = false;
 	}
+    }
+
+    // static method to check for existance of an openable webdb
+    function database_exists($dir)
+    {
+	return file_exists($dir . '/ggcov.webdb');
     }
 
     function fetch($key)
@@ -234,5 +240,36 @@ class cov_page
     }
 }
 
+// Class whose static methods provide input filtering and validation
+class cov_valid
+{
+    function integer($s)
+    {
+	return preg_match('/^[0-9]+$/', $s);
+    }
+    function callnode($s)
+    {
+	return preg_match('/^[a-zA-Z_][a-zA-Z_0-9]*$/', $s);
+    }
+    function funcname($s)
+    {
+	return (preg_match('/^[a-zA-Z_][a-zA-Z_0-9]*$/', $s) ||
+		preg_match('/^[a-zA-Z_][a-zA-Z_0-9]* \[[a-zA-Z0-9_.\/-]+\]$/', $s));
+    }
+    function report($s)
+    {
+	return preg_match('/^[a-z_]+$/', $s);
+    }
+    function filename($s)
+    {
+	// Note, we don't check for naughty stuff like "../" here
+	// because each use of a filename goes through the file index
+	return preg_match('/^[a-zA-Z0-9_.\/-]+$/', $s);
+    }
+    function scope($s)
+    {
+	return preg_match('/^(overall|file|function)$/', $s);
+    }
+}
 
 ?>

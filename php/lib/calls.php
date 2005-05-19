@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: calls.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
+// $Id: calls.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -43,8 +43,10 @@ class cov_calls_page extends cov_page
 	// get scope from args
 	if (array_key_exists('from', $get))
 	{
-	    // TODO: input filtering
 	    $this->from_func_ = $get['from'];
+
+	    if (!cov_valid::funcname($this->from_func_))
+		$cb->fatal("Invalid from function");
 
 	    if (array_key_exists($this->from_func_, $node_index))
 		$this->from_id_ = $node_index[$this->from_func_];
@@ -53,8 +55,10 @@ class cov_calls_page extends cov_page
 	}
 	if (array_key_exists('to', $get))
 	{
-	    // TODO: input filtering
 	    $this->to_func_ = $get['to'];
+
+	    if (!cov_valid::funcname($this->to_func_))
+		$cb->fatal("Invalid to function");
 
 	    if (array_key_exists($this->to_func_, $node_index))
 		$this->to_id_ = $node_index[$this->to_func_];

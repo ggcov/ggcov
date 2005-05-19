@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: source.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
+// $Id: source.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -43,13 +43,18 @@ class cov_source_page extends cov_page
 
 	if (array_key_exists('function', $get))
 	{
-	    // TODO: input filtering
 	    $this->function_ = $get['function'];
+
+	    if (!cov_valid::funcname($this->function_))
+		$cb->fatal("Invalid function");
 
 	    if (array_key_exists('file', $get))
 	    {
 		// optional filename to disambiguate
 		$this->file_name_ = $get['file'];
+
+		if (!cov_valid::filename($this->file_name_))
+		    $cb->fatal("Invalid file name");
 
 		if (!array_key_exists($this->file_name_, $file_index))
 		    $cb->fatal("Unknown file");
