@@ -17,9 +17,8 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: covbar.php,v 1.1 2005-05-18 13:23:46 gnb Exp $
+// $Id: covbar.php,v 1.2 2005-05-18 14:12:30 gnb Exp $
 //
-
-require_once '../lib/covbar.php';
-
+require_once 'ggcov/basic/basic.php';
+basic_page();
 ?>
