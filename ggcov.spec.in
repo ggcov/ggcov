@@ -69,7 +69,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %{_bindir}/ggcov-webdb
 %{_datadir}/ggcov/php
-%doc php/ggcov.conf
+%doc php/ggcov.conf doc/HOWTO.web
 
 %changelog
 * Sat Apr 30 2005 Greg Banks <gnb@alphalink.com.au>

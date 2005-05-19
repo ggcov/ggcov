@@ -1,0 +1,107 @@
+How To Install and Configure the Ggcov Web Pages
+================================================
+
+The ggcov web pages are a set of PHP code which generate a small
+set of interconnected interactive HTML pages which allow a user
+to explore test code coverage data using a standard Web browser.
+
+Browser Compatibility
+---------------------
+
+The ggcov PHP pages are compliant HTML4 and (currently) use no
+Javascript.  They have only been tested on the Mozilla Firefox
+browser, but are designed to be browser agnostic and should work in
+any standards- compliant browser.  I don't know whether they will
+work in MSIE.
+
+Server Compatibility
+--------------------
+
+The ggcov PHP pages require a web server which
+
+*  supports PHP version 4.3 or later, and
+
+*  provides the dba extension with the db4 provider (which
+   ggcov uses to read the intermediate database), and
+
+*  provides the gd extension (which ggcov uses to generate
+   the bargraphs on the Summary page).
+
+The intermediate database format is designed to be platform-
+independant so that the web server can be a different platform to
+the development machine.  The pages are intended to be compatible
+with both PHP 4.3 and PHP 5.
+
+The pages have been tested using PHP 4.3.9 and Apache 2.0
+on an i386 Linux machine.
+
+Installing, If You Control the Web Server
+-----------------------------------------
+
+If you control the web server, i.e. you have the ability to
+install software, installation should be easy.
+
+1.  install the ggcov-web RPM, e.g.
+    www# rpm -Uvh ggcov-web-fc3-0.4-1.i386.rpm
+
+2.  copy the file /usr/share/doc/ggcov-web-VERSION/ggcov.conf
+    into the /etc/httpd/conf.d/ directory (Apache 2) or insert
+    the contents into httpd.conf (Apache 1.3).
+
+3.  restart the web server, e.g.
+    www# service httpd restart
+
+4.  install one or more tests in subdirectories of /var/ggcov/web/tests/, e.g.
+    dev$ ggcov-webdb *.c
+    dev$ scp ggcov.webdb.tgz root@www:/tmp
+    web# cd /var/ggcov/web/tests
+    web# mkdir foo ; cd foo
+    web# tar -xzf /tmp/ggcov.webdb.tgz
+
+5.  point your browser at http://yourserver.com/ggcov/
+
+Note that the web pages do not need write permission for any files in
+the test directories; the test data is completely read-only.
+
+Installing, If You Don't Control the Web Server
+-----------------------------------------------
+
+This technique works when you don't control the web server but you
+do have a shell account and control over some subset of the web site.
+For the purposes of this example let's assume you are a developer on
+a sourceforge.net project called "foobar".
+
+1.  from the ggcov build directory, install the PHP files into
+    a directory you own which is outside the directory visible
+    to the web server, e.g.
+    
+    shell$ cd software/ggcov-0.4/
+    shell$ cd php ; make phpdir=/home/groups/f/fo/foobar/php install
+    
+2.  the subset of those files which need to be seen by the web server
+    are located in the www/ subdirectory, so move, copy or link those
+    into the directory the web server sees, e.g.
+    
+    shell$ cd /home/groups/f/fo/foobar/htdocs
+    shell$ ln -s ../php/www/ ggcov
+    
+3.  configure the PHP include path and the ggcov test directory
+    by adding a .htaccess file to the www/ directory, e.g.
+    
+    shell$ cd /home/groups/f/fo/foobar/php/www
+    shell$ cat > .htaccess <EOF
+    DirectoryIndex tests.php
+    php_value include_path /home/groups/f/fo/foobar/php/include
+    php_value ggcov.basic_test_dir /home/groups/f/fo/foobar/tests
+    EOF
+    
+4.  install one or more tests in subdirectories of
+    /home/groups/f/fo/foobar/tests, e.g.
+    dev$ ggcov-webdb *.c
+    dev$ scp ggcov.webdb.tgz shell.sourceforge.net:
+    shell$ cd /home/groups/f/fo/foobar/tests
+    shell$ mkdir foo ; cd foo
+    shell$ tar -xzf ~/ggcov.webdb.tgz
+
+5.  point your browser at http://foobar.sourceforget.net/ggcov/
+

@@ -1,0 +1,160 @@
+.\"
+.\" ggcov - A GTK frontend for exploring gcov coverage data
+.\" Copyright (c) 2005 Greg Banks <gnb@alphalink.com.au>
+.\" 
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\" 
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\" 
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+.\" 
+.\" $Id: ggcov-webdb.1,v 1.1 2005-05-18 14:25:42 gnb Exp $
+.\"
+.TH GGCOV-WEBDB "1" "May 2005" "GGCOV" "Greg Banks"
+.SH NAME
+ggcov\-webdb \- generate intermediate database for ggcov web interface
+.SH SYNOPSIS
+\fBggcov\-webdb\fP [[\fB\-r\fP] \fIdirectory\fP|\fIfile\fP] ...
+.SH DESCRIPTION
+.PP
+\fBGgcov\-webdb\fP generates an intermediate database and tree of
+source files from a development directory, in the form of a tarball.
+The files in this tarball are later used by the \fBggcov\fP PHP pages
+to present test coverage data to WWW browsers.
+.PP
+Test coverage data is produced by C and C++ programs compiled
+with \fIgcc \-fprofile-arcs \-ftest-coverage\fP.  So the combination
+of \fBggcov\-webdb\fP and the \fBggcov\fP PHP pages is basically a WWW
+replacement for the \fBgcov\fP program that comes with \fBgcc\fP.
+.PP
+The intermediate database approach is used to handle the common
+case where the development machine and the web server machine are
+separate.  The database contains coverage data in an indexed,
+platform\-independent, PHP\-friendly form.  Because the database
+format is platform\-independant the PHP pages can be deployed on
+web servers of a different architecture to the development machines.
+In fact the \fBggcov\fP web pages support any web server that meets
+the following criteria:
+.TP
+\(bu
+supports PHP version 4.3 or later, and
+.TP
+\(bu
+provides the \fBdba\fP extension with the \fBdb4\fP provider (which
+\fBggcov\fP uses to read the intermediate database), and
+.TP
+\(bu
+provides the \fBgd\fP extension (which \fBggcov\fP uses to generate
+the bargraphs on the Summary page).
+.PP
+The \fIsourceforge.net\fP project web server is an example of
+such a server.
+.PP
+\fBGgcov-webdb\fP produces a gzipped tarball containing the
+intermediate database itself and copies of all the source files
+which are mentioned in the database.  This is all the information
+that the \fBggcov\fP web pages need, in one bundle which is
+convenient to copy from the development machine to the web server.
+Usually this tarball would be extracted into a subdirectory
+of \fI/var/ggcov/web/tests/\fP on the web server.
+.PP
+Arguments are used to specify how to find coverage data files.
+The arguments can combinations of:
+.IP \fIdirectory\fP
+The directory is scanned for source files, which are handled as if they
+had been specified on the commandline (except that missing coverage
+data files are silently ignored).  If the \fB\-r\fP flag is in effect,
+sub\-directories are scanned recursively.  Multiple directories can
+be specified and are scanned in the order given.
+.IP \fIexecutable\fP
+The executable file is scanned for debugging records which contain
+source file names, and each source file which exists is handled as if
+it had been specified on the command line (except that missing coverage
+data files are silently ignored).  Any shared libraries on which the
+executable depends are also scanned.  Multiple executables can
+be specified and are scanned in the order given.  This feature is
+only available on some platforms (for example, i386\-linux).
+.IP \fIsource-file\fP
+Is any regular file ending in one of the file extensions \fI.c\fP,
+\fI.cc\fP, \fI.cxx\fP, \fI.cpp\fP, or \fI.C\fP.  Source files are
+matched to their corresponding coverage data files (\fI.gcno\fP and
+\fI.gcda\fP files, or \fI.bb\fP, \fI.bbg\fP, and \fI.da\fP files with
+older compilers) and object files by searching for a file of the same
+basename and the appropriate extension first in the same directory
+as the source file and then in all the directories specified on the
+command line (in the order they were specified).
+.SH OPTIONS
+.TP
+\fB\-f\fP \fItest.tgz\fP, \fB\-\-output\-file\fP=\fItest.tgz\fP
+Generate output to filename \fItest.tgz\fP instead of the
+default \fBggcov.webdb.tgz\fP.  The special filename \fB-\fP can
+be used to generate output to stdout.
+.TP
+\fB\-o\fP \fIdir\fP, \fB\-\-object\-directory\fP=\fIdir\fP
+Add the directory \fIdir\fP to the search path for object
+files and coverage data files.
+.TP
+\fB\-r\fP, \fB\-\-recursive\fP
+When a directory is specified on the command line, search for
+coverage data files recursively in all child directories.
+.TP
+\fB\-X\fP \fIsymbols\fP, \fB\-\-suppress\-ifdef=\fP\fIsymbols\fP
+Do not include in statistics or summaries, code inside C pre-processor
+directives which depend on any of the given \fIsymbols\fP.  One or
+more symbols may be given, separated by commas or whitespace.  \fBGgcov\-webdb\fP
+understands the following subset of the C pre-processor command set:
+.IP
+\(bu \fI#if SYMBOL\fP
+.br
+\(bu \fI#if defined(SYMBOL)\fP
+.br
+\(bu \fI#ifdef SYMBOL\fP
+.br
+\(bu \fI#ifndef SYMBOL\fP
+.br
+\(bu \fI#else\fP
+.br
+\(bu \fI#endif\fP
+.br
+.IP
+This option is useful for suppressing test infrastructure code, debugging
+code, or other code which is compiled into the coverage test executable
+but whose coverage is not significant.
+.SH EXAMPLES
+.PP
+Generate intermediate database for all the available source
+in the executable \fBa.out\fP (on some platforms only), and
+install as test \fBfoo\fP in the default tests location.
+.IP
+.B mkdir /var/ggcov/web/tests/foo
+.br
+.B ggcov\-webdb -f - a.out |
+.br
+.B "    " (cd /var/ggcov/web/tests/foo ; tar \-xzf \- )
+.br
+.PP
+Generate intermediate database for all the C source in the current directory.
+.IP
+.B ggcov\-webdb *.c
+.PP
+Generate intermediate database for all the C source in one directory where the
+object files and test coverage data files are in different directories:
+.IP
+.B ggcov\-webdb /foo/obj/ /foo/cov\-data/ /foo/src/
+.SH AUTHOR
+Written by Greg Banks
+.IR <gnb@alphalink.com.au> .
+.SH COPYRIGHT
+ggcov is Copyright \(co 2001\-2005 Greg Banks \fI<gnb@alphalink.com.au>\fP.
+.br
+This is free software; see the COPYING file for copying conditions.  There
+is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
