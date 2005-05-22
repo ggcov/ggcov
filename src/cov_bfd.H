@@ -156,7 +156,7 @@ public:
     static void dump_symbol(unsigned int idx, asymbol *sym) {}
     static void dump_reloc(unsigned int idx, arelent *rel) {}
 
-    enum bfd_flavour flavour() const { return 0; }
+    enum bfd_flavour flavour() const { return (enum bfd_flavour)0; }
 
 private:
 };
