@@ -29,6 +29,7 @@
 #include "callswin.H"
 #include "callgraphwin.H"
 #include "callgraph2win.H"
+#include "legowin.H"
 #include "functionswin.H"
 #include "fileswin.H"
 #include "reportwin.H"
@@ -37,7 +38,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.45 2005-05-22 07:14:16 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.46 2005-05-22 12:47:56 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -309,6 +310,16 @@ on_windows_new_callgraph2win_activated(GtkWidget *w, gpointer userdata)
 }
 
 static void
+on_windows_new_legowin_activated(GtkWidget *w, gpointer userdata)
+{
+
+    legowin_t *lw;
+    
+    lw = new legowin_t;
+    lw->show();
+}
+
+static void
 on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *srcw;
@@ -346,6 +357,8 @@ ui_create(void)
     			      on_windows_new_callgraphwin_activated, 0);
     ui_register_windows_entry("New Call Graph...",
     			      on_windows_new_callgraph2win_activated, 0);
+    ui_register_windows_entry("New Lego Diagram...",
+    			      on_windows_new_legowin_activated, 0);
     ui_register_windows_entry("New Source...",
     			      on_windows_new_sourcewin_activated, 0);
     ui_register_windows_entry("New Report...",

@@ -76,6 +76,7 @@ typedef enum
     D_FILESWIN,
     D_GRAPHWIN,
     D_GRAPH2WIN,
+    D_LEGOWIN,
     D_REPORTWIN,
     /* web related features */
     D_WEB,

@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.46 2005-05-18 13:07:50 gnb Exp $
+# $Id: Makefile.am,v 1.47 2005-05-22 12:47:56 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -73,6 +73,7 @@ ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		callswin.H callswin.C \
 		callgraphwin.H callgraphwin.C \
 		callgraph2win.H callgraph2win.C \
+		legowin.H legowin.C \
 		functionswin.H functionswin.C \
 		reportwin.H reportwin.C \
 		fileswin.H fileswin.C \
