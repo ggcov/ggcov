@@ -27,7 +27,7 @@
 #include "fakepopt.h"
 #include <db.h>
 
-CVSID("$Id: ggcov-webdb.c,v 1.2 2005-05-22 07:10:45 gnb Exp $");
+CVSID("$Id: ggcov-webdb.c,v 1.3 2005-05-22 07:11:58 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -36,6 +36,7 @@ static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
 static char *suppressed_ifdefs = 0;
 static char *object_dir = 0;
 static const char *debug_str = 0;
+static char *dump_mode = NULL;
 static char *output_tarball = "ggcov.webdb.tgz";
 
 static hashtable_t<void, unsigned int> *file_index;
@@ -927,6 +928,15 @@ static struct poptOption popt_options[] =
 	0	    	    	    	    	/* argDescrip */
     },
     {
+    	"dump",					/* longname */
+	'\0',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&dump_mode,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"dump the entire database",		/* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
     	"debug",	    	    	    	/* longname */
 	'D',  	    	    	    	    	/* shortname */
 	POPT_ARG_STRING,  	    	    	/* argInfo */
@@ -1029,8 +1039,8 @@ log_func(
 #endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-int
-main(int argc, char **argv)
+static int
+create_database(void)
 {
     char *tempdir;
     char *webdb_file;
@@ -1038,13 +1048,6 @@ main(int argc, char **argv)
     DB *db;
     int ret;
 
-#if DEBUG_GLIB
-    g_log_set_handler("GLib",
-    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
-    	    	      log_func, /*user_data*/0);
-#endif
-
-    parse_args(argc, argv);
     read_gcov_files();
 
     tempdir = g_strdup_printf("%s/ggcov-web-%d.d", get_tmpdir(), (int)getpid());
@@ -1091,6 +1094,108 @@ main(int argc, char **argv)
     systemf("/bin/rm -rf \"%s\"", tempdir);
 
     return 0;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static int
+dump_database(const char *mode)
+{
+    char *webdb_file;
+    DB *db;
+    DBC *dbc;
+    DBT key, value;
+    int ret;
+    gboolean key_flag = FALSE;
+    gboolean value_flag = FALSE;
+
+    if (g_list_length(files) != 1)
+    {
+	fprintf(stderr, "dump_database: must provide a .webdb filename\n");
+	exit(1);
+    }
+    webdb_file = (char *)files->data;
+
+    for ( ; *mode ; mode++)
+    {
+	switch (*mode)
+	{
+	case 'k': key_flag = TRUE; break;
+	case 'v': value_flag = TRUE; break;
+	default:
+	    fprintf(stderr, "dump_database: argument to --dump must be a "
+			    "combination of the characters 'k','v'\n");
+	    exit(1);
+	}
+    }
+
+
+    if ((ret = db_create(&db, 0, 0)))
+    {
+	fprintf(stderr, "%s: db_create(): %s\n", argv0, db_strerror(ret));
+	exit(1);
+    }
+
+    if ((ret = db->open(db, 0, webdb_file, 0, DB_HASH, DB_CREATE, 0644)))
+    {
+	db->err(db, ret, "%s", webdb_file);
+	exit(1);
+    }
+
+    if ((ret = db->cursor(db, NULL, &dbc, 0)))
+    {
+	db->err(db, ret, "%s", webdb_file);
+	exit(1);
+    }
+
+    for (;;)
+    {
+	memset(&key, 0, sizeof(key));
+	memset(&value, 0, sizeof(value));
+
+	ret = dbc->c_get(dbc, &key, &value, DB_NEXT);
+	if (ret == DB_NOTFOUND)
+	    break;
+	if (ret)
+	{
+	    db->err(db, ret, "%s", webdb_file);
+	    exit(1);
+	}
+
+	if (key_flag)
+	    fwrite(key.data, key.size, 1, stdout);
+	if (value_flag)
+	{
+	    if (key_flag)
+		fputc('=', stdout);
+	    fwrite(value.data, value.size, 1, stdout);
+	}
+	fputc('\n', stdout);
+    }
+
+    dbc->c_close(dbc);
+    db->close(db, 0);
+
+    return 0;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+int
+main(int argc, char **argv)
+{
+#if DEBUG_GLIB
+    g_log_set_handler("GLib",
+    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
+    	    	      log_func, /*user_data*/0);
+#endif
+
+    parse_args(argc, argv);
+
+    if (dump_mode != NULL)
+	return dump_database(dump_mode);
+    else
+	return create_database();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
