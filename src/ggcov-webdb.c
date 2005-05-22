@@ -27,7 +27,7 @@
 #include "fakepopt.h"
 #include <db.h>
 
-CVSID("$Id: ggcov-webdb.c,v 1.1 2005-05-18 13:07:50 gnb Exp $");
+CVSID("$Id: ggcov-webdb.c,v 1.2 2005-05-22 07:10:45 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -229,7 +229,7 @@ save_file_lines(DB *db, cov_file_t *f)
     
     // Store the serialised line array
     string_var key = g_strdup_printf("FL%u", ftag(f));
-    if (ret = db->put(db, 0, dbt(key), dbt(ser), 0))
+    if ((ret = db->put(db, 0, dbt(key), dbt(ser), 0)))
     {
 	db->err(db, ret, "save_filename_index");
 	exit(1);
@@ -280,7 +280,7 @@ save_filename_index(DB *db)
     ser.end_array();
 
     // Store the serialised filename index
-    if (ret = db->put(db, 0, dbt("FI"), dbt(ser), 0))
+    if ((ret = db->put(db, 0, dbt("FI"), dbt(ser), 0)))
     {
 	db->err(db, ret, "save_filename_index");
 	exit(1);
@@ -386,7 +386,7 @@ save_global_function_index(DB *db)
     ser.end_array();
 
     // Store the serialised function list
-    if (ret = db->put(db, 0, dbt("UI"), dbt(ser), 0))
+    if ((ret = db->put(db, 0, dbt("UI"), dbt(ser), 0)))
     {
 	db->err(db, ret, "save_global_function_index");
 	exit(1);
@@ -446,7 +446,7 @@ save_global_function_list(DB *db)
     ser.end_array();
 
     // Store the serialised function list
-    if (ret = db->put(db, 0, dbt("UL"), dbt(ser), 0))
+    if ((ret = db->put(db, 0, dbt("UL"), dbt(ser), 0)))
     {
 	db->err(db, ret, "save_global_function_list");
 	exit(1);
@@ -477,7 +477,7 @@ save_file_function_indexes(DB *db)
 
 	// Store the serialised function index
 	string_var key = g_strdup_printf("FUI%u", ftag(f));
-	if (ret = db->put(db, 0, dbt(key), dbt(ser), 0))
+	if ((ret = db->put(db, 0, dbt(key), dbt(ser), 0)))
 	{
 	    db->err(db, ret, "save_file_function_indexes");
 	    exit(1);
@@ -512,7 +512,7 @@ save_functions(DB *db)
 
 	// Store the function data
 	string_var key = g_strdup_printf("U%u", fntag(fn));
-	if (ret = db->put(db, 0, dbt(key), dbt(ser), 0))
+	if ((ret = db->put(db, 0, dbt(key), dbt(ser), 0)))
 	{
 	    db->err(db, ret, "save_functions");
 	    exit(1);
@@ -560,7 +560,7 @@ save_one_summary_f(DB *db, cov_scope_t *sc, const char *key)
     serialise_ulong_array(&ser, cov::NUM_STATUS, stats->branches_by_status());
     ser.end_array();
     
-    if (ret = db->put(db, 0, dbt(key), dbt(ser), 0))
+    if ((ret = db->put(db, 0, dbt(key), dbt(ser), 0)))
     {
 	db->err(db, ret, "save_one_summary_f");
 	exit(1);
@@ -660,7 +660,7 @@ save_callnode_index(DB *db)
     all.remove_all();
 
     // Save the callnode index
-    if (ret = db->put(db, 0, dbt("NI"), dbt(ser), 0))
+    if ((ret = db->put(db, 0, dbt("NI"), dbt(ser), 0)))
     {
 	db->err(db, ret, "save_callnode_index");
 	exit(1);
@@ -737,7 +737,7 @@ save_callnode(cov_callnode_t *cn, void *closure)
 
     // Save the callnode
     string_var key = g_strdup_printf("N%u", cntag(cn));
-    if (ret = db->put(db, 0, dbt(key), dbt(ser), 0))
+    if ((ret = db->put(db, 0, dbt(key), dbt(ser), 0)))
     {
 	db->err(db, ret, "save_callnode");
 	exit(1);
@@ -775,7 +775,7 @@ save_report_index(DB *db)
     ser.end_array();
 
     // Save the report index
-    if (ret = db->put(db, 0, dbt("RI"), dbt(ser), 0))
+    if ((ret = db->put(db, 0, dbt("RI"), dbt(ser), 0)))
     {
 	db->err(db, ret, "save_report_index");
 	exit(1);
@@ -847,7 +847,7 @@ save_reports(DB *db)
 	
 	// Save the report data
 	key = g_strdup_printf("R%u", n);
-	if (ret = db->put(db, 0, dbt(key), dbt(ser), 0))
+	if ((ret = db->put(db, 0, dbt(key), dbt(ser), 0)))
 	{
 	    db->err(db, ret, "save_reports");
 	    exit(1);
