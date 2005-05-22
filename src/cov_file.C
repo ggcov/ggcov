@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.43 2005-04-03 09:43:44 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.44 2005-05-22 07:17:19 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -45,6 +45,7 @@ void *cov_file_t::files_model_;
 #define BBG_VERSION_GCC34    	_NEW_VERSION(3,4,'*')
 #define BBG_VERSION_GCC34_RH	_NEW_VERSION(3,4,'R')   /* RedHat crud */
 #define BBG_VERSION_GCC33   	_NEW_VERSION(3,3,'p')
+#define BBG_VERSION_GCC33_SUSE	_NEW_VERSION(3,3,'S')   /* SUSE crud */
 #define BBG_VERSION_OLD     	0
 #define BBG_VERSION_OLDPLUS     1
 
@@ -848,6 +849,10 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     	bbg_failed0("short file");
     switch (format_version_)
     {
+    case BBG_VERSION_GCC33_SUSE:
+    	if (expect_version == BBG_VERSION_GCC33)
+	    expect_version = BBG_VERSION_GCC33_SUSE;
+	/* fall through */
     case BBG_VERSION_GCC33:
     	break;
     case BBG_VERSION_GCC34_RH:
@@ -1335,6 +1340,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 	    else
 	    {
 		string_var funcname = io->read_string();
+		if (format_version_ == BBG_VERSION_GCC33_SUSE)
+		    funcname = demangle(funcname);
 		funcname = normalise_mangled(funcname);
     		fn = find_function(funcname);
 		if (fn == 0)
@@ -1416,6 +1423,7 @@ cov_file_t::read_da_file(const char *dafilename)
 	break;
 
     case BBG_VERSION_GCC33:
+    case BBG_VERSION_GCC33_SUSE:
     	{
 	    dprintf0(D_FILES, "Detected gcc3.3 .da format\n");
     	    covio_gcc33_t io(dafilename);
