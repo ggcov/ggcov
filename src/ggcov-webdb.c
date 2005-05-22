@@ -27,7 +27,7 @@
 #include "fakepopt.h"
 #include <db.h>
 
-CVSID("$Id: ggcov-webdb.c,v 1.3 2005-05-22 07:11:58 gnb Exp $");
+CVSID("$Id: ggcov-webdb.c,v 1.4 2005-05-22 07:14:16 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -35,6 +35,7 @@ GList *files;	    /* incoming specification from commandline */
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
 static char *suppressed_ifdefs = 0;
 static char *object_dir = 0;
+static int solve_fuzzy_flag = FALSE;
 static const char *debug_str = 0;
 static char *dump_mode = NULL;
 static char *output_tarball = "ggcov.webdb.tgz";
@@ -137,6 +138,8 @@ read_gcov_files(void)
     GList *iter;
     
     cov_init();
+
+    cov_function_t::set_solve_fuzzy_flag(solve_fuzzy_flag);
 
     if (suppressed_ifdefs != 0)
     {
@@ -937,6 +940,15 @@ static struct poptOption popt_options[] =
 	0	    	    	    	    	/* argDescrip */
     },
     {
+    	"solve-fuzzy",    	    	    	/* longname */
+	'F',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&solve_fuzzy_flag,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"whether to be tolerant of inconsistent arc counts", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
     	"debug",	    	    	    	/* longname */
 	'D',  	    	    	    	    	/* shortname */
 	POPT_ARG_STRING,  	    	    	/* argInfo */
@@ -988,6 +1000,7 @@ parse_args(int argc, char **argv)
 
 	duprintf1("parse_args: recursive=%d\n", recursive);
 	duprintf1("parse_args: suppressed_ifdefs=%s\n", suppressed_ifdefs);
+	duprintf1("parse_args: solve_fuzzy_flag=%d\n", solve_fuzzy_flag);
 	duprintf2("parse_args: debug = 0x%lx (%s)\n", debug, token_str.data());
 
 	duprintf0("parse_args: files = ");

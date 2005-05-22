@@ -37,7 +37,7 @@
 #endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.44 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.45 2005-05-22 07:14:16 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -49,6 +49,7 @@ static char *suppressed_ifdefs = 0;
 static char *object_dir = 0;
 static const char *debug_str = 0;
 static const char ** debug_argv;
+static int solve_fuzzy_flag = FALSE;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
@@ -95,6 +96,8 @@ read_gcov_files(void)
     cov_init();
     if (files == 0)
     	return;
+
+    cov_function_t::set_solve_fuzzy_flag(solve_fuzzy_flag);
 
     if (suppressed_ifdefs != 0)
     {
@@ -406,6 +409,15 @@ static struct poptOption popt_options[] =
 	&object_dir,     	    	    	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"directory in which to find .o,.bb,.bbg,.da files", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"solve-fuzzy",    	    	    	/* longname */
+	'F',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&solve_fuzzy_flag,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"whether to be tolerant of inconsistent arc counts", /* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {

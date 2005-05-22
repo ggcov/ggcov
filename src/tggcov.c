@@ -37,7 +37,7 @@
 #include "fakepopt.h"
 #include "report.H"
 
-CVSID("$Id: tggcov.c,v 1.13 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.14 2005-05-22 07:14:16 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -50,6 +50,7 @@ static int blocks_flag = FALSE;
 static int lines_flag = FALSE;
 static int new_format_flag = FALSE;
 static int annotate_flag = FALSE;
+static int solve_fuzzy_flag = FALSE;
 static const char *debug_str = 0;
 static const char *reports = 0;
 
@@ -64,6 +65,8 @@ read_gcov_files(void)
     GList *iter;
     
     cov_init();
+
+    cov_function_t::set_solve_fuzzy_flag(solve_fuzzy_flag);
 
     if (suppressed_ifdefs != 0)
     {
@@ -398,6 +401,15 @@ static struct poptOption popt_options[] =
 	0	    	    	    	    	/* argDescrip */
     },
     {
+    	"solve-fuzzy",    	    	    	/* longname */
+	'F',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&solve_fuzzy_flag,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"whether to be tolerant of inconsistent arc counts", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
     	"debug",	    	    	    	/* longname */
 	'D',  	    	    	    	    	/* shortname */
 	POPT_ARG_STRING,  	    	    	/* argInfo */
@@ -453,6 +465,7 @@ parse_args(int argc, char **argv)
 	duprintf1("parse_args: header_flag=%d\n", header_flag);
 	duprintf1("parse_args: lines_flag=%d\n", lines_flag);
 	duprintf1("parse_args: reports=\"%s\"\n", reports);
+	duprintf1("parse_args: solve_fuzzy_flag=%d\n", solve_fuzzy_flag);
 	duprintf2("parse_args: debug = 0x%lx (%s)\n", debug, token_str.data());
 
 	duprintf0("parse_args: files = ");

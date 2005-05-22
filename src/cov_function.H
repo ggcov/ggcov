@@ -77,6 +77,15 @@ public:
      */
     static list_t<cov_function_t> *list_all();
 
+    /*
+     * Controls whether function solving is tolerant of inconsistent
+     * arc counts.  Tolerant means: don't fail an assert.
+     */
+    static void set_solve_fuzzy_flag(gboolean b)
+    {
+	solve_fuzzy_flag_ = b;
+    }
+
 private:
     cov_function_t();
     ~cov_function_t();
@@ -90,6 +99,8 @@ private:
     gboolean reconcile_calls();
     gboolean solve();
     cov::status_t calc_stats(cov_stats_t *) const;
+
+    static gboolean solve_fuzzy_flag_;
 
     string_var name_;
     string_var id_;

@@ -20,7 +20,9 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.20 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.21 2005-05-22 07:14:16 gnb Exp $");
+
+gboolean cov_function_t::solve_fuzzy_flag_ = FALSE;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -338,8 +340,17 @@ cov_function_t::solve()
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
-//		    assert(b->count_ >= cov_arc_t::total(b->out_arcs_));
-		    a->set_count(b->count_ - cov_arc_t::total(b->out_arcs_));
+		    count_t out_total = cov_arc_t::total(b->out_arcs_);
+		    if (solve_fuzzy_flag_ && b->count_ < out_total)
+		    {
+			fprintf(stderr, "Function %s cannot be solved because "
+				        "the arc counts are inconsistent, suppressing\n",
+					name_.data());
+			suppress();
+			return TRUE;
+		    }
+		    assert(b->count_ >= out_total);
+		    a->set_count(b->count_ - out_total);
 		    changes++;
     	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
 		    	    a->from()->bindex(), a->to()->bindex(), a->count());
@@ -352,8 +363,17 @@ cov_function_t::solve()
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
-		    assert(b->count_ >= cov_arc_t::total(b->in_arcs_));
-		    a->set_count(b->count_ - cov_arc_t::total(b->in_arcs_));
+		    count_t in_total = cov_arc_t::total(b->in_arcs_);
+		    if (solve_fuzzy_flag_ && b->count_ < in_total)
+		    {
+			fprintf(stderr, "Function %s cannot be solved because "
+				        "the arc counts are inconsistent, suppressing\n",
+					name_.data());
+			suppress();
+			return TRUE;
+		    }
+		    assert(b->count_ >= in_total);
+		    a->set_count(b->count_ - in_total);
 		    changes++;
     	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
 		    	    a->from()->bindex(), a->to()->bindex(), a->count());
