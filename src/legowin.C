@@ -22,7 +22,7 @@
 #include "tok.H"
 #include "prefs.H"
 
-CVSID("$Id: legowin.C,v 1.2 2005-05-25 12:58:22 gnb Exp $");
+CVSID("$Id: legowin.C,v 1.3 2005-05-25 12:59:39 gnb Exp $");
 
 #define WIDTH	(1.0)
 #define HEIGHT	(1.0)
@@ -186,8 +186,7 @@ legowin_t::assign_geometry(
     node->h_cov_ = h * node->stats_.blocks_fraction();
     node->h_uncov_ = h - node->h_cov_;
 
-    if (node->depth_)
-	x += (WIDTH / (double)maxdepth_);
+    x += w;
     h /= (double)node->stats_.blocks_total();
 
     list_iterator_t<node_t> niter;
@@ -198,6 +197,35 @@ legowin_t::assign_geometry(
 	assign_geometry(child, x, y, w, h2);
 	y += h2;
     }
+}
+
+static char *
+root_name()
+{
+    /* common_path always includes a trailing / */
+    const char *cpath = cov_file_t::common_path();
+    const char *start, *end;
+
+    for (end = cpath + strlen(cpath) - 1 ;
+	 end > cpath && *end == '/' ;
+	 --end)
+	;
+    if (end == cpath)
+    {
+	/* cpath is "/" */
+	start = cpath;
+    }
+    else
+    {
+	for (start = end ; 
+	     start > cpath && *start != '/' ;
+	     --start)
+	    ;
+	assert(start != cpath);
+	if (*start == '/')
+	    start++;
+    }
+    return g_strndup(start, (end - start + 1));
 }
 
 void
@@ -214,7 +242,7 @@ legowin_t::populate()
     }
 
     root_ = new node_t();
-    root_->name_ = "/";
+    root_->name_ = root_name();
     root_->depth_ = 0;
     maxdepth_ = 0;
 
@@ -274,7 +302,7 @@ legowin_t::populate()
     }
 
     /* Second pass: assign geometry to the nodes */
-    assign_geometry(root_, 0.0, 0.0, (WIDTH / (double)maxdepth_), HEIGHT);
+    assign_geometry(root_, 0.0, 0.0, (WIDTH / (double)(maxdepth_+1)), HEIGHT);
 
     /* Third pass: create canvas items */
     show_node(root_);
