@@ -22,7 +22,7 @@
 #include "tok.H"
 #include "prefs.H"
 
-CVSID("$Id: legowin.C,v 1.1 2005-05-22 12:47:56 gnb Exp $");
+CVSID("$Id: legowin.C,v 1.2 2005-05-25 12:58:22 gnb Exp $");
 
 #define WIDTH	(1.0)
 #define HEIGHT	(1.0)
@@ -82,16 +82,12 @@ legowin_t::show_node(node_t *node)
     list_iterator_t<node_t> niter;
     GnomeCanvasGroup *root = gnome_canvas_root(GNOME_CANVAS(canvas_));
 
-    if (node->file_ != 0)
-    {
-	label = g_strdup_printf("%s %4.2f%%",
-	    node->name_.data(),
-	    100.0 * node->stats_.blocks_fraction());
-    }
-    else
-    {
-	label = strdup(node->name_);
-    }
+    label = g_strdup_printf("%s %4.2f%%",
+	node->name_.data(),
+	100.0 * node->stats_.blocks_fraction());
+
+    dprintf3(D_LEGOWIN|D_VERBOSE, "legowin_t::show_node depth=%u name=\"%s\" label=\"%s\"\n",
+		node->depth_, node->name_.data(), label.data());
 
     node->cov_rect_item_ = gnome_canvas_item_new(
     	    	root,
