@@ -27,7 +27,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 
-CVSID("$Id: cov_file.C,v 1.44 2005-05-22 07:17:19 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.45 2005-05-25 13:01:33 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -46,6 +46,7 @@ void *cov_file_t::files_model_;
 #define BBG_VERSION_GCC34_RH	_NEW_VERSION(3,4,'R')   /* RedHat crud */
 #define BBG_VERSION_GCC33   	_NEW_VERSION(3,3,'p')
 #define BBG_VERSION_GCC33_SUSE	_NEW_VERSION(3,3,'S')   /* SUSE crud */
+#define BBG_VERSION_GCC33_MDK	_NEW_VERSION(3,3,'M')   /* Mandrake crud */
 #define BBG_VERSION_OLD     	0
 #define BBG_VERSION_OLDPLUS     1
 
@@ -850,8 +851,9 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     switch (format_version_)
     {
     case BBG_VERSION_GCC33_SUSE:
+    case BBG_VERSION_GCC33_MDK:
     	if (expect_version == BBG_VERSION_GCC33)
-	    expect_version = BBG_VERSION_GCC33_SUSE;
+	    expect_version = format_version_;
 	/* fall through */
     case BBG_VERSION_GCC33:
     	break;
@@ -1424,6 +1426,7 @@ cov_file_t::read_da_file(const char *dafilename)
 
     case BBG_VERSION_GCC33:
     case BBG_VERSION_GCC33_SUSE:
+    case BBG_VERSION_GCC33_MDK:
     	{
 	    dprintf0(D_FILES, "Detected gcc3.3 .da format\n");
     	    covio_gcc33_t io(dafilename);
