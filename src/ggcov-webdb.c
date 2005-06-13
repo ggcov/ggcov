@@ -24,10 +24,13 @@
 #include "tok.H"
 #include "php_serializer.H"
 #include "report.H"
+#include "php_scenegen.H"
+#include "callgraph_diagram.H"
+#include "lego_diagram.H"
 #include "fakepopt.h"
 #include <db.h>
 
-CVSID("$Id: ggcov-webdb.c,v 1.4 2005-05-22 07:14:16 gnb Exp $");
+CVSID("$Id: ggcov-webdb.c,v 1.5 2005-06-13 07:29:11 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -67,7 +70,7 @@ inline DBT *dbt(const estring &e)
     return dbt((char *)e.data(), e.length());
 }
 
-inline DBT *dbt(const php_serializer_t &ser)
+inline DBT *dbt(php_serializer_t &ser)
 {
     return dbt(ser.data());
 }
@@ -863,6 +866,84 @@ save_reports(DB *db)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static ptrarray_t<diagram_t> *
+diagrams(void)
+{
+    static ptrarray_t<diagram_t> *dd;
+
+    if (dd == 0)
+    {
+	dd = new ptrarray_t<diagram_t>;
+	dd->append(new callgraph_diagram_t());
+	dd->append(new lego_diagram_t());
+    }
+    return dd;
+}
+
+static void
+save_diagram_index(DB *db)
+{
+    unsigned int i;
+    php_serializer_t ser;
+    int ret;
+
+    // PHP-serialise the diagram index
+    ser.begin_array();
+    for (i = 0 ; i < diagrams()->length() ; i++)
+    {
+	diagram_t *di = diagrams()->nth(i);
+
+	ser.string(di->name());
+	ser.begin_array(2);
+	ser.next_key(); ser.integer(i);
+	ser.next_key(); ser.string(di->title());
+	ser.end_array();
+    }
+    ser.end_array();
+
+    // Save the diagram index
+    if ((ret = db->put(db, 0, dbt("GI"), dbt(ser), 0)))
+    {
+	db->err(db, ret, "save_diagram_index");
+	exit(1);
+    }
+}
+
+static void
+save_diagrams(DB *db)
+{
+    unsigned int i;
+    string_var key;
+    int ret;
+
+    for (i = 0 ; i < diagrams()->length() ; i++)
+    {
+	diagram_t *di = diagrams()->nth(i);
+
+	php_scenegen_t *sg = new php_scenegen_t();
+
+	di->prepare();
+	di->render(sg);
+
+	dbounds_t bounds;
+	di->get_bounds(&bounds);
+	sg->bounds(bounds.x1, bounds.y1,
+		   (bounds.x2 - bounds.x1), (bounds.y2 - bounds.y1));
+	
+	// Save the diagram data
+	key = g_strdup_printf("G%u", i);
+	if ((ret = db->put(db, 0, dbt(key), dbt(sg->data()), 0)))
+	{
+	    db->err(db, ret, "save_diagrams");
+	    exit(1);
+	}
+
+	delete sg;
+    }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 static void
 create_source_symlinks(const char *tempdir)
 {
@@ -1098,6 +1179,8 @@ create_database(void)
     save_callgraph(db);
     save_report_index(db);
     save_reports(db);
+    save_diagram_index(db);
+    save_diagrams(db);
 
     db->close(db, 0);
 

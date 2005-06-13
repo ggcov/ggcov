@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.54 2005-06-13 07:23:06 gnb Exp $
+# $Id: Makefile.am,v 1.55 2005-06-13 07:29:11 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -100,6 +100,7 @@ tggcov_LDADD=	$(CLI_LIBS)
 ggcov_webdb_SOURCES= \
 		ggcov-webdb.c \
 		php_serializer.H php_serializer.C \
+		php_scenegen.H php_scenegen.C \
 		$(LIBCOV_STATIC_SOURCES)
 ggcov_webdb_LDADD=	$(CLI_LIBS) -ldb
 
