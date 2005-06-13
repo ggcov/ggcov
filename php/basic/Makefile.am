@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.4 2005-06-13 07:38:37 gnb Exp $
+# $Id: Makefile.am,v 1.5 2005-06-13 07:43:34 gnb Exp $
 #
 
 phpdir=			$(pkgdatadir)/php
@@ -29,7 +29,7 @@ dist_phpwww_DATA=	basic.css ../../ui/ggcov64.png \
 			tests.php summary.php covbar.php files.php \
 			reports.php functions.php calls.php \
 			callbutterfly.php source.php diagram.php \
-			drender.php \
+			drender.php dviewport.php \
 			pan-ul.gif pan-u.gif pan-ur.gif \
 			pan-l.gif pan-c.gif pan-r.gif \
 			pan-dl.gif pan-d.gif pan-dr.gif

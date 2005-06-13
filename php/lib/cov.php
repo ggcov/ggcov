@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: cov.php,v 1.4 2005-06-13 07:34:39 gnb Exp $
+// $Id: cov.php,v 1.5 2005-06-13 07:43:34 gnb Exp $
 //
 
 // Status defines
@@ -221,7 +221,8 @@ class cov
 	    'source.php'	=>  'cov_source_page',
 	    'summary.php'	=>  'cov_summary_page',
 	    'diagram.php'	=>  'cov_diagram_page',
-	    'drender.php'	=>  'cov_drender_page'
+	    'drender.php'	=>  'cov_drender_page',
+	    'dviewport.php'	=>  'cov_dviewport_page'
 	);
 
 	if (!array_key_exists($url, $map))

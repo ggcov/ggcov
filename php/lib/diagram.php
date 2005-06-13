@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: diagram.php,v 1.2 2005-06-13 07:38:37 gnb Exp $
+// $Id: diagram.php,v 1.3 2005-06-13 07:43:34 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -143,6 +143,17 @@ class cov_diagram_page extends cov_page
 		    'px', sprintf('%f', $this->panx_+$dx),
 		    'py', sprintf('%f', $this->pany_+$dy));
 	}
+
+	$vpw = 64;
+	$vph = 64;
+	$vpurl = $this->env_->url('dviewport.php',
+		'd', $this->diagram_,
+		'w', $vpw,
+		'h', $vph,
+		'z', $this->zoom_,
+		'px', $this->panx_,
+		'py', $this->pany_);
+
 ?>
 	<table border="0" cellpadding="5" cellspacing="0">
 	  <tr>
@@ -188,6 +199,8 @@ class cov_diagram_page extends cov_page
 		  </td>
 	        </tr>
 	      </table>
+	      <br>
+	      <img src="<?php echo $vpurl; ?>" width="<?php echo $vpw; ?>" height="<?php echo $vph; ?>">
 	    </td>
 	  </tr>
 	</table>
