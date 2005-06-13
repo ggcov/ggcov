@@ -23,12 +23,8 @@
 #include "window.H"
 
 #include "cov.H"
+#include "diagram.H"
 #include <libgnomeui/libgnomeui.h>
-
-typedef struct
-{
-    double x1, y1, x2, y2;
-} dbounds_t;
 
 GLADE_CALLBACK void on_callgraph2_zoom_in_activate(GtkWidget*, gpointer);
 GLADE_CALLBACK void on_callgraph2_zoom_out_activate(GtkWidget*, gpointer);
