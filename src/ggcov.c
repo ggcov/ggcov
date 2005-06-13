@@ -28,17 +28,16 @@
 #include "summarywin.H"
 #include "callswin.H"
 #include "callgraphwin.H"
-#include "callgraph2win.H"
-#include "legowin.H"
+#include "diagwin.H"
+#include "callgraph_diagram.H"
+#include "lego_diagram.H"
 #include "functionswin.H"
 #include "fileswin.H"
 #include "reportwin.H"
-#if !GTK2
 #include <libgnomeui/libgnomeui.h>
-#endif
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.46 2005-05-22 12:47:56 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.47 2005-06-13 07:08:51 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -302,20 +301,18 @@ on_windows_new_callgraphwin_activated(GtkWidget *w, gpointer userdata)
 static void
 on_windows_new_callgraph2win_activated(GtkWidget *w, gpointer userdata)
 {
-
-    callgraph2win_t *cgw;
+    diagwin_t *lw;
     
-    cgw = new callgraph2win_t;
-    cgw->show();
+    lw = new diagwin_t(new callgraph_diagram_t);
+    lw->show();
 }
 
 static void
 on_windows_new_legowin_activated(GtkWidget *w, gpointer userdata)
 {
-
-    legowin_t *lw;
+    diagwin_t *lw;
     
-    lw = new legowin_t;
+    lw = new diagwin_t(new lego_diagram_t);
     lw->show();
 }
 

@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.52 2005-06-13 06:47:09 gnb Exp $
+# $Id: Makefile.am,v 1.53 2005-06-13 07:08:50 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -76,13 +76,12 @@ ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		summarywin.H summarywin.C \
 		callswin.H callswin.C \
 		callgraphwin.H callgraphwin.C \
-		callgraph2win.H callgraph2win.C \
-		legowin.H legowin.C \
 		functionswin.H functionswin.C \
 		reportwin.H reportwin.C \
 		fileswin.H fileswin.C \
 		prefswin.H prefswin.C \
 		canvas_scenegen_H canvas_scenegen.C \
+		diagwin.H diagwin.C \
 		utils.H utils.C \
 		$(LIBCOV_STATIC_SOURCES) \
 		help.c ggcov.c
