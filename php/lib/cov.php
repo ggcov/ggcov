@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: cov.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
+// $Id: cov.php,v 1.4 2005-06-13 07:34:39 gnb Exp $
 //
 
 // Status defines
@@ -63,6 +63,7 @@ class cov
     var $global_function_index_;    // array
     var $callnode_index_;	    // array
     var $report_index_;		    // array
+    var $diagram_index_;	    // array
 
     function cov($cb)
     {
@@ -142,6 +143,13 @@ class cov
 	return $this->report_index_;
     }
 
+    function diagram_index()
+    {
+	if ($this->diagram_index_ === null)
+	    $this->diagram_index_ = $this->fetch('GI');
+	return $this->diagram_index_;
+    }
+
     function url()
     {
 	$args = func_get_args();
@@ -211,7 +219,9 @@ class cov
 	    'functions.php'	=>  'cov_functions_page',
 	    'reports.php'	=>  'cov_reports_page',
 	    'source.php'	=>  'cov_source_page',
-	    'summary.php'	=>  'cov_summary_page'
+	    'summary.php'	=>  'cov_summary_page',
+	    'diagram.php'	=>  'cov_diagram_page',
+	    'drender.php'	=>  'cov_drender_page'
 	);
 
 	if (!array_key_exists($url, $map))
@@ -246,6 +256,10 @@ class cov_valid
     function integer($s)
     {
 	return preg_match('/^[0-9]+$/', $s);
+    }
+    function floating($s)
+    {
+	return preg_match('/^[0-9.]+$/', $s);
     }
     function callnode($s)
     {

@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: basic.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
+// $Id: basic.php,v 1.4 2005-06-13 07:34:37 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -113,7 +113,7 @@ function basic_cov()
 
 function basic_url($base)
 {
-    return $base . '?test=' . urlencode(basic_test());
+    return $base . (strchr($base,'?') == null ? '?' : '&') . 'test=' . urlencode(basic_test());
 }
 
 
@@ -140,7 +140,8 @@ function basic_header($title)
 	<a href="<?php echo basic_url('functions.php'); ?>">Functions</a><br>
 	<a href="<?php echo basic_url('calls.php'); ?>">Calls</a><br>
 	<a href="<?php echo basic_url('callbutterfly.php'); ?>">Call&nbsp;Butterfly</a><br>
-<!--	<a href="<?php echo basic_url('callgraph.php'); ?>">Call&nbsp;Graph</a><br> -->
+	<a href="<?php echo basic_url('diagram.php?d=callgraph'); ?>">Call&nbsp;Graph</a><br>
+	<a href="<?php echo basic_url('diagram.php?d=lego'); ?>">Lego&nbsp;Diagram</a><br>
 	<a href="<?php echo basic_url('source.php'); ?>">Source</a><br>
       </td>
       <td valign="top">
