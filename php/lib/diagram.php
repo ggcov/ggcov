@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: diagram.php,v 1.3 2005-06-13 07:43:34 gnb Exp $
+// $Id: diagram.php,v 1.4 2005-06-13 07:49:34 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -161,46 +161,67 @@ class cov_diagram_page extends cov_page
 	      <img src="<?php echo $durl; ?>" width="<?php echo $this->width_; ?>" height="<?php echo $this->height_; ?>">
 	    </td>
 	    <td valign="top">
-	      <a href="<?php echo $saurl; ?>"><img src="show-all.gif" alt="Show All" border="0"></a><br>
-	      <a href="<?php echo $ziurl; ?>"><img src="zoom-in.gif" alt="Zoom In" border="0"></a><br>
-	      <a href="<?php echo $zourl; ?>"><img src="zoom-out.gif" alt="Zoom Out" border="0"></a><br>
 	      <table border="0" cellpadding="0" cellspacing="0">
 	        <tr>
-		  <td>
-	            <a href="<?php echo $purls[0]; ?>"><img src="pan-ul.gif" alt="Pan Up&Left" border="0" width="23" height="23"></a>
+		  <td align="center">
+		    <a href="<?php echo $ziurl; ?>"><img src="zoom-in.gif" alt="Zoom In" border="0" width="28" height="28"></a><br>
 		  </td>
-		  <td>
-	            <a href="<?php echo $purls[1]; ?>"><img src="pan-u.gif" alt="Pan Up" border="0" width="19" height="23"></a>
-		  </td>
-		  <td>
-	            <a href="<?php echo $purls[2]; ?>"><img src="pan-ur.gif" alt="Pan Up&Right" border="0" width="23" height="23"></a>
+		  <td align="center">
+		    <a href="<?php echo $zourl; ?>"><img src="zoom-out.gif" alt="Zoom Out" border="0" width="28" height="28"></a><br>
 		  </td>
 	        </tr>
 	        <tr>
-		  <td>
-	            <a href="<?php echo $purls[3]; ?>"><img src="pan-l.gif" alt="Pan Left" border="0" width="23" height="19"></a>
-		  </td>
-		  <td>
-	            <img src="pan-c.gif" width="19" height="19">
-		  </td>
-		  <td>
-	            <a href="<?php echo $purls[5]; ?>"><img src="pan-r.gif" alt="Pan Right" border="0" width="23" height="19"></a>
+		  <td colspan="2" align="center">
+		    <a href="<?php echo $saurl; ?>"><img src="show-all.gif" alt="Show All" border="0" width="28" height="28"></a><br>
 		  </td>
 	        </tr>
+	        <tr><td>&nbsp;</td></tr>
 	        <tr>
-		  <td>
-	            <a href="<?php echo $purls[6]; ?>"><img src="pan-dl.gif" alt="Pan Down&Left" border="0" width="23" height="23"></a>
-		  </td>
-		  <td>
-	            <a href="<?php echo $purls[7]; ?>"><img src="pan-d.gif" alt="Pan Down" border="0" width="19" height="23"></a>
-		  </td>
-		  <td>
-	            <a href="<?php echo $purls[8]; ?>"><img src="pan-dr.gif" alt="Pan Down&Right" border="0" width="23" height="23"></a>
-		  </td>
+	          <td colspan="2" align="center">
+		    <table border="0" cellpadding="0" cellspacing="0">
+		      <tr>
+			<td>
+			  <a href="<?php echo $purls[0]; ?>"><img src="pan-ul.gif" alt="Pan Up&Left" border="0" width="23" height="23"></a>
+			</td>
+			<td>
+			  <a href="<?php echo $purls[1]; ?>"><img src="pan-u.gif" alt="Pan Up" border="0" width="19" height="23"></a>
+			</td>
+			<td>
+			  <a href="<?php echo $purls[2]; ?>"><img src="pan-ur.gif" alt="Pan Up&Right" border="0" width="23" height="23"></a>
+			</td>
+		      </tr>
+		      <tr>
+			<td>
+			  <a href="<?php echo $purls[3]; ?>"><img src="pan-l.gif" alt="Pan Left" border="0" width="23" height="19"></a>
+			</td>
+			<td>
+			  <img src="pan-c.gif" width="19" height="19">
+			</td>
+			<td>
+			  <a href="<?php echo $purls[5]; ?>"><img src="pan-r.gif" alt="Pan Right" border="0" width="23" height="19"></a>
+			</td>
+		      </tr>
+		      <tr>
+			<td>
+			  <a href="<?php echo $purls[6]; ?>"><img src="pan-dl.gif" alt="Pan Down&Left" border="0" width="23" height="23"></a>
+			</td>
+			<td>
+			  <a href="<?php echo $purls[7]; ?>"><img src="pan-d.gif" alt="Pan Down" border="0" width="19" height="23"></a>
+			</td>
+			<td>
+			  <a href="<?php echo $purls[8]; ?>"><img src="pan-dr.gif" alt="Pan Down&Right" border="0" width="23" height="23"></a>
+			</td>
+		      </tr>
+		    </table>
+	          </td>
+	        </tr>
+	        <tr><td>&nbsp;</td></tr>
+	        <tr>
+	          <td colspan="2" align="center">
+		    <img src="<?php echo $vpurl; ?>" width="<?php echo $vpw; ?>" height="<?php echo $vph; ?>">
+	          </td>
 	        </tr>
 	      </table>
-	      <br>
-	      <img src="<?php echo $vpurl; ?>" width="<?php echo $vpw; ?>" height="<?php echo $vph; ?>">
 	    </td>
 	  </tr>
 	</table>
