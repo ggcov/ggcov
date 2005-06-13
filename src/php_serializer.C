@@ -19,7 +19,7 @@
 
 #include "php_serializer.H"
 
-CVSID("$Id: php_serializer.C,v 1.2 2005-06-13 07:23:07 gnb Exp $");
+CVSID("$Id: php_serializer.C,v 1.3 2005-06-13 07:26:19 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -206,6 +206,20 @@ php_serializer_t::stringl(const char *s, unsigned int l)
     buf_.append_printf("s:%d:\"", l);
     buf_.append_chars(s, l);
     buf_.append_string("\";");
+}
+
+void
+php_serializer_t::floating(double x)
+{
+    array_element();
+    buf_.append_printf("d:%f;", x);
+}
+
+void
+php_serializer_t::null()
+{
+    array_element();
+    buf_.append_printf("N;");
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -78,6 +78,30 @@ test4(int argc, char **argv)
     return 0;
 }
 
+static int
+test5(int argc, char **argv)
+{
+    php_serializer_t ser;
+
+    ser.floating(3.1415926535);
+
+    printf("test5: %s\n", ser.data().data());
+
+    return 0;
+}
+
+static int
+test6(int argc, char **argv)
+{
+    php_serializer_t ser;
+
+    ser.null();
+
+    printf("test6: %s\n", ser.data().data());
+
+    return 0;
+}
+
 
 static testfunc_t tests[] = 
 {
@@ -85,7 +109,9 @@ static testfunc_t tests[] =
     test1,
     test2,
     test3,
-    test4
+    test4,
+    test5,
+    test6
 };
 static int num_tests = (sizeof(tests)/sizeof(tests[0]));
 

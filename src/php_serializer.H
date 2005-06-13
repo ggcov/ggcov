@@ -47,6 +47,8 @@ public:
     void integer(int);
     void string(const char *);
     void stringl(const char *, unsigned int length);
+    void floating(double);
+    void null();
 
 private:
     void array_element();
