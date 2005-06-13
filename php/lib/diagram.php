@@ -17,10 +17,44 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: diagram.php,v 1.4 2005-06-13 07:49:34 gnb Exp $
+// $Id: diagram.php,v 1.5 2005-06-13 07:50:55 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
+
+define('MIN_IMAGE_SIZE', 64);
+define('MAX_IMAGE_SIZE', 1024);
+define('ZOOM_FACTOR', 1.5);
+define('MIN_ZOOM', 1.0);
+define('MAX_ZOOM', pow(ZOOM_FACTOR,6));
+define('PAN_STEP', 0.25);
+
+function image_limit($x)
+{
+    if ($x > MAX_IMAGE_SIZE)
+	$x = MAX_IMAGE_SIZE;
+    if ($x < MIN_IMAGE_SIZE)
+	$x = MIN_IMAGE_SIZE;
+    return $x;
+}
+
+function zoom_limit($z)
+{
+    if ($z > MAX_ZOOM)
+	$z = MAX_ZOOM;
+    if ($z < MIN_ZOOM)
+	$z = MIN_ZOOM;
+    return $z;
+}
+
+function pan_limit($x, $w)
+{
+    if ($x + $w > 1.0)
+	$x = 1.0 - $w;
+    if ($x < 0.0)
+	$x = 0.0;
+    return $x;
+}
 
 class cov_diagram_page extends cov_page
 {
@@ -61,11 +95,11 @@ class cov_diagram_page extends cov_page
 	$cb = $this->env_->cb_;
 	$diagram_index = $this->env_->diagram_index();
 
-	$this->width_ = $this->get_integer($get, 'w', 450);
-	$this->height_ = $this->get_integer($get, 'h', 450);
-	$this->zoom_ = $this->get_floating($get, 'z', 1.0);
-	$this->panx_ = $this->get_floating($get, 'px', 0.0);
-	$this->pany_ = $this->get_floating($get, 'py', 0.0);
+	$this->width_ = image_limit($this->get_integer($get, 'w', 450));
+	$this->height_ = image_limit($this->get_integer($get, 'h', 450));
+	$this->zoom_ = zoom_limit($this->get_floating($get, 'z', 1.0));
+	$this->panx_ = pan_limit($this->get_floating($get, 'px', 0.0), 0.0);
+	$this->pany_ = pan_limit($this->get_floating($get, 'py', 0.0), 0.0);
 
 	if (array_key_exists('d', $get))
 	{
@@ -97,8 +131,7 @@ class cov_diagram_page extends cov_page
 //	$file_index = $this->env_->file_index();
 //	$func_list = $this->env_->global_function_list();
 
-	$zoom_factor = 1.5;
-	$pan_step = 0.25 / $this->zoom_;
+	$pan_step = PAN_STEP / $this->zoom_;
 
 	$self = basename($_SERVER['PHP_SELF']);
 	$durl = $this->env_->url('drender.php',
@@ -119,17 +152,18 @@ class cov_diagram_page extends cov_page
 		    'd', $this->diagram_,
 		    'w', $this->width_,
 		    'h', $this->height_,
-		    'z', $this->zoom_*$zoom_factor,
+		    'z', zoom_limit($this->zoom_ * ZOOM_FACTOR),
 		    'px', $this->panx_,
 		    'py', $this->pany_);
 	$zourl = $this->env_->url($self,
 		    'd', $this->diagram_,
 		    'w', $this->width_,
 		    'h', $this->height_,
-		    'z', $this->zoom_/$zoom_factor,
+		    'z', zoom_limit($this->zoom_ / ZOOM_FACTOR),
 		    'px', $this->panx_,
 		    'py', $this->pany_);
 	$purls = array();
+	$zw = 1.0 / $this->zoom_;
 	for ($i = 0 ; $i < 9 ; $i++)
 	{
 	    $dx = (($i % 3) - 1) * $pan_step;
@@ -140,8 +174,8 @@ class cov_diagram_page extends cov_page
 		    'w', $this->width_,
 		    'h', $this->height_,
 		    'z', $this->zoom_,
-		    'px', sprintf('%f', $this->panx_+$dx),
-		    'py', sprintf('%f', $this->pany_+$dy));
+		    'px', sprintf('%f', pan_limit($this->panx_+$dx, $zw)),
+		    'py', sprintf('%f', pan_limit($this->pany_+$dy, $zw)));
 	}
 
 	$vpw = 64;
