@@ -37,10 +37,10 @@ public:
     /* dtor */
     ~php_serializer_t();
 
-    void presize(unsigned int bytelength);
-    const estring &data() const;
+    const estring &data();
 
     void begin_array(unsigned int length);
+    void begin_array();
     void next_key();
     void end_array();
 
@@ -50,6 +50,7 @@ public:
 
 private:
     void array_element();
+    void _begin_array(unsigned int length, gboolean known);
 
     estring buf_;
     enum _constants
@@ -62,10 +63,12 @@ private:
 	unsigned int length_;
 	unsigned int seen_;
 	int next_key_;
+	unsigned int count_offset_;
     };
     
     array_t arrays_[MAX_ARRAY_DEPTH];
     unsigned int array_depth_;
+    gboolean needs_deflation_;
 };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -19,13 +19,14 @@
 
 #include "php_serializer.H"
 
-CVSID("$Id: php_serializer.C,v 1.1 2005-05-18 12:53:45 gnb Exp $");
+CVSID("$Id: php_serializer.C,v 1.2 2005-06-13 07:23:07 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 php_serializer_t::php_serializer_t()
 {
     array_depth_ = 0;
+    needs_deflation_ = FALSE;
 }
 
 php_serializer_t::~php_serializer_t()
@@ -34,16 +35,57 @@ php_serializer_t::~php_serializer_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-php_serializer_t::presize(unsigned int bytelength)
-{
-    // TODO
-}
-
 const estring &
-php_serializer_t::data() const
+php_serializer_t::data()
 {
     assert(array_depth_ == 0);
+    if (needs_deflation_)
+    {
+	/* 
+	 * Scan through the buffer, deflating inflated array lengths.
+	 */
+	char *in, *out;
+	enum {SCAN,DEFLATE,STRING} state = SCAN;
+	int ndeflated = 0;
+
+	for (in = out = (char *)buf_.data() ; *in ; in++)
+	{
+	    switch (state)
+	    {
+	    case SCAN:
+		if (*in == ':')
+		{
+		    state = DEFLATE;
+		    ndeflated = 0;
+		}
+		else if (*in == '"')
+		    state = STRING;
+		*out++ = *in;
+		break;
+	    case DEFLATE:
+		if (*in != '0')
+		{
+		    state = SCAN;
+		    if (!isdigit(*in) && ndeflated > 0)
+			*out++ = '0';
+		    *out++ = *in;
+		}
+		else
+		{
+		    ndeflated++;
+		}
+		break;
+	    case STRING:
+		if (*in == '"')
+		    state = SCAN;
+		*out++ = *in;
+		break;
+	    }
+	}
+
+	buf_.truncate_to(out - buf_.data());
+	needs_deflation_ = FALSE;
+    }
     return buf_;
 }
 
@@ -56,20 +98,55 @@ php_serializer_t::array_element()
     {
 	array_t *a = &arrays_[array_depth_-1];
 	a->seen_++;
-	assert(a->seen_ <= a->length_*2);
+	if (a->count_offset_ == 0)
+	{
+	    assert(a->seen_ <= a->length_*2);
+	}
     }
 }
 
+#define INFLATED_LENGTH	8
+#define INFLATED_FORMAT	"%08u"
+
 void
-php_serializer_t::begin_array(unsigned int length)
+php_serializer_t::_begin_array(unsigned int length, gboolean known)
 {
+    const char *fmt;
+
     array_element();
     assert(array_depth_ < MAX_ARRAY_DEPTH);
     array_t *a = &arrays_[array_depth_++];
     a->length_ = length;
     a->seen_ = 0;
     a->next_key_ = 0;
-    buf_.append_printf("a:%u:{", length);
+    if (known)
+    {
+	a->count_offset_ = 0;
+	fmt = "a:%u:{";
+    }
+    else
+    {
+	/*
+	 * Unknown length.  Format a wide field of zeros and remember where
+	 * it's stored so we can overwrite it later with the correct value.
+	 */
+	needs_deflation_ = TRUE;
+	a->count_offset_ = buf_.length()+2;
+	fmt = "a:"INFLATED_FORMAT":{";
+    }
+    buf_.append_printf(fmt, length);
+}
+
+void
+php_serializer_t::begin_array(unsigned int length)
+{
+    _begin_array(length, TRUE);
+}
+
+void
+php_serializer_t::begin_array()
+{
+    _begin_array(0, FALSE);
 }
 
 void
@@ -85,7 +162,20 @@ php_serializer_t::end_array()
 {
     assert(array_depth_ > 0);
     array_t *a = &arrays_[--array_depth_];
-    assert(a->seen_ == a->length_ * 2);
+    if (a->count_offset_ == 0)
+    {
+	/* length was provided in begin_array() call so check it here */
+	assert(a->seen_ == a->length_ * 2);
+    }
+    else
+    {
+	/* check that we get balanced key/value pairs */
+	assert(a->seen_ % 2 == 0);
+	/* go back and format the actual length */
+	char bb[INFLATED_LENGTH+1];
+	snprintf(bb, sizeof(bb), INFLATED_FORMAT, a->seen_/2);
+	memcpy((char *)buf_.data() + a->count_offset_, bb, INFLATED_LENGTH);
+    }
     buf_.append_char('}');
 }
 

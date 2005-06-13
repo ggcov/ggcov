@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.53 2005-06-13 07:08:50 gnb Exp $
+# $Id: Makefile.am,v 1.54 2005-06-13 07:23:06 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -127,7 +127,7 @@ licence.c: $(top_srcdir)/COPYING
 EXTRA_CLEAN=		licence.c
 
 noinst_PROGRAMS=	bbdump filetest mangletest \
-			newbbgdump
+			newbbgdump phptest
 
 bbdump_SOURCES= 	bbdump.c
 bbdump_LDADD=		$(CLI_LIBS)
@@ -140,3 +140,6 @@ mangletest_LDADD=	$(CLI_LIBS)
 
 newbbgdump_SOURCES=	newbbgdump.c
 newbbgdump_LDADD=	$(CLI_LIBS)
+
+phptest_SOURCES=	phptest.C php_serializer.C
+phptest_LDADD=		$(CLI_LIBS)
