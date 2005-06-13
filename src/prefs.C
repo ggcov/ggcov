@@ -19,8 +19,9 @@
 
 #include "confsection.H"
 #include "prefs.H"
+#include "colors.h"
 
-CVSID("$Id: prefs.C,v 1.8 2005-03-14 08:24:26 gnb Exp $");
+CVSID("$Id: prefs.C,v 1.9 2005-06-13 06:41:33 gnb Exp $");
 
 prefs_t prefs;
 
@@ -48,10 +49,19 @@ GdkColor *backgrounds_by_status[] =
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-colorstr(char *val, GdkColor *col, const char *deflt)
+colorstr(
+    char *val,
+    GdkColor *col,
+    unsigned def_r,
+    unsigned def_g,
+    unsigned def_b)
 {
     if (val == 0 || !gdk_color_parse(val, col))
-    	gdk_color_parse(deflt, col);
+    {
+	col->red = (def_r<<8)|def_r;
+	col->green = (def_g<<8)|def_g;
+	col->blue = (def_b<<8)|def_b;
+    }
     if (val != 0)
 	g_free(val);
 }
@@ -70,25 +80,25 @@ prefs_t::load()
     cs = confsection_t::get("colors");
 
     colorstr(cs->get_string("covered_foreground", 0),
-    	     &covered_foreground, "#00c000");
+    	     &covered_foreground, COLOR_FG_COVERED);
     colorstr(cs->get_string("covered_background", 0),
-    	     &covered_background, "#80d080");
+    	     &covered_background, COLOR_BG_COVERED);
     colorstr(cs->get_string("partcovered_foreground", 0),
-    	     &partcovered_foreground, "#a0a000");
+    	     &partcovered_foreground, COLOR_FG_PARTCOVERED);
     colorstr(cs->get_string("partcovered_background", 0),
-    	     &partcovered_background, "#d0d080");
+    	     &partcovered_background, COLOR_BG_PARTCOVERED);
     colorstr(cs->get_string("uncovered_foreground", 0),
-    	     &uncovered_foreground, "#c00000");
+    	     &uncovered_foreground, COLOR_FG_UNCOVERED);
     colorstr(cs->get_string("uncovered_background", 0),
-    	     &uncovered_background, "#d08080");
+    	     &uncovered_background, COLOR_BG_UNCOVERED);
     colorstr(cs->get_string("uninstrumented_foreground", 0),
-    	     &uninstrumented_foreground, "#000000");
+    	     &uninstrumented_foreground, COLOR_FG_UNINSTRUMENTED);
     colorstr(cs->get_string("uninstrumented_background", 0),
-    	     &uninstrumented_background, "#a0a0a0");
+    	     &uninstrumented_background, COLOR_BG_UNINSTRUMENTED);
     colorstr(cs->get_string("suppressed_foreground", 0),
-    	     &suppressed_foreground, "#000080");
+    	     &suppressed_foreground, COLOR_FG_SUPPRESSED);
     colorstr(cs->get_string("suppressed_background", 0),
-    	     &suppressed_background, "#8080d0");
+    	     &suppressed_background, COLOR_BG_SUPPRESSED);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
