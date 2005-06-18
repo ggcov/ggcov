@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.6 2005-06-13 07:49:33 gnb Exp $
+# $Id: Makefile.am,v 1.7 2005-06-17 15:07:14 gnb Exp $
 #
 
 phpdir=			$(pkgdatadir)/php
@@ -33,5 +33,6 @@ dist_phpwww_DATA=	basic.css ../../ui/ggcov64.png \
 			pan-ul.gif pan-u.gif pan-ur.gif \
 			pan-l.gif pan-c.gif pan-r.gif \
 			pan-dl.gif pan-d.gif pan-dr.gif \
-			zoom-in.gif zoom-out.gif show-all.gif
+			zoom-in.gif zoom-out.gif show-all.gif \
+			favicon.ico
 

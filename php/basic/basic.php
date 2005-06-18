@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: basic.php,v 1.4 2005-06-13 07:34:37 gnb Exp $
+// $Id: basic.php,v 1.5 2005-06-17 15:07:14 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -120,10 +120,13 @@ function basic_url($base)
 function basic_header($title)
 {
 ?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <title><?php echo $title; ?></title>
   <link rel="stylesheet" type="text/css" href="basic.css">
+  <link rel="SHORTCUT ICON" href="favicon.ico">
 </head>
 <body>
   <table border="0" cellpadding="5" cellspacing="0">
