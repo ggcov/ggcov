@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: calls.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
+// $Id: calls.php,v 1.4 2005-06-17 17:13:13 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -105,7 +105,7 @@ HTML;
 
 	$self = basename($_SERVER['PHP_SELF']);
 ?>
-	<form name="calls" action="<?php echo $self; ?>" method="GET">
+	<form action="<?php echo $self; ?>" method="GET">
 	<table border="0" cellpadding="5" cellspacing="0">
 	  <tr>
 	    <td colspan="4">

@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: summary.php,v 1.5 2005-05-18 14:19:10 gnb Exp $
+// $Id: summary.php,v 1.6 2005-06-17 17:13:13 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -182,7 +182,7 @@ class cov_summary_page extends cov_page
 	      <td>&nbsp;&nbsp;</td>
 	      <td align="right">$pc</td>
 	      <td>&nbsp;&nbsp;</td>
-	      <td><img width="$w" height="$h" src="$url"></TD>
+	      <td><img width="$w" height="$h" alt="bargraph" src="$url"></TD>
 	    </tr>
 
 HTML;
@@ -196,7 +196,7 @@ HTML;
 
 	$self = basename($_SERVER['PHP_SELF']);
 ?>
-	<form name="summary" action="<?php echo $self; ?>" method="GET">
+	<form action="<?php echo $self; ?>" method="GET">
 	<table border="0" cellpadding="5" cellspacing="0">
 	  <tr>
 	    <td colspan="3">

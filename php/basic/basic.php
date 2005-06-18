@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: basic.php,v 1.5 2005-06-17 15:07:14 gnb Exp $
+// $Id: basic.php,v 1.6 2005-06-17 17:12:55 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -113,7 +113,7 @@ function basic_cov()
 
 function basic_url($base)
 {
-    return $base . (strchr($base,'?') == null ? '?' : '&') . 'test=' . urlencode(basic_test());
+    return htmlentities($base . (strchr($base,'?') == null ? '?' : '&') . 'test=' . urlencode(basic_test()));
 }
 
 
@@ -135,7 +135,7 @@ function basic_header($title)
     </tr>
     <tr>
       <td class="nav_menu" valign="top" width="10" nowrap>
-	<img width="64" height="64" src="ggcov64.png"><br><br>
+	<img width="64" height="64" src="ggcov64.png" alt="ggcov"><br><br>
 	<a href="<?php echo 'tests.php'; ?>">Tests</a><br>
 	<a href="<?php echo basic_url('summary.php'); ?>">Summary</a><br>
 	<a href="<?php echo basic_url('reports.php'); ?>">Reports</a><br>
@@ -146,6 +146,9 @@ function basic_header($title)
 	<a href="<?php echo basic_url('diagram.php?d=callgraph'); ?>">Call&nbsp;Graph</a><br>
 	<a href="<?php echo basic_url('diagram.php?d=lego'); ?>">Lego&nbsp;Diagram</a><br>
 	<a href="<?php echo basic_url('source.php'); ?>">Source</a><br>
+<!--
+	<a href="http://validator.w3.org/check/referer"><img width=88 height=31 border=0 src="valid-html40.gif" alt="Valid HTML 4.0"></a>
+-->
       </td>
       <td valign="top">
 <?php
