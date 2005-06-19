@@ -69,9 +69,14 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %{_bindir}/ggcov-webdb
 %{_datadir}/ggcov/php
+%{_localstatedir}/ggcov/tests
+%docdir %{_mandir}
+%{_mandir}/man1/ggcov-webdb.1*
 %doc php/ggcov.conf doc/HOWTO.web
 
 %changelog
+* Sun Jun 19 2005 Greg Banks <gnb@alphalink.com.au>
+- Add manpage, empty ggcov test dir to web package
 * Sat Apr 30 2005 Greg Banks <gnb@alphalink.com.au>
 - Added new subpackage for web stuff
 * Mon Mar 14 2005 Greg Banks <gnb@alphalink.com.au>
