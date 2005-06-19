@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.55 2005-06-13 07:29:11 gnb Exp $
+# $Id: Makefile.am,v 1.56 2005-06-19 06:44:32 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -49,7 +49,7 @@ libcov_a_SOURCES= \
 		cov_scope.H cov_scope.C \
 		cov_types.H cov.H cov.C \
 		report.H report.C \
-		diagram.H diagram.C \
+		diagram.H diagram.C colors.h \
 		lego_diagram.H lego_diagram.C \
 		callgraph_diagram.H callgraph_diagram.C
 # This is a sad hack to work around the problem where some
@@ -80,7 +80,7 @@ ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		reportwin.H reportwin.C \
 		fileswin.H fileswin.C \
 		prefswin.H prefswin.C \
-		canvas_scenegen_H canvas_scenegen.C \
+		canvas_scenegen.H canvas_scenegen.C \
 		diagwin.H diagwin.C \
 		utils.H utils.C \
 		$(LIBCOV_STATIC_SOURCES) \
