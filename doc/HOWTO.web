@@ -68,8 +68,11 @@ Installing, If You Don't Control the Web Server
 
 This technique works when you don't control the web server but you
 do have a shell account and control over some subset of the web site.
-For the purposes of this example let's assume you are a developer on
-a sourceforge.net project called "foobar".
+It assumes that .htaccess files have been enabled.  For the purposes
+of this example let's assume you are a developer on a sourceforge.net
+project called "foobar"; the prompt "shell$" means commands you run
+on shell.sourceforge.net and the prompt "dev$" means commands you run
+on your development machine.
 
 1.  from the ggcov build directory, install the PHP files into
     a directory you own which is outside the directory visible
@@ -79,29 +82,31 @@ a sourceforge.net project called "foobar".
     shell$ cd php ; make phpdir=/home/groups/f/fo/foobar/php install
     
 2.  the subset of those files which need to be seen by the web server
-    are located in the www/ subdirectory, so move, copy or link those
-    into the directory the web server sees, e.g.
+    are located in the $phpdir/www/ directory, so move, copy or link
+    those into the directory the web server sees, e.g.
     
-    shell$ cd /home/groups/f/fo/foobar/htdocs
-    shell$ ln -s ../php/www/ ggcov
+    shell$ cd /home/groups/f/fo/foobar/
+    shell$ mv php/www htdocs/ggcov
     
 3.  configure the PHP include path and the ggcov test directory
-    by adding a .htaccess file to the www/ directory, e.g.
+    by adding a .htaccess file, e.g.
     
-    shell$ cd /home/groups/f/fo/foobar/php/www
-    shell$ cat > .htaccess <EOF
+    shell$ cd /home/groups/f/fo/foobar/
+    shell$ cat > htdocs/ggcov/.htaccess <EOF
     DirectoryIndex tests.php
-    php_value include_path /home/groups/f/fo/foobar/php/include
-    php_value ggcov.basic_test_dir /home/groups/f/fo/foobar/tests
+    php_value include_path .:/home/groups/f/fo/foobar/php/include
+    SetEnv GGCOV_TEST_DIR /home/groups/f/fo/foobar/php/tests
     EOF
     
-4.  install one or more tests in subdirectories of
-    /home/groups/f/fo/foobar/tests, e.g.
+4.  install one or more tests in subdirectories of the test directory, e.g.
+
     dev$ ggcov-webdb *.c
     dev$ scp ggcov.webdb.tgz shell.sourceforge.net:
-    shell$ cd /home/groups/f/fo/foobar/tests
+
+    shell$ cd /home/groups/f/fo/foobar/php/tests
     shell$ mkdir foo ; cd foo
     shell$ tar -xzf ~/ggcov.webdb.tgz
 
 5.  point your browser at http://foobar.sourceforget.net/ggcov/
 
+# vim: ft=none sw=4 sts=4:
