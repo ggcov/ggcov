@@ -16,7 +16,7 @@
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 .\" 
-.\" $Id: ggcov-webdb.1,v 1.1 2005-05-18 14:25:42 gnb Exp $
+.\" $Id: ggcov-webdb.1,v 1.2 2005-06-19 06:42:11 gnb Exp $
 .\"
 .TH GGCOV-WEBDB "1" "May 2005" "GGCOV" "Greg Banks"
 .SH NAME
@@ -64,7 +64,7 @@ which are mentioned in the database.  This is all the information
 that the \fBggcov\fP web pages need, in one bundle which is
 convenient to copy from the development machine to the web server.
 Usually this tarball would be extracted into a subdirectory
-of \fI/var/ggcov/web/tests/\fP on the web server.
+of \fI/var/ggcov/tests/\fP on the web server.
 .PP
 Arguments are used to specify how to find coverage data files.
 The arguments can combinations of:
@@ -134,11 +134,11 @@ Generate intermediate database for all the available source
 in the executable \fBa.out\fP (on some platforms only), and
 install as test \fBfoo\fP in the default tests location.
 .IP
-.B mkdir /var/ggcov/web/tests/foo
+.B mkdir /var/ggcov/tests/foo
 .br
 .B ggcov\-webdb -f - a.out |
 .br
-.B "    " (cd /var/ggcov/web/tests/foo ; tar \-xzf \- )
+.B "    " (cd /var/ggcov/tests/foo ; tar \-xzf \- )
 .br
 .PP
 Generate intermediate database for all the C source in the current directory.
