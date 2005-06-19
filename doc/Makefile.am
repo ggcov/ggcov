@@ -16,11 +16,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.3 2005-05-18 14:25:41 gnb Exp $
+# $Id: Makefile.am,v 1.4 2005-06-19 06:42:48 gnb Exp $
 #
 
-man_MANS=	ggcov.1 ggcov-webdb.1
+dist_man_MANS=	ggcov.1 ggcov-webdb.1
 
-EXTRA_DIST=	bbg-file-format.txt $(man_MANS)
-
-
+EXTRA_DIST=	bbg-file-format.txt dbus-decode-gcov.txt \
+		dwarf-file-format.txt HOWTO.web
