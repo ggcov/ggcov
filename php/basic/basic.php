@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: basic.php,v 1.6 2005-06-17 17:12:55 gnb Exp $
+// $Id: basic.php,v 1.7 2005-06-19 06:39:52 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -28,9 +28,9 @@ function basic_test_dir()
 
     if ($test_dir === null)
     {
-	$test_dir = ini_get('ggcov.basic_test_dir');
+	$test_dir = getenv('GGCOV_TEST_DIR');
 	if (!$test_dir)
-	    $test_dir = '/var/ggcov/web/tests';
+	    $test_dir = '/var/ggcov/tests';
     }
     return $test_dir;
 }
@@ -55,7 +55,7 @@ function basic_test()
 	}
 	if ($test === null)
 	{
-	    $t = ini_get('ggcov.basic_default_test');
+	    $t = getenv('GGCOV_DEFAULT_TEST');
 	    if ($t && basic_valid_test($t))
 		$test = $t;
 	}

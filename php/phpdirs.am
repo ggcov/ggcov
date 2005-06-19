@@ -16,25 +16,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.4 2005-06-19 06:39:52 gnb Exp $
+# $Id: phpdirs.am,v 1.1 2005-06-19 06:39:52 gnb Exp $
 #
 
-include $(srcdir)/phpdirs.am
+phpdir=			$(pkgdatadir)/php
+phpincludedir=		$(phpdir)/include
+phpwwwdir=		$(phpdir)/www
+ggcovtestdir=		$(localstatedir)/ggcov/tests
 
-SUBDIRS=    lib basic
-
-LOCALTESTDIR=	/tmp/ggcov
-localtest:
-	$(MAKE) DESTDIR=$(LOCALTESTDIR) install
-
-EXTRA_DIST= ggcov.conf.in
-noinst_DATA= ggcov.conf
-ggcov.conf: ggcov.conf.in
-	sed \
-	    -e 's|@phpincludedir\@|$(phpincludedir)|g' \
-	    -e 's|@phpwwwdir\@|$(phpwwwdir)|g' \
-	    -e 's|@ggcovtestdir\@|$(ggcovtestdir)|g' \
-	    < $< > $@
-
-install-data-local:
-	-mkdir -p $(DESTDIR)$(ggcovtestdir)
+# vim: ft=make sw=8 sts=8:

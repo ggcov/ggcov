@@ -16,14 +16,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.8 2005-06-17 17:12:54 gnb Exp $
+# $Id: Makefile.am,v 1.9 2005-06-19 06:39:52 gnb Exp $
 #
 
-phpdir=			$(pkgdatadir)/php
-phpincludedir=		$(phpdir)/include/ggcov/basic
-phpwwwdir=		$(phpdir)/www
+include $(srcdir)/../phpdirs.am
 
-dist_phpinclude_DATA=	basic.php 
+myincludedir=		$(phpincludedir)/ggcov/basic
+
+dist_myinclude_DATA=	basic.php 
 
 dist_phpwww_DATA=	basic.css ../../ui/ggcov64.png \
 			tests.php summary.php covbar.php files.php \
