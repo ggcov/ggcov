@@ -30,7 +30,22 @@
 #include "fakepopt.h"
 #include <db.h>
 
-CVSID("$Id: ggcov-webdb.c,v 1.5 2005-06-13 07:29:11 gnb Exp $");
+CVSID("$Id: ggcov-webdb.c,v 1.6 2005-07-22 13:55:03 gnb Exp $");
+
+#define V(major,minor,patch)    ((major)*10000+(minor)*1000+(patch))
+#define DB_VERSION_CODE V(DB_VERSION_MAJOR,DB_VERSION_MINOR,DB_VERSION_PATCH)
+
+/*
+ * The transaction argument to DB->open was added in 4.1.25.
+ * As ggcov doesn't use transactions this define allows us
+ * to compile with older DB versions (some distros still
+ * ship db3.3.x as the default DB version).
+ */
+#if DB_VERSION_CODE < V(4,1,25)
+#define OPEN_TXN
+#else
+#define OPEN_TXN    (DB_TXN *)0,
+#endif
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -1158,7 +1173,7 @@ create_database(void)
 	exit(1);
     }
 
-    ret = db->open(db, 0, webdb_file, 0, DB_HASH, DB_CREATE, 0644);
+    ret = db->open(db, OPEN_TXN webdb_file, 0, DB_HASH, DB_CREATE, 0644);
     if (ret)
     {
 	db->err(db, ret, "%s", webdb_file);
@@ -1232,7 +1247,7 @@ dump_database(const char *mode)
 	exit(1);
     }
 
-    if ((ret = db->open(db, 0, webdb_file, 0, DB_HASH, DB_CREATE, 0644)))
+    if ((ret = db->open(db, OPEN_TXN webdb_file, 0, DB_HASH, DB_CREATE, 0644)))
     {
 	db->err(db, ret, "%s", webdb_file);
 	exit(1);
