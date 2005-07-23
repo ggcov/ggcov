@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: cov.php,v 1.6 2005-07-23 10:12:18 gnb Exp $
+// $Id: cov.php,v 1.7 2005-07-23 10:28:56 gnb Exp $
 //
 
 // Status defines
@@ -169,15 +169,20 @@ class cov
 		$c = '&';
 	    }
 	}
-	return htmlentities($u);
+	return $u;
     }
     function url()
     {
-	return $this->_url(func_get_args(), $_GET);
+	return htmlentities($this->_url(func_get_args(), $_GET));
     }
     function curl()
     {
-	return $this->_url(func_get_args(), array());
+	return htmlentities($this->_url(func_get_args(), array()));
+    }
+    function credirect()
+    {
+	header('Location: ' . $this->_url(func_get_args(), array()));
+	exit;
     }
 
     function color_by_status($st)

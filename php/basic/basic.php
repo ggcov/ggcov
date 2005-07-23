@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: basic.php,v 1.9 2005-07-22 14:08:24 gnb Exp $
+// $Id: basic.php,v 1.10 2005-07-23 10:28:55 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -109,11 +109,7 @@ function basic_cov()
     {
 	// No default test, so redirect to tests.php which will at
 	// least tell the user what needs to be done to add a test.
-	$self = $_SERVER['REQUEST_URI'];
-	$self = preg_replace('/\?.*/', '', $self);
-	$to = preg_replace('/[a-z]+\.php$/', 'tests.php', $self);
-	header("Location: $to");
-	exit;
+	$cov->credirect('tests.php');
     }
     $cov->attach(basic_test_dir() . '/' . $test);
     return $cov;

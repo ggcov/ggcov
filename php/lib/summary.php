@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: summary.php,v 1.8 2005-07-23 10:12:18 gnb Exp $
+// $Id: summary.php,v 1.9 2005-07-23 10:28:56 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -42,6 +42,25 @@ class cov_summary_page extends cov_page
 	$cb = $this->env_->cb_;
 	$file_index = $this->env_->file_index();
 	$func_list = $this->env_->global_function_list();
+
+	if (!empty($get['viewfile']))
+	{
+	    if (!array_key_exists('file', $get))
+		$cb->fatal("No file name given");
+	    $url = $this->env_->credirect('source.php',
+				          'file', $get['file']);
+	}
+	else if (!empty($get['viewfunc']))
+	{
+	    if (!array_key_exists('function', $get))
+		$cb->fatal("No function name given");
+	    $a = preg_split('/:/', $get['function']);
+	    if (count($a) != 2)
+		$cb->fatal("Bad format for function name");
+	    $url = $this->env_->credirect('source.php',
+				          'function', $a[0],
+				          'file', $a[1]);
+	}
 
 	// setup some defaults
 	$this->scope_ = 'overall';
@@ -221,7 +240,7 @@ HTML;
 	      </select>
 	    </td>
 	    <td>
-		<a href="<?php echo $this->env_->curl('source.php', 'file', $this->file_name_); ?>">View</a>
+	        <input type="submit" name="viewfile" value="View">
 	    </td>
 	  </tr>
 	  <tr>
@@ -243,7 +262,7 @@ HTML;
 	      </select>
 	    </td>
 	    <td>
-		<a href="<?php echo $this->env_->curl('source.php', 'function', $this->function_, 'file', $this->func_file_name_); ?>">View</a>
+	        <input type="submit" name="viewfunc" value="View">
 	    </td>
 	  </tr>
 <!--
