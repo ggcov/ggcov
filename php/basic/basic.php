@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: basic.php,v 1.8 2005-07-22 14:00:39 gnb Exp $
+// $Id: basic.php,v 1.9 2005-07-22 14:08:24 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -143,7 +143,7 @@ function basic_header($title)
   <link rel="SHORTCUT ICON" href="favicon.ico">
 </head>
 <body>
-  <table border="0" cellpadding="5" cellspacing="0">
+  <table border="0" cellpadding="5" cellspacing="0" width="100%">
     <tr>
       <td colspan="3" class="nav_header"><?php echo $title; ?></td>
     </tr>
