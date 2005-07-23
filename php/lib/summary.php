@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: summary.php,v 1.6 2005-06-17 17:13:13 gnb Exp $
+// $Id: summary.php,v 1.7 2005-07-23 10:02:23 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -92,26 +92,16 @@ class cov_summary_page extends cov_page
 	    if (!array_key_exists('function', $get))
 		$cb->fatal("No function name given");
 
-	    $this->function_ = $get['function'];
+	    $a = preg_split('/:/', $get['function']);
+	    $this->function_ = $a[0];
 
 	    if (!cov_valid::funcname($this->function_))
 		$cb->fatal("Invalid function");
 
-	    if (array_key_exists('file', $get))
+	    if (count($a) > 1)
 	    {
 		// optional filename, to disambiguate
-		$this->func_file_name_ = $get['file'];
-
-		if (!cov_valid::filename($this->func_file_name_))
-		    $cb->fatal("Invalid file name");
-
-		if (!array_key_exists($this->func_file_name_, $file_index))
-		    $cb->fatal("Unknown file");
-
-		$label = $this->function_ . ' [' . $this->func_file_name_ . ']';
-		if (!array_key_exists($this->function_, $func_list) &&
-		    !array_key_exists($label, $func_list))
-		    $cb->fatal("Function unknown");
+		$this->func_file_name_ = $a[1];
 	    }
 	    else
 	    {
@@ -119,6 +109,17 @@ class cov_summary_page extends cov_page
 		    $cb->fatal("Function unknown or ambiguous (try specifying filename too)");
 		$this->func_file_name_ = $func_list[$this->function_];
 	    }
+
+	    if (!cov_valid::filename($this->func_file_name_))
+		$cb->fatal("Invalid file name");
+
+	    if (!array_key_exists($this->func_file_name_, $file_index))
+		$cb->fatal("Unknown file");
+
+	    $label = $this->function_ . ' [' . $this->func_file_name_ . ']';
+	    if (!array_key_exists($this->function_, $func_list) &&
+		!array_key_exists($label, $func_list))
+		$cb->fatal("Function unknown");
 
 	    $file_id = $file_index[$this->func_file_name_];
 	    $file_function_index = $this->env_->fetch("FUI$file_id");
@@ -235,7 +236,8 @@ HTML;
 		    {
 			$sel = ($label == $this->function_ ||
 			        $label == $sellab ? ' selected' : '');
-			echo "<option$sel>$label</option>\n";
+			$val = preg_replace('/ \[.*/', '', $label);
+			echo "<option$sel value=\"$val:$f\">$label</option>\n";
 		    }
 		?>
 	      </select>
