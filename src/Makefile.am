@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.56 2005-06-19 06:44:32 gnb Exp $
+# $Id: Makefile.am,v 1.57 2005-07-23 10:36:03 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -64,8 +64,8 @@ else
 BASEINCLUDES=	$(GGCOV_CLI_CFLAGS)
 endif
 
-bin_PROGRAMS=	@GUIPROG@ tggcov ggcov-webdb
-EXTRA_PROGRAMS= ggcov
+bin_PROGRAMS=	$(GUIPROG) tggcov $(WEBPROG)
+EXTRA_PROGRAMS= ggcov ggcov-webdb
 
 ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		gnbstackedbar.h gnbstackedbar.c \

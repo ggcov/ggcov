@@ -16,11 +16,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.5 2005-06-19 06:39:52 gnb Exp $
+# $Id: Makefile.am,v 1.6 2005-07-23 10:36:03 gnb Exp $
 #
 
 include $(srcdir)/../phpdirs.am
 
+if WEB
 myincludedir=		$(phpincludedir)/ggcov/lib
 
 dist_myinclude_DATA=	cov.php covbar.php \
@@ -28,4 +29,4 @@ dist_myinclude_DATA=	cov.php covbar.php \
 			reports.php functions.php calls.php \
 			callbutterfly.php diagram.php drender.php \
 			dviewport.php
-
+endif

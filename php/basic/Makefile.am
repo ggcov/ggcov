@@ -16,11 +16,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.9 2005-06-19 06:39:52 gnb Exp $
+# $Id: Makefile.am,v 1.10 2005-07-23 10:36:03 gnb Exp $
 #
 
 include $(srcdir)/../phpdirs.am
 
+if WEB
 myincludedir=		$(phpincludedir)/ggcov/basic
 
 dist_myinclude_DATA=	basic.php 
@@ -35,4 +36,4 @@ dist_phpwww_DATA=	basic.css ../../ui/ggcov64.png \
 			pan-dl.gif pan-d.gif pan-dr.gif \
 			zoom-in.gif zoom-out.gif show-all.gif \
 			favicon.ico valid-html40.gif
-
+endif

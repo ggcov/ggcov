@@ -16,12 +16,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: phpdirs.am,v 1.1 2005-06-19 06:39:52 gnb Exp $
+# $Id: phpdirs.am,v 1.2 2005-07-23 10:36:03 gnb Exp $
 #
 
+if WEB
 phpdir=			$(pkgdatadir)/php
 phpincludedir=		$(phpdir)/include
 phpwwwdir=		$(phpdir)/www
 ggcovtestdir=		$(localstatedir)/ggcov/tests
+endif
 
 # vim: ft=make sw=8 sts=8:
