@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: basic.php,v 1.7 2005-06-19 06:39:52 gnb Exp $
+// $Id: basic.php,v 1.8 2005-07-22 14:00:39 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -59,7 +59,7 @@ function basic_test()
 	    if ($t && basic_valid_test($t))
 		$test = $t;
 	}
-	if ($test === null)
+	if ($test === null && file_exists(basic_test_dir()))
 	{
 	    $d = opendir(basic_test_dir());
 	    if ($d)
@@ -69,10 +69,6 @@ function basic_test()
 		closedir($d);
 	    }
 	}
-	if (!$test)
-	{
-	    cov_callbacks::fatal("No default test");
-	}
     }
 
     return $test;
@@ -81,8 +77,7 @@ function basic_test()
 function basic_list_tests()
 {
     $list = array();
-    $d = opendir(basic_test_dir());
-    if ($d)
+    if (file_exists(basic_test_dir()) && $d = opendir(basic_test_dir()))
     {
 	while ($test = readdir($d))
 	{
@@ -90,8 +85,8 @@ function basic_list_tests()
 		$list[] = $test;
 	}
 	closedir($d);
+	sort($list);
     }
-    sort($list);
     return $list;
 }
 
@@ -99,7 +94,9 @@ class basic_cov_callbacks extends cov_callbacks
 {
     function add_state($query)
     {
-	$query['test'] = basic_test();
+	$test = basic_test();
+	if ($test)
+	    $query['test'] = $test;
 	return $query;
     }
 }
@@ -107,13 +104,30 @@ class basic_cov_callbacks extends cov_callbacks
 function basic_cov()
 {
     $cov = new cov(new basic_cov_callbacks);
-    $cov->attach(basic_test_dir() . '/' . basic_test());
+    $test = basic_test();
+    if (!$test)
+    {
+	// No default test, so redirect to tests.php which will at
+	// least tell the user what needs to be done to add a test.
+	$self = $_SERVER['REQUEST_URI'];
+	$self = preg_replace('/\?.*/', '', $self);
+	$to = preg_replace('/[a-z]+\.php$/', 'tests.php', $self);
+	header("Location: $to");
+	exit;
+    }
+    $cov->attach(basic_test_dir() . '/' . $test);
     return $cov;
 }
 
 function basic_url($base)
 {
-    return htmlentities($base . (strchr($base,'?') == null ? '?' : '&') . 'test=' . urlencode(basic_test()));
+    $test = basic_test();
+    if ($test)
+    {
+	$base .= (strchr($base,'?') == null ? '?' : '&');
+	$base .= 'test=' . urlencode($test);
+    }
+    return htmlentities($base);
 }
 
 

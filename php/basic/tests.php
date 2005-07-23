@@ -17,19 +17,32 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: tests.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
+// $Id: tests.php,v 1.3 2005-07-22 14:00:39 gnb Exp $
 //
 require_once 'ggcov/basic/basic.php';
-basic_header('Choose a Test');
 
-echo "<table border=\"0\" cellpadding=\"5\" cellspacing=\"0\">\n";
 $list = basic_list_tests();
-foreach($list as $test)
+if (count($list) == 0)
 {
-    $url = 'summary.php?test=' . urlencode($test);
-    echo "  <tr><td><a href=\"$url\">$test</a></td></tr>\n";
+    basic_header('No Tests Available');
+    echo <<<HTML
+<p>
+No test data is available.  Please consult the ggcov documentation
+for instructions on how to add test data to ggcov web.
+</p>
+HTML;
 }
-echo "</table>\n";
+else
+{
+    basic_header('Choose a Test');
+    echo "<table border=\"0\" cellpadding=\"5\" cellspacing=\"0\">\n";
+    foreach($list as $test)
+    {
+	$url = 'summary.php?test=' . urlencode($test);
+	echo "  <tr><td><a href=\"$url\">$test</a></td></tr>\n";
+    }
+    echo "</table>\n";
+}
 
 basic_footer();
 ?>
