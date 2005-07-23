@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: functions.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
+// $Id: functions.php,v 1.3 2005-07-23 10:12:18 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -101,9 +101,9 @@ class cov_functions_page extends cov_page
 		$calls_color = cov::color_by_status(cov::status_by_values($stats[3]));
 		$branches_label = $this->format_label($stats[4]);
 		$branches_color = cov::color_by_status(cov::status_by_values($stats[4]));
-		$url = $this->env_->url('source.php',
-					'function', $func,
-					'file', $file);
+		$url = $this->env_->curl('source.php',
+					 'function', $func,
+					 'file', $file);
 
 		echo <<<HTML
   <tr>

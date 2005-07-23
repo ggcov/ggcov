@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: summary.php,v 1.7 2005-07-23 10:02:23 gnb Exp $
+// $Id: summary.php,v 1.8 2005-07-23 10:12:18 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -221,7 +221,7 @@ HTML;
 	      </select>
 	    </td>
 	    <td>
-		<a href="<?php echo $this->env_->url('source.php', 'file', $this->file_name_); ?>">View</a>
+		<a href="<?php echo $this->env_->curl('source.php', 'file', $this->file_name_); ?>">View</a>
 	    </td>
 	  </tr>
 	  <tr>
@@ -243,7 +243,7 @@ HTML;
 	      </select>
 	    </td>
 	    <td>
-		<a href="<?php echo $this->env_->url('source.php', 'function', $this->function_, 'file', $this->func_file_name_); ?>">View</a>
+		<a href="<?php echo $this->env_->curl('source.php', 'function', $this->function_, 'file', $this->func_file_name_); ?>">View</a>
 	    </td>
 	  </tr>
 <!--

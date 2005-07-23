@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: cov.php,v 1.5 2005-06-13 07:43:34 gnb Exp $
+// $Id: cov.php,v 1.6 2005-07-23 10:12:18 gnb Exp $
 //
 
 // Status defines
@@ -150,11 +150,9 @@ class cov
 	return $this->diagram_index_;
     }
 
-    function url()
+    function _url($args, $g)
     {
-	$args = func_get_args();
 	$u = $this->cb_->url_base($args[0]);
-	$g = $_GET;
 	for ($i = 1 ; $i < count($args) ; $i+=2)
 	{
 	    $k = $args[$i];
@@ -172,6 +170,14 @@ class cov
 	    }
 	}
 	return htmlentities($u);
+    }
+    function url()
+    {
+	return $this->_url(func_get_args(), $_GET);
+    }
+    function curl()
+    {
+	return $this->_url(func_get_args(), array());
     }
 
     function color_by_status($st)
