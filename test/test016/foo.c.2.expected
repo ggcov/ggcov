@@ -1,0 +1,88 @@
+        -:    1:#include <stdio.h>
+        -:    2:#include <stdlib.h>
+        -:    3:
+        -:    4:/* single line comment in the middle of nowhere */
+        -:    5:int function_one(int x);
+        -:    6:
+        -:    7:/* multiple line
+        -:    8: * comment in
+        -:    9: * the middle
+        -:   10: * of nowhere */
+        -:   11:
+        -:   12:/* first *//*and*/ /*     second     */  /* comments*/
+        -:   13:
+        -:   14:int
+        -:   15:function_two(int x)
+        7:   16:{
+        7:   17:    return function_one(x>>1);
+        -:   18:}
+        -:   19:
+        -:   20:/* FOO */
+        -:   21:int
+        -:   22:unused_function_FOO1(int x)
+        -:   23:{
+        -:   24:    x += 24;
+        -:   25:    x -= 56;
+        -:   26:    return x;
+        -:   27:}
+        -:   28:/*BAR*/
+        -:   29:
+        -:   30:int
+        -:   31:function_three(int x)
+        4:   32:{
+        4:   33:    x += 4;
+        4:   34:    x -= 5;
+        4:   35:    x++;
+        4:   36:    return x>>1;
+        -:   37:}
+        -:   38:
+        -:   39:/*crud*//* FOO *//*random crap*/
+        -:   40:int
+        -:   41:unused_function_FOO2(int x)
+        -:   42:{
+        -:   43:    x += 24;
+        -:   44:    // BAR/*FULOUS*/
+        -:   45:    x -= 56;
+        -:   46:    return x;
+        -:   47:}
+        -:   48:/*BAR*/
+        -:   49:
+        -:   50:int
+        -:   51:function_one(int x)
+       11:   52:{
+       11:   53:    if (x & 1)
+        7:   54:    	x += function_two(x);
+        -:   55:    else
+        4:   56:    	x += function_three(x);
+       11:   57:    return x;
+        -:   58:}
+        -:   59:
+        -:   60:int
+        -:   61:unused_function_BAZ(int x)  // BAZ
+        -:   62:{			    // BAZ
+        -:   63:    x += 24;		    // BAZ
+        -:   64:    x -= 56;		    // BAZ
+        -:   65:    return x;		    // BAZ
+        -:   66:}			    // BAZ
+        -:   67:
+        -:   68:int
+        -:   69:main(int argc, char **argv)
+        3:   70:{
+        3:   71:    int x, y;
+        3:   72:    int i;
+        -:   73:    
+        7:   74:    for (i = 1 ; i < argc ; i++)
+        -:   75:    {
+        4:   76:    	x = atoi(argv[i]);
+        4:   77:    	y = function_one(x);
+        -:   78:	// FOO
+        -:   79:    	if (x == 42 && x == 31415926)
+        -:   80:	{
+        -:   81:	    unused_function_FOO1(x);
+        -:   82:	    unused_function_FOO2(x);
+        -:   83:	}
+        -:   84:	// BAR 
+        4:   85:	printf("%d -> %d\n", x, y);
+        -:   86:    }
+        3:   87:    return 0;
+        -:   88:}

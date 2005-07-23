@@ -30,7 +30,7 @@
 #include "fakepopt.h"
 #include <db.h>
 
-CVSID("$Id: ggcov-webdb.c,v 1.6 2005-07-22 13:55:03 gnb Exp $");
+CVSID("$Id: ggcov-webdb.c,v 1.7 2005-07-23 11:04:02 gnb Exp $");
 
 #define V(major,minor,patch)    ((major)*10000+(minor)*1000+(patch))
 #define DB_VERSION_CODE V(DB_VERSION_MAJOR,DB_VERSION_MINOR,DB_VERSION_PATCH)
@@ -52,6 +52,8 @@ GList *files;	    /* incoming specification from commandline */
 
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
 static char *suppressed_ifdefs = 0;
+static char *suppressed_comment_lines = 0;
+static char *suppressed_comment_ranges = 0;
 static char *object_dir = 0;
 static int solve_fuzzy_flag = FALSE;
 static const char *debug_str = 0;
@@ -166,6 +168,31 @@ read_gcov_files(void)
 	
 	while ((v = tok.next()) != 0)
     	    cov_suppress_ifdef(v);
+    }
+
+    if (suppressed_comment_lines != 0)
+    {
+    	tok_t tok(/*force copy*/(const char *)suppressed_comment_lines, ", \t");
+	const char *v;
+	
+	while ((v = tok.next()) != 0)
+    	    cov_suppress_lines_with_comment(v);
+    }
+
+    if (suppressed_comment_ranges != 0)
+    {
+    	tok_t tok(/*force copy*/(const char *)suppressed_comment_ranges, ", \t");
+	const char *s, *e;
+	
+	while ((s = tok.next()) != 0)
+	{
+	    if ((e = tok.next()) == 0)
+	    {
+		fprintf(stderr, "ggcov: -Z option requires pairs of words\n");
+		exit(1);
+	    }
+    	    cov_suppress_lines_between_comments(s, e);
+	}
     }
 
     cov_pre_read();
@@ -1006,6 +1033,24 @@ static struct poptOption popt_options[] =
 	0,  	    	    	    	    	/* val 0=don't return */
 	"suppress source which is conditional on the "
 	"given cpp define/s (comma-separated)", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"suppress-comment",	    	    	/* longname */
+	'Y',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&suppressed_comment_lines,     	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"suppress source on lines containing this comment", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"suppress-comment-between",	   	/* longname */
+	'Z',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&suppressed_comment_ranges,     	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"suppress source between lines containing these start and end comments", /* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {

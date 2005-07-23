@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+. ../common.sh
+
+init
+
+compile_c foo.c
+link foo foo.o
+
+vncdo ./foo 1
+vncdo ./foo 2
+vncdo ./foo 23 423
+
+tggcov_annotate_format new
+
+subtest 1
+tggcov_flags
+run_tggcov foo.c
+compare_file foo.c
+
+subtest 2
+tggcov_flags "-Y BAZ -Z FOO,BAR"
+run_tggcov foo.c
+compare_file foo.c
+

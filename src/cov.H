@@ -33,6 +33,8 @@
 void cov_init(void);
 
 void cov_suppress_ifdef(const char *variable);
+void cov_suppress_lines_with_comment(const char *word);
+void cov_suppress_lines_between_comments(const char *startw, const char *endw);
 
 gboolean cov_is_source_filename(const char *filename);
 

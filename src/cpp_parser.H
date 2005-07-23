@@ -35,6 +35,8 @@ public:
     
 protected:
     virtual void depends_changed() = 0;
+    virtual void handle_comment(const char *text) = 0;
+    virtual void post_line() = 0;
 
     unsigned long lineno() const { return lineno_; }
     gboolean depends(const char *var) const;
@@ -82,9 +84,11 @@ private:
     int xgetc();
     void xungetc(int c);
     int getc_commentless();
+    void got_comment(estring &e, unsigned int off);
     int get_token();
     const char *token_as_string(int tok) const;
-    void parse_line(unsigned long lineno, const estring *line);
+    void parse_cpp_line(unsigned long lineno);
+    void parse_c_line(unsigned long lineno);
     void stack_dump();
     void stack_push(int token);
     int stack_pop();
@@ -100,10 +104,10 @@ private:
 
     string_var filename_;
     unsigned long lineno_;
-    const char *data_;
-    int length_;
-    int index_;
+    estring line_;
+    unsigned int index_;    /* index into line_ which xgetc() will next return */
     gboolean in_comment_;
+    estring comment_;	    /* text of all comments in the line, ws-separated */
     char tokenbuf_[256];
     list_t<depend_t> depend_stack_;
 #define MAX_STACK   32

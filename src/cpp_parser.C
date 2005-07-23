@@ -18,10 +18,11 @@
  */
 
 #include "cpp_parser.H"
+#include "tok.H"
 
 #define ISBLANK(c)  	((c) == ' ' || (c) == '\t')
 
-CVSID("$Id: cpp_parser.C,v 1.4 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: cpp_parser.C,v 1.5 2005-07-23 11:04:02 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -39,14 +40,14 @@ cpp_parser_t::~cpp_parser_t()
 int
 cpp_parser_t::xgetc()
 {
-    return data_[index_++];
+    return line_.data()[index_++];
 }
 
 void
 cpp_parser_t::xungetc(int c)
 {
     assert(index_ > 0);
-    assert(data_[index_-1] == c);
+    assert(line_.data()[index_-1] == c);
     index_--;
 }
 
@@ -55,7 +56,7 @@ cpp_parser_t::xungetc(int c)
 int
 cpp_parser_t::getc_commentless()
 {
-    while (index_ < length_)
+    while (index_ < line_.length())
     {
     	int c = xgetc();
 
@@ -66,9 +67,15 @@ cpp_parser_t::getc_commentless()
 	    {
 	    	c = xgetc();
 		if (c == '*')
+		{
 	    	    in_comment_ = TRUE;
+		    comment_.truncate();
+		}
 		else if (c == '/')  /* // C++ style comment */
+		{
+		    got_comment(line_, index_);
 		    return EOF;
+		}
 		else
 		{
 		    xungetc(c);
@@ -85,11 +92,48 @@ cpp_parser_t::getc_commentless()
 	    {
 	    	c = xgetc();
 		if (c == '/')
+		{
 	    	    in_comment_ = FALSE;
+		    got_comment(comment_, 0);
+		}
+	    }
+	    else
+	    {
+		comment_.append_char(c);
 	    }
 	}
     }
     return EOF;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+/*
+ * Called when a single-line comment has become available
+ * via lexical analysis, with a buffer and the offset
+ * into the buffer at which the comment starts (it's
+ * assumed to continue until the end of the buffer).
+ * Strips surrounding whitespace, inplace and destructively,
+ * Then calls the virtual handle_comment().
+ */
+void
+cpp_parser_t::got_comment(estring &e, unsigned int offset)
+{
+    if (comment_.length())
+    {
+	dprintf2(D_CPP|D_VERBOSE, "got_comment: e=\"%s\", offset=%u\n",
+		 e.data(), offset);
+
+	char *buf = (char *)e.data() + offset;
+	char *p = (char *)e.data() + e.length() - 1;
+
+	while (*buf && isspace(*buf))
+	    buf++;
+	while (p >= buf && isspace(*p))
+	    *p-- = '\0';
+
+	handle_comment(buf);
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -519,17 +563,18 @@ cpp_parser_t::parse_endif()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-cpp_parser_t::parse_line(unsigned long lineno, const estring *line)
+cpp_parser_t::parse_cpp_line(unsigned long lineno)
 {
-    data_ = line->data();
-    length_ = line->length();
     lineno_ = lineno;
     index_ = 0;
     in_comment_ = FALSE;
     
+    dprintf2(D_CPP|D_VERBOSE, "parse_cpp_line: line[%lu]=\"%s\"\n",
+    	     lineno, line_.data());
+
 #if 0
     int c;
-    fprintf(stderr, "cpp_parser_t::parse: line[%ld]=\"%s\"\n\t\t\"",
+    fprintf(stderr, "cpp_parser_t::parse: line[%lu]=\"%s\"\n\t\t\"",
 	    lineno, data_);
     while ((c = getc_commentless()) != EOF)
     {
@@ -540,7 +585,7 @@ cpp_parser_t::parse_line(unsigned long lineno, const estring *line)
 
 #if 0
     int tok;
-    fprintf(stderr, "cpp_parser_t::parse: line[%ld]=\"%s\"\n ->",
+    fprintf(stderr, "cpp_parser_t::parse: line[%lu]=\"%s\"\n ->",
 	    lineno, data_);
     while ((tok = get_token()) != EOF)
     {
@@ -557,8 +602,27 @@ cpp_parser_t::parse_line(unsigned long lineno, const estring *line)
     case T_IFNDEF: parse_ifndef(); break;
     case T_ELSE: parse_else(); break;
     case T_ENDIF: parse_endif(); break;
-    default: return;
     }
+
+    post_line();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cpp_parser_t::parse_c_line(unsigned long lineno)
+{
+    lineno_ = lineno;
+    index_ = 0;
+    in_comment_ = FALSE;
+    
+    dprintf2(D_CPP|D_VERBOSE, "parse_c_line: line[%lu]=\"%s\"\n",
+    	     lineno, line_.data());
+
+    while (getc_commentless() != EOF)
+	;
+
+    post_line();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -569,7 +633,6 @@ cpp_parser_t::parse()
     FILE *fp;
     char *start, *end;
     unsigned long lineno = 0, extended = 0, lineno_adj = 0;
-    estring line;
     char buf[1024];
     
     if ((fp = fopen(filename_, "r")) == 0)
@@ -593,13 +656,18 @@ cpp_parser_t::parse()
 
     	if (extended) /* previous line was extended */
 	{
-	    line.append_char(' ');
+	    line_.append_char(' ');
 	}
 	else
 	{
-	    if (*start++ != '#')
+	    line_.truncate();
+	    if (*start != '#')
+	    {
+		line_.append_string(start);
+		parse_c_line(lineno - lineno_adj);
 		continue;	    /* not a pre-processor line */
-	    line.truncate();
+	    }
+	    start++;
 	}
 
 	if (*end == '\\')
@@ -613,13 +681,13 @@ cpp_parser_t::parse()
 	    extended = 0;
 	}
 
-	line.append_string(start);
+	line_.append_string(start);
 
 	if (extended)		/* this line is extended */
 	    continue;
 	
-	/* Have a complete pre-processor line in `line' */
-	parse_line(lineno - lineno_adj, &line);
+	/* Have a complete pre-processor line in `line_' */
+	parse_cpp_line(lineno - lineno_adj);
     }
     
     fclose(fp);

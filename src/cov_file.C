@@ -26,8 +26,10 @@
 #include "filename.h"
 #include "demangle.h"
 #include "cpp_parser.H"
+#include "cpp_parser.H"
+#include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.45 2005-05-25 13:01:33 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.46 2005-07-23 11:04:01 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -51,21 +53,6 @@ void *cov_file_t::files_model_;
 #define BBG_VERSION_OLDPLUS     1
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static hashtable_t<char, char> *suppressed_ifdefs = 0;
-
-void
-cov_suppress_ifdef(const char *variable)
-{
-    char *v = g_strdup(variable);
-
-    if (suppressed_ifdefs == 0)
-    	suppressed_ifdefs = new hashtable_t<char, char>;
-    suppressed_ifdefs->insert(v, v);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 
 cov_file_t::cov_file_t(const char *name)
  :  name_(name)
@@ -1587,64 +1574,111 @@ class cov_file_src_parser_t : public cpp_parser_t
 {
 private:
     cov_file_t *file_;
-    unsigned long last_line_;
-    gboolean is_suppressed_;
-
-    // TODO: need a "parse ended" callback which is not the dtor
+    unsigned int is_suppressed_;    /* mask of active suppression types */
+    hashtable_t<const char, cov_suppression_t> *active_ranges_;
 
     static void
-    check_one_suppressed(char *key, char *val, void *closure)
+    check_one_ifdef(const char *key, cov_suppression_t *s, void *closure)
     {
 	cov_file_src_parser_t *self = (cov_file_src_parser_t *)closure;
 
 	if (self->depends(key))
-	    self->is_suppressed_ = TRUE;
+	    self->is_suppressed_ |= (1<<cov_suppression_t::IFDEF);
     }
 
     void
     depends_changed()
     {
-	unsigned long start, end, l;
-
     	if (debug_enabled(D_CPP|D_VERBOSE))
 	    dump();
 
-	start = last_line_+1;
-	end = lineno();
-	last_line_ = end;
-	
-	if (end > file_->lines_->length())
-    	    end = file_->lines_->length();
-	if (start > end)
-	    return;
+	is_suppressed_ &= ~(1<<cov_suppression_t::IFDEF);
+	cov_suppression_t::foreach(cov_suppression_t::IFDEF,
+	    	    	    	   check_one_ifdef, this);
+    	dprintf1(D_CPP, "depends_changed suppressed=%u\n", is_suppressed_);
+    }
 
-	is_suppressed_ = FALSE;
-	suppressed_ifdefs->foreach(check_one_suppressed, this);
-    	dprintf3(D_CPP, "depends_changed start=%ld end=%ld suppressed=%d\n",
-	    	    start, end, is_suppressed_);
-	if (is_suppressed_)
+    void
+    post_line()
+    {
+	cov_line_t *ln;
+	
+	if (is_suppressed_ &&
+	    lineno() <= file_->lines_->length() &&
+	    (ln = file_->lines_->nth(lineno()-1)) != 0)
 	{
-	    if (start > 1)
-	    	start--;    /* include the leading #ifdef */
-	    for (l = start ; l <= end ; l++)
+    	    dprintf1(D_CPP|D_VERBOSE, "post_line: suppressing %u\n", is_suppressed_);
+	    ln->suppress();
+	}
+    	/* line suppression is one-shot */
+	is_suppressed_ &= ~(1<<cov_suppression_t::COMMENT_LINE);
+    }
+
+    void
+    handle_comment(const char *text)
+    {
+	cov_suppression_t *s;
+
+    	dprintf1(D_CPP, "handle_comment: \"%s\"\n", text);
+
+	s = cov_suppression_t::find(text, cov_suppression_t::COMMENT_LINE);
+	if (s != 0)
+	{
+	    /* comment suppresses this line only */
+	    is_suppressed_ |= (1<<cov_suppression_t::COMMENT_LINE);
+    	    dprintf0(D_CPP, "handle_comment: suppressing line\n");
+	}
+
+	s = cov_suppression_t::find(text, cov_suppression_t::COMMENT_RANGE);
+	if (s != 0)
+	{
+	    /* comment starts a new active range */
+    	    dprintf2(D_CPP, "handle_comment: starting range %s-%s\n",
+	    	    	    s->word_.data(), s->word2_.data());
+	    if (active_ranges_ == 0)
 	    {
-	    	cov_line_t *ln = file_->lines_->nth(l-1);
-		if (ln != 0)
-		    ln->suppress();
+		active_ranges_ = new hashtable_t<const char, cov_suppression_t>;
+		active_ranges_->insert(s->word2_, s);
+	    }
+	    else if (active_ranges_->lookup(s->word2_) == 0)
+	    {
+		active_ranges_->insert(s->word2_, s);
+	    }
+	    is_suppressed_ |= (1<<cov_suppression_t::COMMENT_RANGE);
+	}
+
+	if (active_ranges_ != 0 && (s = active_ranges_->lookup(text)) != 0)
+	{
+	    /* comment ends an active range */
+	    active_ranges_->remove(text);
+    	    dprintf2(D_CPP, "handle_comment: ending range %s-%s\n",
+	    	    	    s->word_.data(), s->word2_.data());
+	    if (active_ranges_->size() == 0)
+	    {
+		/*
+		 * Removed last active range; stop suppressing
+		 * by range, but suppress this line so the range
+		 * is inclusive of the closing magical comment line
+		 */
+		is_suppressed_ &= ~(1<<cov_suppression_t::COMMENT_RANGE);
+		is_suppressed_ |= (1<<cov_suppression_t::COMMENT_LINE);
+    		dprintf0(D_CPP, "handle_comment: last range\n");
 	    }
 	}
     }
+
 
 public:
     cov_file_src_parser_t(cov_file_t *f)
      :  cpp_parser_t(f->name()),
      	file_(f),
-    	last_line_(0)
+	is_suppressed_(0),
+	active_ranges_(0)
     {
     }
     ~cov_file_src_parser_t()
     {
-    	depends_changed();
+	delete active_ranges_;
     }
 };
 
@@ -1768,10 +1802,10 @@ cov_file_t::read(gboolean quiet)
 	 !read_da_file(filename))
 	return FALSE;
 
-    if (suppressed_ifdefs != 0 && !read_src_file())
+    if (cov_suppression_t::count() != 0 && !read_src_file())
     {
 	static const char warnmsg[] = 
-	"could not scan source file for cpp conditionals, "
+	"could not scan source file for cpp conditionals or comments, "
 	"reports may be inaccurate.\n";
 
     	/* TODO: save and report in alert to user */
