@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: common.sh,v 1.10 2005-04-03 09:00:45 gnb Exp $
+# $Id: common.sh,v 1.11 2005-07-31 11:57:25 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -402,7 +402,45 @@ _filter_spurious_counts ()
 {
     local FILE="$1"
     
-    sed -e 's|^ *[#0-9-]*\(: *[0-9]*:[ \t]*[{}]\)$|        .\1|' $FILE
+perl -e '
+use strict;
+my $in_decls = 0;
+while (<STDIN>)
+{
+    my ($count, $lineno, $text) = m/^( *[#0-9-]*):( *[0-9]*):(.*)$/;
+    my $zap = 0;
+    if ($text =~ m/^\s*}/)
+    {
+	# ignore lonely closing brace
+	$zap = 1;
+    }
+    elsif ($text =~ m/^{/)
+    {
+	# ignore lonely opening brace for a function
+	$in_decls = 1;
+	$zap = 1;
+    }
+    elsif ($text =~ m/^\s+{/)
+    {
+	# ignore all other lonely opening brace
+	$zap = 1;
+    }
+    elsif ($text =~ m/^\s*$/)
+    {
+	$in_decls = 0;
+    }
+    elsif ($in_decls && $text =~ m/^[^={}()]*$/)
+    {
+	# ignore lines after the opening brace for a function
+	# until the first empty line, if they contain only
+	# variable declarations.
+	$zap = 1;
+    }
+    $count = "        ." if ($zap);
+    print "$count:$lineno:$text\n";
+}
+' < $FILE
+
 }
 
 compare_file ()
