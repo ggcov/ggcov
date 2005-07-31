@@ -22,7 +22,7 @@
 
 #define ISBLANK(c)  	((c) == ' ' || (c) == '\t')
 
-CVSID("$Id: cpp_parser.C,v 1.5 2005-07-23 11:04:02 gnb Exp $");
+CVSID("$Id: cpp_parser.C,v 1.6 2005-07-31 11:30:08 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -464,24 +464,21 @@ cpp_parser_t::parse_if()
 {
     dprintf1(D_CPP, "[%ld] if\n", lineno_);
 
-    // notify subclasses
-    depends_changed();
-
     depend_t *dep = new depend_t;
     dep->lineno_ = lineno_;
     depend_stack_.prepend(dep);
 
     depth_ = 0;    
     parse_boolean_expr(FALSE);
+
+    // notify subclasses
+    depends_changed();
 }
 
 void
 cpp_parser_t::parse_ifdef()
 {
     dprintf1(D_CPP, "[%ld] ifdef\n", lineno_);
-
-    // notify subclasses
-    depends_changed();
 
     if (get_token() != T_IDENTIFIER)
     	return; /* syntax error */
@@ -492,15 +489,15 @@ cpp_parser_t::parse_ifdef()
     dep->lineno_ = lineno_;
     depend_stack_.prepend(dep);
     set_delta(dep, tokenbuf_, 1);
+
+    // notify subclasses
+    depends_changed();
 }
 
 void
 cpp_parser_t::parse_ifndef()
 {
     dprintf1(D_CPP, "[%ld] ifndef\n", lineno_);
-
-    // notify subclasses
-    depends_changed();
 
     if (get_token() != T_IDENTIFIER)
     	return; /* syntax error */
@@ -511,6 +508,9 @@ cpp_parser_t::parse_ifndef()
     dep->lineno_ = lineno_;
     depend_stack_.prepend(dep);
     set_delta(dep, tokenbuf_, -1);
+
+    // notify subclasses
+    depends_changed();
 }
 
 static void
@@ -523,9 +523,6 @@ void
 cpp_parser_t::parse_else()
 {
     dprintf1(D_CPP, "[%ld] else\n", lineno_);
-
-    // notify subclasses
-    depends_changed();
     
     depend_t *dep;
     if ((dep = depend_stack_.head()) == 0)
@@ -537,15 +534,15 @@ cpp_parser_t::parse_else()
     }
     dep->lineno_ = lineno_;
     dep->deltas_->foreach(invert_one_delta, 0);
+
+    // notify subclasses
+    depends_changed();
 }
 
 void
 cpp_parser_t::parse_endif()
 {
     dprintf1(D_CPP, "[%ld] endif\n", lineno_);
-
-    // notify subclasses
-    depends_changed();
 
     depend_t *dep;
 
@@ -558,6 +555,9 @@ cpp_parser_t::parse_endif()
     }
     
     delete dep;
+
+    // notify subclasses
+    depends_changed();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
