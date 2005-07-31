@@ -20,7 +20,7 @@
 
 #include "mvc.h"
 
-CVSID("$Id: mvc.c,v 1.2 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: mvc.c,v 1.3 2005-07-31 11:37:27 gnb Exp $");
 
 typedef struct mvc_listener_s	    mvc_listener_t;
 typedef struct mvc_batch_s	    mvc_batch_t;
@@ -39,10 +39,10 @@ struct mvc_batch_s
 };
 
 static GHashTable *listeners;
-gboolean batching;
+static gboolean batching;
 static GHashTable *batch;
 
-enum { NONE, LISTEN, UNLISTEN, CHANGED, UNBATCH } state = NONE;
+static enum { NONE, LISTEN, UNLISTEN, CHANGED, UNBATCH } state = NONE;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

@@ -20,7 +20,7 @@
 #include "covio.H"
 #include "estring.H"
 
-CVSID("$Id: covio.C,v 1.4 2005-04-03 09:43:44 gnb Exp $");
+CVSID("$Id: covio.C,v 1.5 2005-07-31 11:37:27 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -59,7 +59,8 @@ covio_t::read_lu32(gnb_u32_t *wp)
     
     *wp = w;
 
-    dprintf1(D_IO|D_VERBOSE, "covio_t::read_lu32() = 0x%08lx\n", w);
+    dprintf1(D_IO|D_VERBOSE, "covio_t::read_lu32() = 0x%08lx\n",
+	     (unsigned long)w);
 
     return (!feof(fp_));
 }
@@ -77,7 +78,8 @@ covio_t::read_bu32(gnb_u32_t *wp)
     
     *wp = w;
 
-    dprintf1(D_IO|D_VERBOSE, "covio_t::read_bu32() = 0x%08lx\n", w);
+    dprintf1(D_IO|D_VERBOSE, "covio_t::read_bu32() = 0x%08lx\n",
+	     (unsigned long)w);
 
     return (!feof(fp_));
 }

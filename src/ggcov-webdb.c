@@ -30,7 +30,7 @@
 #include "fakepopt.h"
 #include <db.h>
 
-CVSID("$Id: ggcov-webdb.c,v 1.7 2005-07-23 11:04:02 gnb Exp $");
+CVSID("$Id: ggcov-webdb.c,v 1.8 2005-07-31 11:37:27 gnb Exp $");
 
 #define V(major,minor,patch)    ((major)*10000+(minor)*1000+(patch))
 #define DB_VERSION_CODE V(DB_VERSION_MAJOR,DB_VERSION_MINOR,DB_VERSION_PATCH)
@@ -1212,7 +1212,7 @@ create_database(void)
     systemf("/bin/rm -rf \"%s\"", tempdir);
     file_build_tree(tempdir, 0755);
 
-    if (ret = db_create(&db, 0, 0))
+    if ((ret = db_create(&db, 0, 0)))
     {
 	fprintf(stderr, "%s: db_create(): %s\n", argv0, db_strerror(ret));
 	exit(1);
