@@ -26,7 +26,7 @@
 #include "mvc.h"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.25 2005-04-03 09:07:26 gnb Exp $");
+CVSID("$Id: cov.C,v 1.26 2005-07-31 12:15:18 gnb Exp $");
 
 static gboolean cov_read_one_object_file(const char *exefilename, int depth);
 
@@ -91,70 +91,6 @@ cov_read_source_file(const char *filename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if defined(HAVE_BBG_FAKE_FLAG) && DEBUG > 1
-/*
- * For N blocks, 0..N-1,
- * block 0: in arcs are calls to the function => 1 arc 1 fake
- *          out arcs are fallthroughs to the function body => 1 arc 0 fake
- * block N-1: in arcs are total calls from this function => same
- *                number of arcs as calls, all fake.
- *            out arcs are returns from the function, 1 arc, 1 fake.
- */
-void
-cov_check_fakeness(cov_file_t *f)
-{
-    unsigned int fnidx;
-    unsigned int bidx;
-    
-    fprintf(stderr, "check_fakeness: file %s\n", f->minimal_name());
-    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
-    {
-    	cov_function_t *fn = f->nth_function(fnidx);
-	unsigned int ncalls = 0;
-	
-	if (fn->is_suppressed())
-	    continue;
-
-	fprintf(stderr, "    func %s [%d blocks]\n", fn->name(), fn->num_blocks());
-	for (bidx = 0 ; bidx < fn->num_blocks() ; bidx++)
-	{
-    	    cov_block_t *b = fn->nth_block(bidx);
-	
-	    fprintf(stderr, "        block %u: in=%d/%d out=%d/%d\n",
-	    	    bidx,
-		    cov_arc_t::nfake(b->in_arcs_),
-		    b->in_arcs_.length(),
-		    cov_arc_t::nfake(b->out_arcs_),
-		    b->out_arcs_.length());
-    	    if (bidx == 0)
-	    {
-    		assert(cov_arc_t::nfake(b->out_arcs_) == 0);
-    		assert(b->out_arcs_.length() == 1);
-    		assert(cov_arc_t::nfake(b->in_arcs_) == 1);
-    		assert(b->out_arcs_.length() == 1);
-	    }
-	    else if (bidx == fn->num_blocks()-1)
-	    {
-    		assert(cov_arc_t::nfake(b->out_arcs_) == 1);
-    		assert(b->out_arcs_.length() == 1);
-    		assert(cov_arc_t::nfake(b->in_arcs_) == ncalls);
-    		assert(b->in_arcs_.length() == ncalls);
-	    }
-	    else
-	    {
-		assert(cov_arc_t::nfake(b->out_arcs_) >= 0);
-    		assert(cov_arc_t::nfake(b->out_arcs_) <= 1);
-		assert(cov_arc_t::nfake(b->out_arcs_) == 0 || b->out_arcs_.length() <= 2);
-    		assert(cov_arc_t::nfake(b->in_arcs_) == 0);
-		ncalls += cov_arc_t::nfake(b->out_arcs_);
-	    }
-	}
-    }
-}
-
-#endif /* DEBUG>1 */
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 #ifdef HAVE_LIBBFD
 
 static void
@@ -199,11 +135,6 @@ cov_post_read(void)
     	cov_add_callnodes(*iter);
     for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     	cov_add_callarcs(*iter);
-
-#if defined(HAVE_BBG_FAKE_FLAG) && DEBUG > 1
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	cov_check_fakeness(*iter);
-#endif
 
     /* emit an MVC notification */
     mvc_changed(cov_file_t::files_model(), 1);
@@ -446,9 +377,7 @@ dump_arc(FILE *fp, cov_arc_t *a)
     fprintf(fp, "                        COUNT="GNB_U64_DFMT"\n", a->count());
     fprintf(fp, "                        NAME=%s\n", a->name());
     fprintf(fp, "                        ON_TREE=%s\n", boolstr(a->on_tree_));
-#ifdef HAVE_BBG_FAKE_FLAG
-    fprintf(fp, "                        FAKE=%s\n", boolstr(a->fake_));
-#endif
+    fprintf(fp, "                        CALL=%s\n", boolstr(a->call_));
     fprintf(fp, "                        FALL_THROUGH=%s\n", boolstr(a->fall_through_));
     fprintf(fp, "                        STATUS=%s\n", status_names[a->status()]);
     fprintf(fp, "                    }\n");

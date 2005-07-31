@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_arc.C,v 1.8 2005-03-14 07:49:15 gnb Exp $");
+CVSID("$Id: cov_arc.C,v 1.9 2005-07-31 12:15:18 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -63,11 +63,7 @@ cov_arc_t::~cov_arc_t()
 gboolean 
 cov_arc_t::is_call() const
 {
-#ifdef HAVE_BBG_FAKE_FLAG
-    return (fake_);
-#else
     return (to_->bindex() == to_->function()->num_blocks()-1);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -114,22 +110,6 @@ cov_arc_t::total(const list_t<cov_arc_t> &list)
     }
     return total;
 }
-
-#ifdef HAVE_BBG_FAKE_FLAG
-unsigned int
-cov_arc_t::nfake(const list_t<cov_arc_t> &list)
-{
-    unsigned int nfake = 0;
-    list_iterator_t<cov_arc_t> iter;
-
-    for (iter = list.first() ; iter != (cov_arc_t *)0 ; ++iter)
-    {
-	if ((*iter)->fake_)
-	    nfake++;
-    }
-    return nfake;
-}	    
-#endif
 
 unsigned int
 cov_arc_t::ncalls(const list_t<cov_arc_t> &list)

@@ -29,7 +29,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.47 2005-07-31 11:59:41 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.48 2005-07-31 12:15:18 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -697,9 +697,6 @@ cov_file_t::read_old_bbg_function(covio_t *io)
 			    
 	    a = new cov_arc_t(fn->nth_block(bidx), fn->nth_block(dest));
 	    a->on_tree_ = (flags & BBG_ON_TREE);
-#ifdef HAVE_BBG_FAKE_FLAG
-	    a->fake_ = !!(flags & BBG_FAKE);
-#endif
     	    if (nblocks >= 2 && dest == nblocks-1)
 	    {
 	    	num_expected_fake_++;
@@ -935,9 +932,6 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     	    	    bbg_failed2("dest=%u > nblocks=%u", dest, nblocks);
 		    
 		a = new cov_arc_t(fn->nth_block(bidx), fn->nth_block(dest));
-#ifdef HAVE_BBG_FAKE_FLAG
-		a->fake_ = !!(flags & BBG_FAKE);
-#endif
 		a->fall_through_ = !!(flags & BBG_FALL_THROUGH);
 		a->on_tree_ = (flags & BBG_ON_TREE);
 

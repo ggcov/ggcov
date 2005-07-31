@@ -124,9 +124,6 @@ private:
 
     void set_count(count_t count);
     static count_t total(const list_t<cov_arc_t> &list);
-#ifdef HAVE_BBG_FAKE_FLAG
-    static unsigned int nfake(const list_t<cov_arc_t> &list);
-#endif
     static unsigned int ncalls(const list_t<cov_arc_t> &list);
     static cov_arc_t *find_invalid(const list_t<cov_arc_t> &list);
 
@@ -135,9 +132,6 @@ private:
     count_t count_;
     string_var name_;     	    /* name of function called (if known) or NULL */
     gboolean on_tree_:1;
-#ifdef HAVE_BBG_FAKE_FLAG
-    gboolean fake_:1;
-#endif
     gboolean fall_through_:1;
     gboolean count_valid_:1;
     gboolean suppressed_:1;
@@ -146,9 +140,6 @@ private:
     friend class cov_function_t;
     friend class cov_block_t;
     friend void dump_arc(FILE *, cov_arc_t *a);
-#ifdef HAVE_BBG_FAKE_FLAG
-    friend void cov_check_fakeness(cov_file_t *f);
-#endif
 };
 
 
