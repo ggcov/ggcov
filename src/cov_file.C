@@ -29,7 +29,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.46 2005-07-23 11:04:01 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.47 2005-07-31 11:59:41 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -44,8 +44,14 @@ void *cov_file_t::files_model_;
 	 ((gnb_u32_t)('0'+(minor)/10)<<16)| \
 	 ((gnb_u32_t)('0'+(minor)%10)<<8)| \
 	 ((gnb_u32_t)(release)))
+#define BBG_VERSION_GCC40    	_NEW_VERSION(4,0,'*')
 #define BBG_VERSION_GCC34    	_NEW_VERSION(3,4,'*')
-#define BBG_VERSION_GCC34_RH	_NEW_VERSION(3,4,'R')   /* RedHat crud */
+/*
+ * RedHat's FC3 compiler appears to be based on a CVS sample partway
+ * between gcc 3.4.0 and gcc 4.0.  It has funcids in the .gcno file
+ * but the .gcda file doesn't use a 0 tag as a terminator.
+ */
+#define BBG_VERSION_GCC34_RH	_NEW_VERSION(3,4,'R')
 #define BBG_VERSION_GCC33   	_NEW_VERSION(3,3,'p')
 #define BBG_VERSION_GCC33_SUSE	_NEW_VERSION(3,3,'S')   /* SUSE crud */
 #define BBG_VERSION_GCC33_MDK	_NEW_VERSION(3,3,'M')   /* Mandrake crud */
@@ -845,8 +851,9 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     case BBG_VERSION_GCC33:
     	break;
     case BBG_VERSION_GCC34_RH:
+    case BBG_VERSION_GCC40:
     	if (expect_version == BBG_VERSION_GCC34)
-	    expect_version = BBG_VERSION_GCC34_RH;
+	    expect_version = format_version_;
 	/* fall through */
     case BBG_VERSION_GCC34:
 	io->read_u32(&tmp);	/* ignore the timestamp */
@@ -870,7 +877,8 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    if (format_version_ == BBG_VERSION_GCC34_RH)
+	    if (format_version_ == BBG_VERSION_GCC34_RH ||
+	    	format_version_ == BBG_VERSION_GCC40)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		string_var filename;
@@ -1030,12 +1038,12 @@ cov_file_t::format_rec_t cov_file_t::formats[] =
     {
     	"gcno", 4,
 	&cov_file_t::read_gcc34b_bbg_file,
-	"gcc 3.4 .gcno (big-endian) format"
+	"gcc 3.4 or 4.0 .gcno (big-endian) format"
     },
     {
     	"oncg", 4,
 	&cov_file_t::read_gcc34l_bbg_file,
-	"gcc 3.4 .gcno (little-endian) format"
+	"gcc 3.4 or 4.0 .gcno (little-endian) format"
     },
     {
     	"gbbg", 4,
@@ -1272,7 +1280,7 @@ cov_file_t::read_oldplus_da_file(const char *dafilename)
 	 ((gnb_u32_t)c<<8)| \
 	 ((gnb_u32_t)d))
 
-#define DA_GCC34_MAGIC	    _DA_MAGIC('g','c','d','a')
+#define DA_GCC34_MAGIC	    _DA_MAGIC('g','c','d','a')	/* also 4.0 */
 #define DA_GCC33_MAGIC	    _DA_MAGIC('g','c','o','v')
 
 gboolean
@@ -1308,6 +1316,9 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 
     while (io->read_u32(&tag))
     {
+    	if (tag == 0 && format_version_ == BBG_VERSION_GCC40)
+	    break;  /* end of file */
+
 	if (!io->read_u32(&length))
     	    da_failed0("short file");
 	length *= len_unit;
@@ -1317,7 +1328,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    if (format_version_ == BBG_VERSION_GCC34_RH)
+	    if (format_version_ == BBG_VERSION_GCC34_RH ||
+	    	format_version_ == BBG_VERSION_GCC40)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		const char *funcid = read_rh_funcid(io);
@@ -1395,16 +1407,17 @@ cov_file_t::read_da_file(const char *dafilename)
     {
     case BBG_VERSION_GCC34:
     case BBG_VERSION_GCC34_RH:
+    case BBG_VERSION_GCC40:
 	if (little_endian_)
 	{
-	    dprintf0(D_FILES, "Detected gcc 3.4 (little endian) .gcda format\n");
+	    dprintf0(D_FILES, "Detected gcc 3.4 or 4.0 (little endian) .gcda format\n");
     	    covio_gcc34l_t io(dafilename);
 	    if (io.open_read())
     	    	return read_gcc3_da_file(&io, DA_GCC34_MAGIC);
 	}
 	else
 	{
-	    dprintf0(D_FILES, "Detected gcc 3.4 (big endian) .gcda format\n");
+	    dprintf0(D_FILES, "Detected gcc 3.4 or 4.0 (big endian) .gcda format\n");
     	    covio_gcc34b_t io(dafilename);
 	    if (io.open_read())
     	    	return read_gcc3_da_file(&io, DA_GCC34_MAGIC);
