@@ -12,6 +12,6 @@ vncdo ./foo 2
 vncdo ./foo 3
 vncdo ./foo 4
 
-run_gcov foo.c
+tggcov_annotate_format new
 run_tggcov foo.c
-compare_lines foo.c
+compare_file foo.c
