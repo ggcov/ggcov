@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.15 2005-03-14 07:49:15 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.16 2005-07-31 12:27:40 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -83,6 +83,21 @@ cov_block_t::set_count(count_t count)
     assert(!count_valid_);
     count_valid_ = TRUE;
     count_ = count;
+
+    assert(out_ncalls_ == 0 || out_ncalls_ == 1);
+    if (out_ncalls_)
+    {
+	list_iterator_t<cov_arc_t> aiter;
+	for (aiter = out_arcs_.first() ; aiter != (cov_arc_t *)0 ; ++aiter)
+	{
+	    cov_arc_t *a = (*aiter);
+	    if (a->call_)
+	    {
+	    	a->set_count(count);
+		break;
+	    }
+	}	    
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -90,15 +105,10 @@ cov_block_t::set_count(count_t count)
 gboolean
 cov_block_t::needs_call() const
 {
-    /*
-     * TODO: can avoid calling ncalls() and just test the number
-     * of incoming arcs to the last block in the function, which
-     * should be the same.
-     */
     return (idx_ > 0 &&
     	    idx_ < function_->num_blocks()-1 &&
 	    call_ == 0 &&
-    	    cov_arc_t::ncalls(out_arcs_) > 0);
+    	    out_ncalls_ > 0);
 }
 
 void

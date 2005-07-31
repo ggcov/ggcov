@@ -116,10 +116,11 @@ private:
     gboolean count_valid_:1;
     
     list_t<cov_arc_t> in_arcs_;
-    unsigned in_ninvalid_;   /* number of inbound arcs with invalid counts */
+    unsigned in_ninvalid_;   /* number of inbound non-call arcs with invalid counts */
     
     list_t<cov_arc_t> out_arcs_;
-    unsigned out_ninvalid_;  /* number of outbound arcs with invalid counts */
+    unsigned out_ninvalid_;  /* number of outbound non-call arcs with invalid counts */
+    unsigned int out_ncalls_;/* number of outbound call arcs */
     
     list_t<cov_location_t> locations_;
     

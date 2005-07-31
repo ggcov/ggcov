@@ -46,7 +46,10 @@ public:
     {
     	return idx_;
     }
-    gboolean is_call() const;
+    gboolean is_call() const
+    {
+    	return call_;
+    }
     gboolean
     is_fall_through() const
     {
@@ -114,7 +117,8 @@ public:
     void finalise();
 
 private:
-    cov_arc_t(cov_block_t *from, cov_block_t *to);
+    cov_arc_t();
+    void attach(cov_block_t *from, cov_block_t *to);
     ~cov_arc_t();
 
     void suppress()
@@ -124,14 +128,15 @@ private:
 
     void set_count(count_t count);
     static count_t total(const list_t<cov_arc_t> &list);
-    static unsigned int ncalls(const list_t<cov_arc_t> &list);
-    static cov_arc_t *find_invalid(const list_t<cov_arc_t> &list);
+    static cov_arc_t *find_invalid(const list_t<cov_arc_t> &list,
+    	    	    	    	   gboolean may_be_call);
 
     cov_block_t *from_, *to_;
     unsigned int idx_; 	    /* serial number in from->out_arcs */
     count_t count_;
     string_var name_;     	    /* name of function called (if known) or NULL */
     gboolean on_tree_:1;
+    gboolean call_:1;
     gboolean fall_through_:1;
     gboolean count_valid_:1;
     gboolean suppressed_:1;

@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.21 2005-05-22 07:14:16 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.22 2005-07-31 12:27:40 gnb Exp $");
 
 gboolean cov_function_t::solve_fuzzy_flag_ = FALSE;
 
@@ -200,7 +200,7 @@ cov_function_t::reconcile_calls()
     	cov_block_t *b = nth_block(bidx);
 	string_var desc = b->describe();
 
-	if (cov_arc_t::ncalls(b->out_arcs_) != (b->call_ == 0 ? 0U : 1U))
+	if (b->out_ncalls_ != (b->call_ == 0 ? 0U : 1U))
 	{
 	    /* TODO */
 	    if (b->get_first_location() != 0)
@@ -214,7 +214,7 @@ cov_function_t::reconcile_calls()
 		fprintf(stderr, "Failed to reconcile calls for block %s\n",
 		    	desc.data());
 		fprintf(stderr, "    %d call arcs, %d recorded calls\n",
-		    	    cov_arc_t::ncalls(b->out_arcs_),
+		    	    b->out_ncalls_,
 			    (b->call_ == 0 ? 0 : 1));
     	    }
 	    b->call_ = (const char *)0;   /* free and null out */
@@ -234,7 +234,7 @@ cov_function_t::reconcile_calls()
 	    }
     	}
 	dprintf2(D_CGRAPH, "Reconciled %d calls for block %s\n",
-		    	    cov_arc_t::ncalls(b->out_arcs_), desc.data());
+		    	    b->out_ncalls_, desc.data());
     }
     return ret;
 }
@@ -316,7 +316,16 @@ cov_function_t::solve()
 	    {
     		dprintf3(D_SOLVE, "[%d] out_ninvalid_=%u in_ninvalid_=%u\n",
 		    	    b->bindex(), b->out_ninvalid_, b->in_ninvalid_);
-		if (b->out_ninvalid_ == 0)
+
+    	    	/*
+		 * For blocks with calls we have to ignore the outbound total
+		 * when calculating the block count, because of the possibility
+		 * of calls to fork(), exit() or other functions which can
+		 * return more or less frequently than they're called.  Given
+		 * the existance of longjmp() all calls are potentially like
+		 * that.
+		 */
+		if (b->out_ncalls_ == 0 && b->out_ninvalid_ == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->out_arcs_));
 		    changes++;
@@ -335,7 +344,7 @@ cov_function_t::solve()
 		if (b->out_ninvalid_ == 1)
 		{
 		    /* Search for the invalid arc, and set its count.  */
-		    if ((a = cov_arc_t::find_invalid(b->out_arcs_)) == 0)
+		    if ((a = cov_arc_t::find_invalid(b->out_arcs_, FALSE)) == 0)
 			return FALSE;	/* ERROR */
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
@@ -358,7 +367,7 @@ cov_function_t::solve()
 		if (b->in_ninvalid_ == 1)
 		{
 		    /* Search for the invalid arc, and set its count.  */
-		    if ((a = cov_arc_t::find_invalid(b->in_arcs_)) == 0)
+		    if ((a = cov_arc_t::find_invalid(b->in_arcs_, FALSE)) == 0)
 			return FALSE;	/* ERROR */
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
@@ -382,8 +391,11 @@ cov_function_t::solve()
 	}
     }
 
-    /* If the graph has been correctly solved, every block will have a
-       succ and pred count of zero.  */
+    /*
+     * If the graph has been correctly solved, every block will
+     * have a valid count and all its inbound and outbounds arcs
+     * will also have valid counts.
+     */
     for (i = 0 ; i < (int)num_blocks() ; i++)
     {
     	b = nth_block(i);
@@ -392,6 +404,10 @@ cov_function_t::solve()
 	if (b->out_ninvalid_ > 0 && b->out_ninvalid_ < ~0U)
 	    return FALSE;
 	if (b->in_ninvalid_ > 0 && b->in_ninvalid_ < ~0U)
+	    return FALSE;
+	if (cov_arc_t::find_invalid(b->in_arcs_, TRUE) != 0)
+	    return FALSE;
+	if (cov_arc_t::find_invalid(b->out_arcs_, TRUE) != 0)
 	    return FALSE;
     }
 
