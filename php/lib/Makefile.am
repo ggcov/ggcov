@@ -16,17 +16,20 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.6 2005-07-23 10:36:03 gnb Exp $
+# $Id: Makefile.am,v 1.7 2005-08-01 13:04:47 gnb Exp $
 #
 
 include $(srcdir)/../phpdirs.am
 
-if WEB
-myincludedir=		$(phpincludedir)/ggcov/lib
-
-dist_myinclude_DATA=	cov.php covbar.php \
+LIB_PHP=		cov.php covbar.php \
 			source.php summary.php files.php \
 			reports.php functions.php calls.php \
 			callbutterfly.php diagram.php drender.php \
 			dviewport.php
+
+if WEB
+myincludedir=		$(phpincludedir)/ggcov/lib
+myinclude_DATA=		$(LIB_PHP)
 endif
+
+EXTRA_DIST=		$(LIB_PHP)

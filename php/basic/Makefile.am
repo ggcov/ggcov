@@ -16,17 +16,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.10 2005-07-23 10:36:03 gnb Exp $
+# $Id: Makefile.am,v 1.11 2005-08-01 13:04:47 gnb Exp $
 #
 
 include $(srcdir)/../phpdirs.am
 
-if WEB
-myincludedir=		$(phpincludedir)/ggcov/basic
+LIB_PHP=		basic.php 
 
-dist_myinclude_DATA=	basic.php 
-
-dist_phpwww_DATA=	basic.css ../../ui/ggcov64.png \
+PAGE_PHP=		basic.css ../../ui/ggcov64.png \
 			tests.php summary.php covbar.php files.php \
 			reports.php functions.php calls.php \
 			callbutterfly.php source.php diagram.php \
@@ -36,4 +33,11 @@ dist_phpwww_DATA=	basic.css ../../ui/ggcov64.png \
 			pan-dl.gif pan-d.gif pan-dr.gif \
 			zoom-in.gif zoom-out.gif show-all.gif \
 			favicon.ico valid-html40.gif
+
+if WEB
+myincludedir=		$(phpincludedir)/ggcov/basic
+myinclude_DATA=		$(LIB_PHP)
+phpwww_DATA=		$(PAGE_PHP)
 endif
+
+EXTRA_DIST=		$(LIB_PHP) $(PAGE_PHP)

@@ -16,17 +16,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.5 2005-07-23 10:36:03 gnb Exp $
+# $Id: Makefile.am,v 1.6 2005-08-01 13:04:47 gnb Exp $
 #
 
-man_MANS=
 if GUI
-man_MANS+=	ggcov.1
+GUI_MANS=	ggcov.1
 endif
 if WEB
-man_MANS+=	ggcov-webdb.1
+WEB_MANS=	ggcov-webdb.1
 endif
 
+man_MANS=	$(GUI_MANS) $(WEB_MANS)
 EXTRA_DIST=	bbg-file-format.txt dbus-decode-gcov.txt \
 		dwarf-file-format.txt HOWTO.web ggcov.1 \
 		ggcov-webdb.1

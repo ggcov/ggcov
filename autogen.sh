@@ -17,13 +17,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: autogen.sh,v 1.2 2005-07-31 12:43:56 gnb Exp $
+# $Id: autogen.sh,v 1.3 2005-08-01 13:04:47 gnb Exp $
 #
 
 set -x
 aclocal || exit 1
 autoconf || exit 1
 autoheader || exit 1
-automake -ac || exit 1
+automake -a -c || exit 1
 /bin/rm -rf config.status config.cache autom4te.cache
 ./configure "$@" || exit 1
