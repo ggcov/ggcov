@@ -29,7 +29,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.49 2005-07-31 12:27:40 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.50 2005-09-06 09:06:51 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -44,6 +44,7 @@ void *cov_file_t::files_model_;
 	 ((gnb_u32_t)('0'+(minor)/10)<<16)| \
 	 ((gnb_u32_t)('0'+(minor)%10)<<8)| \
 	 ((gnb_u32_t)(release)))
+#define BBG_VERSION_GCC40_RH   	_NEW_VERSION(4,0,'R')
 #define BBG_VERSION_GCC40    	_NEW_VERSION(4,0,'*')
 #define BBG_VERSION_GCC34    	_NEW_VERSION(3,4,'*')
 /*
@@ -862,6 +863,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     	break;
     case BBG_VERSION_GCC34_RH:
     case BBG_VERSION_GCC40:
+    case BBG_VERSION_GCC40_RH:
     	if (expect_version == BBG_VERSION_GCC34)
 	    expect_version = format_version_;
 	/* fall through */
@@ -888,7 +890,8 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 	{
 	case GCOV_TAG_FUNCTION:
 	    if (format_version_ == BBG_VERSION_GCC34_RH ||
-	    	format_version_ == BBG_VERSION_GCC40)
+	    	format_version_ == BBG_VERSION_GCC40 ||
+		format_version_ == BBG_VERSION_GCC40_RH)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		string_var filename;
@@ -1319,7 +1322,9 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 
     while (io->read_u32(&tag))
     {
-    	if (tag == 0 && format_version_ == BBG_VERSION_GCC40)
+    	if (tag == 0 &&
+	    (format_version_ == BBG_VERSION_GCC40 ||
+ 	     format_version_ == BBG_VERSION_GCC40_RH))
 	    break;  /* end of file */
 
 	if (!io->read_u32(&length))
@@ -1332,7 +1337,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 	{
 	case GCOV_TAG_FUNCTION:
 	    if (format_version_ == BBG_VERSION_GCC34_RH ||
-	    	format_version_ == BBG_VERSION_GCC40)
+	    	format_version_ == BBG_VERSION_GCC40 ||
+	    	format_version_ == BBG_VERSION_GCC40_RH)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		const char *funcid = read_rh_funcid(io);
@@ -1411,6 +1417,7 @@ cov_file_t::read_da_file(const char *dafilename)
     case BBG_VERSION_GCC34:
     case BBG_VERSION_GCC34_RH:
     case BBG_VERSION_GCC40:
+    case BBG_VERSION_GCC40_RH:
 	if (little_endian_)
 	{
 	    dprintf0(D_FILES, "Detected gcc 3.4 or 4.0 (little endian) .gcda format\n");
