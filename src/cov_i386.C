@@ -22,7 +22,7 @@
 
 #if defined(HAVE_LIBBFD) && defined(COV_I386)
 
-CVSID("$Id: cov_i386.C,v 1.5 2005-04-03 09:01:31 gnb Exp $");
+CVSID("$Id: cov_i386.C,v 1.6 2005-09-07 00:12:43 gnb Exp $");
 
 /*
  * Machine-specific code to scan i386 object code for function calls.
@@ -109,19 +109,23 @@ cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
     unsigned long callfrom, callto;
     const asymbol *sym;
     
+    dprintf3(D_CGRAPH|D_VERBOSE, "scan_statics: scanning %s %lx to %lx\n",
+    	    cbfd_->filename(), startaddr_, endaddr_);
     if (len < 1)
     	return 0;
     if (contents_ == 0)
     {
     	if ((contents_ = sec->get_contents(startaddr_, len)) == 0)
     	    return 0;	/* end of scan */
+    	offset_ = 0;
     }
     end = contents_ + len - 4;
     
     /*
-     * TODO: presumably it is more efficient to scan through the relocs
+     * It would presumably be more efficient to scan through the relocs
      * looking for PCREL32 to static functions and double-check that the
-     * preceding byte is the CALL instruction.
+     * preceding byte is the CALL instruction.  Except that we don't
+     * actually get any such relocs, at least for some versions of gcc.
      */
 
     /* CALL instruction is 5 bytes long so don't bother scanning last 5 bytes */
@@ -129,10 +133,12 @@ cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
     {
     	if (*p != 0xe8)
 	    continue;	    /* not a CALL instruction */
-	callfrom = startaddr_ + (p - buf_);
+	callfrom = startaddr_ + (p - contents_);
 	p++;
 	callto = callfrom + read_lu32(p) + 5;
 	p += 4;
+	dprintf2(D_CGRAPH|D_VERBOSE, "scan_statics: possible call from %lx to %lx\n",
+	    	callfrom, callto);
 	
 	/*
 	 * Scan symbols to see if this is a PCREL32
@@ -141,7 +147,7 @@ cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
 	if ((sym = find_function_by_value(sec, callto)) != 0)
 	{
 	    offset_ = (p - contents_);
-    	    dprintf0(D_CGRAPH, "Scanned static call\n");
+    	    dprintf0(D_CGRAPH, "scan_statics: scanned static call\n");
 	    return (setup_calldata(sec, callfrom, sym->name, calld) ? 
 	    	    1/* have calldata */ : -1/* something is wrong */);
 	}
