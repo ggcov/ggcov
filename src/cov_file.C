@@ -29,7 +29,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.50 2005-09-06 09:06:51 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.51 2005-09-07 12:44:40 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -988,6 +988,23 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 			/* end of LINES block */
 			g_free(s);
 			break;
+		    }
+
+		    /*
+		     * Handle the case of relative pathname to the .c file.
+		     * TODO: push this into file_make_absolute_to()
+		     */
+		    if (*s != '/' && strlen(s) <= strlen(name_))
+		    {
+			char *p = (char *)name_.data() + strlen(name_) - strlen(s);
+			if (!strcmp(p, s) && 
+			    (p == name_.data() || p[-1] == '/'))
+			{
+			    dprintf(D_BBG, "mapping %s -> %s\n",
+				    s, name_.data());
+			    g_free(s);
+			    s = g_strdup(name_);
+			}
 		    }
 
     	    	    filename = file_make_absolute_to(s, name_);
