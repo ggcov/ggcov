@@ -37,7 +37,7 @@
 #include "fakepopt.h"
 #include "report.H"
 
-CVSID("$Id: tggcov.c,v 1.15 2005-07-23 11:04:02 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.16 2005-09-07 00:16:53 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -54,6 +54,7 @@ static int new_format_flag = FALSE;
 static int annotate_flag = FALSE;
 static int solve_fuzzy_flag = FALSE;
 static const char *debug_str = 0;
+static int print_version_flag = FALSE;
 static const char *reports = 0;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -463,6 +464,15 @@ static struct poptOption popt_options[] =
 	"enable tggcov debugging features",  	/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
+    {
+    	"version",	    	    	    	/* longname */
+	'v',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&print_version_flag,     	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"print version and exit",  	    	/* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
     POPT_AUTOHELP
     { 0, 0, 0, 0, 0, 0, 0 }
 };
@@ -498,6 +508,12 @@ parse_args(int argc, char **argv)
     
     if (debug_str != 0)
     	debug_set(debug_str);
+
+    if (print_version_flag)
+    {
+    	fputs(PACKAGE " version " VERSION "\n", stdout);
+	exit(0);
+    }
 
     if (debug_enabled(D_DUMP|D_VERBOSE))
     {

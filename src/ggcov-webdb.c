@@ -30,7 +30,7 @@
 #include "fakepopt.h"
 #include <db.h>
 
-CVSID("$Id: ggcov-webdb.c,v 1.8 2005-07-31 11:37:27 gnb Exp $");
+CVSID("$Id: ggcov-webdb.c,v 1.9 2005-09-07 00:16:53 gnb Exp $");
 
 #define V(major,minor,patch)    ((major)*10000+(minor)*1000+(patch))
 #define DB_VERSION_CODE V(DB_VERSION_MAJOR,DB_VERSION_MINOR,DB_VERSION_PATCH)
@@ -57,6 +57,7 @@ static char *suppressed_comment_ranges = 0;
 static char *object_dir = 0;
 static int solve_fuzzy_flag = FALSE;
 static const char *debug_str = 0;
+static int print_version_flag = FALSE;
 static char *dump_mode = NULL;
 static char *output_tarball = "ggcov.webdb.tgz";
 
@@ -1098,6 +1099,15 @@ static struct poptOption popt_options[] =
 	"enable tggcov debugging features",  	/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
+    {
+    	"version",	    	    	    	/* longname */
+	'v',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&print_version_flag,     	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"print version and exit",  	    	/* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
     POPT_AUTOHELP
     { 0, 0, 0, 0, 0, 0, 0 }
 };
@@ -1130,10 +1140,16 @@ parse_args(int argc, char **argv)
 	files = g_list_append(files, (gpointer)file);
 	
     poptFreeContext(popt_context);
-    
+
     if (debug_str != 0)
     	debug_set(debug_str);
 
+    if (print_version_flag)
+    {
+    	fputs(PACKAGE " version " VERSION "\n", stdout);
+	exit(0);
+    }
+    
     if (debug_enabled(D_DUMP|D_VERBOSE))
     {
     	GList *iter;
