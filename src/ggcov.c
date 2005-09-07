@@ -37,7 +37,7 @@
 #include <libgnomeui/libgnomeui.h>
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.48 2005-07-23 11:04:02 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.49 2005-09-07 00:21:01 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -494,7 +494,9 @@ parse_args(int argc, char **argv)
     
     argv0 = argv[0];
     
-#if GTK2
+#if HAVE_GNOME_PROGRAM_INIT
+    /* gnome_program_init() already has popt options */
+#elif GTK2
     popt_context = poptGetContext(PACKAGE, argc, (const char**)argv,
     	    	    	    	  popt_options, 0);
     int rc;
@@ -620,8 +622,10 @@ main(int argc, char **argv)
     
     prog = gnome_program_init(PACKAGE, VERSION, LIBGNOMEUI_MODULE,
 			      argc, argv,
+			      GNOME_PARAM_POPT_TABLE, popt_options,
 			      GNOME_PROGRAM_STANDARD_PROPERTIES,
 			      GNOME_PARAM_NONE);
+    g_object_get(prog, GNOME_PARAM_POPT_CONTEXT, &popt_context, (char *)0);
 #elif GTK2
     gtk_init(&argc, &argv);
     /* As of 2.0 we don't need to explicitly initialise libGlade anymore */
