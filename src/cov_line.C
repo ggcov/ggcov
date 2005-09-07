@@ -19,7 +19,7 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_line.C,v 1.4 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: cov_line.C,v 1.5 2005-09-07 11:06:28 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -83,6 +83,19 @@ cov_line_t::find(const cov_location_t *loc)
 	    : f->nth_line(loc->lineno));
 }
 
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cov_line_t::remove(const cov_location_t *loc, cov_block_t *b)
+{
+    cov_line_t *ln = find(loc);
+
+    if (ln != 0)
+    {
+	ln->blocks_ = g_list_remove(ln->blocks_, b);
+    }
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

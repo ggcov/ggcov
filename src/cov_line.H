@@ -65,6 +65,7 @@ public:
 private:
     cov_line_t();
     ~cov_line_t();
+    static void remove(const cov_location_t *, cov_block_t *);
     void calculate_count();
     void suppress()
     {

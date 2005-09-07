@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.16 2005-07-31 12:27:40 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.17 2005-09-07 11:06:28 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -33,7 +33,12 @@ cov_block_t::~cov_block_t()
 {
     cov_arc_t *a;
     
-    locations_.delete_all();
+    cov_location_t *loc;
+    while ((loc = locations_.remove_head()) != 0)
+    {
+	cov_line_t::remove(loc, this);
+	delete loc;
+    }
     
     while ((a = in_arcs_.head()) != 0)
     	delete a;
