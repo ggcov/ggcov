@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.29 2005-03-18 15:39:06 gnb Exp $");
+CVSID("$Id: ui.c,v 1.30 2005-09-07 00:23:03 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -182,13 +182,15 @@ ui_get_dummy_menu(GladeXML *xml, const char *name)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-GtkWidget *ui_get_window(GtkWidget *w);
-
 static GtkWidget *
 _ui_virtual_parent(GtkWidget *w)
 {
     if (GTK_IS_MENU(w))
+#if GTK2
+	return gtk_menu_get_attach_widget(GTK_MENU(w));
+#else
     	return GTK_MENU(w)->parent_menu_item;
+#endif
     return GTK_WIDGET(w)->parent;
 }
 
