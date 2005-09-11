@@ -29,7 +29,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.51 2005-09-07 12:44:40 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.52 2005-09-11 09:14:06 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -1577,7 +1577,12 @@ cov_file_t::scan_o_file_calls(const char *ofilename)
 	cov_call_scanner_t::calldata_t cdata;
 
     	while ((r = cs->next(&cdata)) == 1)
-	    o_file_add_call(&cdata.location, cdata.callname);
+	{
+	    cov_location_t loc = cdata.location;
+    	    loc.filename = file_make_absolute_to(loc.filename, name_);
+	    o_file_add_call(&loc, cdata.callname);
+	    g_free(loc.filename);
+	}
 	delete cs;
 	ret = (r == 0); /* 0=>successfully finished scan */
     }

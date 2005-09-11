@@ -22,7 +22,7 @@
 #include "filename.h"
 #include "demangle.h"
 
-CVSID("$Id: cov_specific.C,v 1.6 2005-04-03 09:07:26 gnb Exp $");
+CVSID("$Id: cov_specific.C,v 1.7 2005-09-11 09:14:06 gnb Exp $");
 
  
 cov_factory_item_t *cov_factory_item_t::all_;
@@ -124,7 +124,7 @@ cov_call_scanner_t::setup_calldata(
     {
     	string_var function_dem = demangle(calld->function);
 	duprintf4("%s:%ld: %s calls %s\n",
-		file_basename_c(calld->location.filename),
+		calld->location.filename,
 		calld->location.lineno,
 		function_dem.data(),
 		callname_dem.data());
