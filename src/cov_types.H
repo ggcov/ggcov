@@ -43,6 +43,7 @@ struct cov_location_t
 {
     char *filename;
     unsigned long lineno;
+    const char *describe() const;
 };
 
 struct cov

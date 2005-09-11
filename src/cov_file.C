@@ -29,7 +29,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.53 2005-09-11 09:27:04 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.54 2005-09-11 10:19:05 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -1525,6 +1525,7 @@ cov_file_t::o_file_add_call(
 {
     cov_line_t *ln;
     const GList *iter;
+    cov_block_t *pure_candidate = 0;
 
     if ((ln = cov_line_t::find(loc)) == 0)
     {
@@ -1554,7 +1555,7 @@ cov_file_t::o_file_add_call(
     		string_var desc = b->describe();
     	        duprintf1("    block %s\n", desc.data());
 	    }
-	    b->add_call(callname_dem);
+	    b->add_call(callname_dem, loc);
 	    return TRUE;
 	}
 	if (debug_enabled(D_CGRAPH))
@@ -1562,7 +1563,23 @@ cov_file_t::o_file_add_call(
     	    string_var desc = b->describe();
 	    duprintf1("    skipping block %s\n", desc.data());
 	}
+	if (pure_candidate == 0)
+	    pure_candidate = b;
     }
+    
+    /*
+     * Maybe it's a pure call from one of the blocks on the line
+     * that we skipped.  There's no way to know for sure from the
+     * information in the object file, so guess that the first
+     * block we skipped is the one.  If you want block-accurate
+     * callgraph data, use the 12bp file!
+     */
+    if (pure_candidate != 0)
+    {
+    	pure_candidate->add_call(callname_dem, loc);
+	return TRUE;
+    }
+
     /*
      * Something is badly wrong if we get here: at least one of
      * the blocks on the line should have needed a call and none

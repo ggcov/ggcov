@@ -94,6 +94,23 @@ public:
     void finalise();
 
 private:
+    struct call_t
+    {
+	call_t(const char *name, const cov_location_t *loc)
+	 :  name_(name)
+	{
+	    location_.filename = g_strdup(loc->filename);
+	    location_.lineno = loc->lineno;
+	}
+	~call_t()
+	{
+	    g_free(location_.filename);
+	}
+
+	string_var name_;
+	cov_location_t location_;
+    };
+
     cov_block_t();
     ~cov_block_t();
     
@@ -101,8 +118,9 @@ private:
     
     void set_count(count_t);
     void add_location(const char *filename, unsigned lineno);
+    gboolean is_call_site() const;
     gboolean needs_call() const;
-    void add_call(const char *callname);
+    void add_call(const char *name, const cov_location_t *loc);
     char *pop_call();
     void suppress();
     cov::status_t calc_stats(cov_stats_t *) const;
@@ -123,6 +141,7 @@ private:
     unsigned int out_ncalls_;/* number of outbound call arcs */
     
     list_t<cov_location_t> locations_;
+    list_t<call_t> pure_calls_;
     
     /* used while reading .o files to get arc names */
     string_var call_;

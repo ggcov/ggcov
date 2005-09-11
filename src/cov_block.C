@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.17 2005-09-07 11:06:28 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.18 2005-09-11 10:19:05 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -44,6 +44,10 @@ cov_block_t::~cov_block_t()
     	delete a;
     while ((a = out_arcs_.head()) != 0)
     	delete a;
+	
+    call_t *cc;
+    while ((cc = pure_calls_.remove_head()) != 0)
+    	delete cc;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -108,19 +112,46 @@ cov_block_t::set_count(count_t count)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
-cov_block_t::needs_call() const
+cov_block_t::is_call_site() const
 {
     return (idx_ > 0 &&
     	    idx_ < function_->num_blocks()-1 &&
-	    call_ == 0 &&
     	    out_ncalls_ > 0);
 }
 
-void
-cov_block_t::add_call(const char *callname)
+gboolean
+cov_block_t::needs_call() const
 {
-    assert(call_ == 0);
-    call_ = callname;
+    return (is_call_site() && call_ == 0);
+}
+
+void
+cov_block_t::add_call(const char *name, const cov_location_t *loc)
+{
+    static const char fn[] = "cov_block_t::add_call";
+
+    if (name == 0)
+	name = "*pointer";
+
+    if (is_call_site() && *loc == *get_last_location())
+    {
+    	dprintf5(D_CGRAPH, "%s: call from %s:%u to %s at %s\n",
+	    	fn, function_->name(), idx_, name, loc->describe());
+    	if (call_ != 0)
+	{
+	    /* multiple calls: assume the earlier one is actually pure */
+    	    dprintf5(D_CGRAPH, "%s: assuming earlier call from %s:%u to %s at %s was pure\n",
+	    	fn, function_->name(), idx_, call_.data(), get_last_location()->describe());
+	    pure_calls_.append(new call_t(call_, get_last_location()));
+	}
+	call_ = name;
+    }
+    else
+    {
+    	dprintf5(D_CGRAPH, "%s: pure call from %s:%u to %s at %s\n",
+	    	fn, function_->name(), idx_, name, loc->describe());
+	pure_calls_.append(new call_t(name, loc));
+    }
 }
 
 char *

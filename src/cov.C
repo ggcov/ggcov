@@ -26,9 +26,21 @@
 #include "mvc.h"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.26 2005-07-31 12:15:18 gnb Exp $");
+CVSID("$Id: cov.C,v 1.27 2005-09-11 10:19:05 gnb Exp $");
 
 static gboolean cov_read_one_object_file(const char *exefilename, int depth);
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+/* TODO: there's gotta be a better place to put this */
+const char *
+cov_location_t::describe() const
+{
+    static estring buf;
+    buf.truncate();
+    buf.append_printf("%s:%lu", filename, lineno);
+    return buf;
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
