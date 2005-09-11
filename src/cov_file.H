@@ -186,6 +186,7 @@ private:
     static void *files_model_;
 
     string_var name_;
+    gboolean common_;	    /* whether this file uses common_path_ */
     gboolean finalised_;    /* data read & `this' inserted into files_ */
     gnb_u32_t format_version_;	/* file format version */
     gboolean little_endian_;	/* for gcc34 format */

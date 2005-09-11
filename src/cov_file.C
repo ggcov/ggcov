@@ -29,7 +29,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.52 2005-09-11 09:14:06 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.53 2005-09-11 09:27:04 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -120,6 +120,36 @@ cov_file_t::init()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static gboolean
+filename_matches_directory_prefix(const char *filename, const char *dir)
+{
+    int dirlen = strlen(dir);
+
+    return (!strncmp(dir, filename, dirlen) &&
+	    (filename[dirlen] == '\0' || filename[dirlen] == '/'));
+}
+
+static gboolean
+filename_is_common(const char *filename)
+{
+    static const char * const uncommon_dirs[] = 
+    {
+	"/usr/include",
+	"/usr/lib",
+	0
+    };
+    const char * const * dirp;
+
+    for (dirp = uncommon_dirs ; *dirp != 0 ; dirp++)
+    {
+    	if (filename_matches_directory_prefix(filename, *dirp))
+	    return FALSE;
+    }
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 #if 0
 gboolean
 cov_file_t::is_self_suppressed() const
@@ -143,7 +173,8 @@ cov_file_t::finalise()
 {
     unsigned int i;
 
-    add_name(name_);
+    if ((common_ = filename_is_common(name_)))
+	add_name(name_);
     
 #if 0
     /* TODO: push file-level suppression downwards to functions */
@@ -253,7 +284,8 @@ cov_file_t::dirty_common_path()
 void
 cov_file_t::add_name_tramp(const char *name, cov_file_t *f, gpointer userdata)
 {
-    add_name(name);
+    if (f->common_)
+	add_name(name);
 }
 
 void
@@ -270,6 +302,8 @@ cov_file_t::check_common_path()
 const char *
 cov_file_t::minimal_name() const
 {
+    if (!common_)
+    	return name_;
     check_common_path();
     return name_.data() + common_len_;
 }
