@@ -2517,19 +2517,6 @@
 
 	  <widget>
 	    <class>GtkCheckMenuItem</class>
-	    <name>calls_arc_check</name>
-	    <signal>
-	      <name>activate</name>
-	      <handler>on_calls_arc_check_activate</handler>
-	      <last_modification_time>Sat, 04 Jan 2003 02:54:33 GMT</last_modification_time>
-	    </signal>
-	    <label>_Arc</label>
-	    <active>False</active>
-	    <always_show_toggle>True</always_show_toggle>
-	  </widget>
-
-	  <widget>
-	    <class>GtkCheckMenuItem</class>
 	    <name>calls_count_check</name>
 	    <signal>
 	      <name>activate</name>
@@ -2871,19 +2858,6 @@
 	  <child_name>CList:title</child_name>
 	  <name>label24</name>
 	  <label>Line</label>
-	  <justify>GTK_JUSTIFY_CENTER</justify>
-	  <wrap>False</wrap>
-	  <xalign>0.5</xalign>
-	  <yalign>0.5</yalign>
-	  <xpad>0</xpad>
-	  <ypad>0</ypad>
-	</widget>
-
-	<widget>
-	  <class>GtkLabel</class>
-	  <child_name>CList:title</child_name>
-	  <name>label24</name>
-	  <label>Arc</label>
 	  <justify>GTK_JUSTIFY_CENTER</justify>
 	  <wrap>False</wrap>
 	  <xalign>0.5</xalign>

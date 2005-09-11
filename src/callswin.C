@@ -24,58 +24,96 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.21 2005-03-18 15:40:00 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.22 2005-09-11 10:50:24 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
 #define COL_LINE    2
-#define COL_ARC     3
-#define COL_COUNT   4
+#define COL_COUNT   3
 #if !GTK2
 #define COL_CLOSURE	0
-#define NUM_COLS    	5
+#define NUM_COLS    	4
 #else
-#define COL_CLOSURE	5
-#define NUM_COLS    	6
+#define COL_CLOSURE	4
+#define NUM_COLS    	5
 #define COL_TYPES \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
-    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER
+    G_TYPE_STRING, G_TYPE_POINTER
 #endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static int
-callswin_compare(cov_arc_t *a1, cov_arc_t *a2, int column)
+struct callswin_call_t
 {
-    switch (column)
+    cov_function_t *from_;
+    const char *to_;
+    const cov_location_t *location_;
+    count_t count_;
+
+    callswin_call_t(cov_function_t *fn, cov_call_iterator_t *itr)
+     :  from_(fn),
+     	to_(itr->name()),
+	location_(itr->location()),
+	count_(itr->count())
     {
-    case COL_COUNT:
-    	return u64cmp(a1->from()->count(), a2->from()->count());
+    }
+
+    static int compare(
+    	const callswin_call_t *a,
+	const callswin_call_t *b,
+    	int column)
+    {
+    	int cols[NUM_COLS+1];
+	int i, n = 0, r;
 	
-    case COL_ARC:
-#define arcno(a)    (((a)->from()->bindex() << 16)|(a)->aindex())
-    	return u32cmp(arcno(a1), arcno(a2));
-#undef arcno
+	/* primary sort key */
+	cols[n++] = column;
+	/* secondary sort keys */
+	cols[n++] = COL_FROM;
+	cols[n++] = COL_LINE;
+	cols[n++] = COL_TO;
 	
-    case COL_TO:
-    	return strcmp(safestr(a1->name()), safestr(a2->name()));
-	
-    case COL_FROM:
-    	return strcmp(safestr(a1->from()->function()->name()),
-	    	      safestr(a2->from()->function()->name()));
-	
-    default:
+	for (i = 0 ; i < n ; i++)
+	{
+	    switch (cols[i])
+	    {
+	    case COL_FROM:
+    		r =  strcmp(safestr(a->from_->name()),
+	    		    safestr(b->from_->name()));
+		break;
+
+	    case COL_TO:
+    		r = strcmp(safestr(a->to_), safestr(b->to_));
+		break;
+
+	    case COL_LINE:
+    		r = u32cmp(a->location_->lineno, b->location_->lineno);
+		break;
+
+	    case COL_COUNT:
+    		r = u64cmp(a->count_, b->count_);
+		break;
+
+	    default:
+		r = 0;
+		break;
+	    }
+	    if (r)
+	    	return r;
+	}
 	return 0;
     }
-}
+};
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #if !GTK2
 static int
 callswin_clist_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
 {
-    return callswin_compare(
-    	(cov_arc_t *)((GtkCListRow *)ptr1)->data,
-    	(cov_arc_t *)((GtkCListRow *)ptr2)->data,
+    return callswin_call_t::compare(
+    	(callswin_call_t *)((GtkCListRow *)ptr1)->data,
+    	(callswin_call_t *)((GtkCListRow *)ptr2)->data,
     	clist->sort_column);
 }
 #else
@@ -86,12 +124,12 @@ callswin_tree_iter_compare(
     GtkTreeIter *iter2,
     gpointer data)
 {
-    cov_arc_t *a1 = 0;
-    cov_arc_t *a2 = 0;
+    callswin_call_t *a = 0;
+    callswin_call_t *b = 0;
 
-    gtk_tree_model_get(tm, iter1, COL_CLOSURE, &a1, -1);
-    gtk_tree_model_get(tm, iter2, COL_CLOSURE, &a2, -1);
-    return callswin_compare(a1, a2, GPOINTER_TO_INT(data));
+    gtk_tree_model_get(tm, iter1, COL_CLOSURE, &a, -1);
+    gtk_tree_model_get(tm, iter2, COL_CLOSURE, &b, -1);
+    return callswin_call_t::compare(a, b, GPOINTER_TO_INT(data));
 }
 #endif
 
@@ -121,18 +159,14 @@ callswin_t::callswin_t()
     gtk_clist_column_titles_passive(GTK_CLIST(clist_));
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_FROM);
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_TO);
-    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_ARC);
     ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_COUNT);
     gtk_clist_set_compare_func(GTK_CLIST(clist_), callswin_clist_compare);
-    ui_clist_set_sort_column(GTK_CLIST(clist_), COL_ARC);
     ui_clist_set_sort_type(GTK_CLIST(clist_), GTK_SORT_ASCENDING);
 #else
     store_ = gtk_list_store_new(NUM_COLS, COL_TYPES);
     /* default alphabetic sort is adequate for COL_FROM, COL_TO */
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_LINE,
 	  callswin_tree_iter_compare, GINT_TO_POINTER(COL_LINE), 0);
-    gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_ARC,
-	  callswin_tree_iter_compare, GINT_TO_POINTER(COL_ARC), 0);
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_COUNT,
 	  callswin_tree_iter_compare, GINT_TO_POINTER(COL_COUNT), 0);
     
@@ -158,12 +192,6 @@ callswin_t::callswin_t()
     gtk_tree_view_column_set_sort_column_id(col, COL_LINE);
     gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
     
-    col = gtk_tree_view_column_new_with_attributes(_("Arc"), rend,
-    	    	"text", COL_ARC,
-		(char *)0);
-    gtk_tree_view_column_set_sort_column_id(col, COL_ARC);
-    gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
-    
     col = gtk_tree_view_column_new_with_attributes(_("Count"), rend,
     	    	"text", COL_COUNT,
 		(char *)0);
@@ -174,8 +202,6 @@ callswin_t::callswin_t()
     gtk_tree_view_set_enable_search(GTK_TREE_VIEW(clist_), TRUE);
     gtk_tree_view_set_search_column(GTK_TREE_VIEW(clist_), COL_FROM);
 #endif
-
-    ui_list_set_column_visibility(clist_, COL_ARC, FALSE);
 
     ui_register_windows_menu(ui_get_dummy_menu(xml, "calls_windows_dummy"));
 }
@@ -208,70 +234,55 @@ callswin_t::populate()
 void
 callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 {
-    unsigned int bidx;
 #if GTK2
     GtkTreeIter titer;
 #else
     int row;
 #endif
-    list_iterator_t<cov_arc_t> aiter;
     const cov_location_t *loc;
+    callswin_call_t *call;
     char *text[NUM_COLS];
     char countbuf[32];
-    char arcbuf[64];
     char linebuf[32];
 
-    for (bidx = 0 ; bidx < from_fn->num_blocks()-2 ; bidx++)
+    cov_call_iterator_t *itr = new cov_function_call_iterator_t(from_fn);
+    
+    while (itr->next())
     {
-    	cov_block_t *b = from_fn->nth_block(bidx);
-	
-	if (b->get_first_location() == 0)
-	    continue;	/* no source => can't be interesting to the user */
+	if (to_fn != 0 &&
+	    (itr->name() == 0 || strcmp(to_fn->name(), itr->name())))
+	    continue;
 
-	for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
-	{
-	    cov_arc_t *a = *aiter;
-    	    
-	    if (!a->is_call())
-	    	continue;
-	    if (a->is_suppressed())
-	    	continue;
-	    if (to_fn != 0 &&
-	    	(a->name() == 0 || strcmp(to_fn->name(), a->name())))
-	    	continue;
-		
-	    snprintf(countbuf, sizeof(countbuf), GNB_U64_DFMT, a->from()->count());
-	    text[COL_COUNT] = countbuf;
+	snprintf(countbuf, sizeof(countbuf), GNB_U64_DFMT, itr->count());
+	text[COL_COUNT] = countbuf;
 
-	    snprintf(arcbuf, sizeof(arcbuf), "B%u A%u", b->bindex(), a->aindex());
-	    text[COL_ARC] = arcbuf;
+    	if ((loc = itr->location()) == 0)
+	    strncpy(linebuf, "WTF??", sizeof(linebuf));
+	else
+	    snprintf(linebuf, sizeof(linebuf), "%lu", loc->lineno);
+	text[COL_LINE] = linebuf;
 
-    	    if ((loc = a->get_from_location()) == 0)
-	    	strncpy(linebuf, "WTF??", sizeof(linebuf));
-	    else
-		snprintf(linebuf, sizeof(linebuf), "%lu", loc->lineno);
-	    text[COL_LINE] = linebuf;
+	text[COL_FROM] = (char *)from_fn->name();
+	if ((text[COL_TO] = (char *)itr->name()) == 0)
+	    text[COL_TO] = "(unknown)";
 	    
-	    text[COL_FROM] = (char *)a->from()->function()->name();
-	    if ((text[COL_TO] = (char *)a->name()) == 0)
-	    	text[COL_TO] = "(unknown)";
-		
+	call = new callswin_call_t(from_fn, itr);
+
 #if !GTK2
-	    row = gtk_clist_append(GTK_CLIST(clist_), text);
-	    gtk_clist_set_row_data(GTK_CLIST(clist_), row, a);
+	row = gtk_clist_append(GTK_CLIST(clist_), text);
+	gtk_clist_set_row_data(GTK_CLIST(clist_), row, call);
 #else
-    	    gtk_list_store_append(store_, &titer);
-	    gtk_list_store_set(store_,  &titer,
-		COL_FROM, text[COL_FROM],
-		COL_TO, text[COL_TO],
-		COL_LINE, text[COL_LINE],
-		COL_ARC, text[COL_ARC],
-		COL_COUNT, text[COL_COUNT],
-		COL_CLOSURE, (*aiter),
-		-1);
+    	gtk_list_store_append(store_, &titer);
+	gtk_list_store_set(store_,  &titer,
+	    COL_FROM, text[COL_FROM],
+	    COL_TO, text[COL_TO],
+	    COL_LINE, text[COL_LINE],
+	    COL_COUNT, text[COL_COUNT],
+	    COL_CLOSURE, call,
+	    -1);
 #endif
-	}
     }
+    delete itr;
 }
 
 void
@@ -362,15 +373,6 @@ on_calls_line_check_activate(GtkWidget *w, gpointer data)
 }
 
 GLADE_CALLBACK void
-on_calls_arc_check_activate(GtkWidget *w, gpointer data)
-{
-    callswin_t *cw = callswin_t::from_widget(w);
-    
-    ui_list_set_column_visibility(cw->clist_, COL_ARC,
-    	    	    	          GTK_CHECK_MENU_ITEM(w)->active);
-}
-
-GLADE_CALLBACK void
 on_calls_count_check_activate(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
@@ -418,12 +420,12 @@ on_calls_to_function_view_clicked(GtkWidget *w, gpointer data)
 GLADE_CALLBACK gboolean
 on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data)
 {
-    cov_arc_t *a;
+    callswin_call_t *call;
     const cov_location_t *loc;
 
-    a = (cov_arc_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
+    call = (callswin_call_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
 
-    if (a != 0 && (loc = a->get_from_location()) != 0)
+    if (call != 0 && (loc = call->location_) != 0)
 	sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);
     return FALSE;
 }
