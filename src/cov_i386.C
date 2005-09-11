@@ -22,7 +22,7 @@
 
 #if defined(HAVE_LIBBFD) && defined(COV_I386)
 
-CVSID("$Id: cov_i386.C,v 1.6 2005-09-07 00:12:43 gnb Exp $");
+CVSID("$Id: cov_i386.C,v 1.7 2005-09-11 09:20:28 gnb Exp $");
 
 /*
  * Machine-specific code to scan i386 object code for function calls.
@@ -190,6 +190,7 @@ cov_i386_call_scanner_t::next(cov_call_scanner_t::calldata_t *calld)
 	    case R_386_32:  	/* external data reference from static code */
     	    case R_386_GOTPC:	/* external data reference from PIC code */
 	    case R_386_GOTOFF:	/* external data reference from PIC code */
+	    case R_386_GOT32:	/* external data reference from ??? code */
 	    	continue;
 	    case R_386_PC32:	/* function call from static code */
 	    case R_386_PLT32:	/* function call from PIC code */
