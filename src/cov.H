@@ -28,6 +28,7 @@
 #include "cov_callgraph.H"
 #include "cov_scope.H"
 #include "cov_line.H"
+#include "cov_calliter.H"
 
 /* Call this to initialise the cov library */
 void cov_init(void);

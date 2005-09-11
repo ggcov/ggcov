@@ -27,6 +27,7 @@
 class cov_file_t;
 class cov_function_t;
 class cov_arc_t;
+class cov_call_iterator_t;
 
 class cov_block_t
 {
@@ -153,6 +154,7 @@ private:
     friend class cov_function_t;
     friend class cov_arc_t;
     friend class cov_range_scope_t;
+    friend class cov_call_iterator_t;
 };
 
 #endif /* _ggcov_cov_block_H_ */
