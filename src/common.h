@@ -172,6 +172,10 @@ char *debug_enabled_tokens(void);
 #define boolstr(b)  	((b) ? "true" : "false")
 
 #define safestr(s)  ((s) == 0 ? "" : (s))
+static inline int safe_strcmp(const char *a, const char *b)
+{
+    return strcmp(safestr(a), safestr(b));
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
