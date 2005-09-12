@@ -1,3 +1,59 @@
+Mon Sep 12 00:21:42 2005  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.7
+
+	* Handle the gcc 4.0.0 and Fedora Core 4 compiler file formats.
+	* Add suppress by comment.  New -Y commandline option allows
+	suppressing source lines with a single-line comment containing
+	the specified word.  New -Z option suppresses a range of lines
+	starting and ending with the given words.
+	* Rejig block graph solving algorithm to handle calls to functions
+	which return a different number of times than they're called, such
+	as exit() or fork() or any function which might eventually call
+	longjmp().
+	* Source files in /usr/include and /usr/lib are not counted towards
+	the common path for source files.
+	* Handle relative paths to source files in .gcno and .o files.
+	* Handle compiling with version 3 of DB, found on some distros.
+	* Handle calls to functions marked with attribute((pure)) gracefully.
+	* Remove the unhelpful Arc column from the Calls window
+	* Remove the long-redundant HAVE_BBG_FAKE_FLAG define and all the code
+	that depended on it.
+
+	* Fix compile warnings from gcc 4.0.0.
+	* Fix memory buffer addressing bugs in the code to scan i386 object
+	files for call graph information.
+	* Fix assert failure when built against GTK2 library and the
+	^W accelerator to close a window is used before the File menu
+	is manually shown.
+	* Don't complain about R_386_GOT32 relocs in i386 code.
+	* Fix a Free Memory Read found when trying coverage samba4 code.
+	* Fix a corner case in the formatting of block lists.
+	* Add --version options to tggcov and ggcov-webdb (ggcov itself already
+	has this option via GNOME's popt table).
+	* When built against recent libgnome, ggcov's --help output failed to
+	describe the ggcov-specific options.  Fix this by pushing the popt
+	options table to gnome_program_init().
+
+	* Fix ambiguity in function's file scope on summary page.
+	* Hyperlinks to source page use URLs cleaned of extraneous query
+	strings.
+	* Change the View links on the summary page to buttons, so they
+	  show the right page without clicking Update first.
+	* Make web interface windows 100% wide.
+	* Web interface handles missing or empty tests dir more gracefully.
+
+	* Add --disable-web option to configure
+	* Enforce --disable-gui more strictly
+	* Remove a superfluous AC_ARG_PROGRAM, as AM_INIT calls it too.
+	* Handle quirks of older automakes.
+
+	* Loosen expected file comparison test to ignore line counts for
+	function variable lines, to avoid pointless compiler variation
+	in tests.
+	* Convert test007 to use expected output rather than compare to gcov
+	output, which miscounts the block which checks the return of setjmp().
+	* Add test016 to configure.in
+
 Sun Jun 19 17:09:27 2005  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.6 (big jump reflects lots of changes)
 
