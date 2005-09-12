@@ -43,6 +43,20 @@ struct cov_location_t
 {
     char *filename;
     unsigned long lineno;
+
+    int operator==(const cov_location_t &o) const
+    {
+    	return ((o.lineno == lineno) && !safe_strcmp(o.filename, filename));
+    }
+    int operator!=(const cov_location_t &o) const
+    {
+    	return ((o.lineno != lineno) || safe_strcmp(o.filename, filename));
+    }
+    cov_location_t &operator++()
+    {
+    	++lineno;
+	return *this;
+    }
     const char *describe() const;
 };
 
