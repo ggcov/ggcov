@@ -55,6 +55,27 @@ public:
     {
     	return fall_through_;
     }
+    const char *call_name() const
+    {
+    	return name_;
+    }
+    const cov_location_t *call_location() const
+    {
+	/*
+	 * Experiment indicates that gcc always allocates basic blocks
+	 * which contain a call such that the call is the last part
+	 * of the block.  Thus we can avoid storing the call location
+	 * explicitly, even though we do get it from either the object
+	 * file scan or the 12bp file.
+	 * 
+	 * Actually this isn't true of calls to functions marked
+	 * with attribute((pure)), which don't cause a bb break but
+	 * are instead subject to optimisation within a bb.  However
+	 * gcc doesn't instrument those calls, so there's point trying
+	 * to handle them.
+	 */
+    	return from_->get_last_location();
+    }
     
     cov_block_t *
     from() const
