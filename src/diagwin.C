@@ -22,7 +22,7 @@
 #include "canvas_scenegen.H"
 #include "prefs.H"
 
-CVSID("$Id: diagwin.C,v 1.1 2005-06-13 07:08:51 gnb Exp $");
+CVSID("$Id: diagwin.C,v 1.2 2006-01-29 00:38:27 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -70,7 +70,7 @@ diagwin_t::zoom_all()
     zoomx = canvas_->allocation.width / (bounds.x2 - bounds.x1);
     zoomy = canvas_->allocation.height / (bounds.y2 - bounds.y1);
     zoom_ = MIN(zoomx, zoomy);
-    dprintf3(D_LEGOWIN, "diagwin_t::zoom_all: zoomx=%g zoomy=%g zoom=%g\n",
+    dprintf3(D_DIAGWIN, "diagwin_t::zoom_all: zoomx=%g zoomy=%g zoom=%g\n",
     	    	zoomx, zoomy, zoom_);
 
     gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas_), zoom_);
@@ -100,7 +100,7 @@ diagwin_t::populate()
 {
     GnomeCanvasGroup *root = gnome_canvas_root(GNOME_CANVAS(canvas_));
 
-    dprintf0(D_LEGOWIN, "diagwin_t::populate\n");
+    dprintf0(D_DIAGWIN, "diagwin_t::populate\n");
 
     while (root->item_list != 0)
     {
@@ -130,7 +130,7 @@ on_diag_zoom_in_activate(GtkWidget *w, gpointer data)
 {
     diagwin_t *cw = diagwin_t::from_widget(w);
 
-    dprintf0(D_LEGOWIN, "on_diag_zoom_in_activate\n");
+    dprintf0(D_DIAGWIN, "on_diag_zoom_in_activate\n");
 
     cw->zoom_to(cw->zoom_*2.0);
 }
@@ -141,7 +141,7 @@ on_diag_zoom_out_activate(GtkWidget *w, gpointer data)
 {
     diagwin_t *cw = diagwin_t::from_widget(w);
 
-    dprintf0(D_LEGOWIN, "on_diag_zoom_out_activate\n");
+    dprintf0(D_DIAGWIN, "on_diag_zoom_out_activate\n");
 
     cw->zoom_to(cw->zoom_/2.0);
 }
@@ -152,7 +152,7 @@ on_diag_show_all_activate(GtkWidget *w, gpointer data)
 {
     diagwin_t *cw = diagwin_t::from_widget(w);
 
-    dprintf0(D_LEGOWIN, "on_diag_show_all_activate\n");
+    dprintf0(D_DIAGWIN, "on_diag_show_all_activate\n");
 
     cw->zoom_all();
 }

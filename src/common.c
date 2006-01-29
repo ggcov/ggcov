@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.17 2005-05-22 12:47:56 gnb Exp $");
+CVSID("$Id: common.c,v 1.18 2006-01-29 00:38:27 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -122,6 +122,8 @@ static struct
 {"elf",    	F(D_ELF)},
 {"dump",     	F(D_DUMP)},
 {"report",     	F(D_REPORT)},
+{"dcallgraph",  F(D_DCALLGRAPH)},
+{"dlego",	F(D_DLEGO)},
 
 {"uicore",  	F(D_UICORE)},
 {"summarywin",  F(D_SUMMARYWIN)},
@@ -131,8 +133,7 @@ static struct
 {"funcswin", 	F(D_FUNCSWIN)},
 {"fileswin", 	F(D_FILESWIN)},
 {"graphwin", 	F(D_GRAPHWIN)},
-{"graph2win",	F(D_GRAPH2WIN)},
-{"legowin",	F(D_LEGOWIN)},
+{"diagwin",	F(D_DIAGWIN)},
 {"reportwin",	F(D_REPORTWIN)},
 
 {"web",  	F(D_WEB)},
@@ -141,7 +142,7 @@ static struct
 {SPECIALS_START, 0},
 
 {"cov",     	R(D_FILES,D_DUMP)},
-{"ui",     	R(D_UICORE,D_GRAPH2WIN)},
+{"ui",     	R(D_UICORE,D_DIAGWIN)},
 {"none",     	0},
 {"all",     	~1 /*"all" doesn't get you "verbose"*/},
 {0, 0}

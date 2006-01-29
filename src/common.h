@@ -66,6 +66,8 @@ typedef enum
     D_ELF,
     D_DUMP,
     D_REPORT,
+    D_DCALLGRAPH,
+    D_DLEGO,
     /* gui related features */
     D_UICORE,
     D_SUMMARYWIN,
@@ -75,8 +77,7 @@ typedef enum
     D_FUNCSWIN,
     D_FILESWIN,
     D_GRAPHWIN,
-    D_GRAPH2WIN,
-    D_LEGOWIN,
+    D_DIAGWIN,
     D_REPORTWIN,
     /* web related features */
     D_WEB,

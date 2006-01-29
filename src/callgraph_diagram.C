@@ -20,7 +20,7 @@
 #include "callgraph_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.3 2006-01-29 00:34:31 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.4 2006-01-29 00:38:27 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -77,7 +77,7 @@ callgraph_diagram_t::adjust_rank(callgraph_diagram_t::node_t *n, int delta)
 
     if (n->generation_ == generation_)
     {
-    	dprintf1(D_GRAPH2WIN, "callgraph_diagram_t::adjust_rank: avoiding loop at \"%s\"\n",
+    	dprintf1(D_DCALLGRAPH, "callgraph_diagram_t::adjust_rank: avoiding loop at \"%s\"\n",
 	    	    n->callnode_->name.data());
     	return;
     }
@@ -109,7 +109,7 @@ callgraph_diagram_t::build_node(cov_callnode_t *cn, int rank)
     node_t *n;
     GList *iter;
 
-    dprintf1(D_GRAPH2WIN, "callgraph_diagram_t::build_node(\"%s\")\n", cn->name.data());
+    dprintf1(D_DCALLGRAPH, "callgraph_diagram_t::build_node(\"%s\")\n", cn->name.data());
 
     if ((n = node_t::from_callnode(cn)) != 0)
     {
@@ -157,7 +157,7 @@ callgraph_diagram_t::add_spread(callgraph_diagram_t::node_t *n)
     n->spread_++;
     n->generation_ = generation_;
 
-    dprintf3(D_GRAPH2WIN, "callgraph_diagram_t::add_spread(\"%s\") => spread_=%d generation_=%lu\n",
+    dprintf3(D_DCALLGRAPH, "callgraph_diagram_t::add_spread(\"%s\") => spread_=%d generation_=%lu\n",
     	    n->callnode_->name.data(), n->spread_, n->generation_);
 
     for (iter = n->callnode_->in_arcs ; iter != 0 ; iter = iter->next)
@@ -182,12 +182,12 @@ callgraph_diagram_t::build_ranks(callgraph_diagram_t::node_t *n)
     if (n->file_)
     	return;     /* already been here on another branch in the graph */
 
-    dprintf1(D_GRAPH2WIN, "callgraph_diagram_t::build_ranks(\"%s\")\n",
+    dprintf1(D_DCALLGRAPH, "callgraph_diagram_t::build_ranks(\"%s\")\n",
     	    	n->callnode_->name.data());
 
     if (n->rank_ >= ranks_->length())
     {
-	dprintf1(D_GRAPH2WIN, "callgraph_diagram_t::build_ranks: expanding ranks to %d\n",
+	dprintf1(D_DCALLGRAPH, "callgraph_diagram_t::build_ranks: expanding ranks to %d\n",
 	    	    n->rank_);
 	r = new rank_t();
 	ranks_->set(n->rank_, r);
@@ -232,7 +232,7 @@ callgraph_diagram_t::assign_geometry(node_t *n, double ystart, double yend)
     	return;     /* already been here */
     n->have_geom_ = TRUE;
 
-    dprintf5(D_GRAPH2WIN, "callgraph_diagram_t::assign_geometry: %s:%s y={%g,%g} spread_=%d\n",
+    dprintf5(D_DCALLGRAPH, "callgraph_diagram_t::assign_geometry: %s:%s y={%g,%g} spread_=%d\n",
     	(cn->function == 0 ? "library" : cn->function->file()->minimal_name()),
 	cn->name.data(),
 	ystart, yend,
@@ -250,10 +250,10 @@ callgraph_diagram_t::assign_geometry(node_t *n, double ystart, double yend)
     	bounds_.x2 = n->x_+BOX_WIDTH;
     if (n->y_+BOX_HEIGHT > bounds_.y2)
     	bounds_.y2 = n->y_+BOX_HEIGHT;
-    dprintf4(D_GRAPH2WIN|D_VERBOSE,
+    dprintf4(D_DCALLGRAPH|D_VERBOSE,
     	    "callgraph_diagram_t::assign_geometry {x=%g, y=%g, w=%g, h=%g}\n",
     		n->x_, n->y_, n->x_+BOX_WIDTH, n->y_+BOX_HEIGHT);
-    dprintf4(D_GRAPH2WIN|D_VERBOSE,
+    dprintf4(D_DCALLGRAPH|D_VERBOSE,
     	    "callgraph_diagram_t::assign_geometry: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
     	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
 
@@ -278,7 +278,7 @@ callgraph_diagram_t::assign_geometry(node_t *n, double ystart, double yend)
 void
 callgraph_diagram_t::prepare()
 {
-    dprintf0(D_LEGOWIN, "callgraph_diagram_t::prepare\n");
+    dprintf0(D_DCALLGRAPH, "callgraph_diagram_t::prepare\n");
 
     main_node_ = build_node(cov_callnode_t::find("main"), 0);
 
@@ -299,7 +299,7 @@ callgraph_diagram_t::prepare()
     bounds_.x2 += FILE_GAP;
     bounds_.y1 -= RANK_GAP;
     bounds_.y2 += RANK_GAP;
-    dprintf4(D_GRAPH2WIN, "callgraph_diagram_t::populate: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
+    dprintf4(D_DCALLGRAPH, "callgraph_diagram_t::populate: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
     	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
 }
 
