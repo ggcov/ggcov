@@ -21,7 +21,7 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.10 2006-01-29 01:07:24 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.11 2006-01-29 01:10:57 gnb Exp $");
 
 #define MARGIN		    0.2
 #define BOX_WIDTH  	    4.0
@@ -85,6 +85,24 @@ callgraph_diagram_t::node_t::ndown()
 	flags_ |= HAVE_NDOWN;
     }
     return ndown_;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+ 
+gboolean
+callgraph_diagram_t::node_t::any_self()
+{
+    GList *iter;
+
+    for (iter = callnode_->out_arcs ; iter != 0 ; iter = iter->next)
+    {
+	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	node_t *to = node_t::from_callnode(a->to);
+
+	if (to != 0 && to->rank_ == rank_)
+	    return TRUE;
+    }
+    return FALSE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -401,6 +419,19 @@ callgraph_diagram_t::calc_spread(int pass, int rank)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+gboolean
+callgraph_diagram_t::any_self_arcs(rank_t *r)
+{
+    list_iterator_t<node_t> iter;
+    for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
+    {
+	node_t *n = (*iter);
+	if (n->any_self())
+	    return TRUE;
+    }
+    return FALSE;
+}
+
 void
 callgraph_diagram_t::assign_geometry()
 {
@@ -480,6 +511,10 @@ callgraph_diagram_t::assign_geometry()
 		 bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
 	}
     }
+
+    /* allow for any arcs within the last rank */
+    if (any_self_arcs(ranks_->nth(ranks_->length()-1)))
+	bounds_.x2 += RANK_GAP/2.0;
 
     bounds_.expand(MARGIN, MARGIN);
     dprintf4(D_DCALLGRAPH, "bounds={x1=%g y1=%g x2=%g y2=%g}\n",
@@ -638,15 +673,43 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 	sg->arrow_size(ARROW_SIZE);
 	sg->fill(fg_rgb_by_status_[ca->count ? cov::COVERED : cov::UNCOVERED]);
 	sg->polyline_begin(FALSE);
-	if (child->rank_ >= n->rank_)
+	if (child->rank_ > n->rank_)
 	{
-	    sg->polyline_point(n->x_+ BOX_WIDTH, n->y_);
-	    sg->polyline_point(child->x_, child->y_);
+	    /* downrank arc */
+	    double px = n->x_+ BOX_WIDTH;
+	    double py = n->y_;
+
+	    double cx = child->x_;
+	    double cy = child->y_;
+
+	    double ix = (px + cx)/2.0;
+	    double iy = 0.1 * py + 0.9 * cy;
+
+	    sg->polyline_point(px, py);
+	    sg->polyline_point(ix, iy);
+	    sg->polyline_point(cx, cy);
+	}
+	else if (child->rank_ < n->rank_)
+	{
+	    /* uprank arc */
+	    sg->polyline_point(n->x_, n->y_ - BOX_HEIGHT/4.0);
+	    sg->polyline_point(child->x_ + BOX_WIDTH, child->y_ - BOX_HEIGHT/4.0);
 	}
 	else
 	{
-	    sg->polyline_point(n->x_, n->y_ - BOX_HEIGHT/4.0);
-	    sg->polyline_point(child->x_ + BOX_WIDTH, child->y_ - BOX_HEIGHT/4.0);
+	    /* arc within same rank, including to self node */
+	    double px = n->x_ + BOX_WIDTH;
+	    double py = n->y_;
+
+	    double cx = px;
+	    double cy = child->y_ - BOX_HEIGHT/4.0;
+
+	    double ix = px + RANK_GAP/2.0;
+
+	    sg->polyline_point(px, py);
+	    sg->polyline_point(ix, py);
+	    sg->polyline_point(ix, cy);
+	    sg->polyline_point(cx, cy);
 	}
 	sg->polyline_end(TRUE);
     }
