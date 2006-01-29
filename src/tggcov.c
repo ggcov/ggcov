@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2003-2004 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2003-2005 Greg Banks <gnb@alphalink.com.au>
  * 
  *
  * TODO: attribution for decode-gcov.c
@@ -36,8 +36,10 @@
 #include "tok.H"
 #include "fakepopt.h"
 #include "report.H"
+#include "callgraph_diagram.H"
+#include "check_scenegen.H"
 
-CVSID("$Id: tggcov.c,v 1.16 2005-09-07 00:16:53 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.17 2006-01-29 00:56:43 gnb Exp $");
 
 char *argv0;
 GList *files;	    /* incoming specification from commandline */
@@ -53,6 +55,7 @@ static int lines_flag = FALSE;
 static int new_format_flag = FALSE;
 static int annotate_flag = FALSE;
 static int solve_fuzzy_flag = FALSE;
+static int check_callgraph_flag = FALSE;
 static const char *debug_str = 0;
 static int print_version_flag = FALSE;
 static const char *reports = 0;
@@ -333,6 +336,20 @@ report(void)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void
+check_callgraph(void)
+{
+    check_scenegen_t sg;
+    callgraph_diagram_t diag;
+
+    diag.prepare();
+    diag.render(&sg);
+
+    sg.check();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
  * With the old GTK, we're forced to parse our own arguments the way
  * the library wants, with popt and in such a way that we can't use the
@@ -453,6 +470,15 @@ static struct poptOption popt_options[] =
 	&solve_fuzzy_flag,     	    	    	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"whether to be tolerant of inconsistent arc counts", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"check-callgraph",    	    	    	/* longname */
+	'G',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&check_callgraph_flag,			/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"generate and check callgraph diagram",	/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {
@@ -596,6 +622,8 @@ main(int argc, char **argv)
 	report();
     if (annotate_flag)
     	annotate();
+    if (check_callgraph_flag)
+    	check_callgraph();
 
     return 0;
 }
