@@ -45,13 +45,24 @@ private:
 	cov_scope_t *scope_;
 	unsigned int rank_;
 	unsigned int file_;
+	unsigned int nup_;	/* number of incoming arcs from upper ranks */
+	unsigned int ndown_;	/* number of outgoing arcs to lower ranks */
 	unsigned long generation_;
-	unsigned int spread_;
-	double x_, y_;
+	double spread_;
+	double x_, y_, h_;
 	gboolean on_path_;
-	gboolean have_geom_;
-	gboolean shown_;
+	enum flags
+	{
+	    HAVE_NUP = (1<<0),
+	    HAVE_NDOWN = (1<<1),
+	    SHOWN = (1<<2)
+	};
+	int flags_;
 
+    	unsigned int nup();
+    	unsigned int ndown();
+        void push_spread_rootwards(double deltaspread);
+    	void push_spread_leafwards(double deltaspread);
     	static node_t *from_callnode(cov_callnode_t *cn)
 	{
 	    return (node_t *)cn->userdata;
@@ -63,6 +74,7 @@ private:
     struct rank_t
     {
 	list_t<node_t> nodes_;
+	double total_spread_;
     };
 
     static void find_roots_1(cov_callnode_t *cn, void *userdata);
@@ -71,9 +83,9 @@ private:
     void find_roots();
     void adjust_rank(node_t *n, int delta);
     node_t *build_node(cov_callnode_t*, int rank);
-    void add_spread(node_t *n);
     void build_ranks(node_t *);
-    void assign_geometry(node_t *n, double ystart, double yend);
+    void calc_spread(int pass, int rank);
+    void assign_geometry();
     void dump_ranks();
     static void dump_graph_1(cov_callnode_t *cn, void *userdata);
     void dump_graph();

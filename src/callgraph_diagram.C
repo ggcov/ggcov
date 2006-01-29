@@ -21,8 +21,9 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.8 2006-01-29 00:58:56 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.9 2006-01-29 01:05:25 gnb Exp $");
 
+#define MARGIN		    0.2
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
 #define RANK_GAP 	    2.0
@@ -42,6 +43,92 @@ callgraph_diagram_t::node_t::node_t(cov_callnode_t *cn)
 callgraph_diagram_t::node_t::~node_t()
 {
     delete scope_;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+unsigned int
+callgraph_diagram_t::node_t::nup()
+{
+    if (!(flags_ & HAVE_NUP))
+    {
+    	GList *iter;
+
+	for (iter = callnode_->in_arcs ; iter != 0 ; iter = iter->next)
+	{
+	    cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	    node_t *from = node_t::from_callnode(a->from);
+
+	    if (from != 0 && from->rank_ < rank_)
+		nup_++;
+	}
+	flags_ |= HAVE_NUP;
+    }
+    return nup_;
+}
+
+unsigned int
+callgraph_diagram_t::node_t::ndown()
+{
+    if (!(flags_ & HAVE_NDOWN))
+    {
+    	GList *iter;
+
+	for (iter = callnode_->out_arcs ; iter != 0 ; iter = iter->next)
+	{
+	    cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	    node_t *to = node_t::from_callnode(a->to);
+
+	    if (to != 0 && to->rank_ > rank_)
+		ndown_++;
+	}
+	flags_ |= HAVE_NDOWN;
+    }
+    return ndown_;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+callgraph_diagram_t::node_t::push_spread_rootwards(double deltaspread)
+{
+    GList *iter;
+    
+    dprintf3(D_DCALLGRAPH|D_VERBOSE, "push_spread_rootwards: node %s spread %g deltaspread %g\n",
+	    	callnode_->name.data(), spread_, deltaspread);
+
+    spread_ += deltaspread;
+    deltaspread /= nup();
+
+    for (iter = callnode_->in_arcs ; iter != 0 ; iter = iter->next)
+    {
+	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	node_t *from = node_t::from_callnode(a->from);
+
+	if (from != 0 && from->rank_ < rank_)
+	    from->push_spread_rootwards(deltaspread);
+    }
+}
+
+void
+callgraph_diagram_t::node_t::push_spread_leafwards(double deltaspread)
+{
+    GList *iter;
+
+    dprintf3(D_DCALLGRAPH|D_VERBOSE, "push_spread_leafwards: node %s spread %g deltaspread %g\n",
+	    	callnode_->name.data(), spread_, deltaspread);
+
+    spread_ += deltaspread;
+    deltaspread /= ndown();
+
+    for (iter = callnode_->out_arcs ; iter != 0 ; iter = iter->next)
+    {
+	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	node_t *to = node_t::from_callnode(a->to);
+
+	if (to != 0 && to->rank_ > rank_)
+    	    to->push_spread_leafwards(deltaspread);
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -251,39 +338,10 @@ callgraph_diagram_t::build_node(cov_callnode_t *cn, int rank)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-callgraph_diagram_t::add_spread(callgraph_diagram_t::node_t *n)
-{
-    GList *iter;
-    gboolean first;
-
-    if (n->generation_ == generation_)
-    	return; /* been here this time */
-
-    first = (n->spread_ == 0);
-    n->spread_++;
-    n->generation_ = generation_;
-
-    dprintf3(D_DCALLGRAPH, "callgraph_diagram_t::add_spread(\"%s\") => spread_=%d generation_=%lu\n",
-    	    n->callnode_->name.data(), n->spread_, n->generation_);
-
-    for (iter = n->callnode_->in_arcs ; iter != 0 ; iter = iter->next)
-    {
-    	cov_callarc_t *a = (cov_callarc_t *)iter->data;
-	node_t *parent = node_t::from_callnode(a->from);
-	
-	if (first && parent != 0 && parent->rank_ == n->rank_-1)
-    	    add_spread(parent);
-    }
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
 callgraph_diagram_t::build_ranks(callgraph_diagram_t::node_t *n)
 {
     GList *iter;
     rank_t *r;
-    int ndirect = 0;
 
     if (n->file_)
     	return;     /* already been here on another branch in the graph */
@@ -291,16 +349,12 @@ callgraph_diagram_t::build_ranks(callgraph_diagram_t::node_t *n)
     dprintf1(D_DCALLGRAPH, "callgraph_diagram_t::build_ranks(\"%s\")\n",
     	    	n->callnode_->name.data());
 
-    if (n->rank_ >= ranks_->length())
+    if (n->rank_ >= ranks_->length() || (r = ranks_->nth(n->rank_)) == 0)
     {
 	dprintf1(D_DCALLGRAPH, "callgraph_diagram_t::build_ranks: expanding ranks to %d\n",
 	    	    n->rank_);
 	r = new rank_t();
 	ranks_->set(n->rank_, r);
-    }
-    else
-    {
-	r = ranks_->nth(n->rank_);
     }
     r->nodes_.append(n);
     n->file_ = r->nodes_.length();
@@ -312,71 +366,124 @@ callgraph_diagram_t::build_ranks(callgraph_diagram_t::node_t *n)
     	cov_callarc_t *a = (cov_callarc_t *)iter->data;
 	node_t *child = node_t::from_callnode(a->to);
 
-    	build_ranks(child);
-	
-	if (child->rank_ == n->rank_+1)
-	    ndirect++;
-    }
-
-    if (ndirect == 0)
-    {
-	++generation_;
-	add_spread(n);
+    	if (child != 0)
+    	    build_ranks(child);
     }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-callgraph_diagram_t::assign_geometry(node_t *n, double ystart, double yend)
+callgraph_diagram_t::calc_spread(int pass, int rank)
 {
-    cov_callnode_t *cn = n->callnode_;
-    GList *iter;
-    double ny, yperspread;
+    dprintf2(D_DCALLGRAPH, "calc_spread: pass=%d rank=%d\n", pass, rank);
 
-    if (n->have_geom_)
-    	return;     /* already been here */
-    n->have_geom_ = TRUE;
+    rank_t *r = ranks_->nth(rank);
+    if (r == 0)
+    	return;
 
-    dprintf5(D_DCALLGRAPH, "callgraph_diagram_t::assign_geometry: %s:%s y={%g,%g} spread_=%d\n",
-    	(cn->function == 0 ? "library" : cn->function->file()->minimal_name()),
-	cn->name.data(),
-	ystart, yend,
-	n->spread_);
-
-    n->x_ = RANK_GAP + n->rank_ * (BOX_WIDTH + RANK_GAP);
-    n->y_ = (ystart + yend)/2.0;
-
-    /* adjust the bounds */
-    if (n->x_ < bounds_.x1)
-    	bounds_.x1 = n->x_;
-    if (n->y_ < bounds_.y1)
-    	bounds_.y1 = n->y_;
-    if (n->x_+BOX_WIDTH > bounds_.x2)
-    	bounds_.x2 = n->x_+BOX_WIDTH;
-    if (n->y_+BOX_HEIGHT > bounds_.y2)
-    	bounds_.y2 = n->y_+BOX_HEIGHT;
-    dprintf4(D_DCALLGRAPH|D_VERBOSE,
-    	    "callgraph_diagram_t::assign_geometry {x=%g, y=%g, w=%g, h=%g}\n",
-    		n->x_, n->y_, n->x_+BOX_WIDTH, n->y_+BOX_HEIGHT);
-    dprintf4(D_DCALLGRAPH|D_VERBOSE,
-    	    "callgraph_diagram_t::assign_geometry: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
-    	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
-
-
-    ny = ystart + FILE_GAP;
-    yperspread = (n->spread_ == 0 ? 0.0 : (yend-ystart-FILE_GAP)/n->spread_);
-    
-    for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)
+    list_iterator_t<node_t> iter;
+    for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
     {
-    	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
-	node_t *child = node_t::from_callnode(ca->to);
-	double nyend;
-
-    	nyend = ny + child->spread_ * yperspread;
-    	assign_geometry(child, ny, nyend);
-	ny = nyend;
+	node_t *n = (*iter);
+	double d = 1.0 - n->spread_;
+	if (d > EPSILON)
+	{
+	    dprintf2(D_DCALLGRAPH|D_VERBOSE, "calc_spread: n=%s d=%g\n",
+		     n->callnode_->name.data(), d);
+	    if (pass == 1)
+		n->push_spread_rootwards(d);
+	    else
+		n->push_spread_leafwards(d);
+	}
     }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+callgraph_diagram_t::assign_geometry()
+{
+    double height;
+    unsigned int i;
+
+    dprintf0(D_DCALLGRAPH, "assign_geometry:\n");
+
+    bounds_.initialise();
+
+    /*
+     * Calculate:
+     * - total spread for each rank
+     * - maximum of rank total spreads
+     * - global minimum node spread
+     */
+    double minspread = HUGE;
+    double maxtotspread = 0.0;
+    for (i = 0 ; i < ranks_->length() ; i++)
+    {
+	rank_t *r = ranks_->nth(i);
+	list_iterator_t<node_t> iter;
+
+    	if (r == 0)
+	    continue;
+
+	r->total_spread_ = 0.0;
+	for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
+	{
+	    node_t *n = (*iter);
+	    r->total_spread_ += n->spread_;
+	    if (n->spread_ < minspread)
+		minspread = n->spread_;
+	}
+	if (r->total_spread_ > maxtotspread)
+	    maxtotspread = r->total_spread_;
+	dprintf3(D_DCALLGRAPH, "assign_geometry: rank[%u] total_spread=%g minspread=%g\n",
+		    i, r->total_spread_, minspread);
+    }
+
+    height = (BOX_HEIGHT + FILE_GAP) * (maxtotspread / minspread) - FILE_GAP;
+    dprintf3(D_DCALLGRAPH, "assign_geometry: maxtotspread=%g minspread=%g height=%g\n",
+	     maxtotspread, minspread, height);
+
+    for (i = 0 ; i < ranks_->length() ; i++)
+    {
+	rank_t *r = ranks_->nth(i);
+	list_iterator_t<node_t> iter;
+
+    	if (r == 0)
+	    continue;
+
+	double yperspread = height / r->total_spread_;
+	double sy = 0.0;
+	for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
+	{
+	    node_t *n = (*iter);
+	    cov_callnode_t *cn = n->callnode_;
+	    double ey;
+
+	    n->h_ = n->spread_ * yperspread;
+	    ey = sy + n->h_;
+	    n->x_ = n->rank_ * (BOX_WIDTH + RANK_GAP);
+	    n->y_ = (sy + ey)/2.0;
+	    sy = ey;
+
+	    dprintf4(D_DCALLGRAPH, "assign_geometry: [%u]%s:%s spread_=%g\n",
+		i, 
+		(cn->function == 0 ? "library" : cn->function->file()->minimal_name()),
+		cn->name.data(),
+		n->spread_);
+
+	    bounds_.adjust(n->x_, n->y_ - BOX_HEIGHT/2.0,
+			   n->x_ + BOX_WIDTH, n->y_ + BOX_HEIGHT/2.0);
+	    dprintf4(D_DCALLGRAPH|D_VERBOSE,
+		"assign_geometry: {x1=%g y1=%g x2=%g y2=%g}\n",
+		 bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
+	}
+    }
+
+    bounds_.expand(MARGIN, MARGIN);
+    dprintf4(D_DCALLGRAPH, "bounds={x1=%g y1=%g x2=%g y2=%g}\n",
+    	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -399,7 +506,7 @@ callgraph_diagram_t::dump_ranks()
 	for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
 	{
 	    node_t *n = (*iter);
-	    duprintf2("        %u \"%s\"\n",
+	    duprintf2("        %g \"%s\"\n",
 		     n->spread_, n->callnode_->name.data());
 	}
     }
@@ -416,7 +523,7 @@ callgraph_diagram_t::dump_graph_1(cov_callnode_t *cn, void *closure)
 
     duprintf1("    %s\n", cn->name.data());
     if (n != 0)
-    	duprintf3("        rank %d file %d spread %u\n",
+    	duprintf3("        rank %d file %d spread %g\n",
 	    	  n->rank_, n->file_, n->spread_);
 
     for (iter = cn->in_arcs ; iter != 0 ; iter = iter->next)
@@ -454,6 +561,7 @@ void
 callgraph_diagram_t::prepare()
 {
     list_iterator_t<node_t> iter;
+    int i;
 
     dprintf0(D_DCALLGRAPH, "callgraph_diagram_t::prepare\n");
 
@@ -467,20 +575,18 @@ callgraph_diagram_t::prepare()
     for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
 	build_ranks((*iter));
 
+    for (i = ranks_->length() - 1 ; i >= 0 ; --i)
+    	calc_spread(1, i);
+    for (i = 0 ; i < (int)ranks_->length() ; i++)
+    	calc_spread(2, i);
+
     if (debug_enabled(D_DCALLGRAPH))
     {
 	dump_ranks();
 	dump_graph();
     }
 
-    for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
-	assign_geometry((*iter),
-		    FILE_GAP,
-		    (BOX_HEIGHT + FILE_GAP) * (max_file_+1));
-
-    bounds_.expand(FILE_GAP, RANK_GAP);
-    dprintf4(D_DCALLGRAPH, "callgraph_diagram_t::populate: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
-    	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
+    assign_geometry();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -493,9 +599,9 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
     string_var label;
     unsigned int rgb;
 
-    if (n->shown_)
+    if ((n->flags_ & node_t::SHOWN))
     	return;     /* already been here */
-    n->shown_ = TRUE;
+    n->flags_ |= node_t::SHOWN;
 
     if (cn->function != 0)
     {
@@ -511,17 +617,21 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 	rgb = bg_rgb_by_status_[cov::UNINSTRUMENTED];
     }
 
+    double y = n->y_-BOX_HEIGHT/2.0;
     sg->function(cn->function);
     sg->fill(rgb);
     sg->border(RGB(0,0,0));
-    sg->box(n->x_, n->y_, BOX_WIDTH, BOX_HEIGHT);
+    sg->box(n->x_, y, BOX_WIDTH, BOX_HEIGHT);
     sg->fill(RGB(0,0,0));
-    sg->textbox(n->x_, n->y_, BOX_WIDTH, BOX_HEIGHT, label);
+    sg->textbox(n->x_, y, BOX_WIDTH, BOX_HEIGHT, label);
 
     for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)
     {
     	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
 	node_t *child = node_t::from_callnode(ca->to);
+
+    	if (child == 0)
+	    continue;
 
     	show_node(child, sg);
 
@@ -530,13 +640,13 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 	sg->polyline_begin(FALSE);
 	if (child->rank_ >= n->rank_)
 	{
-	    sg->polyline_point(n->x_+ BOX_WIDTH, n->y_ + BOX_HEIGHT/2.0);
-	    sg->polyline_point(child->x_, child->y_ + BOX_HEIGHT/2.0);
+	    sg->polyline_point(n->x_+ BOX_WIDTH, n->y_);
+	    sg->polyline_point(child->x_, child->y_);
 	}
 	else
 	{
-	    sg->polyline_point(n->x_, n->y_ + BOX_HEIGHT/4.0);
-	    sg->polyline_point(child->x_ + BOX_WIDTH, child->y_ + BOX_HEIGHT/4.0);
+	    sg->polyline_point(n->x_, n->y_ - BOX_HEIGHT/4.0);
+	    sg->polyline_point(child->x_ + BOX_WIDTH, child->y_ - BOX_HEIGHT/4.0);
 	}
 	sg->polyline_end(TRUE);
     }
