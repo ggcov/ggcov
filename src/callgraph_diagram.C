@@ -21,7 +21,7 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.9 2006-01-29 01:05:25 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.10 2006-01-29 01:07:24 gnb Exp $");
 
 #define MARGIN		    0.2
 #define BOX_WIDTH  	    4.0
@@ -650,12 +650,31 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 	}
 	sg->polyline_end(TRUE);
     }
+
+    if (debug_enabled(D_DCALLGRAPH))
+    {
+	/* draw a red border showing the space allocated to this node */
+	sg->nofill();
+	sg->border(RGB(0xff,0,0));
+	sg->box(n->x_, n->y_ - n->h_/2.0, BOX_WIDTH, n->h_);
+    }
 }
 
 void
 callgraph_diagram_t::render(scenegen_t *sg)
 {
     list_iterator_t<node_t> iter;
+
+    if (debug_enabled(D_DCALLGRAPH))
+    {
+	/* draw a light blue background behind the whole diagram */
+	sg->fill(RGB(0xc0,0xc0,0xff));
+	sg->noborder();
+	sg->box(bounds_.x1+MARGIN,
+		bounds_.y1+MARGIN,
+	        bounds_.x2-bounds_.x1-2*MARGIN,
+	        bounds_.y2-bounds_.y1-2*MARGIN);
+    }
 
     for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
     {
