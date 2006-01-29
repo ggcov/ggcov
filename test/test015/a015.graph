@@ -1,0 +1,14 @@
+#
+# Generalisation of false roots: connected body nodes which
+# appear at too high a rank in the rank assignment pass.
+#
+# $Id: a015.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
+#
+a aa ab ac
+aa aaa aab
+ab aba abb
+ac aabb abab abbb
+aaa aaaa aaab
+aab aaba aabb
+aba abaa abab
+abb abba abbb

@@ -1,0 +1,12 @@
+#
+# Graph based on a binary tree of depth 4 but with narrowing
+#
+# $Id: a006.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
+#
+a ba bb
+ba baa bab
+bb bba bbb
+baa cccc
+bab cccc
+bba dddd
+bbb dddd

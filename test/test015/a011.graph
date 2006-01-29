@@ -1,0 +1,26 @@
+#
+# Lots of roots and a large reverse branch factor near the leaves.
+# This is similar to a layout that happens naturally in gcml2.
+#
+# $Id: a011.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
+#
+a aa ab
+aa aaa
+aaa aaaa
+aaaa aaaaa aaaab
+ab aba abb abc abd abe abf abg abh abi abj abk abl abm abn abo
+aba mm
+abb mm
+abc mm
+abd mm
+abe mm
+abf mm
+abg mm
+abh mm
+abi mm
+abj mm
+abk mm
+abl mm
+abm mm
+abn mm
+abo mm

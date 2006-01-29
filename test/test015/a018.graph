@@ -1,0 +1,17 @@
+#
+# False roots, with intermediate node and direct leaf which
+# is shared with other nodes, which leaves an empty rank
+# after pushing down nodes
+# This is similar to a layout that happens naturally in gcml2.
+#
+# $Id: a018.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
+#
+a aa
+aa aaa
+aaa aaaa
+aaaa aaaaa
+b ba
+ba baaa baab baac
+# c ca cb
+# ca abbb
+# d cb

@@ -1,0 +1,13 @@
+#
+# Multiple-node loop connected leafwards but not rootwards.
+# This is similar to a layout that happens naturally in gcml2.
+#
+# $Id: a012.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
+#
+a aa
+aa aaa aab
+aaa aaaa aaab
+aab aaba aabb
+c cd ce
+cd c aabb
+ce c

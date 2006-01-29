@@ -1,0 +1,8 @@
+#
+# Graph based on a binary tree of depth 3 but with sharing of a leaf node
+#
+# $Id: a003.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
+#
+A B C
+B D E
+C E F

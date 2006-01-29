@@ -1,0 +1,20 @@
+#
+# Binary tree of depth 5.  Just as simple as a001 but a few more nodes.
+#
+# $Id: a002.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
+#
+a ba bb
+ba baa bab
+bb bba bbb
+baa baaa baab
+bab baba babb
+bba bbaa bbab
+bbb bbba bbbb
+baaa baaaa baaab
+baab baaba baabb
+baba babaa babab
+babb babba babbb
+bbaa bbaaa bbaab
+bbab bbaba bbabb
+bbba bbbaa bbbab
+bbbb bbbba bbbbb

@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+. ../common.sh
+
+init
+
+SUBTESTS="$@"
+if [ -z "$SUBTESTS" ] ; then
+    SUBTESTS=$(ls ../*.graph | sed -e 's|^\.\./||' -e 's|\.graph$||')
+fi
+
+for st in $SUBTESTS ; do
+    subtest $st
+    $srcdir/graphgen.pl $srcdir/$st.graph $srcdir/${st}f.c $srcdir/${st}m.c || continue
+    compile_c ${st}f.c
+    compile_c ${st}m.c
+    link $st ${st}f.o ${st}m.o
+    vncdo ./$st
+    run_gcov ${st}f.c
+    run_tggcov ${st}f.c
+    compare_lines ${st}f.c
+done
+

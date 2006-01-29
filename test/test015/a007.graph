@@ -1,0 +1,8 @@
+#
+# Tree, depth 2, strong asymmetry
+#
+# $Id: a007.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
+#
+A B C
+B D E F G H I J K L M N O
+C P Q
