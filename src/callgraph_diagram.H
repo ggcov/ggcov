@@ -65,6 +65,9 @@ private:
 	list_t<node_t> nodes_;
     };
 
+    static void find_roots_1(cov_callnode_t *cn, void *userdata);
+    static int compare_root_nodes(const cov_callnode_t *, const cov_callnode_t *);
+    void find_roots();
     void adjust_rank(node_t *n, int delta);
     node_t *build_node(cov_callnode_t*, int rank);
     void add_spread(node_t *n);
@@ -72,7 +75,9 @@ private:
     void assign_geometry(node_t *n, double ystart, double yend);
     void show_node(node_t *, scenegen_t *sg);
 
-    node_t *main_node_;
+    list_t<cov_callnode_t> callnode_roots_;
+    list_t<node_t> roots_;
+    list_t<cov_callnode_t> disconnected_;
     ptrarray_t<rank_t> *ranks_;
     dbounds_t bounds_;
     unsigned long generation_;

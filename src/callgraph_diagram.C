@@ -19,8 +19,9 @@
 
 #include "callgraph_diagram.H"
 #include "tok.H"
+#include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.4 2006-01-29 00:38:27 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.5 2006-01-29 00:47:45 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -71,6 +72,74 @@ callgraph_diagram_t::title()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
+callgraph_diagram_t::find_roots_1(cov_callnode_t *cn, void *closure)
+{
+    callgraph_diagram_t *self = (callgraph_diagram_t *)closure;
+    enum { OTHER, DISCONNECTED, ROOT } type = OTHER;
+    
+    if (!strcmp(cn->name, "main"))
+    	type = ROOT;
+    else if (cn->in_arcs == 0)
+    	type = (cn->out_arcs == 0 ? DISCONNECTED : ROOT);
+
+    switch (type)
+    {
+    case ROOT:
+	dprintf1(D_DCALLGRAPH, "root node \"%s\"\n", cn->name.data());
+	self->callnode_roots_.append(cn);
+    	break;
+    case DISCONNECTED:
+	dprintf1(D_DCALLGRAPH, "disconnected node \"%s\"\n", cn->name.data());
+	self->disconnected_.append(cn);
+	break;
+    case OTHER:
+    	break;
+    }
+}
+
+int
+callgraph_diagram_t::compare_root_nodes(const cov_callnode_t *a,
+    	    	    	    	    	const cov_callnode_t *b)
+{
+    int r = 0;
+
+    /* a node named "main" is presented first */
+    if (!strcmp(a->name, "main"))
+    	r = -1;
+    else if (!strcmp(b->name, "main"))
+    	r = 1;
+
+    /* root nodes with more descendants are presented earlier */	
+    if (r == 0)
+    	r = g_list_length(b->out_arcs) - g_list_length(a->out_arcs);
+
+    /* as a final resort, root nodes are presented in alphabetical order */	
+    if (r == 0)
+    	r = strcmp(a->name, b->name);
+    
+    return r;
+}
+
+void
+callgraph_diagram_t::find_roots()
+{
+    dprintf0(D_DCALLGRAPH, "finding root and disconnected nodes:\n");
+    cov_callnode_t::foreach(find_roots_1, this);
+    callnode_roots_.sort(compare_root_nodes);
+    
+    list_iterator_t<cov_callnode_t> iter;
+    for (iter = callnode_roots_.first() ; iter != (cov_callnode_t *)0 ; ++iter)
+    {
+    	cov_callnode_t *cn = (*iter);
+	dprintf1(D_DCALLGRAPH, "building nodes for \"%s\"\n", cn->name.data());
+    	node_t *n = build_node(cn, 0);
+    	roots_.append(n);
+    }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
 callgraph_diagram_t::adjust_rank(callgraph_diagram_t::node_t *n, int delta)
 {
     GList *iter;
@@ -98,8 +167,21 @@ callgraph_diagram_t::adjust_rank(callgraph_diagram_t::node_t *n, int delta)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static const char *
+rank_plusses(int rank)
+{
+    static estring buf;
+
+    buf.truncate();
+    buf.append_string("    ");
+    for ( ; rank ; rank--)
+	buf.append_char('+');
+    return buf.data();
+}
+
 /* 
- * Recursive descent from the main() node, building node_t's
+ * Recursive descent from the roots, building node_t's
  * and calculating of node rank (which can be O(N^2) as we may
  * have to adjust the ranks of subtrees up to the entire tree).
  */
@@ -109,7 +191,8 @@ callgraph_diagram_t::build_node(cov_callnode_t *cn, int rank)
     node_t *n;
     GList *iter;
 
-    dprintf1(D_DCALLGRAPH, "callgraph_diagram_t::build_node(\"%s\")\n", cn->name.data());
+    dprintf2(D_DCALLGRAPH, "%s \"%s\"\n",
+	    rank_plusses(rank), cn->name.data());
 
     if ((n = node_t::from_callnode(cn)) != 0)
     {
@@ -278,9 +361,11 @@ callgraph_diagram_t::assign_geometry(node_t *n, double ystart, double yend)
 void
 callgraph_diagram_t::prepare()
 {
+    list_iterator_t<node_t> iter;
+
     dprintf0(D_DCALLGRAPH, "callgraph_diagram_t::prepare\n");
 
-    main_node_ = build_node(cov_callnode_t::find("main"), 0);
+    find_roots();
 
     ranks_ = new ptrarray_t<rank_t>;
     max_file_ = 0;
@@ -290,8 +375,10 @@ callgraph_diagram_t::prepare()
     bounds_.x2 = -HUGE;
     bounds_.y2 = -HUGE;
 
-    build_ranks(main_node_);
-    assign_geometry(main_node_,
+    for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
+	build_ranks((*iter));
+    for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
+	assign_geometry((*iter),
 		    FILE_GAP,
 		    (BOX_HEIGHT + FILE_GAP) * (max_file_+1));
 
@@ -365,7 +452,13 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 void
 callgraph_diagram_t::render(scenegen_t *sg)
 {
-    show_node(main_node_, sg);
+    list_iterator_t<node_t> iter;
+
+    for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
+    {
+	node_t *n = *iter;
+	show_node(n, sg);
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
