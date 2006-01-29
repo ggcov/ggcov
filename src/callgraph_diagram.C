@@ -21,7 +21,7 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.7 2006-01-29 00:53:17 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.8 2006-01-29 00:58:56 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -120,6 +120,20 @@ callgraph_diagram_t::compare_root_nodes(const cov_callnode_t *a,
 }
 
 void
+callgraph_diagram_t::check_reached_1(cov_callnode_t *cn, void *userdata)
+{
+    unsigned int *nunreachedp = (unsigned int *)userdata;
+    node_t *n = node_t::from_callnode(cn);
+
+    if (n == 0)
+    {
+	duprintf1("find_roots: \"%s\" not reached\n",
+		  cn->name.data());
+	(*nunreachedp)++;
+    }
+}
+
+void
 callgraph_diagram_t::find_roots()
 {
     dprintf0(D_DCALLGRAPH, "finding root and disconnected nodes:\n");
@@ -133,6 +147,16 @@ callgraph_diagram_t::find_roots()
 	dprintf1(D_DCALLGRAPH, "building nodes for \"%s\"\n", cn->name.data());
     	node_t *n = build_node(cn, 0);
     	roots_.append(n);
+    }
+
+    if (debug_enabled(D_DCALLGRAPH))
+    {
+	/* check for unreached nodes and whine about them */    
+	unsigned int nunreached = 0;
+
+	cov_callnode_t::foreach(check_reached_1, &nunreached);
+	if (nunreached)
+	    duprintf1("find_roots: %u nodes not reached\n", nunreached);
     }
 }
 

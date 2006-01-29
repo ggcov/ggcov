@@ -67,6 +67,7 @@ private:
 
     static void find_roots_1(cov_callnode_t *cn, void *userdata);
     static int compare_root_nodes(const cov_callnode_t *, const cov_callnode_t *);
+    static void check_reached_1(cov_callnode_t *cn, void *userdata);
     void find_roots();
     void adjust_rank(node_t *n, int delta);
     node_t *build_node(cov_callnode_t*, int rank);
