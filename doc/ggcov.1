@@ -16,7 +16,7 @@
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 .\" 
-.\" $Id: ggcov.1,v 1.5 2005-07-23 11:04:00 gnb Exp $
+.\" $Id: ggcov.1,v 1.6 2006-01-29 00:45:30 gnb Exp $
 .\"
 .TH GGCOV "1" "May 2005" "GGCOV" "Greg Banks"
 .SH NAME
@@ -74,6 +74,13 @@ files and coverage data files.
 \fB\-r\fP, \fB\-\-recursive\fP
 When a directory is specified on the command line, search for
 coverage data files recursively in all child directories.
+
+.TP
+\fB\-w\fP \fIwindows\fP, \fB\-\-initial\-windows\fP=\fIwindows\fP
+Open the named windows when \fBggcov\fP starts.  Window names
+are \fIsummary\fP, \fIfiles\fP, \fIfunctions\fP, \fIcalls\fP,
+\fIcallbutterfly\fP, \fIcallgraph\fP, \fIlego\fP, \fIsource\fP,
+and \fIreports\fP.  The default window is \fIsummary\fP.
 
 .TP
 \fB\-X\fP \fIsymbols\fP, \fB\-\-suppress\-ifdef=\fP\fIsymbols\fP

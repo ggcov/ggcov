@@ -22,8 +22,9 @@
 #include "mvc.h"
 #include "tok.H"
 #include "string_var.H"
+#include "prefs.H"
 
-CVSID("$Id: window.C,v 1.14 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: window.C,v 1.15 2006-01-29 00:45:30 gnb Exp $");
 
 static const char window_key[] = "ggcov_window_key";
 
@@ -258,6 +259,8 @@ window_t::show()
     if (shown_)
     	gdk_window_raise(window_->window);
     shown_ = TRUE;
+
+    prefs.post_load(window_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

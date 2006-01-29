@@ -37,7 +37,7 @@
 #include <libgnomeui/libgnomeui.h>
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.49 2005-09-07 00:21:01 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.50 2006-01-29 00:45:30 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -51,6 +51,7 @@ static char *suppressed_comment_ranges = 0;
 static char *object_dir = 0;
 static const char *debug_str = 0;
 static const char ** debug_argv;
+static const char *initial_windows = "summary";
 static int solve_fuzzy_flag = FALSE;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -400,10 +401,40 @@ ui_create(void)
 	    gtk_main_iteration();
     }
 
-    /* Possibly have files from commandline or dialog...show the Summary window */
-    summarywin_t *sw = new summarywin_t();
-    sw->show();
-    prefs.post_load(sw->get_window());
+    /* Possibly have files from commandline or dialog...show initial windows */
+    tok_t tok(initial_windows, ", \n\r");
+    const char *name;
+    int nwindows = 0;
+    while ((name = tok.next()) != 0)
+    {
+	nwindows++;
+	if (!strcmp(name, "summary"))
+	    on_windows_new_summarywin_activated(0, 0);
+	else if (!strcmp(name, "files"))
+	    on_windows_new_fileswin_activated(0, 0);
+	else if (!strcmp(name, "functions"))
+	    on_windows_new_functionswin_activated(0, 0);
+	else if (!strcmp(name, "calls"))
+	    on_windows_new_callswin_activated(0, 0);
+	else if (!strcmp(name, "callbutterfly"))
+	    on_windows_new_callgraphwin_activated(0, 0);
+	else if (!strcmp(name, "callgraph"))
+	    on_windows_new_callgraph2win_activated(0, 0);
+	else if (!strcmp(name, "lego"))
+	    on_windows_new_legowin_activated(0, 0);
+	else if (!strcmp(name, "source"))
+	    on_windows_new_sourcewin_activated(0, 0);
+	else if (!strcmp(name, "reports"))
+	    on_windows_new_reportwin_activated(0, 0);
+	else
+	{
+	    fprintf(stderr, "%s: unknown window name \"%s\"\n", argv0, name);
+	    nwindows--;
+	}
+    }
+
+    if (!nwindows)
+	on_windows_new_summarywin_activated(0, 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -464,6 +495,15 @@ static struct poptOption popt_options[] =
 	&object_dir,     	    	    	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"directory in which to find .o,.bb,.bbg,.da files", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"initial-windows",    	    	    	/* longname */
+	'w',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&initial_windows,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"list of windows to open initially",	/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {

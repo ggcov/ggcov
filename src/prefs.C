@@ -21,7 +21,7 @@
 #include "prefs.H"
 #include "colors.h"
 
-CVSID("$Id: prefs.C,v 1.9 2005-06-13 06:41:33 gnb Exp $");
+CVSID("$Id: prefs.C,v 1.10 2006-01-29 00:45:30 gnb Exp $");
 
 prefs_t prefs;
 
@@ -107,7 +107,12 @@ void
 prefs_t::post_load(GtkWidget *w)
 {
     GdkColormap *cmap;
+    static gboolean first = TRUE;
     
+    if (!first)
+	return;
+    first = FALSE;
+
     gtk_widget_realize(w);
     
     cmap = gtk_widget_get_colormap(w);
