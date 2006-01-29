@@ -43,10 +43,12 @@ private:
     {
     	cov_callnode_t *callnode_;
 	cov_scope_t *scope_;
-	unsigned int rank_;
+	int rank_;
 	unsigned int file_;
 	unsigned int nup_;	/* number of incoming arcs from upper ranks */
 	unsigned int ndown_;	/* number of outgoing arcs to lower ranks */
+	int max_rank_;	    	/* lowest rank this node could be pushed to */
+	int max_depth_;     	/* longest path to leaf through this node */
 	unsigned long generation_;
 	double spread_;
 	double x_, y_, h_;
@@ -55,7 +57,8 @@ private:
 	{
 	    HAVE_NUP = (1<<0),
 	    HAVE_NDOWN = (1<<1),
-	    SHOWN = (1<<2)
+	    SHOWN = (1<<2),
+	    FIXED_RANK = (1<<3)
 	};
 	int flags_;
 
@@ -83,6 +86,9 @@ private:
     static void check_reached_1(cov_callnode_t *cn, void *userdata);
     void find_roots();
     void adjust_rank(node_t *n, int delta);
+    void prepare_ranks(node_t *n, int);
+    void push_false_root(node_t *n);
+    void balance_ranks(node_t *n);
     node_t *build_node(cov_callnode_t*, int rank);
     void build_ranks(node_t *);
     void calc_spread(int pass, int rank);
@@ -99,6 +105,7 @@ private:
     ptrarray_t<rank_t> *ranks_;
     dbounds_t bounds_;
     unsigned long generation_;
+    int max_rank_;
     unsigned int max_file_;
 };
 
