@@ -20,7 +20,7 @@
 #include "callgraph_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.2 2006-01-29 00:32:35 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.3 2006-01-29 00:34:31 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -348,8 +348,16 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 	sg->arrow_size(ARROW_SIZE);
 	sg->fill(fg_rgb_by_status_[ca->count ? cov::COVERED : cov::UNCOVERED]);
 	sg->polyline_begin(FALSE);
-	sg->polyline_point(n->x_+ BOX_WIDTH, n->y_ + BOX_HEIGHT/2.0);
-	sg->polyline_point(child->x_, child->y_ + BOX_HEIGHT/2.0);
+	if (child->rank_ >= n->rank_)
+	{
+	    sg->polyline_point(n->x_+ BOX_WIDTH, n->y_ + BOX_HEIGHT/2.0);
+	    sg->polyline_point(child->x_, child->y_ + BOX_HEIGHT/2.0);
+	}
+	else
+	{
+	    sg->polyline_point(n->x_, n->y_ + BOX_HEIGHT/4.0);
+	    sg->polyline_point(child->x_ + BOX_WIDTH, child->y_ + BOX_HEIGHT/4.0);
+	}
 	sg->polyline_end(TRUE);
     }
 }
