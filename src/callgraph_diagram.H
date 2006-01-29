@@ -73,6 +73,9 @@ private:
     void add_spread(node_t *n);
     void build_ranks(node_t *);
     void assign_geometry(node_t *n, double ystart, double yend);
+    void dump_ranks();
+    static void dump_graph_1(cov_callnode_t *cn, void *userdata);
+    void dump_graph();
     void show_node(node_t *, scenegen_t *sg);
 
     list_t<cov_callnode_t> callnode_roots_;

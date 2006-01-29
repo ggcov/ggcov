@@ -21,7 +21,7 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.5 2006-01-29 00:47:45 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.6 2006-01-29 00:49:04 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -359,6 +359,75 @@ callgraph_diagram_t::assign_geometry(node_t *n, double ystart, double yend)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
+callgraph_diagram_t::dump_ranks()
+{
+    unsigned int i;
+
+    duprintf0("dump_ranks:\n");
+    for (i = 0 ; i < ranks_->length() ; i++)
+    {
+	rank_t *r = ranks_->nth(i);
+	list_iterator_t<node_t> iter;
+
+	if (r == 0)
+	    continue;
+	duprintf1("    [%u]:\n", i);
+
+	for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
+	{
+	    node_t *n = (*iter);
+	    duprintf2("        %u \"%s\"\n",
+		     n->spread_, n->callnode_->name.data());
+	}
+    }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+ 
+void
+callgraph_diagram_t::dump_graph_1(cov_callnode_t *cn, void *closure)
+{
+//    callgraph_diagram_t *self = (callgraph_diagram_t *)closure;
+    node_t *n = node_t::from_callnode(cn);
+    GList *iter;
+
+    duprintf1("    %s\n", cn->name.data());
+    if (n != 0)
+    	duprintf3("        rank %d file %d spread %u\n",
+	    	  n->rank_, n->file_, n->spread_);
+
+    for (iter = cn->in_arcs ; iter != 0 ; iter = iter->next)
+    {
+	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	node_t *from = node_t::from_callnode(a->from);
+	
+	duprintf1("        in %s", a->from->name.data());
+	if (from != 0)
+	    duprintf1(" rank %d", from->rank_);
+	duprintf0("\n");
+    }
+    for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)
+    {
+	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	node_t *to = node_t::from_callnode(a->to);
+	
+	duprintf1("        out %s", a->to->name.data());
+	if (to != 0)
+	    duprintf1(" rank %d", to->rank_);
+	duprintf0("\n");
+    }
+}
+
+void
+callgraph_diagram_t::dump_graph()
+{
+    duprintf0("dump_graph:\n");
+    cov_callnode_t::foreach(dump_graph_1, this);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
 callgraph_diagram_t::prepare()
 {
     list_iterator_t<node_t> iter;
@@ -377,6 +446,13 @@ callgraph_diagram_t::prepare()
 
     for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
 	build_ranks((*iter));
+
+    if (debug_enabled(D_DCALLGRAPH))
+    {
+	dump_ranks();
+	dump_graph();
+    }
+
     for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
 	assign_geometry((*iter),
 		    FILE_GAP,
