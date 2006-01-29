@@ -23,6 +23,8 @@
 #include "common.h"
 #include "cov.H"
 #include "diagram.H"
+#include "ptrarray.H"
+#include "list.H"
 
 class callgraph_diagram_t : public diagram_t
 {
@@ -58,6 +60,10 @@ private:
 	~node_t();
     };
 
+    struct rank_t
+    {
+	list_t<node_t> nodes_;
+    };
 
     void adjust_rank(node_t *n, int delta);
     node_t *build_node(cov_callnode_t*, int rank);
@@ -67,7 +73,7 @@ private:
     void show_node(node_t *, scenegen_t *sg);
 
     node_t *main_node_;
-    GPtrArray *ranks_;
+    ptrarray_t<rank_t> *ranks_;
     dbounds_t bounds_;
     unsigned long generation_;
     unsigned int max_file_;

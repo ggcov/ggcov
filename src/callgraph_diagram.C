@@ -20,7 +20,7 @@
 #include "callgraph_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.1 2005-06-13 06:47:09 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.2 2006-01-29 00:32:35 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
@@ -176,7 +176,7 @@ void
 callgraph_diagram_t::build_ranks(callgraph_diagram_t::node_t *n)
 {
     GList *iter;
-    GList **rlp;
+    rank_t *r;
     int ndirect = 0;
 
     if (n->file_)
@@ -185,15 +185,19 @@ callgraph_diagram_t::build_ranks(callgraph_diagram_t::node_t *n)
     dprintf1(D_GRAPH2WIN, "callgraph_diagram_t::build_ranks(\"%s\")\n",
     	    	n->callnode_->name.data());
 
-    if (n->rank_ >= ranks_->len)
+    if (n->rank_ >= ranks_->length())
     {
 	dprintf1(D_GRAPH2WIN, "callgraph_diagram_t::build_ranks: expanding ranks to %d\n",
 	    	    n->rank_);
-    	g_ptr_array_set_size(ranks_, n->rank_+1);
+	r = new rank_t();
+	ranks_->set(n->rank_, r);
     }
-    rlp = (GList **)&g_ptr_array_index(ranks_, n->rank_);
-    *rlp = g_list_append(*rlp, n);
-    n->file_ = g_list_length(*rlp);
+    else
+    {
+	r = ranks_->nth(n->rank_);
+    }
+    r->nodes_.append(n);
+    n->file_ = r->nodes_.length();
     if (n->file_ > max_file_)
     	max_file_ = n->file_;
     
@@ -278,7 +282,7 @@ callgraph_diagram_t::prepare()
 
     main_node_ = build_node(cov_callnode_t::find("main"), 0);
 
-    ranks_ = g_ptr_array_new();
+    ranks_ = new ptrarray_t<rank_t>;
     max_file_ = 0;
 
     bounds_.x1 = HUGE;
