@@ -21,14 +21,13 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.6 2006-01-29 00:49:04 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.7 2006-01-29 00:53:17 gnb Exp $");
 
 #define BOX_WIDTH  	    4.0
 #define BOX_HEIGHT  	    1.0
 #define RANK_GAP 	    2.0
 #define FILE_GAP  	    0.1
 #define ARROW_SIZE	    0.5
-#define HUGE    	    1.0e10
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -439,10 +438,7 @@ callgraph_diagram_t::prepare()
     ranks_ = new ptrarray_t<rank_t>;
     max_file_ = 0;
 
-    bounds_.x1 = HUGE;
-    bounds_.y1 = HUGE;
-    bounds_.x2 = -HUGE;
-    bounds_.y2 = -HUGE;
+    bounds_.initialise();
 
     for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
 	build_ranks((*iter));
@@ -458,10 +454,7 @@ callgraph_diagram_t::prepare()
 		    FILE_GAP,
 		    (BOX_HEIGHT + FILE_GAP) * (max_file_+1));
 
-    bounds_.x1 -= FILE_GAP;
-    bounds_.x2 += FILE_GAP;
-    bounds_.y1 -= RANK_GAP;
-    bounds_.y2 += RANK_GAP;
+    bounds_.expand(FILE_GAP, RANK_GAP);
     dprintf4(D_DCALLGRAPH, "callgraph_diagram_t::populate: bounds={x1=%g y1=%g x2=%g y2=%g}\n",
     	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
 }

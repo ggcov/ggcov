@@ -23,11 +23,7 @@
 #include "common.h"
 #include "cov.H"
 #include "scenegen.H"
-
-typedef struct
-{
-    double x1, y1, x2, y2;
-} dbounds_t;
+#include "geometry.H"
 
 class diagram_t
 {

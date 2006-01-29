@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.59 2005-09-11 10:42:20 gnb Exp $
+# $Id: Makefile.am,v 1.60 2006-01-29 00:53:17 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -34,7 +34,8 @@ libcommon_a_SOURCES= \
 		ptrarray.H \
 		mvc.h mvc.c \
 		cpp_parser.H cpp_parser.C \
-		scenegen.H scenegen.C
+		scenegen.H scenegen.C \
+		geometry.H
 
 libcov_a_SOURCES= \
 		covio.H covio.C \
