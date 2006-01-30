@@ -3,3 +3,5 @@ junk
 .nautilus-metafile.xml
 .gdbinit
 *.bck
+Makefile
+Makefile.in

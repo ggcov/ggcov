@@ -1,3 +1,7 @@
+COPYING
+INSTALL
+config.guess
+config.sub
 config.log
 config.status
 config.cache
@@ -6,6 +10,9 @@ config.h
 config.h.in
 stamp-h
 stamp-h.in
+depcomp
+install-sh
+missing
 Makefile.in
 Makefile
 rpm.d
@@ -19,3 +26,5 @@ autom4te.cache
 stamp-h1
 .nautilus-metafile.xml
 *.bck
+.pc
+patches
