@@ -37,22 +37,15 @@
 #include <libgnomeui/libgnomeui.h>
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.50 2006-01-29 00:45:30 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.51 2006-01-29 22:52:48 gnb Exp $");
 
 #define DEBUG_GTK 1
 
 char *argv0;
-GList *files;	    /* incoming specification from commandline */
+static GList *files;	    /* incoming specification from commandline */
 
-static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
-static char *suppressed_ifdefs = 0;
-static char *suppressed_comment_lines = 0;
-static char *suppressed_comment_ranges = 0;
-static char *object_dir = 0;
-static const char *debug_str = 0;
 static const char ** debug_argv;
 static const char *initial_windows = "summary";
-static int solve_fuzzy_flag = FALSE;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
@@ -89,102 +82,6 @@ stash_argv(int argc, char **argv)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 /*
- * Read files from the commandline.
- */
-static void
-read_gcov_files(void)
-{
-    GList *iter;
-    
-    cov_init();
-    if (files == 0)
-    	return;
-
-    cov_function_t::set_solve_fuzzy_flag(solve_fuzzy_flag);
-
-    if (suppressed_ifdefs != 0)
-    {
-    	tok_t tok(/*force copy*/(const char *)suppressed_ifdefs, ", \t");
-	const char *v;
-	
-	while ((v = tok.next()) != 0)
-    	    cov_suppress_ifdef(v);
-    }
-
-    if (suppressed_comment_lines != 0)
-    {
-    	tok_t tok(/*force copy*/(const char *)suppressed_comment_lines, ", \t");
-	const char *v;
-	
-	while ((v = tok.next()) != 0)
-    	    cov_suppress_lines_with_comment(v);
-    }
-
-    if (suppressed_comment_ranges != 0)
-    {
-    	tok_t tok(/*force copy*/(const char *)suppressed_comment_ranges, ", \t");
-	const char *s, *e;
-	
-	while ((s = tok.next()) != 0)
-	{
-	    if ((e = tok.next()) == 0)
-	    {
-		fprintf(stderr, "ggcov: -Z option requires pairs of words\n");
-		exit(1);
-	    }
-    	    cov_suppress_lines_between_comments(s, e);
-	}
-    }
-
-    cov_pre_read();
-    
-    if (object_dir != 0)
-    	cov_add_search_directory(object_dir);
-
-    for (iter = files ; iter != 0 ; iter = iter->next)
-    {
-	const char *filename = (const char *)iter->data;
-
-	if (file_is_directory(filename) == 0)
-	    cov_add_search_directory(filename);
-    }
-
-    for (iter = files ; iter != 0 ; iter = iter->next)
-    {
-	const char *filename = (const char *)iter->data;
-
-	if (file_is_directory(filename) == 0)
-	{
-	    if (!cov_read_directory(filename, recursive))
-		exit(1);
-	}
-	else if (file_is_regular(filename) == 0)
-	{
-	    if (cov_is_source_filename(filename))
-	    {
-		if (!cov_read_source_file(filename))
-		    exit(1);
-	    }
-	    else
-	    {
-		if (!cov_read_object_file(filename))
-		    exit(1);
-	    }
-	}
-	else
-	{
-	    fprintf(stderr, "%s: don't know how to handle this filename\n",
-		    filename);
-	    exit(1);
-	}
-    }
-    
-    cov_post_read();
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-/*
  * Read a file from the File->Open dialog.
  */
 gboolean
@@ -192,7 +89,7 @@ ggcov_read_file(const char *filename)
 {
     if (file_is_directory(filename) == 0)
     {
-	if (!cov_read_directory(filename, recursive))
+	if (!cov_read_directory(filename, /*recursive*/FALSE))
 	    return FALSE;
     }
     else if (file_is_regular(filename) == 0)
@@ -450,53 +347,8 @@ ui_create(void)
  * specification of options, i.e. we simulate popt in fakepopt.c!
  */
 static poptContext popt_context;
-static struct poptOption popt_options[] =
+static const struct poptOption popt_options[] =
 {
-    {
-    	"recursive",	    	    	    	/* longname */
-	'r',  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&recursive,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"recursively scan directories for source", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"suppress-ifdef",	    	    	/* longname */
-	'X',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&suppressed_ifdefs,     	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"suppress source which is conditional on this cpp define", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"suppress-comment",	    	    	/* longname */
-	'Y',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&suppressed_comment_lines,     	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"suppress source on lines containing this comment", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"suppress-comment-between",	   	/* longname */
-	'Z',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&suppressed_comment_ranges,     	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"suppress source between lines containing these start and end comments", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"object-directory",    	    	    	/* longname */
-	'o',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&object_dir,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"directory in which to find .o,.bb,.bbg,.da files", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
     {
     	"initial-windows",    	    	    	/* longname */
 	'w',  	    	    	    	    	/* shortname */
@@ -506,25 +358,9 @@ static struct poptOption popt_options[] =
 	"list of windows to open initially",	/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
-    {
-    	"solve-fuzzy",    	    	    	/* longname */
-	'F',  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&solve_fuzzy_flag,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"whether to be tolerant of inconsistent arc counts", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"debug",	    	    	    	/* longname */
-	'D',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&debug_str,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"enable ggcov debugging features",  	/* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    { 0, 0, 0, 0, 0, 0, 0 }
+    COV_POPT_OPTIONS
+    POPT_AUTOHELP
+    POPT_TABLEEND
 };
 
 static void
@@ -562,15 +398,11 @@ parse_args(int argc, char **argv)
 	
     poptFreeContext(popt_context);
     
-    if (debug_str != 0)
-    	debug_set(debug_str);
-	
-
+    cov_post_args();
+    
     if (debug_enabled(D_DUMP|D_VERBOSE))
     {
-    	GList *iter;
 	const char **p;
-	string_var token_str = debug_enabled_tokens();
 
 	duprintf0("parse_args: argv[] = {");
 	for (p = debug_argv ; *p ; p++)
@@ -580,15 +412,6 @@ parse_args(int argc, char **argv)
 	    else
 	    	duprintf1(" \"%s\"", *p);
 	}
-	duprintf0(" }\n");
-
-	duprintf1("parse_args: recursive = %d\n", recursive);
-
-	duprintf2("parse_args: debug = 0x%lx (%s)\n", debug, token_str.data());
-
-	duprintf0("parse_args: files = {");
-	for (iter = files ; iter != 0 ; iter = iter->next)
-	    duprintf1(" \"%s\"", (char *)iter->data);
 	duprintf0(" }\n");
     }
 }
@@ -677,7 +500,7 @@ main(int argc, char **argv)
 #endif
 
     parse_args(argc, argv);
-    read_gcov_files();
+    cov_read_files(files);
 
     cov_dump(stderr);
     ui_create();

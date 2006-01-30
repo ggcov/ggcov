@@ -42,13 +42,19 @@ struct poptOption
 };
 
 #define POPT_ARG_NONE	0
+#define POPT_ARG_STRING 1
+#define POPT_ARG_INCLUDE_TABLE 4
 
 #define POPT_BADOPTION_NOALIAS	0
+
+#define POPT_AUTOHELP
+#define POPT_TABLEEND { NULL, '\0', 0, 0, 0, NULL, NULL }
 
 typedef struct _poptContext *poptContext;
 
 extern poptContext poptGetContext(const char *, int, const char **,
     	    	    	    	  const struct poptOption *, int);
+extern void poptSetOtherOptionHelp(poptContext, const char *);
 extern int poptGetNextOpt(poptContext);
 extern const char *poptGetArg(poptContext);
 extern const char *poptStrerror(int);

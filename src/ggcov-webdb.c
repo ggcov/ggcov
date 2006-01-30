@@ -30,7 +30,7 @@
 #include "fakepopt.h"
 #include <db.h>
 
-CVSID("$Id: ggcov-webdb.c,v 1.9 2005-09-07 00:16:53 gnb Exp $");
+CVSID("$Id: ggcov-webdb.c,v 1.10 2006-01-29 22:52:48 gnb Exp $");
 
 #define V(major,minor,patch)    ((major)*10000+(minor)*1000+(patch))
 #define DB_VERSION_CODE V(DB_VERSION_MAJOR,DB_VERSION_MINOR,DB_VERSION_PATCH)
@@ -48,16 +48,8 @@ CVSID("$Id: ggcov-webdb.c,v 1.9 2005-09-07 00:16:53 gnb Exp $");
 #endif
 
 char *argv0;
-GList *files;	    /* incoming specification from commandline */
+static GList *files;	    /* incoming specification from commandline */
 
-static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
-static char *suppressed_ifdefs = 0;
-static char *suppressed_comment_lines = 0;
-static char *suppressed_comment_ranges = 0;
-static char *object_dir = 0;
-static int solve_fuzzy_flag = FALSE;
-static const char *debug_str = 0;
-static int print_version_flag = FALSE;
 static char *dump_mode = NULL;
 static char *output_tarball = "ggcov.webdb.tgz";
 
@@ -146,108 +138,6 @@ systemf(const char *fmt, ...)
 
     dprintf1(D_WEB, "Running \"%s\"\n", cmd.data());
     return system(cmd.data());
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-/* 
- * TODO: This function should be common with the identical code in ggcov.c
- */
-
-static void
-read_gcov_files(void)
-{
-    GList *iter;
-    
-    cov_init();
-
-    cov_function_t::set_solve_fuzzy_flag(solve_fuzzy_flag);
-
-    if (suppressed_ifdefs != 0)
-    {
-    	tok_t tok(/*force copy*/(const char *)suppressed_ifdefs, ", \t");
-	const char *v;
-	
-	while ((v = tok.next()) != 0)
-    	    cov_suppress_ifdef(v);
-    }
-
-    if (suppressed_comment_lines != 0)
-    {
-    	tok_t tok(/*force copy*/(const char *)suppressed_comment_lines, ", \t");
-	const char *v;
-	
-	while ((v = tok.next()) != 0)
-    	    cov_suppress_lines_with_comment(v);
-    }
-
-    if (suppressed_comment_ranges != 0)
-    {
-    	tok_t tok(/*force copy*/(const char *)suppressed_comment_ranges, ", \t");
-	const char *s, *e;
-	
-	while ((s = tok.next()) != 0)
-	{
-	    if ((e = tok.next()) == 0)
-	    {
-		fprintf(stderr, "ggcov: -Z option requires pairs of words\n");
-		exit(1);
-	    }
-    	    cov_suppress_lines_between_comments(s, e);
-	}
-    }
-
-    cov_pre_read();
-    
-    if (object_dir != 0)
-    	cov_add_search_directory(object_dir);
-
-    if (files == 0)
-    {
-    	if (!cov_read_directory(".", recursive))
-	    exit(1);
-    }
-    else
-    {
-	for (iter = files ; iter != 0 ; iter = iter->next)
-	{
-	    const char *filename = (const char *)iter->data;
-	    
-	    if (file_is_directory(filename) == 0)
-	    	cov_add_search_directory(filename);
-    	}
-
-	for (iter = files ; iter != 0 ; iter = iter->next)
-	{
-	    const char *filename = (const char *)iter->data;
-	    
-	    if (file_is_directory(filename) == 0)
-	    {
-	    	if (!cov_read_directory(filename, recursive))
-		    exit(1);
-	    }
-	    else if (file_is_regular(filename) == 0)
-	    {
-	    	if (cov_is_source_filename(filename))
-		{
-		    if (!cov_read_source_file(filename))
-			exit(1);
-		}
-		else
-		{
-		    if (!cov_read_object_file(filename))
-			exit(1);
-		}
-	    }
-	    else
-	    {
-	    	fprintf(stderr, "%s: don't know how to handle this filename\n",
-		    	filename);
-		exit(1);
-	    }
-	}
-    }
-    
-    cov_post_read();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1018,52 +908,6 @@ static poptContext popt_context;
 static struct poptOption popt_options[] =
 {
     {
-    	"recursive",	    	    	    	/* longname */
-	'r',  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&recursive,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"recursively scan directories for source", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"suppress-ifdef",	    	    	/* longname */
-	'X',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&suppressed_ifdefs,     	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"suppress source which is conditional on the "
-	"given cpp define/s (comma-separated)", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"suppress-comment",	    	    	/* longname */
-	'Y',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&suppressed_comment_lines,     	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"suppress source on lines containing this comment", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"suppress-comment-between",	   	/* longname */
-	'Z',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&suppressed_comment_ranges,     	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"suppress source between lines containing these start and end comments", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"object-directory",    	    	    	/* longname */
-	'o',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&object_dir,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"directory in which to find .o,.bb,.bbg,.da files", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
     	"output-file",    	    	    	/* longname */
 	'f',  	    	    	    	    	/* shortname */
 	POPT_ARG_STRING,  	    	    	/* argInfo */
@@ -1081,35 +925,9 @@ static struct poptOption popt_options[] =
 	"dump the entire database",		/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
-    {
-    	"solve-fuzzy",    	    	    	/* longname */
-	'F',  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&solve_fuzzy_flag,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"whether to be tolerant of inconsistent arc counts", /* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"debug",	    	    	    	/* longname */
-	'D',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&debug_str,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"enable tggcov debugging features",  	/* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
-    {
-    	"version",	    	    	    	/* longname */
-	'v',  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&print_version_flag,     	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"print version and exit",  	    	/* descrip */
-	0	    	    	    	    	/* argDescrip */
-    },
+    COV_POPT_OPTIONS
     POPT_AUTOHELP
-    { 0, 0, 0, 0, 0, 0, 0 }
+    POPT_TABLEEND
 };
 
 static void
@@ -1141,30 +959,7 @@ parse_args(int argc, char **argv)
 	
     poptFreeContext(popt_context);
 
-    if (debug_str != 0)
-    	debug_set(debug_str);
-
-    if (print_version_flag)
-    {
-    	fputs(PACKAGE " version " VERSION "\n", stdout);
-	exit(0);
-    }
-    
-    if (debug_enabled(D_DUMP|D_VERBOSE))
-    {
-    	GList *iter;
-	string_var token_str = debug_enabled_tokens();
-
-	duprintf1("parse_args: recursive=%d\n", recursive);
-	duprintf1("parse_args: suppressed_ifdefs=%s\n", suppressed_ifdefs);
-	duprintf1("parse_args: solve_fuzzy_flag=%d\n", solve_fuzzy_flag);
-	duprintf2("parse_args: debug = 0x%lx (%s)\n", debug, token_str.data());
-
-	duprintf0("parse_args: files = ");
-	for (iter = files ; iter != 0 ; iter = iter->next)
-	    duprintf1(" \"%s\"", (char *)iter->data);
-	duprintf0(" }\n");
-    }
+    cov_post_args();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1218,7 +1013,7 @@ create_database(void)
     DB *db;
     int ret;
 
-    read_gcov_files();
+    cov_read_files(files);
 
     tempdir = g_strdup_printf("%s/ggcov-web-%d.d", get_tmpdir(), (int)getpid());
     webdb_file = g_strconcat(tempdir, "/", "ggcov.webdb", (char*)0);

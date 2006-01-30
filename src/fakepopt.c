@@ -21,7 +21,7 @@
 
 #ifndef HAVE_LIBPOPT
 
-CVSID("$Id: fakepopt.c,v 1.3 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: fakepopt.c,v 1.4 2006-01-29 22:52:48 gnb Exp $");
 
 /*
  * Simulate enough of the popt interface so that I only have
@@ -38,11 +38,14 @@ struct _poptContext
     int argc;
     const char **argv;
     int argi;
+    const char *current;
 
     int nfiles;
     const char **files;
     int filei;
     gboolean file_mode;
+    
+    char *other_option_help;
 
     const struct poptOption *options;
 };
@@ -59,14 +62,14 @@ poptGetContext(
 {
     poptContext con;
     
-    con = (poptContext)gnb_xmalloc(sizeof(*con));
+    con = g_new0(struct _poptContext, 1);
 
     con->argc = argc;
     con->argv = argv;
     con->argi = 0;  /* points at last argument visited */
     
     con->nfiles = 0;
-    con->files = (const char **)gnb_xmalloc(sizeof(const char *) * con->argc);
+    con->files = g_new0(const char *, con->argc);
     con->filei = 0;
     con->file_mode = FALSE;
 
@@ -77,41 +80,92 @@ poptGetContext(
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static const struct poptOption *
-find_long_option(poptContext con, const char *name)
+void
+poptSetOtherOptionHelp(poptContext con, const char *help)
 {
-    const struct poptOption *opt;
+    con->other_option_help = g_strdup(help);
+}
 
-    for (opt = con->options ; opt->long_name || opt->short_name ; opt++)
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static const struct poptOption *
+find_long_option(const struct poptOption *opt, const char *name, const char **valp)
+{
+    const struct poptOption *o;
+    int len;
+
+    for ( ; opt->long_name || opt->short_name ; opt++)
     {
-	if (!strcmp(name, opt->long_name))
-	    return opt;
+	switch (opt->type)
+	{
+	case POPT_ARG_INCLUDE_TABLE:
+	    o = find_long_option((const struct poptOption *)opt->value_ptr, name, valp);
+	    if (o != 0)
+		return o;
+	    break;
+	default:
+	    len = strlen(opt->long_name);
+	    if (!strncmp(name, opt->long_name, len) && name[len] == '=')
+	    {
+		*valp = name+len+1;
+		return opt;
+	    }
+	    /* fall through */
+	case POPT_ARG_NONE:
+	    if (!strcmp(name, opt->long_name))
+		return opt;
+	    break;
+	}
     }
     return 0;
 }
 
 static const struct poptOption *
-find_short_option(poptContext con, char name)
+find_short_option(const struct poptOption *opt, char name)
 {
-    const struct poptOption *opt;
+    const struct poptOption *o;
 
-    for (opt = con->options ; opt->long_name || opt->short_name ; opt++)
+    for ( ; opt->long_name || opt->short_name ; opt++)
     {
-	if (name == opt->short_name)
-	    return opt;
+	switch (opt->type)
+	{
+	case POPT_ARG_INCLUDE_TABLE:
+	    o = find_short_option((const struct poptOption *)opt->value_ptr, name);
+	    if (o != 0)
+		return o;
+	    break;
+	default:
+	    if (name == opt->short_name)
+		return opt;
+	    break;
+	}
     }
     return 0;
 }
 
 static int
-handle_option(poptContext con, const struct poptOption *opt)
+handle_option(poptContext con, const struct poptOption *opt, const char *val)
 {
     if (opt == 0)
     	return -2;  /* unknown option */
-    assert(opt->type == POPT_ARG_NONE);
     assert(opt->value_ptr != 0);
     assert(opt->value == 0);
-    *(int *)opt->value_ptr = TRUE;
+    switch (opt->type)
+    {
+    case POPT_ARG_NONE:
+	assert(val == 0);
+	*(int *)opt->value_ptr = TRUE;
+	break;
+    case POPT_ARG_STRING:
+	if (val == 0)
+	{
+	    val = con->argv[++con->argi];
+	    if (val == 0)
+		return -3; /* no value */
+	}
+	*(const char **)opt->value_ptr = val;
+	break;
+    }
     return opt->value;
 }
 
@@ -120,12 +174,15 @@ poptGetNextOpt(poptContext con)
 {
     const char *arg;
     int rc;
+    const char *val;
+    const struct poptOption *opt;
     
     for (;;)
     {
 	arg = con->argv[++con->argi];
 	if (arg == 0)
     	    return -1;  /* end of arguments */
+	con->current = arg;
 
     	if (con->file_mode || arg[0] != '-')
 	{
@@ -139,14 +196,16 @@ poptGetNextOpt(poptContext con)
 	    	con->file_mode = TRUE;
 	    	continue;
 	    }
-	    if ((rc = handle_option(con, find_long_option(con, arg+2))))
+	    val = 0;
+	    opt = find_long_option(con->options, arg+2, &val);
+	    if ((rc = handle_option(con, opt, val)))
 	    	return rc;
 	}
 	else
 	{
 	    for (arg++ ; *arg ; arg++)
 	    {
-		if ((rc = handle_option(con, find_short_option(con, *arg))))
+		if ((rc = handle_option(con, find_short_option(con->options, *arg), 0)))
 	    	    return rc;
 	    }
 	}
@@ -171,6 +230,7 @@ poptStrerror(int rc)
     switch (rc)
     {
     case -2: return "bad option";
+    case -3: return "no value";
     default: return "no error";
     }
 }
@@ -178,12 +238,14 @@ poptStrerror(int rc)
 const char *
 poptBadOption(poptContext con, int ignored)
 {
-    return con->argv[con->argi];
+    return con->current;
 }
 
 void
 poptFreeContext(poptContext con)
 {
+    if (con->other_option_help != 0)
+    	free(con->other_option_help);
     free(con->files);
     free(con);
 }
