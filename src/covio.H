@@ -21,6 +21,7 @@
 #define _ggcov_covio_h_ 1
 
 #include "common.h"
+#include "estring.H"
 
 /*
  * There are twice as many functions as necessary because the
@@ -60,6 +61,8 @@ public:
     const char *filename() const { return fn_; }
     
     gboolean skip(unsigned int len);
+    int read(char *buf, unsigned int len);
+    int read(estring &e, unsigned int len);
     
     off_t tell() const { return ftell(fp_); }
     int seek(off_t off) { return fseek(fp_, off, SEEK_SET); }

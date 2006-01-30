@@ -20,7 +20,7 @@
 #include "covio.H"
 #include "estring.H"
 
-CVSID("$Id: covio.C,v 1.5 2005-07-31 11:37:27 gnb Exp $");
+CVSID("$Id: covio.C,v 1.6 2006-01-29 23:37:25 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -167,6 +167,25 @@ covio_t::skip(unsigned int length)
 	    return FALSE;
     }
     return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+int
+covio_t::read(char *buf, unsigned int len)
+{
+    return fread(buf, 1, len, fp_);
+}
+
+int
+covio_t::read(estring &e, unsigned int len)
+{
+    int r;
+
+    e.truncate_to(len);
+    r = fread((char *)e.data(), 1, len, fp_);
+    e.truncate_to(r < 0 ? 0 : r);
+    return r;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
