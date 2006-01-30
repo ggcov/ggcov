@@ -39,7 +39,7 @@
 #include "callgraph_diagram.H"
 #include "check_scenegen.H"
 
-CVSID("$Id: tggcov.c,v 1.18 2006-01-29 22:52:48 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.19 2006-01-29 23:43:36 gnb Exp $");
 
 char *argv0;
 static GList *files;	    /* incoming specification from commandline */
@@ -50,6 +50,7 @@ static int lines_flag = FALSE;
 static int new_format_flag = FALSE;
 static int annotate_flag = FALSE;
 static int check_callgraph_flag = FALSE;
+static int dump_callgraph_flag = FALSE;
 static const char *reports = 0;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -240,6 +241,140 @@ check_callgraph(void)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void
+add_one_node(cov_callnode_t *cn, void *userdata)
+{
+    ptrarray_t<cov_callnode_t> *nodes = (ptrarray_t<cov_callnode_t> *)userdata;
+    
+    nodes->append(cn);
+}
+
+static int
+compare_nodes_by_name(const cov_callnode_t **a, const cov_callnode_t **b)
+{
+    return strcmp((*a)->name, (*b)->name);
+}
+
+static void
+dump_callgraph(void)
+{
+    FILE *fp;
+    string_var cgfilename = file_make_absolute("callgraph.tggcov");
+    unsigned int state;
+
+    fprintf(stderr, "Writing %s\n", cgfilename.data());
+    if ((fp = fopen(cgfilename, "w")) == 0)
+    {
+    	perror(cgfilename);
+	return;
+    }
+
+    ptrarray_t<cov_callnode_t> *nodes = new ptrarray_t<cov_callnode_t>;
+    cov_callnode_t::foreach(add_one_node, nodes);
+    nodes->sort(compare_nodes_by_name);
+
+    fprintf(fp, "# tggcov callgraph version 1\n");
+    fprintf(fp, "# files base: %s\n", cov_file_t::common_path());
+    unsigned int i;
+    for (i = 0 ; i < nodes->length() ; i++)
+    {
+    	cov_callnode_t * cn = nodes->nth(i);
+	
+	fprintf(fp, "callnode %s %s\n",
+	    cn->name.data(),
+	    (cn->function != 0 ? cn->function->file()->minimal_name() : "-"));
+
+    	GList *iter;
+	for (iter = cn->out_arcs ; iter != NULL ; iter = iter->next)
+	{
+	    cov_callarc_t *ca = (cov_callarc_t *)iter->data;
+	    
+	    fprintf(fp, "\tcallarc %s %llu\n",
+	    	ca->to->name.data(),
+		(unsigned long long)ca->count);
+	}
+	
+	if (cn->function != 0)
+	{
+	    unsigned int bbidx;
+	    
+	    fprintf(fp, "function %s\n", cn->function->name());
+	    for (bbidx = 1 ; bbidx < cn->function->num_blocks() ; bbidx++)
+	    {
+	    	cov_block_t *b = cn->function->nth_block(bbidx);
+		if (b->is_epilogue())
+		    continue;
+		state = 0;
+
+		list_iterator_t<cov_arc_t> oi;
+		for (oi = b->out_arc_iterator() ; oi != (cov_arc_t *)0 ; ++oi)
+		{
+		    cov_arc_t *a = *oi;
+		    
+		    if (a->is_call())
+		    {
+		    	if (!(state & 0x1))
+			{
+			    fprintf(fp, "\tblock %u\n", bbidx);
+			    state |= 0x1;
+			}
+			const cov_location_t *loc = a->call_location();
+			string_var minfile = cov_file_t::minimise_name(loc->filename);
+		    	fprintf(fp, "\t\tcall %s %llu location %s:%lu\n",
+				(a->call_name() != 0 ? a->call_name() : "-"),
+				(unsigned long long)a->count(),
+				minfile.data(), loc->lineno);
+		    }
+		}
+	    }
+	    
+	    const cov_location_t *first = cn->function->get_first_location();
+	    string_var minfile = cov_file_t::minimise_name(first->filename);
+	    const cov_location_t *last = cn->function->get_last_location();
+	    cov_location_t loc;
+	    state = 0;
+	    for (loc = *first ; loc != *last ; ++loc)
+	    {
+	    	cov_line_t *ln = cov_line_t::find(&loc);
+		if (ln == 0 || ln->blocks() == 0)
+		    continue;
+		state = 0;
+
+    	    	const GList *biter;
+		for (biter = ln->blocks() ; biter != 0 ; biter = biter->next)
+		{
+	    	    cov_block_t *b = (cov_block_t *)biter->data;
+
+		    list_iterator_t<cov_arc_t> oi;
+		    for (oi = b->out_arc_iterator() ; oi != (cov_arc_t *)0 ; ++oi)
+		    {
+			cov_arc_t *a = *oi;
+
+			if (a->is_call() && loc == *a->call_location())
+			{
+			    if (!(state & 0x1))
+			    {
+	    			fprintf(fp, "\tlocation %s:%lu\n", minfile.data(), loc.lineno);
+			    	state |= 0x1;
+			    }
+		    	    fprintf(fp, "\t\tcall %s %llu\n",
+				    (a->call_name() != 0 ? a->call_name() : "-"),
+				    (unsigned long long)a->count());
+    	    	    	}
+		    }
+		}
+
+
+	    }
+	    
+	}
+    }
+    
+    fclose(fp);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
  * With the old GTK, we're forced to parse our own arguments the way
  * the library wants, with popt and in such a way that we can't use the
@@ -314,6 +449,15 @@ static struct poptOption popt_options[] =
 	&check_callgraph_flag,			/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"generate and check callgraph diagram",	/* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"dump-callgraph",    	    	    	/* longname */
+	'P',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&dump_callgraph_flag,			/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"dump callgraph data in text form",	/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     COV_POPT_OPTIONS
@@ -423,6 +567,8 @@ main(int argc, char **argv)
     	annotate();
     if (check_callgraph_flag)
     	check_callgraph();
+    if (dump_callgraph_flag)
+    	dump_callgraph();
 
     return 0;
 }
