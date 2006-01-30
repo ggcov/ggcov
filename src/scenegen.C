@@ -19,7 +19,7 @@
 
 #include "scenegen.H"
 
-CVSID("$Id: scenegen.C,v 1.1 2005-06-13 06:38:04 gnb Exp $");
+CVSID("$Id: scenegen.C,v 1.2 2006-01-29 23:25:36 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -34,13 +34,49 @@ scenegen_t::~scenegen_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-scenegen_t::file(cov_file_t *)
+scenegen_t::set_object(object_type_t type, void *obj)
 {
+    object_ = obj;
+    object_type_ = type;
 }
 
 void
-scenegen_t::function(cov_function_t *)
+scenegen_t::object(cov_function_t *fn)
 {
+    set_object(FUNCTION, fn);
+}
+
+void
+scenegen_t::object(cov_file_t *f)
+{
+    set_object(FILE, f);
+}
+
+void *
+scenegen_t::get_object(object_type_t type)
+{
+    void *obj = 0;
+
+    if (type == object_type_)
+    {
+	obj = object_;
+	object_ = 0;
+	object_type_ = NONE;
+    }
+
+    return obj;
+}
+
+cov_function_t *
+scenegen_t::get_function()
+{
+    return (cov_function_t *)get_object(FUNCTION);
+}
+
+cov_file_t *
+scenegen_t::get_file()
+{
+    return (cov_file_t *)get_object(FILE);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

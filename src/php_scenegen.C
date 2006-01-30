@@ -20,7 +20,7 @@
 #include "php_scenegen.H"
 #include <math.h>
 
-CVSID("$Id: php_scenegen.C,v 1.1 2005-06-13 07:29:11 gnb Exp $");
+CVSID("$Id: php_scenegen.C,v 1.2 2006-01-29 23:25:36 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -133,7 +133,7 @@ php_scenegen_t::textbox(
     ser_.next_key(); ser_.floating(x);
     ser_.next_key(); ser_.floating(y);
     ser_.next_key(); ser_.string(text);
-    ser_.next_key(); ser_.integer(fill_idx_);
+    ser_.next_key(); ser_.integer(border_idx_);
     ser_.end_array();
 }
 
@@ -225,18 +225,6 @@ php_scenegen_t::polyline_end(gboolean arrow)
 
     ser_.next_key(); ser_.integer(fill_idx_);
     ser_.end_array();
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
-php_scenegen_t::file(cov_file_t *)
-{
-}
-
-void
-php_scenegen_t::function(cov_function_t *)
-{
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

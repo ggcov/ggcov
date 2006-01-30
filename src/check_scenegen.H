@@ -42,10 +42,9 @@ public:
     void polyline_point(double x, double y);
     void polyline_end(gboolean arrow);
 
-    void file(cov_file_t *);
-    void function(cov_function_t *);
-
     void check();
+
+    void object(cov_function_t *);
 
 private:
     struct box_t

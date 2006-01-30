@@ -18,8 +18,10 @@
  */
 
 #include "canvas_scenegen.H"
+#include "ui.h"
+#include "canvas_function_popup.H"
 
-CVSID("$Id: canvas_scenegen.C,v 1.1 2005-06-13 06:39:39 gnb Exp $");
+CVSID("$Id: canvas_scenegen.C,v 1.2 2006-01-29 23:25:36 gnb Exp $");
 
 #define RGB_TO_STR(b, rgb) \
     snprintf((b), sizeof((b)), "#%02x%02x%02x", \
@@ -76,6 +78,21 @@ canvas_scenegen_t::fill(unsigned int rgb)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
+canvas_scenegen_t::handle_object(GnomeCanvasItem *item)
+{
+    cov_function_t *fn;
+
+    if ((fn = get_function()) != 0)
+    {
+    	canvas_function_popup_t *fpop = new canvas_function_popup_t(item, fn);
+    	fpop->set_foreground(border_color());
+    	fpop->set_background(fill_color());
+    }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
 canvas_scenegen_t::box(double x, double y, double w, double h)
 {
     GnomeCanvasItem *item;
@@ -91,6 +108,7 @@ canvas_scenegen_t::box(double x, double y, double w, double h)
 		"width_pixels", (border_flag_ ? 1 : 0),
 #endif
 		(char *)0);
+    handle_object(item);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -108,7 +126,7 @@ canvas_scenegen_t::textbox(
     item = gnome_canvas_item_new(root_, GNOME_TYPE_CANVAS_TEXT,
 		"text",     	text,
 		"font",     	"fixed",
-		"fill_color",	fill_color(),
+		"fill_color",	border_color(),
 		"x", 	    	x,
 		"y",	    	y,
 		"clip",     	TRUE,
@@ -116,6 +134,7 @@ canvas_scenegen_t::textbox(
 		"clip_height",	h,
 		"anchor",   	GTK_ANCHOR_NORTH_WEST,
 		(char *)0);
+    handle_object(item);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -169,18 +188,7 @@ canvas_scenegen_t::polyline_end(gboolean arrow)
 		"fill_color",		fill_color(),
 		/* setting width_pixels screws up the arrow heads !?!? */
 		(char *)0);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
-canvas_scenegen_t::file(cov_file_t *)
-{
-}
-
-void
-canvas_scenegen_t::function(cov_function_t *)
-{
+    handle_object(item);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

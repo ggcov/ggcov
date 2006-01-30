@@ -20,7 +20,7 @@
 #include "lego_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: lego_diagram.C,v 1.2 2006-01-29 00:38:27 gnb Exp $");
+CVSID("$Id: lego_diagram.C,v 1.3 2006-01-29 23:25:36 gnb Exp $");
 
 #define WIDTH	(1.0)
 #define HEIGHT	(1.0)
@@ -248,8 +248,7 @@ lego_diagram_t::show_node(node_t *node, scenegen_t *sg)
     sg->nofill();
     sg->border(RGB(0,0,0));
     sg->box(node->x_, node->y_, node->w_, node->h_);
-
-    sg->fill(RGB(0,0,0));
+    sg->object(node->file_);
     sg->textbox(node->x_, node->y_, node->w_, node->h_, label.data());
 
     for (niter = node->children_.first() ; niter != (node_t *)0 ; ++niter)

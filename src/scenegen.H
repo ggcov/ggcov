@@ -56,10 +56,25 @@ public:
     virtual void polyline_point(double x, double y) = 0;
     virtual void polyline_end(gboolean arrow) = 0;
 
-    virtual void file(cov_file_t *);
-    virtual void function(cov_function_t *);
+    virtual void object(cov_function_t *);
+    virtual void object(cov_file_t *);
+
+protected:
+    enum object_type_t
+    {
+    	NONE=0,
+	FUNCTION,
+	FILE
+    };
+    cov_file_t *get_file();
+    cov_function_t *get_function();
 
 private:
+    void set_object(object_type_t, void *);
+    void *get_object(object_type_t);
+    
+    void *object_;
+    object_type_t object_type_;
 };
 
 #endif /* _ggcov_scenegen_H_ */

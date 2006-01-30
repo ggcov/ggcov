@@ -43,9 +43,6 @@ public:
     void polyline_point(double x, double y);
     void polyline_end(gboolean arrow);
 
-    void file(cov_file_t *);
-    void function(cov_function_t *);
-
 private:
     inline const char *fill_color() const
     {
@@ -55,6 +52,7 @@ private:
     {
 	return (border_flag_ ? border_buf_ : (const char *)0);
     }
+    void handle_object(GnomeCanvasItem*);
 
     GnomeCanvas *canvas_;
     GnomeCanvasGroup *root_;

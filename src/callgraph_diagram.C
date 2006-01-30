@@ -21,7 +21,7 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.12 2006-01-29 01:14:44 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.13 2006-01-29 23:25:36 gnb Exp $");
 
 #define MARGIN		    0.2
 #define BOX_WIDTH  	    4.0
@@ -791,11 +791,11 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
     }
 
     double y = n->y_-BOX_HEIGHT/2.0;
-    sg->function(cn->function);
+
     sg->fill(rgb);
     sg->border(RGB(0,0,0));
     sg->box(n->x_, y, BOX_WIDTH, BOX_HEIGHT);
-    sg->fill(RGB(0,0,0));
+    sg->object(cn->function);
     sg->textbox(n->x_, y, BOX_WIDTH, BOX_HEIGHT, label);
 
     for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)

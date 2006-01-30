@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.62 2006-01-29 22:52:48 gnb Exp $
+# $Id: Makefile.am,v 1.63 2006-01-29 23:25:36 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -84,6 +84,7 @@ ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		fileswin.H fileswin.C \
 		prefswin.H prefswin.C \
 		canvas_scenegen.H canvas_scenegen.C \
+		canvas_function_popup.H canvas_function_popup.C \
 		diagwin.H diagwin.C \
 		utils.H utils.C \
 		$(LIBCOV_STATIC_SOURCES) \

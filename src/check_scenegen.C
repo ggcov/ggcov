@@ -19,7 +19,7 @@
 
 #include "check_scenegen.H"
 
-CVSID("$Id: check_scenegen.C,v 1.1 2006-01-29 00:56:42 gnb Exp $");
+CVSID("$Id: check_scenegen.C,v 1.2 2006-01-29 23:25:36 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -138,14 +138,10 @@ check_scenegen_t::polyline_end(gboolean arrow)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-check_scenegen_t::file(cov_file_t *)
-{
-}
-
-void
-check_scenegen_t::function(cov_function_t *f)
+check_scenegen_t::object(cov_function_t *f)
 {
     name_ = f->name();
+    scenegen_t::object(f);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
