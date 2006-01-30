@@ -16,19 +16,22 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: common.sh,v 1.12 2006-01-29 23:31:23 gnb Exp $
+# $Id: common.sh,v 1.13 2006-01-29 23:42:34 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
 
+DBFLAG=
+[ x"$ENABLE_DB_FLAG" = x1 ] && DBFLAG="-db"
+
 CC="gcc"
 CWARNFLAGS="-Wall"
-CCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
+CCOVFLAGS="-g $DBFLAG -fprofile-arcs -ftest-coverage"
 CDEFINES=
 
 CXX="c++"
 CXXWARNFLAGS="-Wall"
-CXXCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
+CXXCOVFLAGS="-g $DBFLAG -fprofile-arcs -ftest-coverage"
 CXXDEFINES=
 
 LDLIBS=
