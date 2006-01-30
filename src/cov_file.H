@@ -167,6 +167,7 @@ private:
     gboolean read_oldplus_da_file(const char *filename);
     gboolean read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic);
     gboolean read_da_file(const char *filename);
+    gboolean read_12bp_file(const char *filename);
 #ifdef HAVE_LIBBFD
     static gboolean o_file_add_call(const cov_location_t *, const char *);
     gboolean scan_o_file_calls(const char *filename);

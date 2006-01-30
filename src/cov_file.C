@@ -22,6 +22,7 @@
 #include "covio.H"
 #include "estring.H"
 #include "string_var.H"
+#include "tok.H"
 #include "hashtable.H"
 #include "filename.h"
 #include "demangle.h"
@@ -29,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.54 2005-09-11 10:19:05 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.55 2006-01-29 22:47:22 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -1516,6 +1517,121 @@ cov_file_t::read_da_file(const char *dafilename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+gboolean
+cov_file_t::read_12bp_file(const char *filename)
+{
+    FILE *fp;
+    int state = 0;
+    string_var sfilename;
+    cov_function_t *fromfunc = 0;
+    cov_block_t *bb = 0;
+    string_var tofunc;
+    cov_location_t loc;
+    char *p, buf[1024];
+    static const char c_function[] = ";; Function ";
+    static const char c_basic_block[] = ";; Start of basic block ";
+    static const char c_call_insn[] = "(call_insn";
+    static const char c_symbol_ref[] = "symbol_ref:SI";
+    
+    dprintf1(D_FILES, "read_12bp_file: reading %s\n", filename);
+
+    if ((fp = fopen(filename, "r")) == 0)
+    {
+    	perror(filename);
+	return FALSE;
+    }
+    
+    while (fgets(buf, sizeof(buf), fp) != 0)
+    {
+    	for (p = buf+strlen(buf)-1 ; p >= buf && isspace(*p) ; --p)
+	    *p = '\0';
+    	dprintf2(D_FILES|D_VERBOSE, ">>> {%d} %s\n", state, buf);
+
+    	if (state == 0)
+	{
+    	    if (!strncmp(buf, c_function, sizeof(c_function)-1))
+	    {
+		if (fromfunc != 0)
+    		    fromfunc->reconcile_calls();
+		fromfunc = find_function(buf+sizeof(c_function)-1);
+		dprintf1(D_FILES, "fromfunc=%s\n", fromfunc->name());
+		continue;
+	    }
+	    if (fromfunc == 0)
+	    	continue;
+    	    if (!strncmp(buf, c_basic_block, sizeof(c_basic_block)-1))
+	    {
+		bb = fromfunc->nth_block(1 + atoi(buf+sizeof(c_basic_block)-1));
+		dprintf1(D_FILES, "bb=%d\n", bb->bindex());
+		continue;
+	    }
+	    if (bb == 0)
+	    	continue;
+    	    if (!strncmp(buf, c_call_insn, sizeof(c_call_insn)-1))
+	    {
+	    	tok_t tok((const char *)buf, " \t");
+		const char *t;
+		t = tok.next();
+		t = tok.next();
+		t = tok.next();
+		t = tok.next();
+		t = tok.next();
+		sfilename = tok.next();
+		p = strrchr(sfilename.data(), ':');
+    	    	if (p != 0)
+    	    	{
+    	    	    *p++ = '\0';
+		    loc.filename = (char *)sfilename.data();
+		    loc.lineno = atoi(p);
+    	    	}
+    	    	else
+    	    	{
+    	    	    loc.filename = 0;
+    	    	    loc.lineno = 0;
+    	    	}
+		state = 1;
+                dprintf2(D_FILES, "location=%s:%lu\n",
+		    	 loc.filename, loc.lineno);
+	    }
+	}
+	if (state > 0)
+	{
+	    if ((p = strstr(buf, c_symbol_ref)) != 0)
+	    {
+	    	p += sizeof(c_symbol_ref)-1;
+	    	tok_t tok(p, " \t\"()");
+		const char *t = tok.next();
+		dprintf5(D_FILES, "read_12bp_file: fromfunc=%s bb=%d tofunc=%s filename=%s lineno=%lu\n",
+		    	fromfunc->name(), bb->bindex(), t, loc.filename, loc.lineno);
+    	    	/* Gaaaack! */
+		if (bb->call_ != 0)
+		    fromfunc->nth_block(bb->bindex()+1)->add_call(t, &loc);
+		else
+		    bb->add_call(t, &loc);
+		state = 0;
+		continue;
+	    }
+	    if (++state == 3)
+	    {
+	    	/* ran out of lines searching for symbol_ref: assume func ptr */
+		if (bb->call_ != 0)
+		    fromfunc->nth_block(bb->bindex()+1)->add_call(0, &loc);
+		else
+		    bb->add_call(0, &loc);
+	    	state = 0;
+	    }
+	}
+    }
+    
+    if (fromfunc != 0)
+    	fromfunc->reconcile_calls();
+    
+    fclose(fp);
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 #ifdef HAVE_LIBBFD
 
 gboolean
@@ -1804,8 +1920,11 @@ cov_file_t::try_file(const char *dir, const char *ext) const
     	ofilename = name();
     else
     	ofilename = g_strconcat(dir, "/", file_basename_c(name()), (char *)0);
-    
-    dfilename = file_change_extension(ofilename, 0, ext);
+
+    if (ext[0] == '+')
+    	dfilename = g_strconcat(ofilename, ext+1, (char *)0);
+    else
+	dfilename = file_change_extension(ofilename, 0, ext);
     
     dprintf1(D_FILES|D_VERBOSE, "    try %s\n", dfilename.data());
 
@@ -1908,12 +2027,20 @@ cov_file_t::read(gboolean quiet)
     	fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
     }
 
+    gboolean have_cg = FALSE;
+    if ((filename = find_file("+.12.bp", TRUE)) != 0)
+    {
+    	have_cg = read_12bp_file(filename);
+    }
+    
     /*
      * If the data files were written by broken versions of gcc 2.96
      * the callgraph will be irretrievably broken and there's no point
      * at all trying to read the object file.
      */
 #ifdef HAVE_LIBBFD
+    if (!have_cg)
+    {
     if (gcc296_braindeath())
     {
 	static const char warnmsg[] = 
@@ -1945,6 +2072,7 @@ cov_file_t::read(gboolean quiet)
     	    /* TODO: save and report in alert to user */
     	    fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
 	}
+    }
     }
 #endif
 
