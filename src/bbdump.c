@@ -36,7 +36,7 @@ hexdump(covio_t *io, off_t lastoff)
     io->seek(lastoff);
     for ( ; lastoff < here ; lastoff += 4)
     {
-    	io->read_u32(&d);
+    	io->read_u32(d);
 	printf(GNB_U32_XFMT" ", d);
     }
     assert(here == lastoff);
@@ -53,25 +53,23 @@ do_tags(covio_old_t *io)
 {
     gnb_u32_t tag;
     off_t lastoff = 0;
-    char *s;
+    estring s;
     
-    while (io->read_u32(&tag))
+    while (io->read_u32(tag))
     {
     	printf("%08lx: ", lastoff);
     	switch (tag)
 	{
 	case BB_FILENAME:
-	    s = io->read_bbstring(tag);
+	    io->read_bbstring(s, tag);
 	    hexdump(io, lastoff);
-	    printf("file \"%s\"\n", s);
-	    g_free(s);
+	    printf("file \"%s\"\n", s.data());
 	    break;
 	
 	case BB_FUNCTION:
-	    s = io->read_bbstring(tag);
+	    io->read_bbstring(s, tag);
 	    hexdump(io, lastoff);
-	    printf("func \"%s\"\n", s);
-	    g_free(s);
+	    printf("func \"%s\"\n", s.data());
 	    break;
 	
 	case BB_ENDOFLIST:

@@ -171,6 +171,12 @@ public:
 
     void truncate();
     void truncate_to(unsigned int len);
+    
+    void trim_nuls()
+    {
+    	while (length_ > 0 && data_[length_-1] == '\0')
+	    length_--;
+    }
 };
 
 #undef _printf_fmt

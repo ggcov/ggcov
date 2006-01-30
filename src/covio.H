@@ -74,21 +74,20 @@ protected:
     gboolean ownfp_;
 
     /* These functions return TRUE unless EOF */
-    gboolean read_lu32(gnb_u32_t*); /* little-endian 32b */
-    gboolean read_bu32(gnb_u32_t*); /* big-endian 32b */
-    gboolean read_lu64(gnb_u64_t*); /* little-endian 64b */
-    gboolean read_bu64(gnb_u64_t*); /* big-endian 64b */
+    gboolean read_lu32(gnb_u32_t&); /* little-endian 32b */
+    gboolean read_bu32(gnb_u32_t&); /* big-endian 32b */
+    gboolean read_lu64(gnb_u64_t&); /* little-endian 64b */
+    gboolean read_bu64(gnb_u64_t&); /* big-endian 64b */
     
     /* the given byte length into a new string */
-    char *read_string_len(gnb_u32_t len);
+    gboolean read_string_len(estring &e, gnb_u32_t len);
 
 
 public:
     /* These functions return TRUE unless EOF */
-    virtual gboolean read_u32(gnb_u32_t *) = 0;
-    virtual gboolean read_u64(gnb_u64_t *) = 0;
-    /* Returns a new string or NULL at EOF */
-    virtual char *read_string() = 0;
+    virtual gboolean read_u32(gnb_u32_t &) = 0;
+    virtual gboolean read_u64(gnb_u64_t &) = 0;
+    virtual gboolean read_string(estring &) = 0;
 };
 
 class covio_old_t : public covio_t
@@ -99,12 +98,12 @@ public:
     virtual ~covio_old_t() { }
 
     /* Reads an old format .bb string up to the given tag & returns a new string */
-    char *read_bbstring(gnb_u32_t endtag);
+    gboolean read_bbstring(estring &e, gnb_u32_t endtag);
 
 public:
-    gboolean read_u32(gnb_u32_t *);
-    gboolean read_u64(gnb_u64_t *);
-    char *read_string();
+    gboolean read_u32(gnb_u32_t &);
+    gboolean read_u64(gnb_u64_t &);
+    gboolean read_string(estring &);
 };
 
 class covio_gcc33_t : public covio_t
@@ -115,9 +114,9 @@ public:
     virtual ~covio_gcc33_t() { }
 
 public:
-    gboolean read_u32(gnb_u32_t *);
-    gboolean read_u64(gnb_u64_t *);
-    char *read_string();
+    gboolean read_u32(gnb_u32_t &);
+    gboolean read_u64(gnb_u64_t &);
+    gboolean read_string(estring &);
 };
 
 class covio_gcc34l_t : public covio_t
@@ -128,9 +127,9 @@ public:
     virtual ~covio_gcc34l_t() { }
 
 public:
-    gboolean read_u32(gnb_u32_t *);
-    gboolean read_u64(gnb_u64_t *);
-    char *read_string();
+    gboolean read_u32(gnb_u32_t &);
+    gboolean read_u64(gnb_u64_t &);
+    gboolean read_string(estring &);
 };
 
 class covio_gcc34b_t : public covio_t
@@ -141,9 +140,9 @@ public:
     virtual ~covio_gcc34b_t() { }
 
 public:
-    gboolean read_u32(gnb_u32_t *);
-    gboolean read_u64(gnb_u64_t *);
-    char *read_string();
+    gboolean read_u32(gnb_u32_t &);
+    gboolean read_u64(gnb_u64_t &);
+    gboolean read_string(estring &);
 };
 
 #endif /* _ggcov_covio_h_ */
