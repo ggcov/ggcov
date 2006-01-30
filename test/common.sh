@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: common.sh,v 1.11 2005-07-31 11:57:25 gnb Exp $
+# $Id: common.sh,v 1.12 2006-01-29 23:31:23 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -385,18 +385,6 @@ run_tggcov ()
     ) || exit 1
 }
 
-compare_lines ()
-{
-    vcmd "compare_lines $*"
-    local SRC="$1"
-    local GCOV_FILE=`_gcov_file $SRC`
-    local TGGCOV_FILE=`_tggcov_file $SRC`
-
-    egrep -v '^(call|branch|function|        -:    0:)' $GCOV_FILE > $TMP1
-    echo "diff -u filter($GCOV_FILE) filter($TGGCOV_FILE)"
-    diff -u $TMP1 $TGGCOV_FILE || fatal "tggcov line coverage differs from gcov"
-}
-
 
 _filter_spurious_counts ()
 {
@@ -407,6 +395,8 @@ use strict;
 my $in_decls = 0;
 while (<STDIN>)
 {
+    next if m/^(call|branch|function)/;
+    next if m/^        -:    0:/;
     my ($count, $lineno, $text) = m/^( *[#0-9-]*):( *[0-9]*):(.*)$/;
     my $zap = 0;
     if ($text =~ m/^\s*}/)
@@ -423,6 +413,14 @@ while (<STDIN>)
     elsif ($text =~ m/^\s+{/)
     {
 	# ignore all other lonely opening brace
+	$zap = 1;
+    }
+    elsif ($text =~ m/^\s*for\s*\(.*;.*;.*\)\s*$/)
+#    elsif ($text =~ m/^\s*for/)
+    {
+    	# entire for loop on a line...the gcov algorithm
+	# changed historically and ggcov uses the old crappy
+	# algorithm, so just ignore these lines
 	$zap = 1;
     }
     elsif ($text =~ m/^\s*$/)
@@ -443,6 +441,24 @@ while (<STDIN>)
 
 }
 
+_compare_coverage ()
+{
+    _filter_spurious_counts "$1" > $TMP1
+    _filter_spurious_counts "$2" > $TMP2
+    echo "diff -u filter($1) filter($2)"
+    diff -u $TMP1 $TMP2 || fatal "$4 line coverage differs from $3"
+}
+
+compare_lines ()
+{
+    vcmd "compare_lines $*"
+    local SRC="$1"
+    local GCOV_FILE=`_gcov_file $SRC`
+    local TGGCOV_FILE=`_tggcov_file $SRC`
+
+    _compare_coverage "$GCOV_FILE" "$TGGCOV_FILE" "gcov" "tggcov"
+}
+
 compare_file ()
 {
     vcmd "compare_file $*"
@@ -450,9 +466,5 @@ compare_file ()
     local EXPECTED_FILE="$srcdir/$SRC$SUBTEST.expected"
     local TGGCOV_FILE=`_tggcov_file $SRC`
 
-    _filter_spurious_counts "$EXPECTED_FILE" > $TMP1
-    _filter_spurious_counts "$TGGCOV_FILE" > $TMP2
-    
-    echo "diff -u filter($EXPECTED_FILE) filter($TGGCOV_FILE)"
-    diff -u $TMP1 $TMP2
+    _compare_coverage "$EXPECTED_FILE" "$TGGCOV_FILE" "expected" "tggcov"
 }
