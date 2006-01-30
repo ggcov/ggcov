@@ -49,7 +49,7 @@ hexdump(covio_t *io, off_t lastoff)
 #define BB_ENDOFLIST	0x00000000
 
 static void
-do_tags(covio_old_t *io)
+do_tags(covio_t *io)
 {
     gnb_u32_t tag;
     off_t lastoff = 0;
@@ -89,13 +89,14 @@ do_tags(covio_old_t *io)
 static void
 do_file(const char *filename)
 {
-    covio_old_t io(filename);
+    covio_t io(filename);
     
     if (!io.open_read())
     {
     	perror(filename);
 	return;
     }
+    io.set_format(covio_t::FORMAT_OLD);
     
     do_tags(&io);
 }

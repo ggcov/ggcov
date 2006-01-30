@@ -39,22 +39,43 @@
  * between gcc33/gcc34l/gcc34b formats, we now have a class
  * to abstract these differences.
  */
+
+class covio_t;
+
+class covio_fmt_t
+{
+public:
+    covio_fmt_t()
+    {
+    }
+    virtual ~covio_fmt_t()
+    {
+    }
+
+    /* These functions return TRUE unless EOF */
+    virtual gboolean read_u32(covio_t &, gnb_u32_t &) = 0;
+    virtual gboolean read_u64(covio_t &, gnb_u64_t &) = 0;
+    virtual gboolean read_string(covio_t &, estring &) = 0;
+};
+
 class covio_t
 {
 public:
     covio_t(const char *fn)
      :  fn_(fn),
         fp_(0),
-	ownfp_(TRUE)
+	ownfp_(TRUE),
+	format_(0)
     {
     }
     covio_t(const char *fn, FILE *fp)
      :  fn_(fn),
      	fp_(fp),
-	ownfp_(FALSE)
+	ownfp_(FALSE),
+	format_(0)
     {
     }
-    virtual ~covio_t();
+    ~covio_t();
     
     gboolean open_read();
 
@@ -68,10 +89,37 @@ public:
     int seek(off_t off) { return fseek(fp_, off, SEEK_SET); }
     gboolean eof() const { return feof(fp_); }
 
-protected:
+    /* Reads an old format .bb string up to the given tag & returns a new string */
+    gboolean read_bbstring(estring &, gnb_u32_t endtag);
+    gboolean read_u32(gnb_u32_t &v)
+    {
+    	return format_->read_u32(*this, v);
+    }
+    gboolean read_u64(gnb_u64_t &v)
+    {
+    	return format_->read_u64(*this, v);
+    }
+    gboolean read_string(estring &v)
+    {
+    	return format_->read_string(*this, v);
+    }
+
+    enum format_t
+    {
+    	FORMAT_OLD, 	/* traditional gcc 2.x */
+	FORMAT_GCC33,	/* gcc 3.3 */
+	FORMAT_GCC34L,	/* gcc 3.4, little endian */
+	FORMAT_GCC34B,	/* gcc 3.4, big endian */
+
+	FORMAT_NUM
+    };
+    void set_format(format_t);
+
+private:
     const char *fn_;
     FILE *fp_;
     gboolean ownfp_;
+    covio_fmt_t *format_;
 
     /* These functions return TRUE unless EOF */
     gboolean read_lu32(gnb_u32_t&); /* little-endian 32b */
@@ -82,67 +130,10 @@ protected:
     /* the given byte length into a new string */
     gboolean read_string_len(estring &e, gnb_u32_t len);
 
-
-public:
-    /* These functions return TRUE unless EOF */
-    virtual gboolean read_u32(gnb_u32_t &) = 0;
-    virtual gboolean read_u64(gnb_u64_t &) = 0;
-    virtual gboolean read_string(estring &) = 0;
-};
-
-class covio_old_t : public covio_t
-{
-public:
-    covio_old_t(const char *fn, FILE *fp) : covio_t(fn, fp) { }
-    covio_old_t(const char *fn) : covio_t(fn) { }
-    virtual ~covio_old_t() { }
-
-    /* Reads an old format .bb string up to the given tag & returns a new string */
-    gboolean read_bbstring(estring &e, gnb_u32_t endtag);
-
-public:
-    gboolean read_u32(gnb_u32_t &);
-    gboolean read_u64(gnb_u64_t &);
-    gboolean read_string(estring &);
-};
-
-class covio_gcc33_t : public covio_t
-{
-public:
-    covio_gcc33_t(const char *fn, FILE *fp) : covio_t(fn, fp) { }
-    covio_gcc33_t(const char *fn) : covio_t(fn) { }
-    virtual ~covio_gcc33_t() { }
-
-public:
-    gboolean read_u32(gnb_u32_t &);
-    gboolean read_u64(gnb_u64_t &);
-    gboolean read_string(estring &);
-};
-
-class covio_gcc34l_t : public covio_t
-{
-public:
-    covio_gcc34l_t(const char *fn, FILE *fp) : covio_t(fn, fp) { }
-    covio_gcc34l_t(const char *fn) : covio_t(fn) { }
-    virtual ~covio_gcc34l_t() { }
-
-public:
-    gboolean read_u32(gnb_u32_t &);
-    gboolean read_u64(gnb_u64_t &);
-    gboolean read_string(estring &);
-};
-
-class covio_gcc34b_t : public covio_t
-{
-public:
-    covio_gcc34b_t(const char *fn, FILE *fp) : covio_t(fn, fp) { }
-    covio_gcc34b_t(const char *fn) : covio_t(fn) { }
-    virtual ~covio_gcc34b_t() { }
-
-public:
-    gboolean read_u32(gnb_u32_t &);
-    gboolean read_u64(gnb_u64_t &);
-    gboolean read_string(estring &);
+    friend class covio_fmt_old_t;
+    friend class covio_fmt_gcc33_t;
+    friend class covio_fmt_gcc34l_t;
+    friend class covio_fmt_gcc34b_t;
 };
 
 #endif /* _ggcov_covio_h_ */

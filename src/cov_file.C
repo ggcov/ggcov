@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.56 2006-01-29 23:39:01 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.57 2006-01-29 23:41:29 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -534,12 +534,13 @@ cov_file_t::read_bb_file(const char *bbfilename)
     
     dprintf1(D_FILES, "Reading .bb file \"%s\"\n", bbfilename);
 
-    covio_old_t io(bbfilename);
+    covio_t io(bbfilename);
     if (!io.open_read())
     {
     	perror(bbfilename);
 	return FALSE;
     }
+    io.set_format(covio_t::FORMAT_OLD);
 
 
     funcidx = 0;
@@ -770,8 +771,9 @@ cov_file_t::read_old_bbg_function(covio_t *io)
 gboolean
 cov_file_t::read_old_bbg_file_common(const char *bbgfilename, FILE *fp)
 {
-    covio_old_t io(bbgfilename, fp);
-    
+    covio_t io(bbgfilename, fp);
+
+    io.set_format(covio_t::FORMAT_OLD);
     io.seek(0L);
 
     while (!io.eof())
@@ -1051,14 +1053,16 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 gboolean
 cov_file_t::read_gcc33_bbg_file(const char *bbgfilename, FILE *fp)
 {
-    covio_gcc33_t io(bbgfilename, fp);
+    covio_t io(bbgfilename, fp);
+    io.set_format(covio_t::FORMAT_GCC33);
     return read_gcc3_bbg_file_common(&io, BBG_VERSION_GCC33);
 }
 
 gboolean
 cov_file_t::read_gcc34l_bbg_file(const char *bbgfilename, FILE *fp)
 {
-    covio_gcc34l_t io(bbgfilename, fp);
+    covio_t io(bbgfilename, fp);
+    io.set_format(covio_t::FORMAT_GCC34L);
     little_endian_ = TRUE;
     return read_gcc3_bbg_file_common(&io, BBG_VERSION_GCC34);
 }
@@ -1066,7 +1070,8 @@ cov_file_t::read_gcc34l_bbg_file(const char *bbgfilename, FILE *fp)
 gboolean
 cov_file_t::read_gcc34b_bbg_file(const char *bbgfilename, FILE *fp)
 {
-    covio_gcc34b_t io(bbgfilename, fp);
+    covio_t io(bbgfilename, fp);
+    io.set_format(covio_t::FORMAT_GCC34B);
     little_endian_ = FALSE;
     return read_gcc3_bbg_file_common(&io, BBG_VERSION_GCC34);
 }
@@ -1153,12 +1158,13 @@ cov_file_t::read_old_da_file(const char *dafilename)
     unsigned int bidx;
     list_iterator_t<cov_arc_t> aiter;
     
-    covio_old_t io(dafilename);
+    covio_t io(dafilename);
     if (!io.open_read())
     {
     	perror(dafilename);
 	return FALSE;
     }
+    io.set_format(covio_t::FORMAT_OLD);
 
     io.read_u64(nents);
     
@@ -1235,12 +1241,13 @@ cov_file_t::read_oldplus_da_file(const char *dafilename)
     unsigned int actual_narcs;
     list_iterator_t<cov_arc_t> aiter;
     
-    covio_old_t io(dafilename);
+    covio_t io(dafilename);
     if (!io.open_read())
     {
     	perror(dafilename);
 	return FALSE;
     }
+    io.set_format(covio_t::FORMAT_OLD);
     
     /*
      * I haven't yet looked in the FC1 gcc source to figure out what
@@ -1457,14 +1464,16 @@ cov_file_t::read_da_file(const char *dafilename)
 	if (little_endian_)
 	{
 	    dprintf0(D_FILES, "Detected gcc 3.4 or 4.0 (little endian) .gcda format\n");
-    	    covio_gcc34l_t io(dafilename);
+    	    covio_t io(dafilename);
+	    io.set_format(covio_t::FORMAT_GCC34L);
 	    if (io.open_read())
     	    	return read_gcc3_da_file(&io, DA_GCC34_MAGIC);
 	}
 	else
 	{
 	    dprintf0(D_FILES, "Detected gcc 3.4 or 4.0 (big endian) .gcda format\n");
-    	    covio_gcc34b_t io(dafilename);
+    	    covio_t io(dafilename);
+	    io.set_format(covio_t::FORMAT_GCC34B);
 	    if (io.open_read())
     	    	return read_gcc3_da_file(&io, DA_GCC34_MAGIC);
 	}
@@ -1475,7 +1484,8 @@ cov_file_t::read_da_file(const char *dafilename)
     case BBG_VERSION_GCC33_MDK:
     	{
 	    dprintf0(D_FILES, "Detected gcc3.3 .da format\n");
-    	    covio_gcc33_t io(dafilename);
+    	    covio_t io(dafilename);
+	    io.set_format(covio_t::FORMAT_GCC33);
 	    if (io.open_read())
     		return read_gcc3_da_file(&io, DA_GCC33_MAGIC);
 	}

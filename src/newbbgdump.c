@@ -234,7 +234,7 @@ do_tags(covio_t *io)
 static void
 do_file(const char *filename)
 {
-    covio_gcc33_t io(filename);
+    covio_t io(filename);
     gnb_u32_t magic, version;
 
     if (!io.open_read())
@@ -242,6 +242,7 @@ do_file(const char *filename)
     	perror(filename);
 	return;
     }
+    io.set_format(covio_t::FORMAT_GCC33);
     
     if (!io.read_u32(magic) ||
     	!io.read_u32(version))
