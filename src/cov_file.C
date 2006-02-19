@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.62 2006-02-19 04:30:09 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.63 2006-02-19 04:34:52 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -1521,7 +1521,7 @@ cov_file_t::read_12bp_file(covio_t *io)
     	    	if (p != 0)
     	    	{
     	    	    *p++ = '\0';
-		    loc.set(filename, atoi(p));
+		    loc.set(file_make_absolute_to(filename, name_), atoi(p));
     	    	}
     	    	else
     	    	{
