@@ -39,9 +39,20 @@
  * BFD read mode.
  */
 
+class cov_bfd_t;
 class cov_bfd_section_t
 {
 public:
+    const char *name() const
+    {
+    	return ((asection *)this)->name;
+    }
+    
+    cov_bfd_t *owner() const
+    {
+        return (cov_bfd_t *)((asection *)this)->owner->usrdata;
+    }
+
     arelent **get_relocs(unsigned int *lenp);
     
     unsigned char *get_contents(bfd_size_type *lenp);
@@ -70,6 +81,15 @@ public:
     gboolean open(const char *filename);
     gboolean open(const char *filename, FILE *);
     const char *filename() const;
+
+    gboolean big_endian() const
+    {
+    	return bfd_big_endian(abfd_);
+    }
+    gboolean little_endian() const
+    {
+    	return bfd_little_endian(abfd_);
+    }
     
     unsigned int num_symbols();
     const asymbol *nth_symbol(unsigned int);

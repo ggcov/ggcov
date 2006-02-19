@@ -23,7 +23,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_bfd.C,v 1.4 2006-02-19 03:59:05 gnb Exp $");
+CVSID("$Id: cov_bfd.C,v 1.5 2006-02-19 05:09:06 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -315,14 +315,13 @@ unsigned char *
 cov_bfd_section_t::get_contents(unsigned long startaddr, unsigned long length)
 {
     asection *sec = (asection *)this;
-    cov_bfd_t *b = (cov_bfd_t *)sec->owner->usrdata;
     unsigned char *contents;
 
     contents = (unsigned char *)gnb_xmalloc(length);
     if (!bfd_get_section_contents(sec->owner, sec, contents, startaddr, length))
     {
     	/* TODO */
-    	bfd_perror(b->filename());
+    	bfd_perror(owner()->filename());
 	free(contents);
 	return 0;
     }
@@ -335,7 +334,7 @@ arelent **
 cov_bfd_section_t::get_relocs(unsigned int *lenp)
 {
     asection *sec = (asection *)this;
-    cov_bfd_t *b = (cov_bfd_t *)sec->owner->usrdata;
+    cov_bfd_t *b = owner();
     arelent **relocs;
     unsigned int nrelocs;
     
@@ -368,7 +367,7 @@ cov_bfd_section_t::find_nearest_line(
     const char **functionp)
 {
     asection *sec = (asection *)this;
-    cov_bfd_t *b = (cov_bfd_t *)sec->owner->usrdata;
+    cov_bfd_t *b = owner();
     const char *filename = 0;
     const char *function = 0;
     unsigned int lineno = 0;
