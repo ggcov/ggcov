@@ -21,7 +21,7 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.13 2006-01-29 23:25:36 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.14 2006-02-19 03:51:14 gnb Exp $");
 
 #define MARGIN		    0.2
 #define BOX_WIDTH  	    4.0
@@ -460,7 +460,7 @@ callgraph_diagram_t::build_node(cov_callnode_t *cn, int rank)
     }
     else if (cn->function == 0)
     {
-    	fprintf(stderr, "build_node: skipping library function %s\n",
+    	dprintf1(D_DCALLGRAPH, "build_node: skipping library function %s\n",
 	    cn->name.data());
     	return 0;
     }
