@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.57 2006-01-29 23:41:29 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.58 2006-02-19 03:41:22 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -1526,8 +1526,9 @@ cov_file_t::read_12bp_file(const char *filename)
     static const char c_basic_block[] = ";; Start of basic block ";
     static const char c_call_insn[] = "(call_insn";
     static const char c_symbol_ref[] = "symbol_ref:SI";
+    static const char fn[] = "read_12bp_file";
     
-    dprintf1(D_FILES, "read_12bp_file: reading %s\n", filename);
+    dprintf2(D_FILES, "%s: reading %s\n", fn, filename);
 
     if ((fp = fopen(filename, "r")) == 0)
     {
@@ -1539,7 +1540,7 @@ cov_file_t::read_12bp_file(const char *filename)
     {
     	for (p = buf+strlen(buf)-1 ; p >= buf && isspace(*p) ; --p)
 	    *p = '\0';
-    	dprintf2(D_FILES|D_VERBOSE, ">>> {%d} %s\n", state, buf);
+    	dprintf3(D_FILES|D_VERBOSE, "%s: >>> {%d} %s\n", fn, state, buf);
 
     	if (state == 0)
 	{
@@ -1548,7 +1549,8 @@ cov_file_t::read_12bp_file(const char *filename)
 		if (fromfunc != 0)
     		    fromfunc->reconcile_calls();
 		fromfunc = find_function(buf+sizeof(c_function)-1);
-		dprintf1(D_FILES, "fromfunc=%s\n", fromfunc->name());
+		dprintf2(D_FILES, "%s: fromfunc=%s\n",
+		    	 fn, (fromfunc == 0 ? "(null)" : fromfunc->name()));
 		continue;
 	    }
 	    if (fromfunc == 0)
@@ -1556,7 +1558,7 @@ cov_file_t::read_12bp_file(const char *filename)
     	    if (!strncmp(buf, c_basic_block, sizeof(c_basic_block)-1))
 	    {
 		bb = fromfunc->nth_block(1 + atoi(buf+sizeof(c_basic_block)-1));
-		dprintf1(D_FILES, "bb=%d\n", bb->bindex());
+		dprintf2(D_FILES, "%s: bb=%d\n", fn, bb->bindex());
 		continue;
 	    }
 	    if (bb == 0)
@@ -1584,8 +1586,8 @@ cov_file_t::read_12bp_file(const char *filename)
     	    	    loc.lineno = 0;
     	    	}
 		state = 1;
-                dprintf2(D_FILES, "location=%s:%lu\n",
-		    	 loc.filename, loc.lineno);
+                dprintf3(D_FILES, "%s: location=%s:%lu\n",
+		    	 fn, loc.filename, loc.lineno);
 	    }
 	}
 	if (state > 0)
@@ -1595,8 +1597,8 @@ cov_file_t::read_12bp_file(const char *filename)
 	    	p += sizeof(c_symbol_ref)-1;
 	    	tok_t tok(p, " \t\"()");
 		const char *t = tok.next();
-		dprintf5(D_FILES, "read_12bp_file: fromfunc=%s bb=%d tofunc=%s filename=%s lineno=%lu\n",
-		    	fromfunc->name(), bb->bindex(), t, loc.filename, loc.lineno);
+		dprintf6(D_FILES, "%s: fromfunc=%s bb=%d tofunc=%s filename=%s lineno=%lu\n",
+		    	fn, fromfunc->name(), bb->bindex(), t, loc.filename, loc.lineno);
     	    	/* Gaaaack! */
 		if (bb->call_ != 0)
 		    fromfunc->nth_block(bb->bindex()+1)->add_call(t, &loc);
