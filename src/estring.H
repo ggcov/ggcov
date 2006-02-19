@@ -62,6 +62,23 @@ public:
 	    available_ = length_+1;
 	}
     }
+    // const initialisation ctor with length
+    estring(const char *s, unsigned int len)
+    {
+    	if (s == 0)
+	{
+	    data_ = 0;
+	    length_ = available_ = 0;
+	}
+	else
+	{
+	    data_ = g_new(char, len+1);
+	    memcpy(data_, s, len);
+	    data_[len] = '\0';
+	    length_ = len;
+	    available_ = len+1;
+	}
+    }
     // non-const initialisation ctor
     estring(char *s)
      :  data_(s)
@@ -74,6 +91,20 @@ public:
 	{
 	    length_ = strlen(s);
 	    available_ = length_+1;
+	}
+    }
+    // non-const initialisation ctor with length
+    estring(char *s, unsigned int len)
+     :  data_(s)
+    {
+    	if (s == 0)
+	{
+	    length_ = available_ = 0;
+	}
+	else
+	{
+	    length_ = len;
+	    available_ = len+1;
 	}
     }
     // dtor    
