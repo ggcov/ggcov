@@ -63,7 +63,8 @@ class covio_t
 {
 public:
     covio_t(const char *fn)
-     :  fn_(fn),
+     :  refcount_(0),
+     	fn_(fn),
 	buf_(0),
 	ownbuf_(FALSE),
         fp_(0),
@@ -72,7 +73,8 @@ public:
     {
     }
     covio_t(const char *fn, FILE *fp)
-     :  fn_(fn),
+     :  refcount_(0),
+     	fn_(fn),
 	buf_(0),
 	ownbuf_(FALSE),
      	fp_(fp),
@@ -81,7 +83,8 @@ public:
     {
     }
     covio_t(const char *fn, const char *buf, unsigned int len)
-     :  fn_(fn),
+     :  refcount_(0),
+     	fn_(fn),
 	buf_((char *)buf),
 	ownbuf_(FALSE),
      	fp_(fmemopen((char *)buf, len, "r")),
@@ -90,7 +93,8 @@ public:
     {
     }
     covio_t(const char *fn, char *buf, unsigned int len)
-     :  fn_(fn),
+     :  refcount_(0),
+     	fn_(fn),
 	buf_(buf),
 	ownbuf_(TRUE),
      	fp_(fmemopen(buf, len, "r")),
@@ -99,6 +103,16 @@ public:
     {
     }
     ~covio_t();
+
+    void ref()
+    {
+    	refcount_++;
+    }
+    void unref()
+    {
+    	if (--refcount_ <= 0)
+	    delete this;
+    }
     
     gboolean open_read();
 
@@ -147,6 +161,7 @@ public:
     void set_format(format_t);
 
 private:
+    int refcount_;
     string_var fn_;
     char *buf_;
     gboolean ownbuf_;
@@ -185,16 +200,21 @@ public:
     covio_var(covio_t *io)
      :  io_(io)
     {
+    	if (io_)
+	    io_->ref();
     }
-    // copy c'tor: probably won't work without refcounting
-//    covio_var(const covio_var &o)
-//    {
-//    	io_ = o.io_;
-//    }
+    // copy c'tor
+    covio_var(const covio_var &o)
+    {
+    	io_ = o.io_;
+	if (io_)
+	    io_->ref();
+    }
     // dtor    
     ~covio_var()
     {
-    	delete io_;
+    	if (io_)
+	    io_->unref();
     }
 
     operator covio_t *() const
@@ -204,9 +224,11 @@ public:
     // assignment operators
     covio_t *operator=(covio_t *io)
     {
-    	delete io_;
-	io_ = io;
-	return io;
+	if (io)
+	    io->ref();
+    	if (io_)
+	    io_->unref();
+	return io_ = io;
     }
 };
 
