@@ -1,25 +1,26 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2004 Greg Banks <gnb@alphalink.com.au>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include "cov.H"
+#include "cov_calliter.H"
 
-CVSID("$Id: cov_callgraph.C,v 1.8 2005-03-14 07:49:15 gnb Exp $");
+CVSID("$Id: cov_callgraph.C,v 1.9 2006-02-19 03:47:11 gnb Exp $");
 
 hashtable_t<const char, cov_callnode_t> *cov_callnode_t::all_;
 
@@ -28,7 +29,7 @@ hashtable_t<const char, cov_callnode_t> *cov_callnode_t::all_;
 cov_callnode_t::cov_callnode_t(const char *nname)
 {
     name = nname;
-    
+
     all_->insert(name, this);
 }
 
@@ -71,7 +72,7 @@ static void
 cov_callnode_foreach_tramp(const char *name, cov_callnode_t *cn, gpointer userdata)
 {
     cov_callnode_foreach_rec_t *rec = (cov_callnode_foreach_rec_t *)userdata;
-    
+
     (*rec->func)(cn, rec->userdata);
 }
 
@@ -81,7 +82,7 @@ cov_callnode_t::foreach(
     void *userdata)
 {
     cov_callnode_foreach_rec_t rec;
-    
+
     rec.func = func;
     rec.userdata = userdata;
     all_->foreach(cov_callnode_foreach_tramp, &rec);
@@ -110,15 +111,15 @@ cov_callarc_t *
 cov_callnode_t::find_arc_to(cov_callnode_t *to) const
 {
     GList *iter;
-    
+
     for (iter = out_arcs ; iter != 0 ; iter = iter->next)
     {
     	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
-	
+
 	if (ca->to == to)
 	    return ca;
     }
-    
+
     return 0;
 }
 
@@ -157,11 +158,11 @@ cov_add_callnodes(cov_file_t *f)
 {
     unsigned int fnidx;
     cov_callnode_t *cn;
-    
+
     for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
     {
     	cov_function_t *fn = f->nth_function(fnidx);
-	
+
     	if (fn->is_suppressed())
 	    continue;
 
@@ -181,47 +182,38 @@ void
 cov_add_callarcs(cov_file_t *f)
 {
     unsigned int fnidx;
-    unsigned int bidx;
-    list_iterator_t<cov_arc_t> aiter;
     cov_callnode_t *from;
     cov_callnode_t *to;
     cov_callarc_t *ca;
-    
+
     for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
     {
     	cov_function_t *fn = f->nth_function(fnidx);
-	
+
 	if (fn->is_suppressed())
 	    continue;
 
 	from = cov_callnode_t::find(fn->name());
 	assert(from != 0);
-	
-	for (bidx = 1 ; bidx < fn->num_blocks()-1 ; bidx++)
-	{
-    	    cov_block_t *b = fn->nth_block(bidx);
-	
-	    for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
-	    {
-	    	cov_arc_t *a = *aiter;
 
-    	    	if (!a->is_call() || a->name() == 0)
-		    continue;
-		    		
-		if ((to = cov_callnode_t::find(a->name())) == 0)
-		    to = new cov_callnode_t(a->name());
-		    
-		if ((ca = from->find_arc_to(to)) == 0)
-		    ca = new cov_callarc_t(from, to);
-		    
-    	    	/* TODO: when new files are opened, old counts are double-counted */		    
-		ca->add_count(a->from()->count());
-	    }
+	cov_call_iterator_t *itr =
+	    new cov_function_call_iterator_t(fn);
+	while (itr->next())
+	{
+	    if (itr->name() == 0)
+		continue;
+
+	    if ((to = cov_callnode_t::find(itr->name())) == 0)
+		to = new cov_callnode_t(itr->name());
+
+	    if ((ca = from->find_arc_to(to)) == 0)
+		ca = new cov_callarc_t(from, to);
+
+	    /* TODO: when new files are opened, old counts are double-counted */
+	    ca->add_count(itr->count());
 	}
     }
 }
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

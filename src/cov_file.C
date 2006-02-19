@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.58 2006-02-19 03:41:22 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.59 2006-02-19 03:47:11 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -1516,11 +1516,10 @@ cov_file_t::read_12bp_file(const char *filename)
 {
     FILE *fp;
     int state = 0;
-    string_var sfilename;
     cov_function_t *fromfunc = 0;
     cov_block_t *bb = 0;
     string_var tofunc;
-    cov_location_t loc;
+    cov_location_var loc;
     char *p, buf[1024];
     static const char c_function[] = ";; Function ";
     static const char c_basic_block[] = ";; Start of basic block ";
@@ -1548,6 +1547,7 @@ cov_file_t::read_12bp_file(const char *filename)
 	    {
 		if (fromfunc != 0)
     		    fromfunc->reconcile_calls();
+    	    	bb = 0;
 		fromfunc = find_function(buf+sizeof(c_function)-1);
 		dprintf2(D_FILES, "%s: fromfunc=%s\n",
 		    	 fn, (fromfunc == 0 ? "(null)" : fromfunc->name()));
@@ -1572,49 +1572,52 @@ cov_file_t::read_12bp_file(const char *filename)
 		t = tok.next();
 		t = tok.next();
 		t = tok.next();
-		sfilename = tok.next();
-		p = strrchr(sfilename.data(), ':');
+		const char *filename = tok.next();
+		p = strrchr(filename, ':');
     	    	if (p != 0)
     	    	{
     	    	    *p++ = '\0';
-		    loc.filename = (char *)sfilename.data();
-		    loc.lineno = atoi(p);
+		    loc.set(filename, atoi(p));
     	    	}
     	    	else
     	    	{
-    	    	    loc.filename = 0;
-    	    	    loc.lineno = 0;
+		    loc.invalidate();
     	    	}
 		state = 1;
-                dprintf3(D_FILES, "%s: location=%s:%lu\n",
-		    	 fn, loc.filename, loc.lineno);
+		dprintf2(D_FILES, "%s: location=%s\n", fn, loc.describe());
 	    }
 	}
 	if (state > 0)
 	{
-	    if ((p = strstr(buf, c_symbol_ref)) != 0)
+	    if ((p = strstr(buf, c_symbol_ref)) != 0 || ++state == 3)
 	    {
-	    	p += sizeof(c_symbol_ref)-1;
-	    	tok_t tok(p, " \t\"()");
-		const char *t = tok.next();
-		dprintf6(D_FILES, "%s: fromfunc=%s bb=%d tofunc=%s filename=%s lineno=%lu\n",
-		    	fn, fromfunc->name(), bb->bindex(), t, loc.filename, loc.lineno);
-    	    	/* Gaaaack! */
-		if (bb->call_ != 0)
-		    fromfunc->nth_block(bb->bindex()+1)->add_call(t, &loc);
-		else
-		    bb->add_call(t, &loc);
 		state = 0;
-		continue;
-	    }
-	    if (++state == 3)
-	    {
-	    	/* ran out of lines searching for symbol_ref: assume func ptr */
 		if (bb->call_ != 0)
-		    fromfunc->nth_block(bb->bindex()+1)->add_call(0, &loc);
+		{
+		    if (bb->bindex() == fromfunc->num_blocks()-1)
+		    {
+			dprintf1(D_FILES, "%s: ran out of blocks!\n", fn);
+		    	fromfunc = 0;
+			continue;
+		    }
+		    dprintf1(D_FILES, "%s: advancing to next block\n", fn);
+		    bb = fromfunc->nth_block(bb->bindex()+1);
+		}
+		if (p != 0)
+		{
+	    	    p += sizeof(c_symbol_ref)-1;
+	    	    tok_t tok(p, " \t\"()");
+		    const char *t = tok.next();
+		    dprintf5(D_FILES, "%s: fromfunc=%s bb=%d tofunc=%s loc=%s\n",
+		    	    fn, fromfunc->name(), bb->bindex(), t, loc.describe());
+		    bb->add_call(t, &loc.loc_);
+		}
 		else
-		    bb->add_call(0, &loc);
-	    	state = 0;
+		{
+		    dprintf3(D_FILES, "fromfunc=%s bb=%d (pointer) loc=%s\n",
+		    	    fromfunc->name(), bb->bindex(), loc.describe());
+		    bb->add_call(0, &loc.loc_);
+		}
 	    }
 	}
     }

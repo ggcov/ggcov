@@ -27,7 +27,7 @@
 #include "tok.H"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.28 2006-01-29 22:52:48 gnb Exp $");
+CVSID("$Id: cov.C,v 1.29 2006-02-19 03:47:11 gnb Exp $");
 
 static gboolean cov_read_one_object_file(const char *exefilename, int depth);
 extern char *argv0;
@@ -619,11 +619,12 @@ dump_arc(FILE *fp, cov_arc_t *a)
     fprintf(fp, "                    }\n");
 }
 
-static void
+void
 dump_block(FILE *fp, cov_block_t *b)
 {
     list_iterator_t<cov_arc_t> aiter;
     list_iterator_t<cov_location_t>liter;
+    list_iterator_t<cov_block_t::call_t>citer;
     estring desc = b->describe();
     
     fprintf(fp, "            BLOCK {\n");
@@ -650,6 +651,16 @@ dump_block(FILE *fp, cov_block_t *b)
 	    	loc->filename,
 		loc->lineno,
 		status_names[ln->status()]);
+    }
+    fprintf(fp, "                }\n");
+
+    fprintf(fp, "                PURE_CALLS {\n");
+    for (citer = b->pure_calls_.first() ; citer != (cov_block_t::call_t *)0 ; ++citer)
+    {
+    	cov_block_t::call_t *call = *citer;
+	fprintf(fp, "                    %s @ %s\n",
+		(call->name_.data() == 0 ? "-" : call->name_.data()),
+	    	call->location_.describe());
     }
     fprintf(fp, "                }\n");
     fprintf(fp, "            }\n");

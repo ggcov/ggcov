@@ -39,7 +39,7 @@
 #include "callgraph_diagram.H"
 #include "check_scenegen.H"
 
-CVSID("$Id: tggcov.c,v 1.19 2006-01-29 23:43:36 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.20 2006-02-19 03:47:11 gnb Exp $");
 
 char *argv0;
 static GList *files;	    /* incoming specification from commandline */
@@ -261,7 +261,6 @@ dump_callgraph(void)
 {
     FILE *fp;
     string_var cgfilename = file_make_absolute("callgraph.tggcov");
-    unsigned int state;
 
     fprintf(stderr, "Writing %s\n", cgfilename.data());
     if ((fp = fopen(cgfilename, "w")) == 0)
@@ -275,13 +274,13 @@ dump_callgraph(void)
     nodes->sort(compare_nodes_by_name);
 
     fprintf(fp, "# tggcov callgraph version 1\n");
-    fprintf(fp, "# files base: %s\n", cov_file_t::common_path());
+    fprintf(fp, "base %s\n", cov_file_t::common_path());
     unsigned int i;
     for (i = 0 ; i < nodes->length() ; i++)
     {
     	cov_callnode_t * cn = nodes->nth(i);
 	
-	fprintf(fp, "callnode %s %s\n",
+	fprintf(fp, "callnode %s\n\tsource %s\n",
 	    cn->name.data(),
 	    (cn->function != 0 ? cn->function->file()->minimal_name() : "-"));
 
@@ -290,84 +289,43 @@ dump_callgraph(void)
 	{
 	    cov_callarc_t *ca = (cov_callarc_t *)iter->data;
 	    
-	    fprintf(fp, "\tcallarc %s %llu\n",
+	    fprintf(fp, "\tcallarc %s\n\t\tcount %llu\n",
 	    	ca->to->name.data(),
 		(unsigned long long)ca->count);
 	}
 	
 	if (cn->function != 0)
 	{
-	    unsigned int bbidx;
-	    
 	    fprintf(fp, "function %s\n", cn->function->name());
-	    for (bbidx = 1 ; bbidx < cn->function->num_blocks() ; bbidx++)
+	    cov_call_iterator_t *itr;
+	    
+	    itr = new cov_function_call_iterator_t(cn->function);
+    	    while (itr->next())
 	    {
-	    	cov_block_t *b = cn->function->nth_block(bbidx);
-		if (b->is_epilogue())
-		    continue;
-		state = 0;
+		fprintf(fp, "\tblock %u\n", itr->block()->bindex());
 
-		list_iterator_t<cov_arc_t> oi;
-		for (oi = b->out_arc_iterator() ; oi != (cov_arc_t *)0 ; ++oi)
-		{
-		    cov_arc_t *a = *oi;
-		    
-		    if (a->is_call())
-		    {
-		    	if (!(state & 0x1))
-			{
-			    fprintf(fp, "\tblock %u\n", bbidx);
-			    state |= 0x1;
-			}
-			const cov_location_t *loc = a->call_location();
-			string_var minfile = cov_file_t::minimise_name(loc->filename);
-		    	fprintf(fp, "\t\tcall %s %llu location %s:%lu\n",
-				(a->call_name() != 0 ? a->call_name() : "-"),
-				(unsigned long long)a->count(),
-				minfile.data(), loc->lineno);
-		    }
-		}
+		const cov_location_t *loc = itr->location();
+		string_var minfile = cov_file_t::minimise_name(loc->filename);
+		fprintf(fp, "\t\tcall %s\n\t\t\tcount %llu\n\t\t\tlocation %s:%lu\n",
+			(itr->name() != 0 ? itr->name() : "-"),
+			itr->count(),
+			minfile.data(), loc->lineno);
 	    }
+	    delete itr;
 	    
 	    const cov_location_t *first = cn->function->get_first_location();
-	    string_var minfile = cov_file_t::minimise_name(first->filename);
 	    const cov_location_t *last = cn->function->get_last_location();
-	    cov_location_t loc;
-	    state = 0;
-	    for (loc = *first ; loc != *last ; ++loc)
+	    itr = new cov_range_call_iterator_t(first, last);
+	    while (itr->next())
 	    {
-	    	cov_line_t *ln = cov_line_t::find(&loc);
-		if (ln == 0 || ln->blocks() == 0)
-		    continue;
-		state = 0;
-
-    	    	const GList *biter;
-		for (biter = ln->blocks() ; biter != 0 ; biter = biter->next)
-		{
-	    	    cov_block_t *b = (cov_block_t *)biter->data;
-
-		    list_iterator_t<cov_arc_t> oi;
-		    for (oi = b->out_arc_iterator() ; oi != (cov_arc_t *)0 ; ++oi)
-		    {
-			cov_arc_t *a = *oi;
-
-			if (a->is_call() && loc == *a->call_location())
-			{
-			    if (!(state & 0x1))
-			    {
-	    			fprintf(fp, "\tlocation %s:%lu\n", minfile.data(), loc.lineno);
-			    	state |= 0x1;
-			    }
-		    	    fprintf(fp, "\t\tcall %s %llu\n",
-				    (a->call_name() != 0 ? a->call_name() : "-"),
-				    (unsigned long long)a->count());
-    	    	    	}
-		    }
-		}
-
-
+		const cov_location_t *loc = itr->location();
+    	    	string_var minfile = cov_file_t::minimise_name(loc->filename);
+	    	fprintf(fp, "\tlocation %s:%lu\n", minfile.data(), loc->lineno);
+		fprintf(fp, "\t\tcall %s\n\t\t\tcount %llu\n",
+			(itr->name() != 0 ? itr->name() : "-"),
+			itr->count());
 	    }
-	    
+	    delete itr;
 	}
     }
     

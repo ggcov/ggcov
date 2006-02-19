@@ -60,6 +60,70 @@ struct cov_location_t
     const char *describe() const;
 };
 
+struct cov_location_var
+{
+    cov_location_t loc_;
+
+    // default c'tor
+    cov_location_var()
+    {
+    	loc_.filename = 0;
+    	loc_.lineno = 0;
+    }
+    // copy c'tor
+    cov_location_var(const cov_location_var &o)
+    {
+    	loc_.filename = (o.loc_.filename != 0 ? g_strdup(o.loc_.filename) : 0);
+    	loc_.lineno = o.loc_.lineno;
+    }
+    // c'tor from cov_location
+    cov_location_var(const cov_location_t &o)
+    {
+    	loc_.filename = (o.filename != 0 ? g_strdup(o.filename) : 0);
+    	loc_.lineno = o.lineno;
+    }
+    ~cov_location_var()
+    {
+    	if (loc_.filename != 0)
+	    g_free(loc_.filename);
+    }
+
+    void set(const char *filename, unsigned long lineno)
+    {
+    	if (loc_.filename != 0)
+	    g_free(loc_.filename);
+    	loc_.filename = (filename != 0 ? g_strdup(filename) : 0);
+    	loc_.lineno = lineno;
+    }
+    void invalidate()
+    {
+    	if (loc_.filename != 0)
+	    g_free(loc_.filename);
+    	loc_.filename = 0;
+    	loc_.lineno = 0;
+    }
+
+    // cast to cov_location_t
+    operator const cov_location_t() const
+    {
+    	return loc_;
+    }
+    
+    int operator==(const cov_location_t &o) const
+    {
+    	return (loc_ == o);
+    }
+    int operator!=(const cov_location_t &o) const
+    {
+    	return (loc_ != o);
+    }
+
+    const char *describe() const
+    {
+    	return loc_.describe();
+    }
+};
+
 struct cov
 {
     enum status_t

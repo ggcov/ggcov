@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: common.sh,v 1.14 2006-02-19 03:40:00 gnb Exp $
+# $Id: common.sh,v 1.15 2006-02-19 03:47:11 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -463,7 +463,7 @@ while (<STDIN>)
 {
     chomp;
     s/block \d+/block NNN/;
-    s/^(# files base: ).*/\1 PPP/;
+    s/^base .*/base PPP/;
     print "$_\n";
 }
 ' < $FILE
