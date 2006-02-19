@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.63 2006-01-29 23:25:36 gnb Exp $
+# $Id: Makefile.am,v 1.64 2006-02-19 04:25:32 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -28,6 +28,7 @@ libcommon_a_SOURCES= \
 		common.h common.c \
 		fakepopt.h fakepopt.c \
 		estring.H estring.C string_var.H tok.H tok.C \
+		cached_string.H cached_string.C \
 		filename.h filename.c \
 		list.H \
 		hashtable.H hashtable.C \

@@ -21,6 +21,7 @@
 #define _ggcov_cov_function_H_ 1
 
 #include "common.h"
+#include "cached_string.H"
 #include "string_var.H"
 
 class cov_file_t;
@@ -102,7 +103,7 @@ private:
 
     static gboolean solve_fuzzy_flag_;
 
-    string_var name_;
+    cached_string name_;
     string_var id_;
     gboolean suppressed_;   /* suppressed from above or by self */
     unsigned int idx_; 	    /* serial number in file */
