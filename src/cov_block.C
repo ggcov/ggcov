@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.18 2005-09-11 10:19:05 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.19 2006-02-19 04:33:49 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -129,11 +129,13 @@ void
 cov_block_t::add_call(const char *name, const cov_location_t *loc)
 {
     static const char fn[] = "cov_block_t::add_call";
+    const cov_location_t *last;
 
     if (name == 0)
 	name = "*pointer";
 
-    if (is_call_site() && *loc == *get_last_location())
+    if (is_call_site() &&
+    	((last = get_last_location()) == 0 || *loc == *last))
     {
     	dprintf5(D_CGRAPH, "%s: call from %s:%u to %s at %s\n",
 	    	fn, function_->name(), idx_, name, loc->describe());
