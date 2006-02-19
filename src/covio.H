@@ -64,6 +64,8 @@ class covio_t
 public:
     covio_t(const char *fn)
      :  fn_(fn),
+	buf_(0),
+	ownbuf_(FALSE),
         fp_(0),
 	ownfp_(TRUE),
 	format_(0)
@@ -71,8 +73,28 @@ public:
     }
     covio_t(const char *fn, FILE *fp)
      :  fn_(fn),
+	buf_(0),
+	ownbuf_(FALSE),
      	fp_(fp),
 	ownfp_(FALSE),
+	format_(0)
+    {
+    }
+    covio_t(const char *fn, const char *buf, unsigned int len)
+     :  fn_(fn),
+	buf_((char *)buf),
+	ownbuf_(FALSE),
+     	fp_(fmemopen((char *)buf, len, "r")),
+	ownfp_(TRUE),
+	format_(0)
+    {
+    }
+    covio_t(const char *fn, char *buf, unsigned int len)
+     :  fn_(fn),
+	buf_(buf),
+	ownbuf_(TRUE),
+     	fp_(fmemopen(buf, len, "r")),
+	ownfp_(TRUE),
 	format_(0)
     {
     }
@@ -126,6 +148,8 @@ public:
 
 private:
     string_var fn_;
+    char *buf_;
+    gboolean ownbuf_;
     FILE *fp_;
     gboolean ownfp_;
     covio_fmt_t *format_;

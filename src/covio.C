@@ -20,7 +20,7 @@
 #include "covio.H"
 #include "estring.H"
 
-CVSID("$Id: covio.C,v 1.9 2006-02-19 03:59:05 gnb Exp $");
+CVSID("$Id: covio.C,v 1.10 2006-02-19 04:08:31 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -30,6 +30,11 @@ covio_t::~covio_t()
     {
     	fclose(fp_);
 	fp_ = 0;
+    }
+    if (ownbuf_ && buf_ != 0)
+    {
+    	g_free(buf_);
+    	buf_ = 0;
     }
 }
 
