@@ -1,0 +1,268 @@
+# tggcov callgraph version 1
+# files base: PPP
+callnode *pointer -
+callnode const_trivial_arithmetic1 foo.c
+function const_trivial_arithmetic1
+callnode main foo.c
+	callarc atoi 4
+	callarc trivial_tail_recursion 4
+	callarc many_simple_calls 4
+	callarc many_calls_much_logic 4
+	callarc many_calls_some_logic 4
+	callarc one_call_some_arithmetic 4
+	callarc one_call_some_arithmetic_some_pure 4
+	callarc one_call_some_arithmetic_some_const 4
+	callarc many_calls_per_line_some_arithmetic 4
+	callarc printf 4
+function main
+	block NNN
+		call atoi 4 location foo.c:220
+		call trivial_tail_recursion 4 location foo.c:221
+	block NNN
+		call many_simple_calls 4 location foo.c:222
+	block NNN
+		call many_calls_much_logic 4 location foo.c:223
+	block NNN
+		call many_calls_some_logic 4 location foo.c:224
+	block NNN
+		call one_call_some_arithmetic 4 location foo.c:225
+	block NNN
+		call one_call_some_arithmetic_some_pure 4 location foo.c:226
+	block NNN
+		call one_call_some_arithmetic_some_const 4 location foo.c:227
+	block NNN
+		call many_calls_per_line_some_arithmetic 4 location foo.c:228
+	block NNN
+		call one_pointer_call_some_arithmetic 4 location foo.c:229
+	block NNN
+		call printf 4 location foo.c:230
+	location foo.c:220
+		call atoi 4
+	location foo.c:221
+		call trivial_tail_recursion 4
+	location foo.c:222
+		call many_simple_calls 4
+	location foo.c:223
+		call many_calls_much_logic 4
+	location foo.c:224
+		call many_calls_some_logic 4
+	location foo.c:225
+		call one_call_some_arithmetic 4
+	location foo.c:226
+		call one_call_some_arithmetic_some_pure 4
+	location foo.c:227
+		call one_call_some_arithmetic_some_pure 4
+	location foo.c:228
+		call many_calls_per_line_some_arithmetic 4
+	location foo.c:229
+		call one_pointer_call_some_arithmetic 4
+	location foo.c:230
+		call printf 4
+callnode many_calls_much_logic foo.c
+	callarc trivial_arithmetic1 3
+	callarc trivial_arithmetic2 3
+	callarc trivial_arithmetic3 4
+	callarc trivial_arithmetic4 0
+	callarc trivial_arithmetic5 3
+	callarc trivial_arithmetic6 4
+	callarc trivial_arithmetic7 0
+function many_calls_much_logic
+	block NNN
+		call trivial_arithmetic1 3 location foo.c:95
+	block NNN
+		call trivial_arithmetic2 3 location foo.c:97
+	block NNN
+		call trivial_arithmetic3 4 location foo.c:99
+	block NNN
+		call trivial_arithmetic4 0 location foo.c:101
+	block NNN
+		call trivial_arithmetic5 3 location foo.c:103
+	block NNN
+		call trivial_arithmetic6 4 location foo.c:104
+	block NNN
+		call trivial_arithmetic7 0 location foo.c:106
+	location foo.c:95
+		call trivial_arithmetic1 3
+	location foo.c:97
+		call trivial_arithmetic2 3
+	location foo.c:99
+		call trivial_arithmetic3 4
+	location foo.c:101
+		call trivial_arithmetic4 0
+	location foo.c:103
+		call trivial_arithmetic5 3
+	location foo.c:104
+		call trivial_arithmetic6 4
+	location foo.c:106
+		call trivial_arithmetic7 0
+callnode many_calls_per_line_some_arithmetic foo.c
+	callarc trivial_arithmetic1 4
+	callarc trivial_arithmetic2 4
+	callarc trivial_arithmetic3 4
+function many_calls_per_line_some_arithmetic
+	block NNN
+		call trivial_arithmetic1 4 location foo.c:205
+	block NNN
+		call trivial_arithmetic2 4 location foo.c:205
+	block NNN
+		call trivial_arithmetic3 4 location foo.c:205
+	location foo.c:205
+		call trivial_arithmetic1 4
+		call trivial_arithmetic2 4
+		call trivial_arithmetic3 4
+callnode many_calls_some_logic foo.c
+	callarc trivial_arithmetic1 4
+	callarc trivial_arithmetic2 2
+	callarc trivial_arithmetic3 2
+	callarc trivial_arithmetic4 2
+	callarc trivial_arithmetic5 2
+	callarc trivial_arithmetic6 2
+	callarc trivial_arithmetic7 2
+function many_calls_some_logic
+	block NNN
+		call trivial_arithmetic1 4 location foo.c:115
+	block NNN
+		call trivial_arithmetic2 2 location foo.c:118
+	block NNN
+		call trivial_arithmetic3 2 location foo.c:119
+	block NNN
+		call trivial_arithmetic4 2 location foo.c:120
+	block NNN
+		call trivial_arithmetic5 2 location foo.c:124
+	block NNN
+		call trivial_arithmetic6 2 location foo.c:125
+	block NNN
+		call trivial_arithmetic7 2 location foo.c:126
+	location foo.c:115
+		call trivial_arithmetic1 4
+	location foo.c:118
+		call trivial_arithmetic2 2
+	location foo.c:119
+		call trivial_arithmetic3 2
+	location foo.c:120
+		call trivial_arithmetic4 2
+	location foo.c:124
+		call trivial_arithmetic5 2
+	location foo.c:125
+		call trivial_arithmetic6 2
+	location foo.c:126
+		call trivial_arithmetic7 2
+callnode many_simple_calls foo.c
+	callarc trivial_arithmetic1 4
+	callarc trivial_arithmetic2 4
+	callarc trivial_arithmetic3 4
+	callarc trivial_arithmetic4 4
+	callarc trivial_arithmetic5 4
+	callarc trivial_arithmetic6 4
+	callarc trivial_arithmetic7 4
+function many_simple_calls
+	block NNN
+		call trivial_arithmetic1 4 location foo.c:79
+	block NNN
+		call trivial_arithmetic2 4 location foo.c:80
+	block NNN
+		call trivial_arithmetic3 4 location foo.c:81
+	block NNN
+		call trivial_arithmetic4 4 location foo.c:82
+	block NNN
+		call trivial_arithmetic5 4 location foo.c:83
+	block NNN
+		call trivial_arithmetic6 4 location foo.c:84
+	block NNN
+		call trivial_arithmetic7 4 location foo.c:85
+	location foo.c:79
+		call trivial_arithmetic1 4
+	location foo.c:80
+		call trivial_arithmetic2 4
+	location foo.c:81
+		call trivial_arithmetic3 4
+	location foo.c:82
+		call trivial_arithmetic4 4
+	location foo.c:83
+		call trivial_arithmetic5 4
+	location foo.c:84
+		call trivial_arithmetic6 4
+	location foo.c:85
+		call trivial_arithmetic7 4
+callnode nontrivial_tail_recursion2 foo.c
+	callarc nontrivial_tail_recursion2 9
+function nontrivial_tail_recursion2
+	block NNN
+		call nontrivial_tail_recursion2 9 location foo.c:9
+callnode one_call_some_arithmetic foo.c
+	callarc trivial_arithmetic1 4
+function one_call_some_arithmetic
+	block NNN
+		call trivial_arithmetic1 4 location foo.c:140
+	location foo.c:140
+		call trivial_arithmetic1 4
+callnode one_call_some_arithmetic_some_const foo.c
+	callarc const_trivial_arithmetic1 4
+	callarc trivial_arithmetic1 4
+function one_call_some_arithmetic_some_const
+	block NNN
+		call const_trivial_arithmetic1 4 location foo.c:186
+		call const_trivial_arithmetic1 4 location foo.c:187
+		call trivial_arithmetic1 4 location foo.c:189
+	block NNN
+		call const_trivial_arithmetic1 4 location foo.c:191
+		call const_trivial_arithmetic1 4 location foo.c:192
+	location foo.c:186
+		call const_trivial_arithmetic1 4
+	location foo.c:187
+		call const_trivial_arithmetic1 4
+	location foo.c:189
+		call trivial_arithmetic1 4
+	location foo.c:191
+		call const_trivial_arithmetic1 4
+	location foo.c:192
+		call const_trivial_arithmetic1 4
+callnode one_call_some_arithmetic_some_pure foo.c
+	callarc pure_trivial_arithmetic1 4
+	callarc trivial_arithmetic1 4
+function one_call_some_arithmetic_some_pure
+	block NNN
+		call pure_trivial_arithmetic1 4 location foo.c:170
+		call pure_trivial_arithmetic1 4 location foo.c:171
+		call trivial_arithmetic1 4 location foo.c:173
+	block NNN
+		call pure_trivial_arithmetic1 4 location foo.c:175
+		call pure_trivial_arithmetic1 4 location foo.c:176
+	location foo.c:170
+		call pure_trivial_arithmetic1 4
+	location foo.c:171
+		call pure_trivial_arithmetic1 4
+	location foo.c:173
+		call trivial_arithmetic1 4
+	location foo.c:175
+		call pure_trivial_arithmetic1 4
+	location foo.c:176
+		call pure_trivial_arithmetic1 4
+callnode one_pointer_call_some_arithmetic foo.c
+	callarc *pointer 4
+function one_pointer_call_some_arithmetic
+	block NNN
+		call *pointer 4 location foo.c:157
+	location foo.c:157
+		call *pointer 4
+callnode pure_trivial_arithmetic1 foo.c
+function pure_trivial_arithmetic1
+callnode trivial_arithmetic1 foo.c
+function trivial_arithmetic1
+callnode trivial_arithmetic2 foo.c
+function trivial_arithmetic2
+callnode trivial_arithmetic3 foo.c
+function trivial_arithmetic3
+callnode trivial_arithmetic4 foo.c
+function trivial_arithmetic4
+callnode trivial_arithmetic5 foo.c
+function trivial_arithmetic5
+callnode trivial_arithmetic6 foo.c
+function trivial_arithmetic6
+callnode trivial_arithmetic7 foo.c
+function trivial_arithmetic7
+callnode trivial_tail_recursion foo.c
+	callarc nontrivial_tail_recursion2 4
+function trivial_tail_recursion
+	block NNN
+		call nontrivial_tail_recursion2 4 location foo.c:15

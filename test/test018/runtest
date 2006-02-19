@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+ENABLE_DB_FLAG=1
+. ../common.sh
+
+init
+
+compile_c foo.c
+link foo foo.o
+
+vncdo ./foo 1
+vncdo ./foo 2
+vncdo ./foo 23 423
+
+subtest 1
+run_gcov foo.c
+run_tggcov foo.c
+compare_lines foo.c
+
+subtest 2
+tggcov_flags -P
+run_tggcov foo.c
+compare_file callgraph

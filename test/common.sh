@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: common.sh,v 1.13 2006-01-29 23:42:34 gnb Exp $
+# $Id: common.sh,v 1.14 2006-02-19 03:40:00 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -446,8 +446,35 @@ while (<STDIN>)
 
 _compare_coverage ()
 {
+    echo "Filtering counts"
     _filter_spurious_counts "$1" > $TMP1
     _filter_spurious_counts "$2" > $TMP2
+    echo "diff -u filter($1) filter($2)"
+    diff -u $TMP1 $TMP2 || fatal "$4 line coverage differs from $3"
+}
+
+_filter_spurious_callgraph ()
+{
+    local FILE="$1"
+    
+perl -e '
+use strict;
+while (<STDIN>)
+{
+    chomp;
+    s/block \d+/block NNN/;
+    s/^(# files base: ).*/\1 PPP/;
+    print "$_\n";
+}
+' < $FILE
+
+}
+
+_compare_callgraph ()
+{
+    echo "Filtering callgraph"
+    _filter_spurious_callgraph "$1" > $TMP1
+    _filter_spurious_callgraph "$2" > $TMP2
     echo "diff -u filter($1) filter($2)"
     diff -u $TMP1 $TMP2 || fatal "$4 line coverage differs from $3"
 }
@@ -469,5 +496,12 @@ compare_file ()
     local EXPECTED_FILE="$srcdir/$SRC$SUBTEST.expected"
     local TGGCOV_FILE=`_tggcov_file $SRC`
 
-    _compare_coverage "$EXPECTED_FILE" "$TGGCOV_FILE" "expected" "tggcov"
+    case " $TGGCOV_FLAGS " in
+    *" -P "*)
+	_compare_callgraph "$EXPECTED_FILE" "$TGGCOV_FILE" "expected" "tggcov"
+	;;
+    *)
+	_compare_coverage "$EXPECTED_FILE" "$TGGCOV_FILE" "expected" "tggcov"
+	;;
+    esac
 }
