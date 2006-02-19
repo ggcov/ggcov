@@ -68,6 +68,7 @@ public:
     ~cov_bfd_t();
     
     gboolean open(const char *filename);
+    gboolean open(const char *filename, FILE *);
     const char *filename() const;
     
     unsigned int num_symbols();
@@ -92,6 +93,8 @@ private:
     /* utility functions */
     gboolean get_symbols();
     gboolean get_code_sections();
+    gboolean post_open();
+
 
     bfd *abfd_;
 

@@ -20,7 +20,7 @@
 #include "covio.H"
 #include "estring.H"
 
-CVSID("$Id: covio.C,v 1.8 2006-01-29 23:41:29 gnb Exp $");
+CVSID("$Id: covio.C,v 1.9 2006-02-19 03:59:05 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -208,6 +208,16 @@ covio_t::read(estring &e, unsigned int len)
     r = fread((char *)e.data(), 1, len, fp_);
     e.truncate_to(r < 0 ? 0 : r);
     return r;
+}
+
+gboolean
+covio_t::gets(estring &e, unsigned int maxlen)
+{
+    /* TODO: this is pretty primitive, should expand the string on demand */
+    e.truncate_to(maxlen);
+    gboolean ret = (fgets((char *)e.data(), maxlen, fp_) != NULL);
+    e.truncate_to(ret ? strlen(e) : 0);
+    return ret;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

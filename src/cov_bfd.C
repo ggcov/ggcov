@@ -23,7 +23,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_bfd.C,v 1.3 2005-03-14 07:49:15 gnb Exp $");
+CVSID("$Id: cov_bfd.C,v 1.4 2006-02-19 03:59:05 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -45,19 +45,12 @@ cov_bfd_t::~cov_bfd_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
-cov_bfd_t::open(const char *filename)
+cov_bfd_t::post_open()
 {
-    if ((abfd_ = bfd_openr(filename, 0)) == 0)
-    {
-    	/* TODO */
-    	bfd_perror(filename);
-	return FALSE;
-    }
-
     if (!bfd_check_format(abfd_, bfd_object))
     {
     	/* TODO */
-    	bfd_perror(filename);
+    	bfd_perror(bfd_get_filename(abfd_));
 	bfd_close(abfd_);
 	abfd_ = 0;
 	return FALSE;
@@ -72,6 +65,30 @@ cov_bfd_t::open(const char *filename)
     abfd_->usrdata = this;
     
     return TRUE;
+}
+
+gboolean
+cov_bfd_t::open(const char *filename)
+{
+    if ((abfd_ = bfd_openr(filename, /*target*/0)) == 0)
+    {
+    	/* TODO */
+    	bfd_perror(filename);
+	return FALSE;
+    }
+    return post_open();
+}
+
+gboolean
+cov_bfd_t::open(const char *filename, FILE *fp)
+{
+    if ((abfd_ = bfd_openstreamr(filename, /*target*/0, fp)) == 0)
+    {
+    	/* TODO */
+    	bfd_perror(filename);
+	return FALSE;
+    }
+    return post_open();
 }
 
 const char *

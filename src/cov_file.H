@@ -123,7 +123,7 @@ private:
     {
     	const char *magic_;
 	unsigned int magic_len_;
-	gboolean (cov_file_t::*read_func_)(const char *, FILE *);
+	gboolean (cov_file_t::*read_func_)(covio_t *);
 	const char *description_;
     };
     static format_rec_t formats[];
@@ -138,8 +138,8 @@ private:
     void add_location(cov_block_t *, const char *, unsigned long);
     cov_line_t *get_nth_line(unsigned int lineno);
 
-    char *try_file(const char *dir, const char *ext) const;
-    char *find_file(const char *ext, gboolean quiet) const;
+    covio_t *try_file(const char *dir, const char *ext) const;
+    covio_t *find_file(const char *ext, gboolean quiet) const;
     void file_missing(const char *ext, const char *ext2) const;
 
     gboolean
@@ -152,26 +152,26 @@ private:
     gboolean read(gboolean quiet);
 
     int skip_oldplus_func_header(covio_t *io, const char *prefix);
-    gboolean read_bb_file(const char *filename);
+    gboolean read_bb_file(covio_t *);
     gboolean read_old_bbg_function(covio_t *);
-    gboolean read_old_bbg_file_common(const char *bbgfilename, FILE *fp);
-    gboolean read_old_bbg_file(const char *filename, FILE *fp);
-    gboolean read_oldplus_bbg_file(const char *filename, FILE *fp);
+    gboolean read_old_bbg_file_common(covio_t *);
+    gboolean read_old_bbg_file(covio_t *);
+    gboolean read_oldplus_bbg_file(covio_t *);
     const char *read_rh_funcid(covio_t *io) const;
     gboolean read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version);
-    gboolean read_gcc33_bbg_file(const char *filename, FILE *fp);
-    gboolean read_gcc34l_bbg_file(const char *filename, FILE *fp);
-    gboolean read_gcc34b_bbg_file(const char *filename, FILE *fp);
-    gboolean read_bbg_file(const char *filename);
-    gboolean read_old_da_file(const char *filename);
-    gboolean read_oldplus_da_file(const char *filename);
+    gboolean read_gcc33_bbg_file(covio_t *);
+    gboolean read_gcc34l_bbg_file(covio_t *);
+    gboolean read_gcc34b_bbg_file(covio_t *);
+    gboolean read_bbg_file(covio_t *);
+    gboolean read_old_da_file(covio_t *);
+    gboolean read_oldplus_da_file(covio_t *);
     gboolean read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic);
-    gboolean read_da_file(const char *filename);
-    gboolean read_12bp_file(const char *filename);
+    gboolean read_da_file(covio_t *);
+    gboolean read_12bp_file(covio_t *);
 #ifdef HAVE_LIBBFD
     static gboolean o_file_add_call(const cov_location_t *, const char *);
-    gboolean scan_o_file_calls(const char *filename);
-    gboolean read_o_file(const char *filename);
+    gboolean scan_o_file_calls(covio_t *);
+    gboolean read_o_file(covio_t *);
 #endif
     gboolean read_src_file();
     gboolean solve();

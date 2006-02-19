@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "estring.H"
+#include "string_var.H"
 
 /*
  * There are twice as many functions as necessary because the
@@ -80,10 +81,18 @@ public:
     gboolean open_read();
 
     const char *filename() const { return fn_; }
+    FILE *take()
+    {
+    	FILE *fp = fp_;
+	fp_ = 0;
+	ownfp_ = FALSE;
+    	return fp;
+    }
     
     gboolean skip(unsigned int len);
     int read(char *buf, unsigned int len);
     int read(estring &e, unsigned int len);
+    gboolean gets(estring &e, unsigned int maxlen);
     
     off_t tell() const { return ftell(fp_); }
     int seek(off_t off) { return fseek(fp_, off, SEEK_SET); }
@@ -116,7 +125,7 @@ public:
     void set_format(format_t);
 
 private:
-    const char *fn_;
+    string_var fn_;
     FILE *fp_;
     gboolean ownfp_;
     covio_fmt_t *format_;
@@ -134,6 +143,47 @@ private:
     friend class covio_fmt_gcc33_t;
     friend class covio_fmt_gcc34l_t;
     friend class covio_fmt_gcc34b_t;
+};
+
+// Smart pointer class for covio_t
+class covio_var
+{
+private:
+    covio_t *io_;
+    
+public:
+    // default ctor
+    covio_var()
+     :  io_(0)
+    {
+    }
+    // const initialisation ctor
+    covio_var(covio_t *io)
+     :  io_(io)
+    {
+    }
+    // copy c'tor: probably won't work without refcounting
+//    covio_var(const covio_var &o)
+//    {
+//    	io_ = o.io_;
+//    }
+    // dtor    
+    ~covio_var()
+    {
+    	delete io_;
+    }
+
+    operator covio_t *() const
+    {
+    	return io_;
+    }
+    // assignment operators
+    covio_t *operator=(covio_t *io)
+    {
+    	delete io_;
+	io_ = io;
+	return io;
+    }
 };
 
 #endif /* _ggcov_covio_h_ */
