@@ -177,6 +177,8 @@ public:
     	while (length_ > 0 && data_[length_-1] == '\0')
 	    length_--;
     }
+    /* remove any trailing newlines or carriage returns */
+    void chomp();
 };
 
 #undef _printf_fmt

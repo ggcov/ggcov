@@ -20,7 +20,7 @@
 #include "estring.H"
 #include <stdarg.h>
 
-CVSID("$Id: estring.C,v 1.6 2005-05-18 13:02:49 gnb Exp $");
+CVSID("$Id: estring.C,v 1.7 2006-02-19 03:53:27 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -267,6 +267,17 @@ estring::truncate_to(unsigned int len)
 	length_ = len;
 	data_[length_] = '\0';
     }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+//static inline gboolean is_crnl(int c)   { return (c == '\n' || c == '\r'); }
+
+void
+estring::chomp()
+{
+    while (length_ > 0 && isspace(data_[length_-1]))
+    	data_[--length_] = '\0';
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
