@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.60 2006-02-19 03:59:05 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.61 2006-02-19 04:27:51 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -74,7 +74,7 @@ cov_file_t::cov_file_t(const char *name)
 
     functions_ = new ptrarray_t<cov_function_t>();
     functions_by_name_ = new hashtable_t<const char, cov_function_t>;
-    functions_by_id_ = new hashtable_t<const char, cov_function_t>;
+    functions_by_id_ = new hashtable_t<gnb_u64_t, cov_function_t>;
     lines_ = new ptrarray_t<cov_line_t>();
     null_line_ = new cov_line_t();
 
@@ -844,25 +844,6 @@ gcov_tag_as_string(gnb_u32_t tag)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-/*
- * RedHat just love to make my life interesting.
- */
- 
-const char *
-cov_file_t::read_rh_funcid(covio_t *io) const
-{
-    gnb_u64_t id;
-    static char idbuf[17];
-    
-    if (!io->read_u64(id))
-    	return 0;
-    
-    snprintf(idbuf, sizeof(idbuf), "%016llx", id);
-    
-    return idbuf;
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
 cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
@@ -878,7 +859,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     gnb_u32_t dest, flags;
     gnb_u32_t line, last_line = 0;
     unsigned int len_unit = 1;
-    const char *funcid = 0;
+    gnb_u64_t funcid = 0;
 
     if (!io->read_u32(format_version_))
     	bbg_failed0("short file");
@@ -926,7 +907,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		estring filename;
 		
-		if ((funcid = read_rh_funcid(io)) == (char *)0 ||
+		if (!io->read_u64(funcid) ||
 		    !io->read_string(funcname) ||
 		    !io->read_string(filename) ||
 		    !io->read_u32(tmp)/* this seems to be a line number */)
@@ -1349,10 +1330,10 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 	    	format_version_ == BBG_VERSION_GCC40_RH)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
-		const char *funcid = read_rh_funcid(io);
-		if (funcid == 0)
+		gnb_u64_t funcid;
+		if (!io->read_u64(funcid))
 		    fn = 0;
-		else if ((fn = functions_by_id_->lookup(funcid)) == 0)
+		else if ((fn = functions_by_id_->lookup(&funcid)) == 0)
 	    	    da_failed1("unexpected function id \"%s\"", funcid);
 	    }
 	    else

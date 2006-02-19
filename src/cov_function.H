@@ -92,7 +92,7 @@ private:
     ~cov_function_t();
     
     void set_name(const char *name);
-    void set_id(const char *id); /* needed for hacked-up RH gcc 3.4 file formats */
+    void set_id(gnb_u64_t); /* needed for gcc 4.0 and hacked-up RH gcc 3.4 file formats */
     cov_block_t *add_block();
     gboolean is_self_suppressed() const;
     void suppress();
@@ -104,7 +104,7 @@ private:
     static gboolean solve_fuzzy_flag_;
 
     cached_string name_;
-    string_var id_;
+    gnb_u64_t id_;
     gboolean suppressed_;   /* suppressed from above or by self */
     unsigned int idx_; 	    /* serial number in file */
     cov_file_t *file_;

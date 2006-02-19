@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.22 2005-07-31 12:27:40 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.23 2006-02-19 04:27:51 gnb Exp $");
 
 gboolean cov_function_t::solve_fuzzy_flag_ = FALSE;
 
@@ -51,11 +51,11 @@ cov_function_t::set_name(const char *name)
 }
 
 void
-cov_function_t::set_id(const char *id)
+cov_function_t::set_id(gnb_u64_t id)
 {
     assert(id_ == 0);
     id_ = id;
-    file_->functions_by_id_->insert(id_, this);
+    file_->functions_by_id_->insert(&id_, this);
 }
 
 cov_block_t *

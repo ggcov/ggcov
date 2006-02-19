@@ -157,7 +157,6 @@ private:
     gboolean read_old_bbg_file_common(covio_t *);
     gboolean read_old_bbg_file(covio_t *);
     gboolean read_oldplus_bbg_file(covio_t *);
-    const char *read_rh_funcid(covio_t *io) const;
     gboolean read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version);
     gboolean read_gcc33_bbg_file(covio_t *);
     gboolean read_gcc34l_bbg_file(covio_t *);
@@ -194,7 +193,7 @@ private:
     ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char, cov_function_t> *functions_by_name_;
     /* extra hashtable needed for RH-hacked gcc3.4 formats */
-    hashtable_t<const char, cov_function_t> *functions_by_id_;
+    hashtable_t<gnb_u64_t, cov_function_t> *functions_by_id_;
     ptrarray_t<cov_line_t> *lines_;
     cov_line_t *null_line_; /* returned for all uninstrumented lines */
 

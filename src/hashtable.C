@@ -19,7 +19,7 @@
 
 #include "hashtable.H"
 
-CVSID("$Id: hashtable.C,v 1.4 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: hashtable.C,v 1.5 2006-02-19 04:27:51 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -48,6 +48,40 @@ direct_compare(gconstpointer v1, gconstpointer v2)
     	return 0;
 }
 
+/* copied from glib's g_str_hash() */
+guint
+gnb_u64_t_hash (gconstpointer key)
+{
+    const char *p = (const char *)key;
+    unsigned int i;
+    guint h = *p;
+
+    for (i = 0 ; i < sizeof(gnb_u64_t) ; i++)
+	h = (h << 5) - h + p[i];
+
+    return h;
+}
+
+static gboolean
+gnb_u64_t_equal(gconstpointer v1, gconstpointer v2)
+{
+    return *(gnb_u64_t *)v1 == *(gnb_u64_t *)v2;
+}
+
+static int
+gnb_u64_t_compare(gconstpointer v1, gconstpointer v2)
+{
+    gnb_u64_t u1 = *(gnb_u64_t *)v1;
+    gnb_u64_t u2 = *(gnb_u64_t *)v2;
+
+    if (u1 < u2)
+    	return -1;
+    else if (u1 > u2)
+    	return 1;
+    else
+    	return 0;
+}
+
 template<> GHashFunc hashtable_ops_t<char>::hash = g_str_hash;
 template<> GCompareFunc hashtable_ops_t<char>::compare = g_str_equal;
 template<> GCompareFunc hashtable_ops_t<char>::sort_compare = string_compare;
@@ -59,6 +93,10 @@ template<> GCompareFunc hashtable_ops_t<const char>::sort_compare = string_compa
 template<> GHashFunc hashtable_ops_t<void>::hash = g_direct_hash;
 template<> GCompareFunc hashtable_ops_t<void>::compare = g_direct_equal;
 template<> GCompareFunc hashtable_ops_t<void>::sort_compare = direct_compare;
+
+template<> GHashFunc hashtable_ops_t<gnb_u64_t>::hash = gnb_u64_t_hash;
+template<> GCompareFunc hashtable_ops_t<gnb_u64_t>::compare = gnb_u64_t_equal;
+template<> GCompareFunc hashtable_ops_t<gnb_u64_t>::sort_compare = gnb_u64_t_compare;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
