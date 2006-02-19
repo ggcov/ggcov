@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.63 2006-02-19 04:34:52 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.64 2006-02-19 04:44:53 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -54,6 +54,7 @@ void *cov_file_t::files_model_;
  * but the .gcda file doesn't use a 0 tag as a terminator.
  */
 #define BBG_VERSION_GCC34_RH	_NEW_VERSION(3,4,'R')
+#define BBG_VERSION_GCC34_MDK  	_NEW_VERSION(3,4,'M')	/* Mandrake crud */
 #define BBG_VERSION_GCC33   	_NEW_VERSION(3,3,'p')
 #define BBG_VERSION_GCC33_SUSE	_NEW_VERSION(3,3,'S')   /* SUSE crud */
 #define BBG_VERSION_GCC33_MDK	_NEW_VERSION(3,3,'M')   /* Mandrake crud */
@@ -873,6 +874,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     case BBG_VERSION_GCC33:
     	break;
     case BBG_VERSION_GCC34_RH:
+    case BBG_VERSION_GCC34_MDK:
     case BBG_VERSION_GCC40:
     case BBG_VERSION_GCC40_RH:
     	if (expect_version == BBG_VERSION_GCC34)
@@ -901,6 +903,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 	{
 	case GCOV_TAG_FUNCTION:
 	    if (format_version_ == BBG_VERSION_GCC34_RH ||
+	        format_version_ == BBG_VERSION_GCC34_MDK ||
 	    	format_version_ == BBG_VERSION_GCC40 ||
 		format_version_ == BBG_VERSION_GCC40_RH)
 	    {
@@ -1326,6 +1329,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 	{
 	case GCOV_TAG_FUNCTION:
 	    if (format_version_ == BBG_VERSION_GCC34_RH ||
+	        format_version_ == BBG_VERSION_GCC34_MDK ||
 	    	format_version_ == BBG_VERSION_GCC40 ||
 	    	format_version_ == BBG_VERSION_GCC40_RH)
 	    {
@@ -1407,6 +1411,7 @@ cov_file_t::read_da_file(covio_t *io)
     {
     case BBG_VERSION_GCC34:
     case BBG_VERSION_GCC34_RH:
+    case BBG_VERSION_GCC34_MDK:
     case BBG_VERSION_GCC40:
     case BBG_VERSION_GCC40_RH:
 	if (little_endian_)
