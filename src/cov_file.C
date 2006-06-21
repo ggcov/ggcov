@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.65 2006-06-20 15:24:52 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.66 2006-06-20 15:28:26 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -45,6 +45,7 @@ void *cov_file_t::files_model_;
 	 ((gnb_u32_t)('0'+(minor)/10)<<16)| \
 	 ((gnb_u32_t)('0'+(minor)%10)<<8)| \
 	 ((gnb_u32_t)(release)))
+#define BBG_VERSION_GCC41   	_NEW_VERSION(4,1,'*')
 #define BBG_VERSION_GCC40_RH   	_NEW_VERSION(4,0,'R')
 #define BBG_VERSION_GCC40    	_NEW_VERSION(4,0,'*')
 #define BBG_VERSION_GCC34    	_NEW_VERSION(3,4,'*')
@@ -877,6 +878,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     case BBG_VERSION_GCC34_MDK:
     case BBG_VERSION_GCC40:
     case BBG_VERSION_GCC40_RH:
+    case BBG_VERSION_GCC41:
     	if (expect_version == BBG_VERSION_GCC34)
 	    expect_version = format_version_;
 	/* fall through */
@@ -905,7 +907,8 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 	    if (format_version_ == BBG_VERSION_GCC34_RH ||
 	        format_version_ == BBG_VERSION_GCC34_MDK ||
 	    	format_version_ == BBG_VERSION_GCC40 ||
-		format_version_ == BBG_VERSION_GCC40_RH)
+		format_version_ == BBG_VERSION_GCC40_RH ||
+		format_version_ == BBG_VERSION_GCC41)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		estring filename;
@@ -1316,7 +1319,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
     {
     	if (tag == 0 &&
 	    (format_version_ == BBG_VERSION_GCC40 ||
- 	     format_version_ == BBG_VERSION_GCC40_RH))
+ 	     format_version_ == BBG_VERSION_GCC40_RH ||
+ 	     format_version_ == BBG_VERSION_GCC41))
 	    break;  /* end of file */
 
 	if (!io->read_u32(length))
@@ -1331,7 +1335,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 	    if (format_version_ == BBG_VERSION_GCC34_RH ||
 	        format_version_ == BBG_VERSION_GCC34_MDK ||
 	    	format_version_ == BBG_VERSION_GCC40 ||
-	    	format_version_ == BBG_VERSION_GCC40_RH)
+	    	format_version_ == BBG_VERSION_GCC40_RH ||
+	    	format_version_ == BBG_VERSION_GCC41)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		gnb_u64_t funcid;
@@ -1414,6 +1419,7 @@ cov_file_t::read_da_file(covio_t *io)
     case BBG_VERSION_GCC34_MDK:
     case BBG_VERSION_GCC40:
     case BBG_VERSION_GCC40_RH:
+    case BBG_VERSION_GCC41:
 	if (little_endian_)
 	{
 	    dprintf0(D_FILES, "Detected gcc 3.4 or 4.0 (little endian) .gcda format\n");
