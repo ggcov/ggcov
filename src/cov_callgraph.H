@@ -25,6 +25,9 @@
 
 class cov_function_t;
 
+extern void cov_add_callnodes(cov_file_t*);
+extern void cov_add_callarcs(cov_file_t*);
+
 /*
  * Node in the callgraph, representing a function
  * which may be one of the covered functions or

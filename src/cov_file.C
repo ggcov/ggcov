@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.64 2006-02-19 04:44:53 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.65 2006-06-20 15:24:52 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -1338,7 +1338,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 		if (!io->read_u64(funcid))
 		    fn = 0;
 		else if ((fn = functions_by_id_->lookup(&funcid)) == 0)
-	    	    da_failed1("unexpected function id \"%s\"", funcid);
+	    	    da_failed1("unexpected function id %llu", (unsigned long long)funcid);
 	    }
 	    else
 	    {
