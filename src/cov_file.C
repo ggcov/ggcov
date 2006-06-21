@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.68 2006-06-21 13:41:03 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.69 2006-06-21 13:47:36 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -45,6 +45,7 @@ void *cov_file_t::files_model_;
 	 ((gnb_u32_t)('0'+(minor)/10)<<16)| \
 	 ((gnb_u32_t)('0'+(minor)%10)<<8)| \
 	 ((gnb_u32_t)(release)))
+#define BBG_VERSION_GCC41_UBU	_NEW_VERSION(4,1,'p')	/* Ubuntu Edgy */
 #define BBG_VERSION_GCC41   	_NEW_VERSION(4,1,'*')
 #define BBG_VERSION_GCC40_UBU  	_NEW_VERSION(4,0,'U')	/* Ubuntu Dapper Drake */
 #define BBG_VERSION_GCC40_RH   	_NEW_VERSION(4,0,'R')
@@ -55,6 +56,7 @@ void *cov_file_t::files_model_;
  * between gcc 3.4.0 and gcc 4.0.  It has funcids in the .gcno file
  * but the .gcda file doesn't use a 0 tag as a terminator.
  */
+#define BBG_VERSION_GCC34_UBU	_NEW_VERSION(3,4,'U')
 #define BBG_VERSION_GCC34_RH	_NEW_VERSION(3,4,'R')
 #define BBG_VERSION_GCC34_MDK  	_NEW_VERSION(3,4,'M')	/* Mandrake crud */
 #define BBG_VERSION_GCC33   	_NEW_VERSION(3,3,'p')
@@ -875,12 +877,14 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 	/* fall through */
     case BBG_VERSION_GCC33:
     	break;
+    case BBG_VERSION_GCC34_UBU:
     case BBG_VERSION_GCC34_RH:
     case BBG_VERSION_GCC34_MDK:
     case BBG_VERSION_GCC40:
     case BBG_VERSION_GCC40_RH:
     case BBG_VERSION_GCC40_UBU:
     case BBG_VERSION_GCC41:
+    case BBG_VERSION_GCC41_UBU:
     	if (expect_version == BBG_VERSION_GCC34)
 	    expect_version = format_version_;
 	/* fall through */
@@ -906,12 +910,15 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    if (format_version_ == BBG_VERSION_GCC34_RH ||
+	    if (
+	        format_version_ == BBG_VERSION_GCC34_UBU ||
+	        format_version_ == BBG_VERSION_GCC34_RH ||
 	        format_version_ == BBG_VERSION_GCC34_MDK ||
 	    	format_version_ == BBG_VERSION_GCC40 ||
 		format_version_ == BBG_VERSION_GCC40_RH ||
 		format_version_ == BBG_VERSION_GCC40_UBU ||
-		format_version_ == BBG_VERSION_GCC41)
+		format_version_ == BBG_VERSION_GCC41 ||
+		format_version_ == BBG_VERSION_GCC41_UBU)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		estring filename;
@@ -1324,7 +1331,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 	    (format_version_ == BBG_VERSION_GCC40 ||
  	     format_version_ == BBG_VERSION_GCC40_RH ||
  	     format_version_ == BBG_VERSION_GCC40_UBU ||
- 	     format_version_ == BBG_VERSION_GCC41))
+ 	     format_version_ == BBG_VERSION_GCC41 ||
+	     format_version_ == BBG_VERSION_GCC41_UBU))
 	    break;  /* end of file */
 
 	if (!io->read_u32(length))
@@ -1336,12 +1344,14 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    if (format_version_ == BBG_VERSION_GCC34_RH ||
+	    if (format_version_ == BBG_VERSION_GCC34_UBU ||
+	        format_version_ == BBG_VERSION_GCC34_RH ||
 	        format_version_ == BBG_VERSION_GCC34_MDK ||
 	    	format_version_ == BBG_VERSION_GCC40 ||
 	    	format_version_ == BBG_VERSION_GCC40_RH ||
 	    	format_version_ == BBG_VERSION_GCC40_UBU ||
-	    	format_version_ == BBG_VERSION_GCC41)
+	    	format_version_ == BBG_VERSION_GCC41 ||
+		format_version_ == BBG_VERSION_GCC41_UBU)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		gnb_u64_t funcid;
@@ -1420,12 +1430,14 @@ cov_file_t::read_da_file(covio_t *io)
     switch (format_version_)
     {
     case BBG_VERSION_GCC34:
+    case BBG_VERSION_GCC34_UBU:
     case BBG_VERSION_GCC34_RH:
     case BBG_VERSION_GCC34_MDK:
     case BBG_VERSION_GCC40:
     case BBG_VERSION_GCC40_RH:
     case BBG_VERSION_GCC40_UBU:
     case BBG_VERSION_GCC41:
+    case BBG_VERSION_GCC41_UBU:
 	if (little_endian_)
 	{
 	    dprintf0(D_FILES, "Detected gcc 3.4 or 4.0 (little endian) .gcda format\n");
