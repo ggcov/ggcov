@@ -95,6 +95,13 @@ struct cov_location_var
     	loc_.filename = (filename != 0 ? g_strdup(filename) : 0);
     	loc_.lineno = lineno;
     }
+    void set(char *filename, unsigned long lineno)
+    {
+    	if (loc_.filename != 0)
+	    g_free(loc_.filename);
+    	loc_.filename = filename;
+    	loc_.lineno = lineno;
+    }
     void invalidate()
     {
     	if (loc_.filename != 0)

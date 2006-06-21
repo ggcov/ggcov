@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.67 2006-06-20 16:01:45 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.68 2006-06-21 13:41:03 gnb Exp $");
 
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
@@ -1567,7 +1567,7 @@ cov_file_t::read_12bp_file(covio_t *io)
 		if (p != 0)
 		{
 	    	    p += sizeof(c_symbol_ref)-1;
-	    	    tok_t tok(p, " \t\"()");
+	    	    tok_t tok((const char *)p, " \t\"()");
 		    const char *t = tok.next();
 		    dprintf5(D_FILES, "%s: fromfunc=%s bb=%d tofunc=%s loc=%s\n",
 		    	    fn, fromfunc->name(), bb->bindex(), t, loc.describe());
