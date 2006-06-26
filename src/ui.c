@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.30 2005-09-07 00:23:03 gnb Exp $");
+CVSID("$Id: ui.c,v 1.31 2006-06-26 03:00:39 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -99,11 +99,7 @@ ui_combo_clear(GtkCombo *combo)
 #define UI_DEBUG 0
 #endif
 
-const char *ui_glade_path = 
-#if UI_DEBUG
-"ui:../../ui:"
-#endif
-PKGDATADIR;
+static string_var ui_glade_path = PKGDATADIR;
 
 static char *
 find_file(const char *path, const char *base)
@@ -124,6 +120,13 @@ find_file(const char *path, const char *base)
     return 0;
 }
 
+void
+ui_prepend_glade_path(const char *dir)
+{
+    ui_glade_path = g_strconcat(dir, ":", ui_glade_path.data(), 0);
+}
+
+
 #if GTK2
 #define LIBGLADE    "-glade2"
 #else
@@ -142,7 +145,7 @@ ui_load_tree(const char *root)
     {
 	filename = find_file(ui_glade_path, gladefile);
 	if (filename == 0)
-	    fatal("can't find %s in path %s\n", gladefile, ui_glade_path);
+	    fatal("can't find %s in path %s\n", gladefile, ui_glade_path.data());
 	dprintf1(D_UICORE, "Loading Glade UI from file \"%s\"\n", filename);
     }
 

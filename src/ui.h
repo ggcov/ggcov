@@ -32,7 +32,7 @@
 #endif
 
 GladeXML *ui_load_tree(const char *root);
-extern const char *ui_glade_path;
+void ui_prepend_glade_path(const char *dir);
 GtkWidget *ui_get_dummy_menu(GladeXML *xml, const char *name);
 
 

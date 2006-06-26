@@ -37,7 +37,7 @@
 #include <libgnomeui/libgnomeui.h>
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.51 2006-01-29 22:52:48 gnb Exp $");
+CVSID("$Id: ggcov.c,v 1.52 2006-06-26 03:00:39 gnb Exp $");
 
 #define DEBUG_GTK 1
 
@@ -265,8 +265,31 @@ on_windows_new_reportwin_activated(GtkWidget *w, gpointer userdata)
 #include "ui/ggcov32.xpm"
 
 static void
-ui_create(void)
+ui_create(const char *full_argv0)
 {
+    /*
+     * If we're being run from the source directory, fiddle the
+     * glade search path to point to ../ui first.  This means
+     * we can run ggcov before installation without having to
+     * compile with UI_DEBUG=1.
+     */
+    estring dir = file_make_absolute(full_argv0);
+    const char *p = strrchr(dir, '/');
+    if (p != 0 &&
+	(p -= 4) >= dir.data() &&
+	!strncmp(p, "/src/", 5))
+    {
+	dir.truncate_to(p - dir);
+	dir.append_string("/ui");
+	if (!file_is_directory(dir))
+	{
+	    fprintf(stderr, "ggcov: running from source directory, "
+			    "so prepending %s to glade search path\n",
+			    dir.data());
+	    ui_prepend_glade_path(dir);
+	}
+    }
+
     ui_register_windows_entry("New Summary...",
     			      on_windows_new_summarywin_activated, 0);
     ui_register_windows_entry("New File List...",
@@ -503,7 +526,7 @@ main(int argc, char **argv)
     cov_read_files(files);
 
     cov_dump(stderr);
-    ui_create();
+    ui_create(argv[0]);
     gtk_main();
 
     return 0;
