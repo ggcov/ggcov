@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: common.sh,v 1.15 2006-02-19 03:47:11 gnb Exp $
+# $Id: common.sh,v 1.16 2006-06-26 02:55:39 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -424,6 +424,18 @@ while (<STDIN>)
     	# entire for loop on a line...the gcov algorithm
 	# changed historically and ggcov uses the old crappy
 	# algorithm, so just ignore these lines
+	$zap = 1;
+    }
+    elsif ($text =~ m/^\s*catch\s*\(.*\)\s*$/)
+    {
+	# catch statement; gcc 4.1 + gcov seem to account catch
+	# statements differently than tggcov.  Our test code is
+	# organised so that the catch block code is on sepearate
+	# lines so the count for the catch statement itself is
+	# redundant.
+	# TODO: need to work out why in detail.
+	# TODO: test the case where the catch statement and its
+	#       block are all on the same line.
 	$zap = 1;
     }
     elsif ($text =~ m/^\s*$/)
