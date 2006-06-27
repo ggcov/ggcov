@@ -25,12 +25,6 @@
 #include <glade/glade.h>
 #include <gdk/gdkkeysyms.h>
 
-#ifdef __cplusplus
-#define GLADE_CALLBACK extern "C"
-#else
-#define GLADE_CALLBACK
-#endif
-
 GladeXML *ui_load_tree(const char *root);
 void ui_prepend_glade_path(const char *dir);
 GtkWidget *ui_get_dummy_menu(GladeXML *xml, const char *name);

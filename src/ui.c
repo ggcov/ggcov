@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.31 2006-06-26 03:00:39 gnb Exp $");
+CVSID("$Id: ui.c,v 1.32 2006-06-27 13:31:13 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -126,6 +126,52 @@ ui_prepend_glade_path(const char *dir)
     ui_glade_path = g_strconcat(dir, ":", ui_glade_path.data(), 0);
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+extern struct { const char *name; GCallback func; } ui_callbacks[];   /* in glade_callbacks.c */
+
+/*
+ * Connect up named functions for signal handlers.
+ */
+static void
+ui_register_callbacks(GladeXML *xml)
+{
+    int i;
+
+    for (i = 0 ; ui_callbacks[i].name ; i++)
+	glade_xml_signal_connect(xml, ui_callbacks[i].name, ui_callbacks[i].func);
+}
+
+/*
+ * Unfortunately, we can't use glade_xml_signal_connect()
+ * to hook up our custom widget creation functions, we have
+ * to do it this way instead.  Fmeh.
+ */
+static GtkWidget *
+ui_custom_widget_handler(
+    GladeXML *xml,
+    gchar *func_name,
+    gchar *name,
+    gchar *string1,
+    gchar *string2,
+    gint int1,
+    gint int2,
+    gpointer user_data)
+{
+    int i;
+
+    for (i = 0 ; ui_callbacks[i].name ; i++)
+    {
+	if (!strcmp(func_name, ui_callbacks[i].name))
+	{
+	    /* TODO: pass down some of the string1 et al arguments */
+	    return ((GtkWidget *(*)(void))ui_callbacks[i].func)();
+	}
+    }
+    return 0;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #if GTK2
 #define LIBGLADE    "-glade2"
@@ -140,7 +186,7 @@ ui_load_tree(const char *root)
     /* load & create the interface */
     static char *filename = 0;
     static const char gladefile[] = PACKAGE LIBGLADE ".glade";
-    
+
     if (filename == 0)
     {
 	filename = find_file(ui_glade_path, gladefile);
@@ -148,6 +194,8 @@ ui_load_tree(const char *root)
 	    fatal("can't find %s in path %s\n", gladefile, ui_glade_path.data());
 	dprintf1(D_UICORE, "Loading Glade UI from file \"%s\"\n", filename);
     }
+
+    glade_set_custom_handler(ui_custom_widget_handler, (gpointer)0);
 
 #if GTK2
     xml = glade_xml_new(filename, root, /* translation domain */PACKAGE);
@@ -157,9 +205,9 @@ ui_load_tree(const char *root)
 
     if (xml == 0)
     	fatal("can't load Glade UI from file \"%s\"\n", filename);
-    
+
     /* connect the signals in the interface */
-    glade_xml_signal_autoconnect(xml);
+    ui_register_callbacks(xml);
 
     return xml;
 }

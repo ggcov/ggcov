@@ -28,4 +28,10 @@
 #define GTK2 0
 #endif
 
+#ifdef __cplusplus
+#define GLADE_CALLBACK extern "C"
+#else
+#define GLADE_CALLBACK
+#endif
+
 #endif /* _ggcov_uicommon_h_ */

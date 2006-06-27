@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.64 2006-02-19 04:25:32 gnb Exp $
+# $Id: Makefile.am,v 1.65 2006-06-27 13:29:50 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -71,7 +71,7 @@ endif
 bin_PROGRAMS=	$(GUIPROG) tggcov $(WEBPROG)
 EXTRA_PROGRAMS= ggcov ggcov-webdb
 
-ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
+gui_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		gnbstackedbar.h gnbstackedbar.c \
 		confsection.H confsection.C \
 		prefs.H prefs.C \
@@ -88,8 +88,8 @@ ggcov_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		canvas_function_popup.H canvas_function_popup.C \
 		diagwin.H diagwin.C \
 		utils.H utils.C \
-		$(LIBCOV_STATIC_SOURCES) \
 		help.c ggcov.c
+ggcov_SOURCES=	$(gui_SOURCES) $(LIBCOV_STATIC_SOURCES) glade_callbacks.c
 
 INCLUDES=	$(BASEINCLUDES) -DPKGDATADIR="\"$(pkgdatadir)\"" \
 		-DPREFIX="\"$(prefix)\"" -DDATADIR="\"$(datadir)\"" \
@@ -132,7 +132,15 @@ licence.c: $(top_srcdir)/COPYING
 	    -e 's/^\(.*\)$$/"\1\\n"/' \
 	    < $(top_srcdir)/COPYING > $@
 
-EXTRA_CLEAN=		licence.c
+# glade_callbacks.c is automatically generated to provide mappings
+# of names to function pointers for functions marked with GLADE_CALLBACK,
+# which are used as either signal handlers or custom widget create
+# functions in the glade file.  This means we don't need to use the
+# --export-dynamic linker flag anymore.
+glade_callbacks.c: $(gui_SOURCES)
+	perl gencallbacks.pl $(gui_SOURCES) > $@ || ($(RM) $@ ; exit 1)
+
+EXTRA_CLEAN=		licence.c glade_callbacks.c
 
 noinst_PROGRAMS=	bbdump filetest mangletest \
 			newbbgdump phptest popttest

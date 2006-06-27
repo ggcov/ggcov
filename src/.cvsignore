@@ -12,3 +12,4 @@ popttest
 ggcov-webdb
 tggcov
 *.bck
+glade_callbacks.c

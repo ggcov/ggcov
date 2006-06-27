@@ -252,7 +252,7 @@ gnb_stacked_bar_create_pixmap(GnbStackedBar *sbar)
 }
 
 
-GtkWidget *
+GLADE_CALLBACK GtkWidget *
 gnb_stacked_bar_new(void)
 {
     GtkWidget *widget;

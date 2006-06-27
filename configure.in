@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.69 2006-02-19 03:40:00 gnb Exp $
+dnl $Id: configure.in,v 1.70 2006-06-27 13:28:47 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -161,6 +161,12 @@ if test x$gui = xyes ; then
     if test $gtk2 = yes ; then
 	PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.4.0,have_gconf=yes)
 	PKG_CHECK_MODULES(GGCOV_CLI, glib-2.0 >= 2.0.0)
+
+	dnl we don't need --export-dynamic anymore, remove it
+	dnl so the executable will be smaller
+	GGCOV_GUI_LIBS=`echo "$GGCOV_GUI_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
+	GCONF_LIBS=`echo "$GCONF_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
+
 	AC_CHECK_LIB(gtk-x11-2.0, gtk_text_buffer_select_range,
 		  AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE,1,[
      * The function gtk_text_buffer_select_range may or may
