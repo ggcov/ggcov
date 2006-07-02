@@ -1,3 +1,56 @@
+Sun Jul  2 19:04:17 2006  Greg Banks <gnb@alphalink.com.au>
+	* Release 0.8
+
+	* Significant improvements to the callgraph diagram layout algorithm,
+	which now generates more visually pleasing results for a wider range
+	of possible callgraphs.
+	* When mousing over callgraph nodes in the gtk gui, show a popup
+	containing the same information as the node box but actually large
+	enough to be visible on nontrivial diagrams.
+	* Add to the gtk gui a -w option to specify window(s) to open initially.
+	* Support file format from gcc 3.4 on Mandrake 10.2.
+	* Handle gcc 4.1.1 data file formats.
+	* Handle file format from the gcc 4.0.3 in Ubuntu Dapper.
+	* Patch by Jim Huang to support gcc 3.4 and gcc 4.1 on Ubuntu.
+	* Automatically detect when ggcov is being run from it's source
+	directory and adjust the libglade search path to find the
+	uninstalled glade file first.  This avoids the need to build
+	with UI_DEBUG=1 in order to run ggcov before install.
+	* Reduce memory usage in various ways, including keeping some
+	strings uniquely in a hashtable, and using u64 instead of string
+	for gcc4.0 function id.
+	* Don't rely on the build system providing -Wl,--export-dynamic for
+	libglade to work after the ggcov executable is stripped, instead
+	use a Perl script to generate a C array which maps names to function
+	pointers.  This is needed for Ubuntu, and also makes the exe smaller.
+	* Centralise the common parts of commandline option processing and
+	interpretation in cov.C.  Instead of one `recursive' flag in each
+	source file containing a main(), there's now exactly one.
+	* Combine "graph2win" and "legowin" into "diagwin"
+	* Rationalise debug tokens.
+	* Reorganise covio_t code.
+	* Centralise the dbounds_t structure and some defines in a new header.
+	Move various code from the callgraph diagram to methods of dbounds_t.
+	* Add a scene generator which generates no output but performs various
+	geometrical checks for poor diagram layout; particularly useful for
+	objective testing of the callgraph diagram layout code.
+	* Add a --dump-callgraph option to tggcov to dump the callgraph in an
+	ASCII form suitable for checking in tests.
+	* Add test 15, which exercises the callgraph diagram layout algorithm
+	using a Perl script to generate C code from simple graph descriptions.
+	* Running a runtest script with ENABLE_DB_FLAG in the enviroment will
+	enable the -db gcc flag, generating a foo.c.12.bp file.
+	* Add test018 which exercises the 12bp callgraph reading code.
+	* Fix logic bug: when accounting coverage status of branches,
+	branches cannot ever be partially covered.
+	* Fixed compile warnings from gcc 4.1.1.
+	* Don't complain about R_386_GOT32 relocs in i386 code.
+	* Fix an invalid free in test018 (thanks to Jim Huang for the report)
+	* Callgraph handles calls to functions with attribute(pure)
+	* Improve filtering of line coverage results in test cases, to avoid
+	spurious test failures due to differing algorithms for counting
+	multi-block lines (the for(;;) problem) and for lone "catch" statements.
+
 Mon Sep 12 00:21:42 2005  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.7
 
