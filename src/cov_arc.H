@@ -127,8 +127,6 @@ public:
 		return cov::SUPPRESSED;
 	    else if (count_)
 		return cov::COVERED;
-	    else if (from_->count_)
-		return cov::PARTCOVERED;
 	    else
 		return cov::UNCOVERED;
 	}
