@@ -19,7 +19,7 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_line.C,v 1.6 2005-09-11 09:22:37 gnb Exp $");
+CVSID("$Id: cov_line.C,v 1.7 2006-07-10 10:17:41 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -31,6 +31,17 @@ cov_line_t::~cov_line_t()
 {
     while (blocks_ != 0)
     	blocks_ = g_list_remove_link(blocks_, blocks_);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+cov_function_t *
+cov_line_t::function() const
+{
+    if (blocks_ == 0)
+	return 0;
+    cov_block_t *b = (cov_block_t *)blocks_->data;
+    return b->function();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

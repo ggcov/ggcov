@@ -23,6 +23,7 @@
 #include "string_var.H"
 
 class cov_file_t;
+class cov_function_t;
 
 class cov_line_t
 {
@@ -51,6 +52,7 @@ public:
     {
     	return blocks_;
     }
+    cov_function_t *function() const;
     
     static cov_line_t *find(const cov_location_t *);
     
