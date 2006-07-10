@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2004 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2006 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,6 +62,9 @@ public:
 private:
     enum columns
     {
+#if GTK2
+	COL_FLOW,
+#endif
     	COL_LINE,
     	COL_BLOCK,
     	COL_COUNT,
@@ -76,11 +79,20 @@ private:
     void populate();
     void update();
     void update_title_buttons();
+#if GTK2
+    void delete_flows();
+    void update_flow_window();
+    void update_flows();
+    GtkWidget *create_flow_canvas(cov_function_t *, int w, int h);
+#endif
     cov_function_t *selected_function() const;
     gboolean save_with_annotations(const char *filename);
     static int delayed_function_activate(gpointer userdata);
     static void on_source_filename_activate(GtkWidget *w, gpointer userdata);
     static void on_source_function_activate(GtkWidget *w, gpointer userdata);
+#if GTK2
+    static void on_vadjustment_value_changed(GtkAdjustment *, gpointer);
+#endif
 
     static sourcewin_t *from_widget(GtkWidget *w)
     {
@@ -110,6 +122,19 @@ private:
     GtkWidget *right_pad_label_;
 
     GtkWidget *saveas_dialog_;
+
+#if GTK2
+    struct flow_t
+    {
+	GtkWidget *canvas_;
+	int bufy_;		    /* buffer y coord of canvas */
+	cov_function_t *function_;
+	unsigned int shown_;	    /* generation number for showing flows */
+    };
+    list_t<flow_t> flows_;
+    unsigned int flow_shown_;
+    gboolean text_initialised_;
+#endif
 
     friend void on_source_saveas_ok_button_clicked(GtkWidget *w, gpointer data);
     friend void on_source_saveas_cancel_button_clicked(GtkWidget *w, gpointer data);

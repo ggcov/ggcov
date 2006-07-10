@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2006 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,12 @@
 #include "summarywin.H"
 #include "diagwin.H"
 #include "flow_diagram.H"
+#include "canvas_scenegen.H"
 #include "cov.H"
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.28 2006-07-10 10:35:15 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.29 2006-07-10 10:53:36 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -36,11 +37,231 @@ CVSID("$Id: sourcewin.C,v 1.28 2006-07-10 10:35:15 gnb Exp $");
 list_t<sourcewin_t> sourcewin_t::instances_;
 
 /* column widths, in *characters* */
-const int sourcewin_t::column_widths_[sourcewin_t::NUM_COLS] = { 8, 16, 8, -1 };
+const int sourcewin_t::column_widths_[sourcewin_t::NUM_COLS] = { 8, 8, 16, 8, -1 };
 const char *sourcewin_t::column_names_[sourcewin_t::NUM_COLS] = {
-    "Line", "Blocks", "Count", "Source"
+    "Flow", "Line", "Blocks", "Count", "Source"
 };
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+#if GTK2
+
+void
+sourcewin_t::on_vadjustment_value_changed(
+    GtkAdjustment *adj,
+    gpointer userdata)
+{
+    sourcewin_t *sw = (sourcewin_t *)userdata;
+
+    sw->update_flows();
+}
+
+void
+sourcewin_t::update_flow_window()
+{
+    GtkTextView *tv = GTK_TEXT_VIEW(text_);
+
+    dprintf0(D_SOURCEWIN, "sourcewin_t::update_flows\n");
+
+    if (!GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])->active)
+    {
+	gtk_text_view_set_border_window_size(tv, GTK_TEXT_WINDOW_LEFT, 0);
+	delete_flows();
+	return;
+    }
+
+    // make the left child visible
+    gtk_text_view_set_border_window_size(tv, GTK_TEXT_WINDOW_LEFT,
+		column_widths_[COL_FLOW] * font_width_);
+
+    if (GTK_WIDGET_REALIZED(text_))
+    {
+	// copy the text window's background to the left child
+	GtkStyle *style = gtk_widget_get_style(text_);
+	gdk_window_set_background(
+		gtk_text_view_get_window(tv, GTK_TEXT_WINDOW_LEFT),
+		&style->base[GTK_STATE_NORMAL]);
+    }
+}
+
+void
+sourcewin_t::update_flows()
+{
+    GtkTextView *tv = GTK_TEXT_VIEW(text_);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(tv);
+
+    if (!GTK_WIDGET_REALIZED(text_))
+	return;
+    if (!GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])->active)
+	return;
+
+    cov_file_t *f;
+    if ((f = cov_file_t::find(filename_)) == 0)
+    	return;
+
+    GdkRectangle rect;
+    gtk_text_view_get_visible_rect(tv, &rect);
+    dprintf4(D_SOURCEWIN, "    visible rect={%u,%u,%u,%u}\n",
+	    rect.x, rect.y, rect.width, rect.height);
+
+    GtkTextIter begin_iter;
+    GtkTextIter end_iter;
+    gtk_text_view_get_iter_at_location(tv, &begin_iter,
+		    rect.x, rect.y);
+    gtk_text_view_get_iter_at_location(tv, &end_iter,
+		    rect.x, rect.y+rect.height);
+
+    unsigned int begin_lineno = gtk_text_iter_get_line(&begin_iter);
+    unsigned int end_lineno = gtk_text_iter_get_line(&end_iter);
+
+    dprintf2(D_SOURCEWIN, "    begin=%u end=%u\n", begin_lineno, end_lineno);
+
+    flow_shown_++;
+    cov_function_t *oldfn = 0, *fn;
+    unsigned int lineno;
+    if (begin_lineno < 1)
+	begin_lineno = 1;
+    if (end_lineno > f->num_lines())
+	end_lineno = f->num_lines();
+    for (lineno = begin_lineno ; lineno <= end_lineno ; lineno++)
+    {
+	cov_line_t *ln = f->nth_line(lineno);
+	if (ln == 0 || (fn = ln->function()) == 0 || fn == oldfn)
+	    continue;
+	oldfn = fn;
+
+	dprintf2(D_SOURCEWIN, "    %u: fn=%s\n", lineno, fn->name());
+
+	list_iterator_t<flow_t> fiter;
+	flow_t *flow = 0;
+	for (fiter = flows_.first() ; fiter != (flow_t *)0 ; ++fiter)
+	{
+	    if ((*fiter)->function_ == fn)
+	    {
+		flow = *fiter;
+		break;
+	    }
+	}
+	if (flow == 0)
+	{
+	    flow = new flow_t;
+	    flow->function_ = fn;
+	    flows_.append(flow);
+
+	    GtkTextIter first_iter, last_iter;
+	    gtk_text_buffer_get_iter_at_line(buffer, &first_iter,
+		    fn->get_first_location()->lineno);
+	    gtk_text_buffer_get_iter_at_line(buffer, &last_iter,
+		    fn->get_last_location()->lineno);
+
+	    int first_y, last_y, height;
+	    gtk_text_view_get_line_yrange(tv, &first_iter, &first_y, &height);
+	    gtk_text_view_get_line_yrange(tv, &last_iter, &last_y, &height);
+
+	    dprintf2(D_SOURCEWIN, "    y=%d height=%d\n",
+		    first_y-height, last_y-first_y+height);
+
+	    flow->bufy_ = first_y-height;
+	    flow->canvas_ = create_flow_canvas(flow->function_,
+					       column_widths_[COL_FLOW] * font_width_,
+					       last_y-first_y+height);
+	    gtk_text_view_add_child_in_window(tv, flow->canvas_,
+			    GTK_TEXT_WINDOW_LEFT, 0, 0);
+	}
+	int wx, wy;
+	gtk_text_view_buffer_to_window_coords(tv, GTK_TEXT_WINDOW_LEFT,
+		0, flow->bufy_, &wx, &wy);
+	dprintf2(D_SOURCEWIN, "    moving to %d,%d\n", 0, wy);
+	gtk_text_view_move_child(tv, flow->canvas_, 0, wy);
+	gtk_widget_show(flow->canvas_);
+	flow->shown_ = flow_shown_;
+    }
+
+    /* Hide flows not just shown */
+    list_iterator_t<flow_t> fiter;
+    for (fiter = flows_.first() ; fiter != (flow_t *)0 ; ++fiter)
+    {
+	flow_t *flow = *fiter;
+	if (flow->shown_ < flow_shown_)
+	{
+	    dprintf1(D_SOURCEWIN, "    hiding %s\n", flow->function_->name());
+	    gtk_widget_hide(flow->canvas_);
+	}
+    }
+}
+
+#define GDK_TO_RGB(gdkcol) \
+	RGB(((gdkcol)->red>>8), ((gdkcol)->green>>8), ((gdkcol)->blue>>8))
+
+static void
+set_diagram_colors(diagram_t *di)
+{
+    int i;
+
+    for (i = 0 ; i < cov::NUM_STATUS ; i++)
+    {
+	di->set_fg((cov::status_t)i, GDK_TO_RGB(foregrounds_by_status[i]));
+	di->set_bg((cov::status_t)i, GDK_TO_RGB(backgrounds_by_status[i]));
+    }
+}
+
+GtkWidget *
+sourcewin_t::create_flow_canvas(cov_function_t *fn, int w, int h)
+{
+    GtkWidget *canvas = gnome_canvas_new();
+
+    gtk_widget_set_usize(canvas, w, h);
+    gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas), 1.0);
+
+    GtkStyle *style = gtk_widget_get_style(text_);
+    gtk_widget_modify_bg(canvas, GTK_STATE_NORMAL,
+			 &style->base[GTK_STATE_NORMAL]);
+
+    dprintf4(D_SOURCEWIN, "bg[%d] = {%04x,%04x,%04x}\n",
+	    GTK_STATE_NORMAL,
+	    style->bg[GTK_STATE_NORMAL].red,
+	    style->bg[GTK_STATE_NORMAL].green,
+	    style->bg[GTK_STATE_NORMAL].blue);
+    dprintf4(D_SOURCEWIN, "base[%d] = {%04x,%04x,%04x}\n",
+	    GTK_STATE_NORMAL,
+	    style->base[GTK_STATE_NORMAL].red,
+	    style->base[GTK_STATE_NORMAL].green,
+	    style->base[GTK_STATE_NORMAL].blue);
+
+    diagram_t *diag = new flow_diagram_t(fn);
+
+    set_diagram_colors(diag);
+    diag->prepare();
+
+    scenegen_t *sg = new canvas_scenegen_t(GNOME_CANVAS(canvas));
+    diag->render(sg);
+    delete sg;
+
+    /* setup the canvas to show the whole diagram */
+    dbounds_t bounds;
+    diag->get_bounds(&bounds);
+    double ppu = h / bounds.height();
+    gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas), ppu);
+    gnome_canvas_set_scroll_region(GNOME_CANVAS(canvas),
+				   bounds.x1, bounds.y1,
+				   bounds.x2, bounds.y2);
+
+    return canvas;
+}
+
+void
+sourcewin_t::delete_flows()
+{
+    flow_t *flow;
+
+    while (flow = flows_.remove_head())
+    {
+	gtk_widget_hide(flow->canvas_);
+	gtk_widget_unref(flow->canvas_);
+	delete flow;
+    }
+}
+
+#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
@@ -63,6 +284,20 @@ sourcewin_t::setup_text()
 
     text_tags_[cov::SUPPRESSED] =
 	ui_text_create_tag(text_, "suppressed", &prefs.suppressed_foreground);
+
+#if GTK2
+    /*
+     * Setup the left child to show function flows.
+     */
+    GtkTextView *tv = GTK_TEXT_VIEW(text_);
+
+    // hook up the function to update the flows on scrolling
+    text_initialised_ = FALSE;
+    g_signal_connect_after(G_OBJECT(tv->vadjustment),
+			   "value-changed",
+			   G_CALLBACK(on_vadjustment_value_changed),
+			   (gpointer)this);
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -79,6 +314,7 @@ sourcewin_t::sourcewin_t()
 
     text_ = glade_xml_get_widget(xml, "source_text");
     setup_text();
+    column_checks_[COL_FLOW] = glade_xml_get_widget(xml, "source_flow_check");
     column_checks_[COL_LINE] = glade_xml_get_widget(xml, "source_line_check");
     column_checks_[COL_BLOCK] = glade_xml_get_widget(xml, "source_block_check");
     column_checks_[COL_COUNT] = glade_xml_get_widget(xml, "source_count_check");
@@ -90,6 +326,7 @@ sourcewin_t::sourcewin_t()
     functions_combo_ = glade_xml_get_widget(xml, "source_functions_combo");
     titles_hbox_ = glade_xml_get_widget(xml, "source_titles_hbox");
     left_pad_label_ = glade_xml_get_widget(xml, "source_left_pad_label");
+    title_buttons_[COL_FLOW] = glade_xml_get_widget(xml, "source_col_flow_button");
     title_buttons_[COL_LINE] = glade_xml_get_widget(xml, "source_col_line_button");
     title_buttons_[COL_BLOCK] = glade_xml_get_widget(xml, "source_col_block_button");
     title_buttons_[COL_COUNT] = glade_xml_get_widget(xml, "source_col_count_button");
@@ -106,6 +343,9 @@ sourcewin_t::sourcewin_t()
 
 sourcewin_t::~sourcewin_t()
 {
+#if GTK2
+//     delete_flows();
+#endif
     instances_.remove(this);
 }
 
@@ -219,7 +459,6 @@ sourcewin_t::populate()
     populate_filenames();
     populate_functions();
     update();
-    update_title_buttons();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -381,6 +620,11 @@ sourcewin_t::update()
     ui_text_end(text_);
     /* scroll back to the line we were at before futzing with the text */
     ui_text_vscroll_restore(text_, scrollval);
+
+#if GTK2
+    update_flow_window();
+    update_flows();
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -665,7 +909,7 @@ sourcewin_t::save_with_annotations(const char *filename)
     }
     
     /* Generate header line */
-    for (i = 0 ; i < NUM_COLS ; i++)
+    for (i = COL_LINE ; i < NUM_COLS ; i++)
     {
 	if (GTK_CHECK_MENU_ITEM(column_checks_[i])->active)
 	{
@@ -678,7 +922,7 @@ sourcewin_t::save_with_annotations(const char *filename)
     fputc('\n', fp);
 
     /* Generate separator line */
-    for (i = 0 ; i < NUM_COLS ; i++)
+    for (i = COL_LINE ; i < NUM_COLS ; i++)
     {
 	if (GTK_CHECK_MENU_ITEM(column_checks_[i])->active)
 	{
