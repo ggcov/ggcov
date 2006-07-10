@@ -20,7 +20,7 @@
 #include "flow_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: flow_diagram.C,v 1.4 2006-07-10 11:35:18 gnb Exp $");
+CVSID("$Id: flow_diagram.C,v 1.5 2006-07-10 11:39:33 gnb Exp $");
 
 #define NODE_WIDTH	6.0
 #define HMARGIN		0.5
@@ -30,7 +30,29 @@ CVSID("$Id: flow_diagram.C,v 1.4 2006-07-10 11:35:18 gnb Exp $");
 #define VGAP		6.0
 #define SLOTGAP		3.0
 #define ARROW_SIZE	3.0
-#define ARROW_SHAPE	1.0, 1.0, 1.0
+#define ARROW_SHAPE	1.0, 1.0, 0.75
+
+/* common denominator between SLOTGAP, NODE_WIDTH and HGAP */
+#define HQUANTUM	3.0
+#define HSLOTS(x)	((int)(((x)/HQUANTUM)+0.5))
+
+/* return the arc slot nearest the centre of the node at the given rank */
+static inline int
+slot_at_rank(int rank)
+{
+    if (rank < 0)
+	return 0;
+    return rank * HSLOTS(NODE_WIDTH + HGAP) + HSLOTS(SLOTGAP);
+}
+
+/* return the number of slots needed to fit the given maximum rank */
+static inline int
+slots_for_rank(int rank)
+{
+    if (rank < 0)
+	return 0;
+    return rank * HSLOTS(NODE_WIDTH + HGAP) + HSLOTS(NODE_WIDTH);
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -172,6 +194,23 @@ flow_diagram_t::generate_nodes()
  * Second pass: assign ranks to the nodes
  */
 
+/* calculate maximum of ranks for the given line */
+int
+flow_diagram_t::max_rank_of_line(unsigned int idx)
+{
+    int lrank = -1;
+    list_iterator_t<node_t> niter;
+
+    for (niter = nodes_by_line_[idx].first() ; niter != (node_t *)0 ; ++niter)
+    {
+	node_t *node = (*niter)->first_;
+
+	if (node->rank_ > lrank)
+	    lrank = node->rank_;
+    }
+    return lrank;
+}
+
 void
 flow_diagram_t::assign_ranks()
 {
@@ -180,17 +219,9 @@ flow_diagram_t::assign_ranks()
     unsigned int i;
     for (i = 0 ; i < num_lines_ ; i++)
     {
-	int lrank = -1;
-	list_iterator_t<node_t> niter;
-	/* calculate lrank as maximum of ranks for this line */
-	for (niter = nodes_by_line_[i].first() ; niter != (node_t *)0 ; ++niter)
-	{
-	    node_t *node = (*niter)->first_;
-
-	    if (node->rank_ > lrank)
-		lrank = node->rank_;
-	}
+	int lrank = max_rank_of_line(i);
 	/* allocate ranks for unranked nodes on this line */
+	list_iterator_t<node_t> niter;
 	for (niter = nodes_by_line_[i].first() ; niter != (node_t *)0 ; ++niter)
 	{
 	    node_t *node = (*niter)->first_;
@@ -374,29 +405,54 @@ flow_diagram_t::allocate_arc_slots()
     num_slots_[1] = 0;
 
     unsigned int i;
+
+    /* initialise next_slot[] to next available slot */
+    for (i = 0 ; i < num_lines_ ; i++)
+    {
+	next_slot[0][i] = HSLOTS(SLOTGAP);
+	next_slot[1][i] = HSLOTS(SLOTGAP);
+
+	/* pre-allocate right slots to cover the nodes on this line */
+	next_slot[1][i] += slots_for_rank(max_rank_of_line(i));
+    }
+
     for (i = 0 ; i < arcs_->length() ; i++)
     {
 	arc_t *arc = arcs_->nth(i);
 
-	if (arc->slot_needed() == 0)
+	if (!arc->slot_needed())
 	    continue;
 	int side = choose_side(arc);
 
 	unsigned int slot = 0;
+	if (side)
+	{
+	    /*
+	     * With right slots, try to allocate arcs that go straight up
+	     * or down from one of the two nodes, rather than tightly
+	     * hugging the right edge of the intervening nodes.  This is
+	     * more visually pleasing, at least so far ;-)
+	     */
+	    slot = MAX(slot_at_rank(arc->from_->rank_),
+		       slot_at_rank(arc->to_->rank_));
+	}
+
 	int idx;
+	/* find innermost unallocated slot over this arc's lines */
 	for (idx = arc->first_+1 ; idx < arc->last_ ; idx++)
 	{
 	    if (next_slot[side][idx] > slot)
 		slot = next_slot[side][idx];
 	}
+	/* allocate out to the next slot */
 	for (idx = arc->first_+1 ; idx < arc->last_ ; idx++)
 	{
-	    next_slot[side][idx] = slot+1;
+	    next_slot[side][idx] = slot + HSLOTS(SLOTGAP);
 	}
 	if (slot >= num_slots_[side])
-	    num_slots_[side] = slot+1;
+	    num_slots_[side] = slot;
 
-	arc->slot_ = (2*side-1) * (slot + 1);
+	arc->slot_ = (2*side-1) * slot;
     }
     delete[] next_slot[0];
     delete[] next_slot[1];
@@ -426,12 +482,12 @@ flow_diagram_t::assign_geometry()
 {
     xpos_[0] = 0.0;
     xpos_[1] = xpos_[0] + HMARGIN;
-    xpos_[2] = xpos_[1] + (num_slots_[0] > 1 ? SLOTGAP * (num_slots_[0]-1) : 0.0);
-    xpos_[3] = xpos_[2] + (num_slots_[0] ? SLOTGAP : 0.0);
+    xpos_[2] = xpos_[1] + HQUANTUM * num_slots_[0];
+    xpos_[3] = xpos_[2];
     xpos_[4] = xpos_[3] + (NODE_WIDTH + HGAP) * max_rank_ + NODE_WIDTH;
-    xpos_[5] = xpos_[4] + (num_slots_[1] ? SLOTGAP : 0.0);
-    xpos_[6] = xpos_[5] + (num_slots_[1] > 1 ? SLOTGAP * (num_slots_[1]-1) : 0.0);
-    xpos_[7] = xpos_[6] + HMARGIN;
+    xpos_[5] = xpos_[3];
+    xpos_[6] = xpos_[5] + HQUANTUM * num_slots_[1];
+    xpos_[7] = MAX(xpos_[4], xpos_[6]) + HMARGIN;
 
     ypos_[0] = 0.0;
     ypos_[1] = ypos_[0] + VMARGIN;
@@ -573,24 +629,13 @@ flow_diagram_t::show_debug_grid(scenegen_t *sg)
 double
 flow_diagram_t::slotx(int slot) const
 {
-    assert(slot != 0);
-    if (slot < 0)
-    {
-	/* left slot area */
-	slot = -slot - 1;    /* slot now [0..num_slots_[0]-1] */
-	return xpos_[2] - SLOTGAP * slot;
-    }
-    else
-    {
-	/* right slot area */
-	slot = slot - 1;    /* slot now [0..num_slots_[1]-1] */
-	return xpos_[5] + SLOTGAP * slot;
-    }
+    return xpos_[3] + HQUANTUM * slot;
 }
 
 double
 flow_diagram_t::node_t::slotx(int slot) const
 {
+    slot -= slot_at_rank(rank_);
     if (slot < 0)
     {
 	/* left slot area */

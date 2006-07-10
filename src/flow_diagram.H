@@ -105,6 +105,7 @@ private:
 
     unsigned int generate_nodes();
 
+    int max_rank_of_line(unsigned int idx);
     void assign_ranks();
 
     gboolean no_intervening_nodes(node_t *, node_t *) const;
