@@ -23,7 +23,7 @@
 #include "string_var.H"
 #include "tok.H"
 
-CVSID("$Id: ui.c,v 1.32 2006-06-27 13:31:13 gnb Exp $");
+CVSID("$Id: ui.c,v 1.33 2006-07-10 10:28:41 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -821,12 +821,12 @@ int
 ui_text_font_width(GtkWidget *w)
 {
 #if GTK2
-    /*
-     * Yes this is a deprecated function...but there doesn't
-     * seem to be any other way to get a font width.
-     */
-    GdkFont *font = gtk_style_get_font(gtk_widget_get_style(w));
-    return uix_font_width(font);
+    PangoLayout *layout = gtk_widget_create_pango_layout(w, "W");
+    PangoRectangle ink, logical;
+    pango_layout_get_pixel_extents(layout, &ink, &logical);
+    g_object_unref(layout);
+    return logical.width;
+
 #else /* !GTK2 */
     return uix_font_width(ui_text_font);
 #endif /* !GTK2 */
