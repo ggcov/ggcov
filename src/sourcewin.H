@@ -62,15 +62,23 @@ public:
 private:
     enum columns
     {
-#if GTK2
 	COL_FLOW,
-#endif
     	COL_LINE,
     	COL_BLOCK,
     	COL_COUNT,
     	COL_SOURCE,
     	NUM_COLS
     };
+#if GTK2
+    struct flow_t
+    {
+	GtkWidget *canvas_;
+	int bufy_;		    /* buffer y coord of canvas */
+	unsigned int width_;	    /* width in pixels of canvas */
+	cov_function_t *function_;
+	unsigned int shown_;	    /* generation number for showing flows */
+    };
+#endif
 
     static sourcewin_t *instance();
     void setup_text();
@@ -83,7 +91,7 @@ private:
     void delete_flows();
     void update_flow_window();
     void update_flows();
-    GtkWidget *create_flow_canvas(cov_function_t *, int w, int h);
+    flow_t *create_flow(cov_function_t *, int y, int h);
 #endif
     cov_function_t *selected_function() const;
     gboolean save_with_annotations(const char *filename);
@@ -124,16 +132,11 @@ private:
     GtkWidget *saveas_dialog_;
 
 #if GTK2
-    struct flow_t
-    {
-	GtkWidget *canvas_;
-	int bufy_;		    /* buffer y coord of canvas */
-	cov_function_t *function_;
-	unsigned int shown_;	    /* generation number for showing flows */
-    };
     list_t<flow_t> flows_;
     unsigned int flow_shown_;
     gboolean text_initialised_;
+    unsigned int flow_width_;
+    gboolean flow_width_dirty_;
 #endif
 
     friend void on_source_saveas_ok_button_clicked(GtkWidget *w, gpointer data);

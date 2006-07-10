@@ -26,7 +26,7 @@
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.29 2006-07-10 10:53:36 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.30 2006-07-10 11:27:13 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -37,7 +37,7 @@ CVSID("$Id: sourcewin.C,v 1.29 2006-07-10 10:53:36 gnb Exp $");
 list_t<sourcewin_t> sourcewin_t::instances_;
 
 /* column widths, in *characters* */
-const int sourcewin_t::column_widths_[sourcewin_t::NUM_COLS] = { 8, 8, 16, 8, -1 };
+const int sourcewin_t::column_widths_[sourcewin_t::NUM_COLS] = { 6, 8, 16, 8, -1 };
 const char *sourcewin_t::column_names_[sourcewin_t::NUM_COLS] = {
     "Flow", "Line", "Blocks", "Count", "Source"
 };
@@ -60,7 +60,7 @@ sourcewin_t::update_flow_window()
 {
     GtkTextView *tv = GTK_TEXT_VIEW(text_);
 
-    dprintf0(D_SOURCEWIN, "sourcewin_t::update_flows\n");
+    dprintf0(D_SOURCEWIN, "sourcewin_t::update_flow_window\n");
 
     if (!GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])->active)
     {
@@ -70,8 +70,7 @@ sourcewin_t::update_flow_window()
     }
 
     // make the left child visible
-    gtk_text_view_set_border_window_size(tv, GTK_TEXT_WINDOW_LEFT,
-		column_widths_[COL_FLOW] * font_width_);
+    gtk_text_view_set_border_window_size(tv, GTK_TEXT_WINDOW_LEFT, flow_width_);
 
     if (GTK_WIDGET_REALIZED(text_))
     {
@@ -97,6 +96,8 @@ sourcewin_t::update_flows()
     cov_file_t *f;
     if ((f = cov_file_t::find(filename_)) == 0)
     	return;
+
+    dprintf0(D_SOURCEWIN, "sourcewin_t::update_flows\n");
 
     GdkRectangle rect;
     gtk_text_view_get_visible_rect(tv, &rect);
@@ -143,10 +144,6 @@ sourcewin_t::update_flows()
 	}
 	if (flow == 0)
 	{
-	    flow = new flow_t;
-	    flow->function_ = fn;
-	    flows_.append(flow);
-
 	    GtkTextIter first_iter, last_iter;
 	    gtk_text_buffer_get_iter_at_line(buffer, &first_iter,
 		    fn->get_first_location()->lineno);
@@ -157,20 +154,18 @@ sourcewin_t::update_flows()
 	    gtk_text_view_get_line_yrange(tv, &first_iter, &first_y, &height);
 	    gtk_text_view_get_line_yrange(tv, &last_iter, &last_y, &height);
 
-	    dprintf2(D_SOURCEWIN, "    y=%d height=%d\n",
+	    dprintf2(D_SOURCEWIN, "        y=%d height=%d\n",
 		    first_y-height, last_y-first_y+height);
 
-	    flow->bufy_ = first_y-height;
-	    flow->canvas_ = create_flow_canvas(flow->function_,
-					       column_widths_[COL_FLOW] * font_width_,
-					       last_y-first_y+height);
+	    flow = create_flow(fn, first_y-height, last_y-first_y+height);
+	    flows_.append(flow);
 	    gtk_text_view_add_child_in_window(tv, flow->canvas_,
 			    GTK_TEXT_WINDOW_LEFT, 0, 0);
 	}
 	int wx, wy;
 	gtk_text_view_buffer_to_window_coords(tv, GTK_TEXT_WINDOW_LEFT,
 		0, flow->bufy_, &wx, &wy);
-	dprintf2(D_SOURCEWIN, "    moving to %d,%d\n", 0, wy);
+	dprintf2(D_SOURCEWIN, "        moving to %d,%d\n", 0, wy);
 	gtk_text_view_move_child(tv, flow->canvas_, 0, wy);
 	gtk_widget_show(flow->canvas_);
 	flow->shown_ = flow_shown_;
@@ -178,14 +173,36 @@ sourcewin_t::update_flows()
 
     /* Hide flows not just shown */
     list_iterator_t<flow_t> fiter;
+    dprintf0(D_SOURCEWIN, "    hiding flows\n");
     for (fiter = flows_.first() ; fiter != (flow_t *)0 ; ++fiter)
     {
 	flow_t *flow = *fiter;
-	if (flow->shown_ < flow_shown_)
+	if (flow->shown_ < flow_shown_ &&
+	    GTK_WIDGET_VISIBLE(flow->canvas_))
 	{
-	    dprintf1(D_SOURCEWIN, "    hiding %s\n", flow->function_->name());
+	    dprintf1(D_SOURCEWIN, "        %s\n", flow->function_->name());
 	    gtk_widget_hide(flow->canvas_);
 	}
+    }
+
+    /* Recalculate the flow_width_ if necessary */
+    if (flow_width_dirty_)
+    {
+	flow_width_ = column_widths_[COL_FLOW] * font_width_;
+	dprintf0(D_SOURCEWIN, "    resizing window\n");
+	for (fiter = flows_.first() ; fiter != (flow_t *)0 ; ++fiter)
+	{
+	    flow_t *flow = *fiter;
+	    if (GTK_WIDGET_VISIBLE(flow->canvas_) && flow->width_ > flow_width_)
+	    {
+		flow_width_ = flow->width_;
+		dprintf2(D_SOURCEWIN, "        %s -> %u\n",
+			 flow->function_->name(), flow_width_);
+	    }
+	}
+	flow_width_dirty_ = FALSE;
+	update_flow_window();
+	update_title_buttons();
     }
 }
 
@@ -204,16 +221,19 @@ set_diagram_colors(diagram_t *di)
     }
 }
 
-GtkWidget *
-sourcewin_t::create_flow_canvas(cov_function_t *fn, int w, int h)
+sourcewin_t::flow_t *
+sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
 {
-    GtkWidget *canvas = gnome_canvas_new();
+    flow_t *flow = new flow_t;
+    flow->function_ = fn;
+    flow->bufy_ = y;
 
-    gtk_widget_set_usize(canvas, w, h);
-    gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas), 1.0);
+    dprintf0(D_SOURCEWIN, "        creating flow\n");
+
+    flow->canvas_ = gnome_canvas_new();
 
     GtkStyle *style = gtk_widget_get_style(text_);
-    gtk_widget_modify_bg(canvas, GTK_STATE_NORMAL,
+    gtk_widget_modify_bg(flow->canvas_, GTK_STATE_NORMAL,
 			 &style->base[GTK_STATE_NORMAL]);
 
     dprintf4(D_SOURCEWIN, "bg[%d] = {%04x,%04x,%04x}\n",
@@ -227,25 +247,37 @@ sourcewin_t::create_flow_canvas(cov_function_t *fn, int w, int h)
 	    style->base[GTK_STATE_NORMAL].green,
 	    style->base[GTK_STATE_NORMAL].blue);
 
-    diagram_t *diag = new flow_diagram_t(fn);
+    diagram_t *diag = new flow_diagram_t(flow->function_);
 
     set_diagram_colors(diag);
     diag->prepare();
 
-    scenegen_t *sg = new canvas_scenegen_t(GNOME_CANVAS(canvas));
+    scenegen_t *sg = new canvas_scenegen_t(GNOME_CANVAS(flow->canvas_));
     diag->render(sg);
     delete sg;
 
-    /* setup the canvas to show the whole diagram */
+    /* setup the canvas to show the whole diagram, preserving aspect */
     dbounds_t bounds;
     diag->get_bounds(&bounds);
     double ppu = h / bounds.height();
-    gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas), ppu);
-    gnome_canvas_set_scroll_region(GNOME_CANVAS(canvas),
+    flow->width_ = (unsigned int)(bounds.width() * ppu + 0.5) + 2;
+
+    gtk_widget_set_usize(flow->canvas_, flow->width_, h);
+    gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(flow->canvas_), ppu);
+    gnome_canvas_set_scroll_region(GNOME_CANVAS(flow->canvas_),
 				   bounds.x1, bounds.y1,
 				   bounds.x2, bounds.y2);
 
-    return canvas;
+    dprintf4(D_SOURCEWIN, "        canvas %g x %g units = %u x %u pixels\n",
+		bounds.width(), bounds.height(), flow->width_, h);
+
+    if (flow->width_ > flow_width_)
+    {
+	flow_width_dirty_ = TRUE;
+	dprintf0(D_SOURCEWIN, "        flow width dirty\n");
+    }
+
+    return flow;
 }
 
 void
@@ -259,6 +291,7 @@ sourcewin_t::delete_flows()
 	gtk_widget_unref(flow->canvas_);
 	delete flow;
     }
+    flow_width_dirty_ = TRUE;
 }
 
 #endif
@@ -293,6 +326,8 @@ sourcewin_t::setup_text()
 
     // hook up the function to update the flows on scrolling
     text_initialised_ = FALSE;
+    flow_width_ = column_widths_[COL_FLOW] * font_width_;
+    flow_width_dirty_ = FALSE;
     g_signal_connect_after(G_OBJECT(tv->vadjustment),
 			   "value-changed",
 			   G_CALLBACK(on_vadjustment_value_changed),
@@ -672,7 +707,10 @@ sourcewin_t::update_title_buttons()
      * Size each title button to match the size of each column in
      * the text window.  Note the Source column takes up all the slack.
      */
-    for (i = 0 ; i < NUM_COLS ; i++)
+    gtk_widget_set_usize(title_buttons_[COL_FLOW],
+			 flow_width_,
+			 /*height=whatever*/5);
+    for (i = COL_LINE ; i < NUM_COLS ; i++)
     {
     	if (column_widths_[i] > 0)
 	    gtk_widget_set_usize(title_buttons_[i],
@@ -702,6 +740,9 @@ sourcewin_t::set_filename(const char *filename, const char *display_fname)
 
     if (shown_)
     {
+#if GTK2
+	delete_flows();
+#endif
 	populate_functions();
     	update();
     }
