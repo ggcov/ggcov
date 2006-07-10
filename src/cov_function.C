@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.23 2006-02-19 04:27:51 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.24 2006-07-10 11:22:50 gnb Exp $");
 
 gboolean cov_function_t::solve_fuzzy_flag_ = FALSE;
 
@@ -110,6 +110,22 @@ cov_function_t::finalise()
 	nth_block(bidx)->finalise();
 }
 
+/*
+ * Finding the first and last block in a function is actually
+ * quite difficult, and has become more difficult as gcc gets
+ * better at inlining functions.
+ *
+ * We try to deal with the case of the first few or last few
+ * locations recorded in blocks being from inlined functions
+ * in header files, by skipping locations in different files.
+ *
+ * However we don't handle the case where the function begins
+ * or ends with a call to a static function later in the same
+ * file which the compiler (assuming a fairly modern gcc)
+ * helpfully decides to inline.  To do that properly we would
+ * need better location data from gcc.
+ */
+
 const cov_location_t *
 cov_function_t::get_first_location() const
 {
@@ -118,8 +134,23 @@ cov_function_t::get_first_location() const
     
     for (bidx = 0 ; bidx < num_blocks() ; bidx++)
     {
-	if ((loc = nth_block(bidx)->get_first_location()) != 0)
+	list_iterator_t<cov_location_t> liter;
+	for (liter = nth_block(bidx)->location_iterator() ;
+	     liter != (cov_location_t *)0 ;
+	     ++liter)
+	{
+	    loc = *liter;
+
+	    /*
+	     * We can get away with a pointer comparison here,
+	     * because we know that cov_file::add_location()
+	     * uses file->name() as the location's  ->filename
+	     * without saving a new copy.
+	     */
+	    if (loc->filename != file_->name())
+		continue;
 	    return loc;
+	}
     }
     return 0;
 }
@@ -132,8 +163,23 @@ cov_function_t::get_last_location() const
     
     for (bidx = num_blocks()-1 ; bidx >= 0 ; bidx--)
     {
-	if ((loc = nth_block(bidx)->get_last_location()) != 0)
+	list_iterator_t<cov_location_t> liter;
+	for (liter = nth_block(bidx)->location_iterator() ;
+	     liter != (cov_location_t *)0 ;
+	     ++liter)
+	{
+	    loc = *liter;
+
+	    /*
+	     * We can get away with a pointer comparison here,
+	     * because we know that cov_file::add_location()
+	     * uses file->name() as the location's  ->filename
+	     * without saving a new copy.
+	     */
+	    if (loc->filename != file_->name())
+		continue;
 	    return loc;
+	}
     }
     return 0;
 }

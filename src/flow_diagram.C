@@ -20,7 +20,7 @@
 #include "flow_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: flow_diagram.C,v 1.2 2006-07-10 11:06:34 gnb Exp $");
+CVSID("$Id: flow_diagram.C,v 1.3 2006-07-10 11:22:50 gnb Exp $");
 
 #define NODE_WIDTH	6.0
 #define HMARGIN		0.5
@@ -96,6 +96,14 @@ flow_diagram_t::generate_nodes()
 	fprintf(stderr, "flow_diagram_t::prepare: can't generate "
 			"diagram for function \"%s\"\n",
 		    function_->name());
+	if (first == 0)
+	    fprintf(stderr, "    first=(null)\n");
+	else
+	    fprintf(stderr, "    first={%s,%lu}\n", first->filename, first->lineno);
+	if (last == 0)
+	    fprintf(stderr, "    last=(null)\n");
+	else
+	    fprintf(stderr, "    last={%s,%lu}\n", last->filename, last->lineno);
 	return 0;
     }
 
