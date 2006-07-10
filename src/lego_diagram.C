@@ -20,7 +20,7 @@
 #include "lego_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: lego_diagram.C,v 1.3 2006-01-29 23:25:36 gnb Exp $");
+CVSID("$Id: lego_diagram.C,v 1.4 2006-07-10 10:56:08 gnb Exp $");
 
 #define WIDTH	(1.0)
 #define HEIGHT	(1.0)
@@ -137,7 +137,6 @@ lego_diagram_t::root_name() const
 	     start > cpath && *start != '/' ;
 	     --start)
 	    ;
-	assert(start != cpath);
 	if (*start == '/')
 	    start++;
     }
