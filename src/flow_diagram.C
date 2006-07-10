@@ -20,7 +20,7 @@
 #include "flow_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: flow_diagram.C,v 1.3 2006-07-10 11:22:50 gnb Exp $");
+CVSID("$Id: flow_diagram.C,v 1.4 2006-07-10 11:35:18 gnb Exp $");
 
 #define NODE_WIDTH	6.0
 #define HMARGIN		0.5
@@ -594,19 +594,179 @@ flow_diagram_t::node_t::slotx(int slot) const
     if (slot < 0)
     {
 	/* left slot area */
-	return x_;
+	return leftx();
     }
     else if (slot == 0)
     {
 	/* straight up or down */
-	return x_ + w_/2.0;
+	return midx();
     }
     else
     {
 	/* right slot area */
-	return x_ + w_;
+	return rightx();
     }
 }
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+/*
+ * y coord of start and end of a direct arc
+ *
+ * `from' entirely right of `to': join closest corners
+ * 	+------+
+ *  	| from |
+ *  	+------+
+ * 		\
+ * 		 +------+
+ * 		 |  to  |
+ * 		 +------+
+ *
+ * overlap: join vertically halfway across the overlap
+ * 	+------+
+ *  	| from |
+ *  	+------+
+ * 	     |
+ * 	    +------+
+ * 	    |  to  |
+ * 	    +------+
+ *
+ * `to' entirely right of `from': join closest corners
+ * 		 +------+
+ * 		 | from |
+ * 		 +------+
+ * 		/
+ * 	+------+
+ * 	|  to  |
+ * 	+------+
+ */
+
+double
+flow_diagram_t::arc_t::overlap_x() const
+{
+    double first_x = MAX(from_->leftx(), to_->leftx());
+    double last_x = MIN(from_->rightx(), to_->rightx());
+    return (first_x + last_x) / 2.0;
+}
+
+double
+flow_diagram_t::arc_t::direct_fromx() const
+{
+    if (to_->leftx() > from_->rightx())
+    {
+	/* `to' entirely right of `from': join closest corners */
+	return from_->rightx();
+    }
+    else if (to_->rightx() < from_->leftx())
+    {
+	/* `from' entirely right of `to': join closest corners */
+	return from_->leftx();
+    }
+    else
+    {
+	/* overlap: join vertically halfway across the overlap */
+	return overlap_x();
+    }
+}
+
+double
+flow_diagram_t::arc_t::direct_tox() const
+{
+    if (to_->leftx() > from_->rightx())
+    {
+	/* `to' entirely right of `from': join closest corners */
+	return to_->leftx();
+    }
+    else if (to_->rightx() < from_->leftx())
+    {
+	/* `from' entirely right of `to': join closest corners */
+	return to_->rightx();
+    }
+    else
+    {
+	/* overlap: join vertically halfway across the overlap */
+	return overlap_x();
+    }
+}
+
+/*
+ * y coord of start and end of a direct arc
+ *
+ * `to' entirely below `from': join closest corners
+ * 	+------+
+ * 	| from |
+ * 	+------+
+ *		\
+ * 		 +------+
+ * 		 |  to  |
+ * 		 +------+
+ *
+ * overlap: join horizontally halfway down the overlap
+ * 	+------+
+ * 	| from | +------+
+ * 	|      |-|      |
+ * 	+------+ |  to  |
+ * 		 +------+
+ *
+ * `from' entirely below `to': join closest corners
+ * 		 +------+
+ * 		 |  to  |
+ * 		 +------+
+ *		/
+ * 	+------+
+ * 	| from |
+ * 	+------+
+ */
+
+double
+flow_diagram_t::arc_t::overlap_y() const
+{
+    double first_y = MAX(from_->topy(), to_->topy());
+    double last_y = MIN(from_->bottomy(), to_->bottomy());
+    return (first_y + last_y) / 2.0;
+}
+
+double
+flow_diagram_t::arc_t::direct_fromy() const
+{
+    if (to_->topy() > from_->bottomy())
+    {
+	/* `to' entirely below `from': join closest corners */
+	return from_->bottomy();
+    }
+    else if (to_->bottomy() < from_->topy())
+    {
+	/* `from' entirely below `to': join closest corners */
+	return from_->topy();
+    }
+    else
+    {
+	/* overlap: join horizontally halfway down the overlap */
+	return overlap_y();
+    }
+}
+
+double
+flow_diagram_t::arc_t::direct_toy() const
+{
+    if (to_->topy() > from_->bottomy())
+    {
+	/* `to' entirely below `from': join closest corners */
+	return to_->topy();
+    }
+    else if (to_->bottomy() < from_->topy())
+    {
+	/* `from' entirely below `to': join closest corners */
+	return to_->bottomy();
+    }
+    else
+    {
+	/* overlap: join horizontally halfway down the overlap */
+	return overlap_y();
+    }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
 flow_diagram_t::show_arc(arc_t *arc, scenegen_t *sg)
@@ -624,20 +784,11 @@ flow_diagram_t::show_arc(arc_t *arc, scenegen_t *sg)
     sg->polyline_begin(FALSE);
     switch (arc->case_)
     {
-    case AC_DOWN1:
-	/* arc down from one line to the next */
-	sg->polyline_point(from->slotx(0), from->y_ + from->h_);
-	sg->polyline_point(to->slotx(0), to->y_);
-	break;
-    case AC_UP1:
-	/* arc up from one line to the previous */
-	sg->polyline_point(from->slotx(0), from->y_);
-	sg->polyline_point(to->slotx(0), to->y_ + to->h_);
-	break;
-    case AC_ACROSS1:
-	/* arc from one rank to the next */
-	sg->polyline_point(from->slotx(1), from->y_ + from->h_/2.0);
-	sg->polyline_point(to->slotx(-1), to->y_ + to->h_/2.0);
+    case AC_DOWN1: /* arc down from one line to the next */
+    case AC_UP1: /* arc up from one line to the previous */
+    case AC_ACROSS1: /* arc from one rank to the next */
+	sg->polyline_point(arc->direct_fromx(), arc->direct_fromy());
+	sg->polyline_point(arc->direct_tox(), arc->direct_toy());
 	break;
     case AC_DOWN:
 	/* more general arc downwards */
@@ -647,10 +798,10 @@ flow_diagram_t::show_arc(arc_t *arc, scenegen_t *sg)
 	    from->block_->bindex(),
 	    to->block_->bindex(),
 	    arc->slot_, vx);
-	sg->polyline_point(from->slotx(arc->slot_), from->y_ + from->h_);
-	sg->polyline_point(vx, from->y_ + from->h_ + VGAP/2.0);
-	sg->polyline_point(vx, to->y_ - VGAP/2.0);
-	sg->polyline_point(to->slotx(arc->slot_), to->y_);
+	sg->polyline_point(from->slotx(arc->slot_), from->bottomy());
+	sg->polyline_point(vx, from->bottomy() + VGAP/2.0);
+	sg->polyline_point(vx, to->topy() - VGAP/2.0);
+	sg->polyline_point(to->slotx(arc->slot_), to->topy());
 	break;
     case AC_UP:
 	/* more general arc upwards */
@@ -660,18 +811,18 @@ flow_diagram_t::show_arc(arc_t *arc, scenegen_t *sg)
 	    from->block_->bindex(),
 	    to->block_->bindex(),
 	    arc->slot_, vx);
-	sg->polyline_point(from->slotx(arc->slot_), from->y_);
-	sg->polyline_point(vx, from->y_ - VGAP/2.0);
-	sg->polyline_point(vx, to->y_ + to->h_ + VGAP/2.0);
-	sg->polyline_point(to->slotx(arc->slot_), to->y_ + to->h_);
+	sg->polyline_point(from->slotx(arc->slot_), from->topy());
+	sg->polyline_point(vx, from->topy() - VGAP/2.0);
+	sg->polyline_point(vx, to->bottomy() + VGAP/2.0);
+	sg->polyline_point(to->slotx(arc->slot_), to->bottomy());
 	break;
     case AC_ACROSS:
 	/* arc between vertically overlapping nodes */
 	vx = (from->slotx(0) + to->slotx(0))/2.0;
-	vy = MAX(from->y_ + from->h_, to->y_ + to->h_) + VGAP/2.0;
-	sg->polyline_point(from->slotx(0), from->y_ + from->h_);
+	vy = MAX(from->bottomy(), to->bottomy()) + VGAP/2.0;
+	sg->polyline_point(from->slotx(0), from->bottomy());
 	sg->polyline_point(vx, vy);
-	sg->polyline_point(to->slotx(0), to->y_ + to->h_);
+	sg->polyline_point(to->slotx(0), to->bottomy());
 	break;
     }
     sg->polyline_end(TRUE);

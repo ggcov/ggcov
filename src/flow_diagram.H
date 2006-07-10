@@ -62,6 +62,15 @@ private:
 	{
 	    return (first_->rank_ >= 0 && first_idx_ >= 0);
 	}
+
+	double topy() const { return y_; }
+	double midy() const { return y_ + h_ / 2.0; }
+	double bottomy() const { return y_ + h_; }
+
+	double leftx() const { return x_; }
+	double midx() const { return x_ + w_ / 2.0; }
+	double rightx() const { return x_ + w_; }
+
 	double slotx(int slot) const;
 
     	node_t(cov_block_t *b) : block_(b), first_idx_(-1), rank_(-1) {}
@@ -84,6 +93,14 @@ private:
 	    return last_ - first_;
 	}
 	static int compare(const arc_t **a1p, const arc_t **a1p);
+
+	double overlap_x() const;
+	double direct_fromx() const;
+	double direct_tox() const;
+
+	double overlap_y() const;
+	double direct_fromy() const;
+	double direct_toy() const;
     };
 
     unsigned int generate_nodes();
