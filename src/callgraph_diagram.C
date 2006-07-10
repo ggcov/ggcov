@@ -21,7 +21,7 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.16 2006-07-10 10:12:15 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.17 2006-07-10 10:57:59 gnb Exp $");
 
 #define MARGIN		    0.2
 #define BOX_WIDTH  	    4.0
@@ -739,6 +739,9 @@ callgraph_diagram_t::prepare()
         push_false_root(*iter);
     for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
         balance_ranks(*iter);
+
+    if (roots_.head() == 0)
+	return;
 
     ranks_ = new ptrarray_t<rank_t>;
     max_file_ = 0;
