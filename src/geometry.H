@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2006 Greg Banks <gnb@alphalink.com.au>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,11 @@
 #define _ggcov_geometry_H_ 1
 
 #include "common.h"
+#include <math.h>
 
+#ifndef HUGE
 #define HUGE    	    (1.0e10)
+#endif
 #define EPSILON		    (1.0e-06)
 
 struct dbounds_t
@@ -78,6 +81,103 @@ struct dbounds_t
     	adjust(b.x1, b.y1, b.x2, b.y2);
     }
 
+};
+
+struct matrix2_t
+{
+    // A 2-d to 2-d coordinate transform matrix as per the
+    // PostScript(tm) imaging model, which is the 6 variable
+    // components of a 3x3 matrix of the form
+    // [  a  b  0 ]
+    // [  c  d  0 ]
+    // [ tx ty  1 ]
+    double a, b, c, d, tx, ty;
+
+    /* set the matrix to the identity matrix */
+    void identity()
+    {
+	// set the matrix to
+	// [  1  0  0 ]
+	// [  0  1  0 ]
+	// [  0  0  1 ]
+	a = d = 1.0;
+	b = c = tx = ty = 0.0;
+    }
+    void translate(double dx, double dy)
+    {
+	// equivalent of a premultiply by
+	// [  1  0  0 ]
+	// [  0  1  0 ]
+	// [ dx dy  1 ]
+	tx += a * dx + c * dy;
+	ty += b * dx + d * dy;
+    }
+    void scale(double sx, double sy)
+    {
+	// equivalent of a premultiply by
+	// [ sx  0  0 ]
+	// [  0 sy  0 ]
+	// [  0  0  1 ]
+	a *= sx;
+	b *= sy;
+	c *= sx;
+	d *= sy;
+    }
+    void rotate(double theta/*radians*/)
+    {
+	// equivalent of a premultiply by
+	// [  cos(theta) sin(theta)  0 ]
+	// [ -sin(theta) cos(theta)  0 ]
+	// [           0          0  1 ]
+	double cth, sth;
+	sincos(theta, &sth, &cth);
+
+	double na =  a * cth + c * sth;
+	double nb =  b * cth + d * sth;
+	double nc = -a * sth + c * cth;
+	double nd = -b * sth + d * cth;
+
+	a = na;
+	b = nb;
+	c = nc;
+	d = nd;
+    }
+
+    /* Transform and convert to integer */
+    int itransx(double x, double y) const
+    {
+	return (int)(a * x + c * y + tx + 0.5);
+    }
+    int itransy(double x, double y) const
+    {
+	return (int)(b * x + d * y + ty + 0.5);
+    }
+    int itransw(double w, double h) const
+    {
+	return (int)(a * w + c * h + 0.5);
+    }
+    int itransh(double w, double h) const
+    {
+	return (int)(b * w + d * h + 0.5);
+    }
+
+    /* Transform leaving as double */
+    double dtransx(double x, double y) const
+    {
+	return (a * x + c * y + tx);
+    }
+    double dtransy(double x, double y) const
+    {
+	return (b * x + d * y + ty);
+    }
+    double dtransw(double w, double h) const
+    {
+	return (a * w + c * h);
+    }
+    double dtransh(double w, double h) const
+    {
+	return (b * w + d * h);
+    }
 };
 
 #endif /* _ggcov_geometry_H_ */
