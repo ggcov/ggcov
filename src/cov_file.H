@@ -129,6 +129,7 @@ private:
     static format_rec_t formats[];
     
     static void init();
+    static void post_read_1(const char *, cov_file_t *, gpointer);
     static void post_read();
     static void add_name(const char *name);
     static void dirty_common_path();
@@ -187,7 +188,7 @@ private:
 
     string_var name_;
     gboolean common_;	    /* whether this file uses common_path_ */
-    gboolean finalised_;    /* data read & `this' inserted into files_ */
+    gboolean finalised_;    /* data read & post-read connections made */
     gnb_u32_t format_version_;	/* file format version */
     gboolean little_endian_;	/* for gcc34 format */
     ptrarray_t<cov_function_t> *functions_;

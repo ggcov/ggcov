@@ -30,8 +30,9 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.69 2006-06-21 13:47:36 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.70 2006-07-10 11:18:47 gnb Exp $");
 
+static gboolean filename_is_common(const char *filename);
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
 list_t<cov_file_t> cov_file_t::files_list_;
@@ -84,16 +85,15 @@ cov_file_t::cov_file_t(const char *name)
     null_line_ = new cov_line_t();
 
     files_->insert(name_, this);
+    if ((common_ = filename_is_common(name_)))
+	add_name(name_);
 }
 
 cov_file_t::~cov_file_t()
 {
     unsigned int i;
 
-    if (finalised_)
-    {
-        files_list_.remove(this);
-    }
+    files_list_.remove(this);
     files_->remove(name_);
 
     for (i = 0 ; i < functions_->length() ; i++)
@@ -108,10 +108,8 @@ cov_file_t::~cov_file_t()
     delete lines_;
     delete null_line_;
 
-    if (finalised_)
-    {
+    if (common_)
 	dirty_common_path();
-    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -179,16 +177,15 @@ cov_file_t::finalise()
 {
     unsigned int i;
 
-    if ((common_ = filename_is_common(name_)))
-	add_name(name_);
-    
+    if (finalised_)
+	return;
+    finalised_ = TRUE;
+
 #if 0
     /* TODO: push file-level suppression downwards to functions */
     if (is_self_suppressed())
     	suppress();
 #endif
-
-    finalised_ = TRUE;
 
     for (i = 0 ; i < functions_->length() ; i++)
     	functions_->nth(i)->finalise();
@@ -202,19 +199,21 @@ compare_files(const cov_file_t *fa, const cov_file_t *fb)
     return strcmp(fa->minimal_name(), fb->minimal_name());
 }
 
-static void
-cov_file_add(const char *name, cov_file_t *f, gpointer userdata)
+void
+cov_file_t::post_read_1(
+    const char *name,
+    cov_file_t *f,
+    gpointer userdata)
 {
-    list_t<cov_file_t> *listp = (list_t<cov_file_t> *)userdata;
-    
-    listp->prepend(f);
+    files_list_.prepend(f);
+    f->finalise();
 }
 
 void
 cov_file_t::post_read()
 {
     files_list_.remove_all();
-    files_->foreach(cov_file_add, &files_list_);
+    files_->foreach(post_read_1, 0);
     files_list_.sort(compare_files);
 }
 
@@ -407,11 +406,6 @@ cov_file_t::add_location(
     {
     	f = new cov_file_t(filename);
 	assert(f != 0);
-	/*
-	 * Need to finalise the new file immediately
-	 * otherwise it's not available to find().
-	 */
-	f->finalise();
     }
     assert(f->name_[0] == '/');    
     assert(lineno > 0);
@@ -2062,7 +2056,6 @@ cov_file_t::read(gboolean quiet)
     if (!solve())
     	return FALSE;
 	
-    finalise();
     return TRUE;
 }
 
