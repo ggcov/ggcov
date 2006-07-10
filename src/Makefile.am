@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.65 2006-06-27 13:29:50 gnb Exp $
+# $Id: Makefile.am,v 1.66 2006-07-10 10:24:53 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -55,7 +55,8 @@ libcov_a_SOURCES= \
 		report.H report.C \
 		diagram.H diagram.C colors.h \
 		lego_diagram.H lego_diagram.C \
-		callgraph_diagram.H callgraph_diagram.C
+		callgraph_diagram.H callgraph_diagram.C \
+		flow_diagram.H flow_diagram.C
 # This is a sad hack to work around the problem where some
 # objects need to be unconditionally linked instead of pulled
 # in from libcov.a on demand.
