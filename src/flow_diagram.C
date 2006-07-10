@@ -20,7 +20,7 @@
 #include "flow_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: flow_diagram.C,v 1.1 2006-07-10 10:24:53 gnb Exp $");
+CVSID("$Id: flow_diagram.C,v 1.2 2006-07-10 11:06:34 gnb Exp $");
 
 #define NODE_WIDTH	6.0
 #define HMARGIN		0.5
@@ -706,9 +706,12 @@ flow_diagram_t::render(scenegen_t *sg)
      */
     sg->arrow_size(ARROW_SIZE);
     sg->arrow_shape(ARROW_SHAPE);
-    unsigned int i;
-    for (i = 0 ; i < arcs_->length() ; i++)
-	show_arc(arcs_->nth(i), sg);
+    if (arcs_ != 0)
+    {
+	unsigned int i;
+	for (i = 0 ; i < arcs_->length() ; i++)
+	    show_arc(arcs_->nth(i), sg);
+    }
 
     /*
      * Draw nodes last, so their black border
