@@ -55,7 +55,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkMenuItem" id="separator4">
+		    <widget class="GtkSeparatorMenuItem" id="separator4">
 		      <property name="visible">True</property>
 		    </widget>
 		  </child>
@@ -130,7 +130,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkMenuItem" id="separator2">
+		    <widget class="GtkSeparatorMenuItem" id="separator2">
 		      <property name="visible">True</property>
 		    </widget>
 		  </child>
@@ -166,7 +166,7 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkMenuItem" id="separator3">
+		    <widget class="GtkSeparatorMenuItem" id="separator3">
 		      <property name="visible">True</property>
 		    </widget>
 		  </child>
@@ -208,6 +208,15 @@
 			  </child>
 			</widget>
 		      </child>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkMenuItem" id="source_flow_diagram">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">Block _Diagram...</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="on_source_flow_diagram_activate" last_modification_time="Sat, 24 Jun 2006 01:10:23 GMT"/>
 		    </widget>
 		  </child>
 		</widget>

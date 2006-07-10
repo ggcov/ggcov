@@ -34,6 +34,7 @@ GLADE_CALLBACK void on_source_titles_check_activate(GtkWidget *w, gpointer data)
 GLADE_CALLBACK void on_source_summarise_file_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_summarise_function_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_summarise_range_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_flow_diagram_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_filenames_entry_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_functions_entry_changed(GtkWidget *w, gpointer data);
 
@@ -75,6 +76,7 @@ private:
     void populate();
     void update();
     void update_title_buttons();
+    cov_function_t *selected_function() const;
     gboolean save_with_annotations(const char *filename);
     static int delayed_function_activate(gpointer userdata);
     static void on_source_filename_activate(GtkWidget *w, gpointer userdata);
@@ -95,6 +97,7 @@ private:
     ui_text_tag *text_tags_[cov::NUM_STATUS];
     GtkWidget *column_checks_[NUM_COLS];
     GtkWidget *colors_check_;
+    GtkWidget *flow_diagram_item_;
     GtkWidget *toolbar_;
     GtkWidget *filenames_combo_;
     GtkWidget *functions_combo_;
@@ -118,6 +121,7 @@ private:
     friend void on_source_summarise_file_activate(GtkWidget *w, gpointer data);
     friend void on_source_summarise_function_activate(GtkWidget *w, gpointer data);
     friend void on_source_summarise_range_activate(GtkWidget *w, gpointer data);
+    friend void on_source_flow_diagram_activate(GtkWidget *w, gpointer data);
     friend void on_source_filenames_entry_changed(GtkWidget *w, gpointer data);
     friend void on_source_functions_entry_changed(GtkWidget *w, gpointer data);
 };

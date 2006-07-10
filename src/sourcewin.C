@@ -19,11 +19,13 @@
 
 #include "sourcewin.H"
 #include "summarywin.H"
+#include "diagwin.H"
+#include "flow_diagram.H"
 #include "cov.H"
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.27 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.28 2006-07-10 10:35:15 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -82,6 +84,7 @@ sourcewin_t::sourcewin_t()
     column_checks_[COL_COUNT] = glade_xml_get_widget(xml, "source_count_check");
     column_checks_[COL_SOURCE] = glade_xml_get_widget(xml, "source_source_check");
     colors_check_ = glade_xml_get_widget(xml, "source_colors_check");
+    flow_diagram_item_ = glade_xml_get_widget(xml, "source_flow_diagram");
     toolbar_ = glade_xml_get_widget(xml, "source_toolbar");
     filenames_combo_ = glade_xml_get_widget(xml, "source_filenames_combo");
     functions_combo_ = glade_xml_get_widget(xml, "source_functions_combo");
@@ -478,6 +481,25 @@ sourcewin_t::ensure_visible(unsigned long line)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+cov_function_t *
+sourcewin_t::selected_function() const
+{
+    cov_location_t loc;
+    cov_line_t *ln;
+    cov_function_t *fn;
+
+    loc.filename = (char *)filename_.data();
+    ui_text_get_selected_lines(text_, &loc.lineno, 0);
+
+    if (loc.lineno == 0 ||
+    	(ln = cov_line_t::find(&loc)) == 0 ||
+	(fn = ln->function()) == 0)
+    	return 0;
+    return fn;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 sourcewin_t *
 sourcewin_t::instance()
 {
@@ -594,17 +616,10 @@ GLADE_CALLBACK void
 on_source_summarise_function_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
-    cov_location_t loc;
-    cov_line_t *ln;
-    
-    loc.filename = (char *)sw->filename_.data();
-    ui_text_get_selected_lines(sw->text_, &loc.lineno, 0);
+    cov_function_t *fn = sw->selected_function();
 
-    if (loc.lineno == 0 ||
-    	(ln = cov_line_t::find(&loc)) == 0 ||
-	ln->blocks() == 0)
-    	return;
-    summarywin_t::show_function(((cov_block_t *)ln->blocks()->data)->function());
+    if (fn != 0)
+	summarywin_t::show_function(fn);
 }
 
 GLADE_CALLBACK void
@@ -616,6 +631,21 @@ on_source_summarise_range_activate(GtkWidget *w, gpointer data)
     ui_text_get_selected_lines(sw->text_, &start, &end);
     if (start != 0)
 	summarywin_t::show_lines(sw->filename_, start, end);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+GLADE_CALLBACK void
+on_source_flow_diagram_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    cov_function_t *fn = sw->selected_function();
+
+    if (fn != 0)
+    {
+	diagwin_t *dw = new diagwin_t(new flow_diagram_t(fn));
+	dw->show();
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
