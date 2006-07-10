@@ -21,7 +21,7 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.14 2006-02-19 03:51:14 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.15 2006-07-10 10:06:44 gnb Exp $");
 
 #define MARGIN		    0.2
 #define BOX_WIDTH  	    4.0
@@ -772,9 +772,9 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
     string_var label;
     unsigned int rgb;
 
-    if ((n->flags_ & node_t::SHOWN))
+    if (n->shown_ == shown_)
     	return;     /* already been here */
-    n->flags_ |= node_t::SHOWN;
+    n->shown_ = shown_;
 
     if (cn->function != 0)
     {
@@ -876,6 +876,8 @@ callgraph_diagram_t::render(scenegen_t *sg)
 	        bounds_.x2-bounds_.x1-2*MARGIN,
 	        bounds_.y2-bounds_.y1-2*MARGIN);
     }
+
+    shown_++;
 
     for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
     {

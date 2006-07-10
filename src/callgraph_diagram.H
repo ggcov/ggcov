@@ -53,11 +53,11 @@ private:
 	double spread_;
 	double x_, y_, h_;
 	gboolean on_path_;
+	unsigned int shown_;
 	enum flags
 	{
 	    HAVE_NUP = (1<<0),
 	    HAVE_NDOWN = (1<<1),
-	    SHOWN = (1<<2),
 	    FIXED_RANK = (1<<3)
 	};
 	int flags_;
@@ -99,6 +99,7 @@ private:
     void dump_graph();
     void show_node(node_t *, scenegen_t *sg);
 
+    unsigned int shown_;
     list_t<cov_callnode_t> callnode_roots_;
     list_t<node_t> roots_;
     list_t<cov_callnode_t> disconnected_;
