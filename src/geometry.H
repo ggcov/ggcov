@@ -31,7 +31,16 @@
 struct dbounds_t
 {
     double x1, y1, x2, y2;
-    
+
+    double width() const
+    {
+	return x2 - x1;
+    }
+    double height() const
+    {
+	return y2 - y1;
+    }
+
     inline void initialise()
     {
 	x1 = HUGE;

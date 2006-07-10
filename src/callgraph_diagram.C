@@ -21,7 +21,7 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.15 2006-07-10 10:06:44 gnb Exp $");
+CVSID("$Id: callgraph_diagram.C,v 1.16 2006-07-10 10:12:15 gnb Exp $");
 
 #define MARGIN		    0.2
 #define BOX_WIDTH  	    4.0
@@ -873,8 +873,8 @@ callgraph_diagram_t::render(scenegen_t *sg)
 	sg->noborder();
 	sg->box(bounds_.x1+MARGIN,
 		bounds_.y1+MARGIN,
-	        bounds_.x2-bounds_.x1-2*MARGIN,
-	        bounds_.y2-bounds_.y1-2*MARGIN);
+	        bounds_.width()-2*MARGIN,
+	        bounds_.height()-2*MARGIN);
     }
 
     shown_++;

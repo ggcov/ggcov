@@ -22,7 +22,7 @@
 #include "canvas_scenegen.H"
 #include "prefs.H"
 
-CVSID("$Id: diagwin.C,v 1.2 2006-01-29 00:38:27 gnb Exp $");
+CVSID("$Id: diagwin.C,v 1.3 2006-07-10 10:12:15 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -67,8 +67,8 @@ diagwin_t::zoom_all()
 
     diagram_->get_bounds(&bounds);
 
-    zoomx = canvas_->allocation.width / (bounds.x2 - bounds.x1);
-    zoomy = canvas_->allocation.height / (bounds.y2 - bounds.y1);
+    zoomx = canvas_->allocation.width / bounds.width();
+    zoomy = canvas_->allocation.height / bounds.height();
     zoom_ = MIN(zoomx, zoomy);
     dprintf3(D_DIAGWIN, "diagwin_t::zoom_all: zoomx=%g zoomy=%g zoom=%g\n",
     	    	zoomx, zoomy, zoom_);
