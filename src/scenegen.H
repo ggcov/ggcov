@@ -62,9 +62,9 @@ public:
 protected:
     enum object_type_t
     {
-    	NONE=0,
-	FUNCTION,
-	FILE
+    	OT_NONE=0,
+	OT_FUNCTION,
+	OT_FILE
     };
     cov_file_t *get_file();
     cov_function_t *get_function();
