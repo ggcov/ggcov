@@ -95,44 +95,17 @@ public:
     }
 
     gboolean is_suppressed() const;
-    
-    /* TODO: cache the status and move the calculation out of line */
+
     cov::status_t status()
     {
-#if 0
-    /* TODO: verify whether these 2 code fragments are the same */
-    /* I'm assuming that for calls count_ will be the same as from_->count_
-      */
-	if (suppressed_)
+	if (is_suppressed())
 	    return cov::SUPPRESSED;
 	else if (count_)
 	    return cov::COVERED;
-	else if (from_->count_)
-	    return cov::PARTCOVERED;
 	else
 	    return cov::UNCOVERED;
-#else
-    	if (is_fall_through() || is_call())
-	{
-	    if (is_suppressed())
-		return cov::SUPPRESSED;
-	    else if (from_->count_)
-		return cov::COVERED;
-	    else
-		return cov::UNCOVERED;
-	}
-	else
-	{
-	    if (is_suppressed())
-		return cov::SUPPRESSED;
-	    else if (count_)
-		return cov::COVERED;
-	    else
-		return cov::UNCOVERED;
-	}
-#endif
     }
-    
+
     void finalise();
 
 private:
