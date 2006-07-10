@@ -51,7 +51,27 @@ public:
     virtual void box(double x, double y, double w, double h) = 0;
     virtual void textbox(double x, double y, double w, double h,
 			 const char *text) = 0;
-    virtual void arrow_size(double) = 0;
+    /* Arrow size is a linear scaling factor on the arrow shape. */
+    virtual void arrow_size(double);
+    /*
+     * Arrow shape, copied from the GnomeCanvas model.
+     *
+     * a = distance from tip to base along shaft (default 1.0)
+     * b = distance from tip to barbs along shaft (default 1.0)
+     * c = distance from barbs to shaft (default 0.25)
+     *
+     *    <-------b------->
+     *        <-----a----->
+     *    ^\___
+     *   c| \  \___
+     *    |  \     \___
+     * ___v___\________\___
+     *        /     ___/
+     *       /  ___/
+     *      /__/
+     *     /
+     */
+    virtual void arrow_shape(double a, double b, double c);
     virtual void polyline_begin(gboolean arrow) = 0;
     virtual void polyline_point(double x, double y) = 0;
     virtual void polyline_end(gboolean arrow) = 0;
@@ -68,6 +88,9 @@ protected:
     };
     cov_file_t *get_file();
     cov_function_t *get_function();
+
+    double arrow_size_;
+    double arrow_shape_[3];
 
 private:
     void set_object(object_type_t, void *);

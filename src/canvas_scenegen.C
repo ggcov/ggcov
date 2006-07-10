@@ -21,7 +21,7 @@
 #include "ui.h"
 #include "canvas_function_popup.H"
 
-CVSID("$Id: canvas_scenegen.C,v 1.2 2006-01-29 23:25:36 gnb Exp $");
+CVSID("$Id: canvas_scenegen.C,v 1.3 2006-07-10 10:14:39 gnb Exp $");
 
 #define RGB_TO_STR(b, rgb) \
     snprintf((b), sizeof((b)), "#%02x%02x%02x", \
@@ -34,7 +34,6 @@ canvas_scenegen_t::canvas_scenegen_t(GnomeCanvas *can)
     canvas_ = can;
     root_ = gnome_canvas_root(canvas_);
 
-    arrow_size_ = 0.5;
     points_.coords = (double *)0;
     points_.num_points = 0;
     points_.ref_count = 1;
@@ -140,12 +139,6 @@ canvas_scenegen_t::textbox(
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-canvas_scenegen_t::arrow_size(double as)
-{
-    arrow_size_ = as;
-}
-
-void
 canvas_scenegen_t::polyline_begin(gboolean arrow)
 {
     first_arrow_flag_ = arrow;
@@ -182,9 +175,9 @@ canvas_scenegen_t::polyline_end(gboolean arrow)
 		"points", 	    	&points_,
 		"first_arrowhead",	first_arrow_flag_,
 		"last_arrowhead",	arrow,
-		"arrow_shape_a",	arrow_size_,
-		"arrow_shape_b",	arrow_size_,
-		"arrow_shape_c",	arrow_size_/4.0,
+		"arrow_shape_a",	arrow_size_ * arrow_shape_[0],
+		"arrow_shape_b",	arrow_size_ * arrow_shape_[1],
+		"arrow_shape_c",	arrow_size_ * arrow_shape_[2],
 		"fill_color",		fill_color(),
 		/* setting width_pixels screws up the arrow heads !?!? */
 		(char *)0);

@@ -20,7 +20,7 @@
 #include "php_scenegen.H"
 #include <math.h>
 
-CVSID("$Id: php_scenegen.C,v 1.2 2006-01-29 23:25:36 gnb Exp $");
+CVSID("$Id: php_scenegen.C,v 1.3 2006-07-10 10:14:39 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -140,12 +140,6 @@ php_scenegen_t::textbox(
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-php_scenegen_t::arrow_size(double as)
-{
-    arrow_size_ = as;
-}
-
-void
 php_scenegen_t::polyline_begin(gboolean arrow)
 {
     first_arrow_flag_ = arrow;
@@ -190,6 +184,10 @@ php_scenegen_t::polyline_point(double x, double y)
     ser_.next_key(); ser_.integer(fill_idx_);	// border
     ser_.end_array();
 #endif
+
+/*
+ * TODO: need to make use of the arrow_shape_
+ */
 
 void
 php_scenegen_t::polyline_end(gboolean arrow)

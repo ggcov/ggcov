@@ -19,16 +19,36 @@
 
 #include "scenegen.H"
 
-CVSID("$Id: scenegen.C,v 1.3 2006-07-10 10:09:08 gnb Exp $");
+CVSID("$Id: scenegen.C,v 1.4 2006-07-10 10:14:39 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 scenegen_t::scenegen_t()
 {
+    arrow_size_ = 0.5;
+    arrow_shape_[0] = 1.0;
+    arrow_shape_[1] = 1.0;
+    arrow_shape_[2] = 0.25;
 }
 
 scenegen_t::~scenegen_t()
 {
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+scenegen_t::arrow_size(double s)
+{
+    arrow_size_ = s;
+}
+
+void
+scenegen_t::arrow_shape(double a, double b, double c)
+{
+    arrow_shape_[0] = a;
+    arrow_shape_[1] = b;
+    arrow_shape_[2] = c;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

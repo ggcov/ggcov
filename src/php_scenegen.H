@@ -37,7 +37,6 @@ public:
     void box(double x, double y, double w, double h);
     void textbox(double x, double y, double w, double h,
 			 const char *text);
-    void arrow_size(double as);
     void polyline_begin(gboolean arrow);
     void polyline_point(double x, double y);
     void polyline_end(gboolean arrow);
@@ -68,7 +67,6 @@ private:
     unsigned int border_idx_;
 
     /* state for polylines */
-    double arrow_size_;
     gboolean first_arrow_flag_;
     struct
     {

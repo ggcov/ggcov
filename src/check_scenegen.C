@@ -19,7 +19,7 @@
 
 #include "check_scenegen.H"
 
-CVSID("$Id: check_scenegen.C,v 1.2 2006-01-29 23:25:36 gnb Exp $");
+CVSID("$Id: check_scenegen.C,v 1.3 2006-07-10 10:14:39 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -87,11 +87,6 @@ check_scenegen_t::textbox(
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
-check_scenegen_t::arrow_size(double as)
-{
-}
 
 void
 check_scenegen_t::polyline_begin(gboolean arrow)
