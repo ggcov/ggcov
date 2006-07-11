@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.24 2006-07-10 11:22:50 gnb Exp $");
+CVSID("$Id: cov_function.C,v 1.25 2006-07-10 14:13:27 gnb Exp $");
 
 gboolean cov_function_t::solve_fuzzy_flag_ = FALSE;
 
@@ -164,9 +164,9 @@ cov_function_t::get_last_location() const
     for (bidx = num_blocks()-1 ; bidx >= 0 ; bidx--)
     {
 	list_iterator_t<cov_location_t> liter;
-	for (liter = nth_block(bidx)->location_iterator() ;
+	for (liter = nth_block(bidx)->location_reverse_iterator() ;
 	     liter != (cov_location_t *)0 ;
-	     ++liter)
+	     --liter)
 	{
 	    loc = *liter;
 

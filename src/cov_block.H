@@ -83,6 +83,11 @@ public:
     {
     	return locations_.first();
     }
+    list_iterator_t<cov_location_t>
+    location_reverse_iterator() const
+    {
+    	return locations_.last();
+    }
 
     count_t
     count() const
