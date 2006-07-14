@@ -27,7 +27,7 @@
 #include "tok.H"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.29 2006-02-19 03:47:11 gnb Exp $");
+CVSID("$Id: cov.C,v 1.30 2006-07-13 15:09:23 gnb Exp $");
 
 static gboolean cov_read_one_object_file(const char *exefilename, int depth);
 extern char *argv0;
@@ -86,7 +86,7 @@ cov_read_source_file_2(const char *fname, gboolean quiet)
     	return FALSE;
     }
 
-    f = new cov_file_t(filename);
+    f = new cov_file_t(filename, fname);
 
     if (!f->read(quiet))
     {
@@ -277,16 +277,20 @@ cov_read_directory_2(
     int dirlen;
     unsigned int successes = 0;
     
-    estring child = file_make_absolute(dirname);
+    estring child = dirname;
     dprintf1(D_FILES, "Scanning directory \"%s\"\n", child.data());
 
-    if ((dir = opendir(child.data())) == 0)
+    if ((dir = opendir(dirname)) == 0)
     {
     	perror(child.data());
     	return 0;
     }
     
-    if (child.last() != '/')
+    while (child.last() == '/')
+	child.truncate_to(child.length()-1);
+    if (!strcmp(child, "."))
+	child.truncate();
+    else
 	child.append_char('/');
     dirlen = child.length();
     

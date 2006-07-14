@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.70 2006-07-10 11:18:47 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.71 2006-07-13 15:09:23 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -68,8 +68,9 @@ void *cov_file_t::files_model_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-cov_file_t::cov_file_t(const char *name)
- :  name_(name)
+cov_file_t::cov_file_t(const char *name, const char *relpath)
+ :  name_(name),
+    relpath_(relpath)
 {
     /*
      * It is the caller's responsibility to create cov_file_t objects
@@ -224,8 +225,6 @@ cov_file_t::first()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-	/* TODO: handle names relative to $PWD ? */
 
 cov_file_t *
 cov_file_t::find(const char *name)
@@ -404,7 +403,7 @@ cov_file_t::add_location(
     }
     else if ((f = find(filename)) == 0)
     {
-    	f = new cov_file_t(filename);
+    	f = new cov_file_t(filename, filename);
 	assert(f != 0);
     }
     assert(f->name_[0] == '/');    
@@ -546,7 +545,7 @@ cov_file_t::read_bb_file(covio_t *io)
 	case BB_FILENAME:
 	    if (!io->read_bbstring(filename, tag))
 	    	return FALSE;
-	    filename = file_make_absolute_to(filename, name_);
+	    filename = make_absolute(filename);
 	    dprintf1(D_BB, "BB filename = \"%s\"\n", filename.data());
 	    break;
 	    
@@ -844,6 +843,38 @@ gcov_tag_as_string(gnb_u32_t tag)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+void
+cov_file_t::infer_compilation_directory(const char *abspath)
+{
+    if (abspath[0] == '/')
+    {
+	unsigned int rellen = strlen(relpath_);
+	unsigned int abslen = strlen(abspath);
+	if (rellen < abslen &&
+	    abspath[abslen-rellen-1] == '/' &&
+	    !strcmp(abspath+abslen-rellen, relpath_))
+	{
+	    /* aha, we can correctly infer the compiledir */
+	    compiledir_ = g_strndup(abspath, abslen-rellen-1);
+	    dprintf1(D_BBG, "compiledir_=\"%s\"\n", compiledir_.data());
+	    return;
+	}
+    }
+    /* shit, now we're for it */
+    fprintf(stderr, "Warning: could not calculate compiledir for %s from location %s!!!\n",
+	    name_.data(), abspath);
+}
+
+char *
+cov_file_t::make_absolute(const char *filename) const
+{
+    if (compiledir_ != (const char *)0)
+	return file_make_absolute_to_dir(filename, compiledir_);
+    return file_make_absolute_to_file(filename, name_);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 gboolean
 cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 {
@@ -916,12 +947,14 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		estring filename;
-		
+
 		if (!io->read_u64(funcid) ||
 		    !io->read_string(funcname) ||
 		    !io->read_string(filename) ||
 		    !io->read_u32(tmp)/* this seems to be a line number */)
     		    bbg_failed0("short file");
+		if (compiledir_ == (const char *)0)
+		    infer_compilation_directory(filename);
 	    }
 	    else
 	    {
@@ -1010,7 +1043,10 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 			break;
 		    }
 
-    	    	    filename = file_make_absolute_to(s, name_);
+		    if (compiledir_ == (const char *)0)
+			infer_compilation_directory(s);
+
+    	    	    filename = make_absolute(s);
 		}
 		else
 		{
@@ -1544,7 +1580,7 @@ cov_file_t::read_12bp_file(covio_t *io)
     	    	if (p != 0)
     	    	{
     	    	    *p++ = '\0';
-		    loc.set(file_make_absolute_to(filename, name_), atoi(p));
+		    loc.set(make_absolute(filename), atoi(p));
     	    	}
     	    	else
     	    	{
@@ -1711,7 +1747,7 @@ cov_file_t::scan_o_file_calls(covio_t *io)
     	while ((r = cs->next(&cdata)) == 1)
 	{
 	    cov_location_t loc = cdata.location;
-    	    loc.filename = file_make_absolute_to(loc.filename, name_);
+    	    loc.filename = make_absolute(loc.filename);
 	    o_file_add_call(&loc, cdata.callname);
 	    g_free(loc.filename);
 	}

@@ -116,7 +116,7 @@ public:
     cov_line_t *nth_line(unsigned int n) const;
 
 private:
-    cov_file_t(const char *name);
+    cov_file_t(const char *name, const char *relpath);
     ~cov_file_t();
     
     struct format_rec_t
@@ -158,6 +158,8 @@ private:
     gboolean read_old_bbg_file_common(covio_t *);
     gboolean read_old_bbg_file(covio_t *);
     gboolean read_oldplus_bbg_file(covio_t *);
+    void infer_compilation_directory(const char *abspath);
+    char *make_absolute(const char *filename) const;
     gboolean read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version);
     gboolean read_gcc33_bbg_file(covio_t *);
     gboolean read_gcc34l_bbg_file(covio_t *);
@@ -186,7 +188,10 @@ private:
     static int common_len_;
     static void *files_model_;
 
-    string_var name_;
+    string_var name_;	    /* full absolute pathname of this file */
+    string_var relpath_;    /* relative path with which this file was found */
+    string_var compiledir_; /* directory in which this source was compiled;
+			     * base for relative pathnames */
     gboolean common_;	    /* whether this file uses common_path_ */
     gboolean finalised_;    /* data read & post-read connections made */
     gnb_u32_t format_version_;	/* file format version */

@@ -25,7 +25,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.10 2006-01-29 23:39:01 gnb Exp $");
+CVSID("$Id: filename.c,v 1.11 2006-07-13 15:09:23 gnb Exp $");
 
 #ifndef __set_errno
 #define __set_errno(v)	 errno = (v)
@@ -156,8 +156,11 @@ is_path_tail(const char *path, const char *file)
     return (!strcmp(tail, file) && (tail == path || tail[-1] == '/'));
 }
 
-char *
-file_make_absolute_to(const char *filename, const char *absfile)
+static char *
+file_make_absolute_to(
+    const char *filename,
+    const char *absfile,
+    gboolean isdir)
 {
     estring abs;
     tok_t tok(filename, "/");
@@ -169,11 +172,18 @@ file_make_absolute_to(const char *filename, const char *absfile)
     }
     else if (absfile != 0)
     {
-    	if (is_path_tail(absfile, filename))
-	    return g_strdup(absfile);
-    	const char *t = strrchr(absfile, '/');
-	assert(t != 0);
-    	abs.append_chars(absfile, t-absfile);
+	if (isdir)
+	{
+	    abs.append_string(absfile);
+	}
+	else
+	{
+	    if (is_path_tail(absfile, filename))
+		return g_strdup(absfile);
+	    const char *t = strrchr(absfile, '/');
+	    assert(t != 0);
+	    abs.append_chars(absfile, t-absfile);
+	}
     }
     else
     {
@@ -206,7 +216,19 @@ file_make_absolute_to(const char *filename, const char *absfile)
 char *
 file_make_absolute(const char *filename)
 {
-    return file_make_absolute_to(filename, 0);
+    return file_make_absolute_to(filename, 0, FALSE);
+}
+
+char *
+file_make_absolute_to_file(const char *filename, const char *absfile)
+{
+    return file_make_absolute_to(filename, absfile, FALSE);
+}
+
+char *
+file_make_absolute_to_dir(const char *filename, const char *absdir)
+{
+    return file_make_absolute_to(filename, absdir, TRUE);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
