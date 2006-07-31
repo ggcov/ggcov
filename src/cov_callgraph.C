@@ -20,7 +20,7 @@
 #include "cov.H"
 #include "cov_calliter.H"
 
-CVSID("$Id: cov_callgraph.C,v 1.9 2006-02-19 03:47:11 gnb Exp $");
+CVSID("$Id: cov_callgraph.C,v 1.10 2006-07-31 13:40:50 gnb Exp $");
 
 hashtable_t<const char, cov_callnode_t> *cov_callnode_t::all_;
 
@@ -212,6 +212,7 @@ cov_add_callarcs(cov_file_t *f)
 	    /* TODO: when new files are opened, old counts are double-counted */
 	    ca->add_count(itr->count());
 	}
+	delete itr;
     }
 }
 
