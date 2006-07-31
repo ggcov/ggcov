@@ -41,7 +41,7 @@ public:
     void polyline_point(double x, double y);
     void polyline_end(gboolean arrow);
 
-    void check();
+    gboolean check();
 
     void object(cov_function_t *);
 
@@ -59,7 +59,7 @@ private:
 	dbounds_t bbox_;
     };
 
-    void check_box_intersections();
+    gboolean check_box_intersections();
 
     /* state for boxes */
     string_var name_;

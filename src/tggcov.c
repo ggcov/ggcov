@@ -39,7 +39,7 @@
 #include "callgraph_diagram.H"
 #include "check_scenegen.H"
 
-CVSID("$Id: tggcov.c,v 1.20 2006-02-19 03:47:11 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.21 2006-07-31 13:49:47 gnb Exp $");
 
 char *argv0;
 static GList *files;	    /* incoming specification from commandline */
@@ -237,7 +237,8 @@ check_callgraph(void)
     diag.prepare();
     diag.render(&sg);
 
-    sg.check();
+    if (!sg.check())
+	exit(1);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

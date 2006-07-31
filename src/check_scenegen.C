@@ -19,7 +19,7 @@
 
 #include "check_scenegen.H"
 
-CVSID("$Id: check_scenegen.C,v 1.3 2006-07-10 10:14:39 gnb Exp $");
+CVSID("$Id: check_scenegen.C,v 1.4 2006-07-31 13:49:47 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -141,13 +141,17 @@ check_scenegen_t::object(cov_function_t *f)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
+gboolean
 check_scenegen_t::check()
 {
-    check_box_intersections();
+    gboolean ret = TRUE;
+
+    ret &= check_box_intersections();
+
+    return ret;
 }
 
-void
+gboolean
 check_scenegen_t::check_box_intersections()
 {
     list_iterator_t<box_t> aiter;
@@ -174,6 +178,7 @@ check_scenegen_t::check_box_intersections()
     }
     fprintf(stderr, "%u boxes, %u box intersections\n",
 	    boxes_.length(), n_box_intersect);
+    return (n_box_intersect == 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
