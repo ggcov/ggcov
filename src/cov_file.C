@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.71 2006-07-13 15:09:23 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.72 2006-07-31 14:23:08 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -843,26 +843,62 @@ gcov_tag_as_string(gnb_u32_t tag)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-cov_file_t::infer_compilation_directory(const char *abspath)
+/*
+ * If `relpath' matches the tail part of `abspath',
+ * return the number of characters from `abspath'
+ * which *preceed* the match.  Otherwise, return -1.
+ */
+static int
+path_is_suffix(const char *abspath, const char *relpath)
 {
-    if (abspath[0] == '/')
+    unsigned int rellen = strlen(relpath);
+    unsigned int abslen = strlen(abspath);
+    if (rellen < abslen &&
+	abspath[abslen-rellen-1] == '/' &&
+	!strcmp(abspath+abslen-rellen, relpath))
+	return abslen-rellen-1;
+    return -1;
+}
+
+void
+cov_file_t::infer_compilation_directory(const char *path)
+{
+    int clen;
+
+    dprintf1(D_BBG, "infer_compilation_directory(\"%s\")\n", path);
+
+    if (path[0] == '/' &&
+        (clen = path_is_suffix(path, relpath_)) > 0)
     {
-	unsigned int rellen = strlen(relpath_);
-	unsigned int abslen = strlen(abspath);
-	if (rellen < abslen &&
-	    abspath[abslen-rellen-1] == '/' &&
-	    !strcmp(abspath+abslen-rellen, relpath_))
-	{
-	    /* aha, we can correctly infer the compiledir */
-	    compiledir_ = g_strndup(abspath, abslen-rellen-1);
-	    dprintf1(D_BBG, "compiledir_=\"%s\"\n", compiledir_.data());
-	    return;
-	}
+	/*
+	 * `path' is an absolute path whose tail is
+	 * identical to `relpath_', so we can infer that
+	 * the compiledir is the remainder of `path'.
+	 */
+	compiledir_ = g_strndup(path, clen);
+	dprintf1(D_BBG, "compiledir_=\"%s\"\n", compiledir_.data());
+	return;
     }
+
+    if (path[0] != '/' &&
+        (clen = path_is_suffix(name_, path)) > 0)
+    {
+	/*
+	 * `path' is a relative path whose last element is
+	 * identical to the last element of `relpath_', so
+	 * we infer (possibly ambiguously) that path_ is the
+	 * relative path seen by the compiler at compiletime
+	 * and thus the compiledir is the absolute path `name_'
+	 * with `path' removed from its tail.
+	 */
+	compiledir_ = g_strndup(name_, clen);
+	dprintf1(D_BBG, "compiledir_=\"%s\"\n", compiledir_.data());
+	return;
+    }
+
     /* shit, now we're for it */
     fprintf(stderr, "Warning: could not calculate compiledir for %s from location %s!!!\n",
-	    name_.data(), abspath);
+	    name_.data(), path);
 }
 
 char *
