@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.73 2006-07-31 14:28:24 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.74 2006-07-31 14:32:01 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -1551,7 +1551,7 @@ cov_file_t::read_da_file(covio_t *io)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
-cov_file_t::read_12bp_file(covio_t *io)
+cov_file_t::read_rtl_file(covio_t *io)
 {
     int state = 0;
     cov_function_t *fromfunc = 0;
@@ -1564,7 +1564,7 @@ cov_file_t::read_12bp_file(covio_t *io)
     static const char c_basic_block[] = ";; Start of basic block ";
     static const char c_call_insn[] = "(call_insn";
     static const char c_symbol_ref[] = "symbol_ref:SI";
-    static const char fn[] = "read_12bp_file";
+    static const char fn[] = "read_rtl_file";
     
     dprintf2(D_FILES, "%s: reading %s\n", fn, io->filename());
 
@@ -1592,8 +1592,8 @@ cov_file_t::read_12bp_file(covio_t *io)
 	    	unsigned int bbidx = 1 + atoi(buf.data()+sizeof(c_basic_block)-1);
 		if (bbidx < 1 || bbidx >= fromfunc->num_blocks())
 		{
-		    fprintf(stderr, "read_12bp_file: function %s does not contain a block %u\n",
-		    	fromfunc->name(), bbidx);
+		    fprintf(stderr, "%s: function %s does not contain a block %u\n",
+		    	fn, fromfunc->name(), bbidx);
 		    bb = 0;
 		}
 		else
@@ -2079,10 +2079,19 @@ cov_file_t::read(gboolean quiet)
     	fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
     }
 
+    /*
+     * Try to parse the RTL debug dump produced by the -db option
+     * for accurate callgraph information.  This file is called:
+     * gcc 3.4:	    foo.c.12.bp
+     * gcc 4.0:	    foo.c.09.bp
+     * gcc 4.1:	    foo.c.14.bp
+     */
     gboolean have_cg = FALSE;
-    if ((io = find_file("+.12.bp", TRUE)) != 0)
+    if ((io = find_file("+.14.bp", TRUE)) != 0 ||
+	(io = find_file("+.12.bp", TRUE)) != 0 ||
+	(io = find_file("+.09.bp", TRUE)) != 0)
     {
-    	have_cg = read_12bp_file(io);
+    	have_cg = read_rtl_file(io);
     }
     
     /*
