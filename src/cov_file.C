@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.72 2006-07-31 14:23:08 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.73 2006-07-31 14:28:24 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -1036,18 +1036,21 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 			    (flags & BBG_FALL_THROUGH ? "fall_through" : ""));
 		if (dest >= nblocks)
     	    	    bbg_failed2("dest=%u > nblocks=%u", dest, nblocks);
-		    
+
 		a = new cov_arc_t();
 		a->fall_through_ = !!(flags & BBG_FALL_THROUGH);
 		/*
 		 * The FAKE flag is used both for calls and exception handling,
 		 * so we can't rely on it exclusively to determine calls.
+		 *
+		 * Note that the FAKE flag appears to be reliably present again
+		 * from at least gcc 3.4.  However FALL_THROUGH becomes unreliable
+		 * at gcc 4.1.1, which will emit an arc (N-2 -> N-1, !FALL_THROUGH)
+		 * for a "return" statement which the last line in a function.
 		 */
-    		a->call_ = (nblocks >= 2 && dest == nblocks-1 && !a->fall_through_);
+    		a->call_ = (dest == nblocks-1 && (flags & BBG_FAKE));
 		a->on_tree_ = (flags & BBG_ON_TREE);
 		a->attach(fn->nth_block(bidx), fn->nth_block(dest));
-    		if (a->call_ && !(flags & BBG_FAKE))
-    	    	    dprintf0(D_BBG, "BBG     missing fake flag\n");
 	    }
 	    break;
 
