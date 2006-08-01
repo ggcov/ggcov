@@ -19,7 +19,7 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_calliter.C,v 1.2 2006-02-19 03:47:11 gnb Exp $");
+CVSID("$Id: cov_calliter.C,v 1.3 2006-07-31 14:20:08 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -122,10 +122,13 @@ cov_range_call_iterator_t::cov_range_call_iterator_t(
  :  first_(first),
     last_(last)
 {
-    location_ = *first;
-    cov_line_t *ln = cov_line_t::find(&location_);
-    if (ln != 0)
-    	blocks_ = ln->blocks();
+    if (first_)
+    {
+	location_ = *first;
+	cov_line_t *ln = cov_line_t::find(&location_);
+	if (ln != 0)
+	    blocks_ = ln->blocks();
+    }
 }
 
 cov_range_call_iterator_t::~cov_range_call_iterator_t()
@@ -153,7 +156,7 @@ cov_range_call_iterator_t::next()
 	}
 	for (;;)
 	{
-	    if (location_ == *last_)
+	    if (last_ == 0 || location_ == *last_)
 		return FALSE;
 	    ++location_;
 	    cov_line_t *ln = cov_line_t::find(&location_);

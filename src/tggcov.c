@@ -39,7 +39,7 @@
 #include "callgraph_diagram.H"
 #include "check_scenegen.H"
 
-CVSID("$Id: tggcov.c,v 1.21 2006-07-31 13:49:47 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.22 2006-07-31 14:20:08 gnb Exp $");
 
 char *argv0;
 static GList *files;	    /* incoming specification from commandline */
@@ -258,6 +258,15 @@ compare_nodes_by_name(const cov_callnode_t **a, const cov_callnode_t **b)
 }
 
 static void
+set_printable_location(cov_location_var &loc, const cov_location_t *from)
+{
+    if (from == 0)
+	loc.set("-", 0);
+    else
+	loc.set(cov_file_t::minimise_name(from->filename), from->lineno);
+}
+
+static void
 dump_callgraph(void)
 {
     FILE *fp;
@@ -304,13 +313,12 @@ dump_callgraph(void)
     	    while (itr->next())
 	    {
 		fprintf(fp, "\tblock %u\n", itr->block()->bindex());
-
-		const cov_location_t *loc = itr->location();
-		string_var minfile = cov_file_t::minimise_name(loc->filename);
-		fprintf(fp, "\t\tcall %s\n\t\t\tcount %llu\n\t\t\tlocation %s:%lu\n",
+		cov_location_var loc;
+		set_printable_location(loc, itr->location());
+		fprintf(fp, "\t\tcall %s\n\t\t\tcount %llu\n\t\t\tlocation %s\n",
 			(itr->name() != 0 ? itr->name() : "-"),
 			itr->count(),
-			minfile.data(), loc->lineno);
+			loc.describe());
 	    }
 	    delete itr;
 	    
@@ -319,9 +327,9 @@ dump_callgraph(void)
 	    itr = new cov_range_call_iterator_t(first, last);
 	    while (itr->next())
 	    {
-		const cov_location_t *loc = itr->location();
-    	    	string_var minfile = cov_file_t::minimise_name(loc->filename);
-	    	fprintf(fp, "\tlocation %s:%lu\n", minfile.data(), loc->lineno);
+		cov_location_var loc;
+		set_printable_location(loc, itr->location());
+	    	fprintf(fp, "\tlocation %s\n", loc.describe());
 		fprintf(fp, "\t\tcall %s\n\t\t\tcount %llu\n",
 			(itr->name() != 0 ? itr->name() : "-"),
 			itr->count());
