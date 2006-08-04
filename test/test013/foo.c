@@ -40,5 +40,5 @@ main(int argc, char **argv)
     function_three(--x);
     x += 4;
     
-    return x;
+    return 0;
 }

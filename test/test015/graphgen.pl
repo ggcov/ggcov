@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# $Id: graphgen.pl,v 1.1 2006-01-29 00:42:57 gnb Exp $
+# $Id: graphgen.pl,v 1.2 2006-08-04 12:36:05 gnb Exp $
 #
 
 use strict;
@@ -123,6 +123,6 @@ foreach my $name (sort keys %nodes)
 
     printf OUT "    x += %s(x);\n", funcname($n);
 }
-printf OUT "    return x;\n";
+printf OUT "    return 0;\n";
 printf OUT "}\n";
 

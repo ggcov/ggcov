@@ -46,5 +46,5 @@ main(int argc, char **argv)
     }
     x += 4;
     printf("foo returning naturally\n");
-    return x;
+    return 0;
 }

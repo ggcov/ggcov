@@ -35,5 +35,5 @@ main(int argc, char **argv)
     function_one(--x); function_two(--x) ; function_three(--x);
     x += 4;
     
-    return x;
+    return 0;
 }

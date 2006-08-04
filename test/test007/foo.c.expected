@@ -46,5 +46,5 @@
         -:   46:    }
         4:   47:    x += 4;
         4:   48:    printf("foo returning naturally\n");
-        4:   49:    return x;
+        4:   49:    return 0;
         -:   50:}

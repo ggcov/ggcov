@@ -55,5 +55,5 @@ main(int argc, char **argv)
     f.function_one(--x); f.function_two(--x) ; f.function_three(--x);
     x += 4;
     
-    return x;
+    return 0;
 }
