@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: common.sh,v 1.16 2006-06-26 02:55:39 gnb Exp $
+# $Id: common.sh,v 1.17 2006-08-04 12:37:00 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -63,7 +63,7 @@ fatal ()
 
 vdo ()
 {
-    echo "$@"
+    echo "+ $@"
     eval "$@"
 }
 
@@ -72,7 +72,7 @@ vncdo ()
     if [ $CANNED = yes ]; then
 	echo "[skipping] $@"
     else
-	echo "$@"
+	echo "+ $@"
 	eval "$@"
     fi
 }
@@ -82,7 +82,7 @@ vcapdo ()
     local OUTFILE=$1
     shift
 
-    echo "$@"
+    echo "+ $@"
     eval "$@" > $OUTFILE 2>&1
 }
 
