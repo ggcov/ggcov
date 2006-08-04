@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.23 2006-08-04 13:40:58 gnb Exp $
+# $Id: common.sh,v 1.24 2006-08-04 13:42:33 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -499,7 +499,10 @@ _tggcov_Nflag ()
     old)
     	;;
     auto)
-        egrep '^[ \t]+(-|[0-9]+):[ \t]+[01]:' `_gcov_file $SRC` >/dev/null && echo "-N"
+	local gcovfile=$(_gcov_file $SRC)
+	if [ -f $gcovfile ]; then
+	    egrep '^[ \t]+(-|[0-9]+):[ \t]+[01]:' $gcovfile >/dev/null && echo "-N"
+	fi
     	;;
     *)
     	fatal "unknown annotate format \"$TGGCOV_ANNOTATE_FORMAT\""
