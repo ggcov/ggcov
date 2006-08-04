@@ -17,12 +17,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: runtest,v 1.6 2005-04-03 08:50:30 gnb Exp $
+# $Id: runtest,v 1.7 2006-08-04 13:33:06 gnb Exp $
 #
 
 TESTS=
 SUPPRESS=
 GIVEN=no
+SHELL=bash
 
 usage ()
 {
@@ -114,23 +115,17 @@ echo "Running tests"
     done
 )
 
-NRUN=0
 NPASS=0
 for t in $TESTS ; do
-    echo -n $t
+#     echo -n $t
     (
-	echo "================================================================================"
-	echo "==== $t start"
+# 	echo "==== $t start"
     	cd $t
-	sh runtest
+	$SHELL runtest
     )
     if [ $? = 0 ]; then
-	RESULT=PASS
 	NPASS=`expr $NPASS + 1`
-    else
-	RESULT=FAIL
     fi
-    echo "==== $t $RESULT"
     NRUN=`expr $NRUN + 1`
 done
 

@@ -3,7 +3,7 @@
 . ../common.sh
 
 CLEAN_FILES="$CLEAN_FILES bar baz"
-init
+init "code in C shared libraries linked by absolute searchable names"
 
 subdir_push bar/fnarp
 need_files bar.c bar.h

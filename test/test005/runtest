@@ -2,7 +2,7 @@
 
 . ../common.sh
 
-init
+init "nonlocal flow control using C++ exceptions"
 
 compile_cxx foo.C
 link foo foo.o

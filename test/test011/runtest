@@ -2,7 +2,7 @@
 
 . ../common.sh
 
-init
+init "suppression of lines by ifdef"
 
 CDEFINES="-DFOO -DQUUX"
 

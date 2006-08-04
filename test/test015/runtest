@@ -3,7 +3,7 @@
 . ../common.sh
 
 CLEAN_FILES="$CLEAN_FILES *f.c *m.c"
-init
+init "callgraph diagram layout"
 
 SUBTESTS="$@"
 if [ -z "$SUBTESTS" ] ; then

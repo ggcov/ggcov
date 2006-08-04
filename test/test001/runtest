@@ -2,7 +2,7 @@
 
 . ../common.sh
 
-init
+init "simple C line coverage test"
 
 compile_c foo.c
 link foo foo.o

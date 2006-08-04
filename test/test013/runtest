@@ -2,7 +2,7 @@
 
 . ../common.sh
 
-init
+init "C with early exit()s from a nonfinal block"
 
 compile_c foo.c
 link foo foo.o

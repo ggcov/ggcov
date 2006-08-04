@@ -2,7 +2,7 @@
 
 . ../common.sh
 
-init
+init "assignment of locations to C++ inline functions defined in headers"
 
 compile_cxx foo.C
 link foo foo.o

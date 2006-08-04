@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.20 2006-08-04 13:23:09 gnb Exp $
+# $Id: common.sh,v 1.21 2006-08-04 13:33:06 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -44,7 +44,17 @@ CXXLINK=no
 
 TGGCOV_ANNOTATE_FORMAT=auto
 TGGCOV_FLAGS=
+TEST=$(cd $(dirname $0) ; basename $(pwd))
 SUBTEST=
+#
+# `RESULT' tracks the running result for the whole test.  Values are:
+#   ""	    no `pass' or `fail' calls, indeterminate
+#   PASS    at least one `pass' and no `fail' calls
+#   FAIL    at least one `fail' call
+#   ERROR   something went wrong with the test, exiting immediately
+#
+RESULT=
+LOG=log
 if [ -n "$RPLATFORM" ]; then
     PLATFORM="$RPLATFORM"
     CANNED=yes
@@ -54,15 +64,85 @@ else
 fi
 
 TMP1=/tmp/ggcov-test-$$a
-TMP2=/tmp/ggcov-test-$$b
-/bin/rm -f $TMP1 $TMP2
-trap "/bin/rm -f $TMP1 $TMP2" 0 1 11 13 15
+/bin/rm -f $TMP1
+trap "/bin/rm -f $TMP1 ; _result ERROR signal caught ; return 1" 1 11 13 15
+trap "/bin/rm -f $TMP1 ; _resonexit" 0
+
+_resmsg ()
+{
+    local res="$1"
+    shift
+    echo "$res: ($TEST$SUBTEST) $*"
+    [ -n "$LOG" ] && echo "$res: ($TEST$SUBTEST) $*" 1>&3
+}
+
+_result ()
+{
+    local res="$1"
+    shift
+
+    # log any result which isn't a PASS and its message
+    if [ $res != PASS ]; then
+	_resmsg $res $*
+    fi
+
+    # update $RESULT
+    case "$RESULT:$res" in
+    :*) RESULT=$res ;;	# first result of any kind, just take it
+    *:PASS) ;;		# PASS doesn't change any other result
+    FAIL:ERROR) ;;	# ERRORs after a FAIL are probably flow-on
+    *) RESULT=$res ;;	# otherwise, take the new result
+    esac
+}
+
+_resonexit ()
+{
+    case "$RESULT" in
+    "") _resmsg ERROR "no test code exists here" ;;
+    PASS)
+	SUBTEST=
+	_resmsg PASS $DESCRIPTION
+	;;
+    esac
+    [ $RESULT = PASS ] || exit 1;
+}
+
+pass ()
+{
+    _result PASS
+}
+
+fail ()
+{
+    _result FAIL $*
+}
 
 fatal ()
 {
-    echo "$0: FATAL: $*"
-    exit 1
+    _result ERROR $*
+    [ $RESULT = ERROR ] && exit 1
 }
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --no-log)
+	LOG=
+	;;
+    *)
+	echo "Unknown option: $1" 1>&2
+	exit 1
+	;;
+    esac
+    shift
+done
+
+if [ $CANNED = yes ]; then
+    exec 3>/dev/null
+elif [ -n "$LOG" ]; then
+    [ -f $LOG ] && mv -f $LOG $LOG.old
+    # save old stdout as fd 3, then redirect stdout and stderr to log
+    exec 3>&1 >$LOG 2>&1
+fi
 
 vdo ()
 {
@@ -342,7 +422,7 @@ run ()
     vcmd "run $*"
     local AOUT="./$1.exe"
     shift
-    vncdo $AOUT "$@" || fatal "Can't run generated test program"
+    vncdo $AOUT "$@" || fail "Can't run generated test program"
 }
 
 subtest ()
@@ -444,11 +524,12 @@ run_tggcov ()
     if vcapdo $TMP1 $top_builddir/${_DUP}src/tggcov -a $NFLAG $TGGCOV_FLAGS $SRC ; then
 	cat $TMP1
 	TGGCOV_FILES=$(sed -n -e 's:^Writing[ \t][ \t]*'$pwd'/\([^ \t]*\.tggcov\)$:\1:p' < $TMP1)
-	[ -z "$TGGCOV_FILES" ] && fatal "no output files from tggcov"
+	[ -z "$TGGCOV_FILES" ] && fail "no output files from tggcov"
 	_subtestize_files $TGGCOV_FILES
+	pass
     else
 	cat $TMP1
-	fatal "tggcov failed"
+	fail "tggcov failed"
     fi
 }
 
@@ -525,7 +606,7 @@ _compare_coverage ()
     echo "Filtering counts"
     _filter_spurious_counts "$1" > $1.filt
     _filter_spurious_counts "$2" > $2.filt
-    vdo diff -u $1.filt $2.filt || fatal "$1.filt differs from $2.filt"
+    vdo diff -u $1.filt $2.filt && pass || fail "$1.filt differs from $2.filt"
 }
 
 _filter_spurious_callgraph ()
@@ -550,7 +631,7 @@ _compare_callgraph ()
     echo "Filtering callgraph"
     _filter_spurious_callgraph "$1" > $1.filt
     _filter_spurious_callgraph "$2" > $2.filt
-    vdo diff -u $1.filt $2.filt || fatal "$1.filt differs from $2.filt"
+    vdo diff -u $1.filt $2.filt && pass || fail "$1.filt differs from $2.filt"
 }
 
 compare_lines ()

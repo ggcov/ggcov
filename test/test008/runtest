@@ -2,7 +2,7 @@
 
 . ../common.sh
 
-init
+init "multiple blocks per line using C for() loop"
 
 compile_c foo.c
 link foo foo.o

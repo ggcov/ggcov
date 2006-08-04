@@ -2,7 +2,7 @@
 
 . ../common.sh
 
-init
+init "simple C test with early exit()s not from main()"
 
 compile_c foo.c
 link foo foo.o
