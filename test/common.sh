@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.21 2006-08-04 13:33:06 gnb Exp $
+# $Id: common.sh,v 1.22 2006-08-04 13:37:53 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -28,6 +28,9 @@ top_builddir=../..
 top_srcdir=${top_srcdir:-../..}
 builddir=.
 srcdir=${srcdir:-.}
+
+_VALGRIND=
+VALGRIND="valgrind --tool=memcheck --num-callers=16 --leak-check=yes"
 
 CC="gcc"
 CWARNFLAGS="-Wall"
@@ -127,6 +130,9 @@ while [ $# -gt 0 ]; do
     case "$1" in
     --no-log)
 	LOG=
+	;;
+    --valgrind)
+	_VALGRIND="$VALGRIND"
 	;;
     *)
 	echo "Unknown option: $1" 1>&2
@@ -521,7 +527,7 @@ run_tggcov ()
     local NFLAG=`_tggcov_Nflag $SRC`
     local pwd=$(/bin/pwd)
 
-    if vcapdo $TMP1 $top_builddir/${_DUP}src/tggcov -a $NFLAG $TGGCOV_FLAGS $SRC ; then
+    if vcapdo $TMP1 $_VALGRIND $top_builddir/${_DUP}src/tggcov -a $NFLAG $TGGCOV_FLAGS $SRC ; then
 	cat $TMP1
 	TGGCOV_FILES=$(sed -n -e 's:^Writing[ \t][ \t]*'$pwd'/\([^ \t]*\.tggcov\)$:\1:p' < $TMP1)
 	[ -z "$TGGCOV_FILES" ] && fail "no output files from tggcov"
