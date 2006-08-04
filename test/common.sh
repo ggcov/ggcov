@@ -17,13 +17,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.19 2006-08-04 13:00:42 gnb Exp $
+# $Id: common.sh,v 1.20 2006-08-04 13:23:09 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
 
 DBFLAG=
 [ x"$ENABLE_DB_FLAG" = x1 ] && DBFLAG="-db"
+top_builddir=../..
+top_srcdir=${top_srcdir:-../..}
+builddir=.
+srcdir=${srcdir:-.}
 
 CC="gcc"
 CWARNFLAGS="-Wall"
@@ -41,12 +45,11 @@ CXXLINK=no
 TGGCOV_ANNOTATE_FORMAT=auto
 TGGCOV_FLAGS=
 SUBTEST=
-srcdir=`/bin/pwd`
 if [ -n "$RPLATFORM" ]; then
     PLATFORM="$RPLATFORM"
     CANNED=yes
 else
-    PLATFORM=`sh ../platform.sh`
+    PLATFORM=$(sh $top_srcdir/test/platform.sh)
     CANNED=no
 fi
 
@@ -104,8 +107,12 @@ init ()
 	done
 	vdo ls -AFC
     fi
-    _DSTACK=`/bin/pwd`
-    _ODSTACK=`/bin/pwd`
+    DESCRIPTION="$*"
+    _DSTACK=$(/bin/pwd)
+    _DDOWN=
+    _DDOWNSTACK=
+    _DUP=
+    _DUPSTACK=
 }
 
 subdir_push ()
@@ -118,22 +125,66 @@ subdir_push ()
     else
 	vcmd "subdir_push $subdir"
 	if [ ! -d "$subdir" ] ; then
-	    vdo mkdir "$subdir"
+	    vdo mkdir -p "$subdir"
 	fi
     fi
     vdo cd "$subdir"
-    _DSTACK=`/bin/pwd`":$_DSTACK"
+    _DDOWN="${_DDOWN:+$_DDOWN/}$subdir"
+    _DDOWNSTACK="$_DDOWN:$_DDOWNSTACK"
+    _DUP=$(echo $subdir | sed -e 's:[^/]\+:..:g')/$_DUP
+    _DSTACK=$(/bin/pwd)":$_DSTACK"
+    _DUPSTACK="$_DUP:$_DUPSTACK"
 }
 
 subdir_pop ()
 {
     local dir
-    
+
     vcmd "subdir_pop"
-    _DSTACK=`echo "$_DSTACK" | sed -e 's|[^:]*:||'`
-    dir=`echo "$_DSTACK" | sed -e 's|:*||'`
+    _DSTACK=$(echo "$_DSTACK" | sed -e 's|[^:]*:||')
+    dir=$(echo "$_DSTACK" | sed -e 's|:*||')
+    _DUPSTACK=$(echo "$_DUPSTACK" | sed -e 's|[^:]*:||')
+    _DUP=$(echo "$_DUPSTACK" | sed -e 's|:*||')
+    _DDOWNSTACK=$(echo "$_DDOWNSTACK" | sed -e 's|[^:]*:||')
+    _DDOWN=$(echo "$_DDOWNSTACK" | sed -e 's|:*||')
     vdo cd $dir || fatal "$dir: No such directory"
 }
+
+# Return a path to a file in $srcdir.  Used where the
+# pathname doesn't matter, e.g. *.expected files
+_srcfile ()
+{
+    case "$srcdir" in
+    .) echo $_DUP$1 ;;
+    /*) echo "$srcdir/$1" ;;
+    *) echo $_DUP$srcdir/$1 ;;
+    esac
+}
+
+# Ensure the given files exist at the given paths relative to
+# the current directory, if necessary linking them from $srcdir
+# Used where the pathname matters, e.g. C source files.
+need_files ()
+{
+    if [ $CANNED == yes ]; then
+	vcmd "need_files[canned] $*"
+    else
+	vcmd "need_files $*"
+	if [ $srcdir != "." -o -n "$_DDOWN" ]; then
+	    for path in $* ; do
+		local d=$(dirname $path)
+		local f=$(basename $path)
+		if [ ! -d $d ]; then
+		    vdo mkdir -p $d || fatal "Can't build directory $d"
+		fi
+		if [ ! -e $path ]; then
+		    vdo ln $(_srcfile ${_DDOWN:+x}$f) $path || fatal "Can't link source file to $path"
+		fi
+	    done
+	fi
+    fi
+}
+
 
 compile_c ()
 {
@@ -164,7 +215,7 @@ compile_c ()
     fi
 
     vcmd "compile_c $cfile"
-    vncdo $CC $CWARNFLAGS $CCOVFLAGS $CDEFINES $picflag -c $srcdir/$cfile || fatal "can't compile $srcdir/$cfile"
+    vncdo $CC $CWARNFLAGS $CCOVFLAGS $CDEFINES $picflag -c $cfile || fatal "can't compile $cfile"
 }
 
 compile_cxx ()
@@ -197,7 +248,7 @@ compile_cxx ()
 
     vcmd "compile_cxx $cfile"
     CXXLINK=yes
-    vncdo $CXX $CXXWARNFLAGS $CXXCOVFLAGS $CXXDEFINES $picflag -c $srcdir/$cfile || fatal "can't compile $srcdir/$cfile"
+    vncdo $CXX $CXXWARNFLAGS $CXXCOVFLAGS $CXXDEFINES $picflag -c $cfile || fatal "can't compile $cfile"
 }
 
 link ()
@@ -390,7 +441,7 @@ run_tggcov ()
     local NFLAG=`_tggcov_Nflag $SRC`
     local pwd=$(/bin/pwd)
 
-    if vcapdo $TMP1 ../../src/tggcov -a $NFLAG $TGGCOV_FLAGS $SRC ; then
+    if vcapdo $TMP1 $top_builddir/${_DUP}src/tggcov -a $NFLAG $TGGCOV_FLAGS $SRC ; then
 	cat $TMP1
 	TGGCOV_FILES=$(sed -n -e 's:^Writing[ \t][ \t]*'$pwd'/\([^ \t]*\.tggcov\)$:\1:p' < $TMP1)
 	[ -z "$TGGCOV_FILES" ] && fatal "no output files from tggcov"
@@ -516,7 +567,7 @@ compare_file ()
 {
     vcmd "compare_file $*"
     local SRC="$1"
-    local EXPECTED_FILE=$SRC$SUBTEST.expected
+    local EXPECTED_FILE=$(_srcfile $SRC$SUBTEST.expected)
     local TGGCOV_FILE=$(_tggcov_file $SRC)
 
     _compare_coverage "$EXPECTED_FILE" "$TGGCOV_FILE"
@@ -526,7 +577,7 @@ compare_callgraph ()
 {
     vcmd "compare_callgraph"
     local SRC=callgraph
-    local EXPECTED_FILE=$SRC$SUBTEST.expected
+    local EXPECTED_FILE=$(_srcfile $SRC$SUBTEST.expected)
     local TGGCOV_FILE=$(_tggcov_file $SRC)
 
     _compare_callgraph "$EXPECTED_FILE" "$TGGCOV_FILE"

@@ -5,18 +5,21 @@
 CLEAN_FILES="$CLEAN_FILES bar baz"
 init
 
-subdir_push bar
+subdir_push bar/fnarp
+need_files bar.c bar.h
 compile_c -pic bar.c
 link_shlib bar bar.o
 subdir_pop
 
 subdir_push baz
+need_files baz.c baz.h
 compile_c -pic baz.c
 link_shlib baz baz.o
 subdir_pop
 
+CDEFINES="-Ibar/fnarp -Ibaz"
 compile_c foo.c
-add_shlib bar/bar
+add_shlib bar/fnarp/bar
 add_shlib -abs baz/baz
 link foo foo.o
 
@@ -29,7 +32,7 @@ run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
 
-subdir_push bar
+subdir_push bar/fnarp
 run_gcov bar.c
 run_tggcov bar.c
 compare_lines bar.c

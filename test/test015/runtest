@@ -7,12 +7,13 @@ init
 
 SUBTESTS="$@"
 if [ -z "$SUBTESTS" ] ; then
-    SUBTESTS=$(ls *.graph | sed -e 's|^.*/\(.*\)\.graph$|\1|')
+    SUBTESTS=$(ls $srcdir/*.graph | sed -e 's|^.*/\(.*\)\.graph$|\1|')
 fi
 
 for st in $SUBTESTS ; do
     subtest $st
-    $srcdir/graphgen.pl $srcdir/$st.graph $srcdir/${st}f.c $srcdir/${st}m.c || continue
+    perl $(_srcfile graphgen.pl) $(_srcfile $st.graph) ${st}f.c ${st}m.c \
+	|| fatal "Can't generate source from graph $st.graph"
     compile_c ${st}f.c
     compile_c ${st}m.c
     link $st ${st}f.o ${st}m.o
@@ -20,5 +21,6 @@ for st in $SUBTESTS ; do
     run_gcov ${st}f.c
     run_tggcov ${st}f.c
     compare_lines ${st}f.c
+    vdo $top_builddir/${_DUP}src/tggcov -G ${st}f.c
 done
 
