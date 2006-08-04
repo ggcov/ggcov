@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.22 2006-08-04 13:37:53 gnb Exp $
+# $Id: common.sh,v 1.23 2006-08-04 13:40:58 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -351,25 +351,29 @@ link ()
 	vncdo $CC $CCOVFLAGS -o "$AOUT" "$@" $LDLIBS || fatal "can't link $AOUT"
     	;;
     esac
+    if [ -n "$LDLIBS" ]; then
+	vdo ldd $AOUT
+	vdo readelf --dynamic $AOUT
+    fi
 }
 
 _dso_filename ()
 {
-    echo "lib`basename $1`.so.1"
+    echo "lib$(basename $1).so.1"
 }
 
 _dso_filename2 ()
 {
-    echo "lib`basename $1`.so"
+    echo "lib$(basename $1).so"
 }
 
 link_shlib ()
 {
     vcmd "link_shlib $*"
-    local DSO=`_dso_filename "$1"`
-    local DSO2=`_dso_filename2 "$1"`
+    local DSO=$(_dso_filename "$1")
+    local DSO2=$(_dso_filename2 "$1")
     shift
-    
+
     case "$CXXLINK" in
     yes)
 	vncdo $CXX $CXXCOVFLAGS -shared -o "$DSO" "$@" || fatal "can't link $DSO"
@@ -387,34 +391,25 @@ add_shlib ()
     local dso
     local dir
     local file
-    
+
     vcmd "add_shlib $*"
     while [ $# -gt 0 ] ; do
     	case "$1" in
 	-abs) absflag=yes ;;
-	-*)
-	    echo "add_shlib: unknown flag \"$1\""
-	    exit 1
-	    ;;
+	-*) fatal "add_shlib: unknown flag \"$1\"" ;;
 	*)
-	    if [ ! -z "$dso" ]; then
-    		echo "add_shlib: too many dsos given"
-		exit 1
-	    fi
-	    dso="`/bin/pwd`/$1"
+	    [ -n "$dso" ] && fatal "add_shlib: too many dsos given"
+	    dso="$(/bin/pwd)/$1"
 	    ;;
 	esac
 	shift
     done
-    
-    if [ -z "$dso" ]; then
-    	echo "add_shlib: no dso given"
-	exit 1
-    fi
 
-    dir=`dirname $dso`
-    file=`_dso_filename $dso`
-    dso=`basename $dso`
+    [ -z "$dso" ] && fatal "add_shlib: no dso given"
+
+    dir=$(dirname $dso)
+    file=$(_dso_filename $dso)
+    dso=$(basename $dso)
 
     if [ $absflag = yes ] ; then
         LDLIBS="$LDLIBS -Wl,-rpath,$dir $dir/$file"
