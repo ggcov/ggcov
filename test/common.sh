@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: common.sh,v 1.17 2006-08-04 12:37:00 gnb Exp $
+# $Id: common.sh,v 1.18 2006-08-04 12:40:21 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -392,7 +392,7 @@ run_tggcov ()
 _filter_spurious_counts ()
 {
     local FILE="$1"
-    
+
 perl -e '
 use strict;
 my $in_decls = 0;
@@ -459,16 +459,15 @@ while (<STDIN>)
 _compare_coverage ()
 {
     echo "Filtering counts"
-    _filter_spurious_counts "$1" > $TMP1
-    _filter_spurious_counts "$2" > $TMP2
-    echo "diff -u filter($1) filter($2)"
-    diff -u $TMP1 $TMP2 || fatal "$4 line coverage differs from $3"
+    _filter_spurious_counts "$1" > $1.filt
+    _filter_spurious_counts "$2" > $2.filt
+    vdo diff -u $1.filt $2.filt && pass || fail "$1.filt differs from $2.filt"
 }
 
 _filter_spurious_callgraph ()
 {
     local FILE="$1"
-    
+
 perl -e '
 use strict;
 while (<STDIN>)
@@ -485,35 +484,37 @@ while (<STDIN>)
 _compare_callgraph ()
 {
     echo "Filtering callgraph"
-    _filter_spurious_callgraph "$1" > $TMP1
-    _filter_spurious_callgraph "$2" > $TMP2
-    echo "diff -u filter($1) filter($2)"
-    diff -u $TMP1 $TMP2 || fatal "$4 line coverage differs from $3"
+    _filter_spurious_callgraph "$1" > $1.filt
+    _filter_spurious_callgraph "$2" > $2.filt
+    vdo diff -u $1.filt $2.filt && pass || fail "$1.filt differs from $2.filt"
 }
 
 compare_lines ()
 {
     vcmd "compare_lines $*"
     local SRC="$1"
-    local GCOV_FILE=`_gcov_file $SRC`
-    local TGGCOV_FILE=`_tggcov_file $SRC`
+    local GCOV_FILE=$(_gcov_file $SRC)
+    local TGGCOV_FILE=$(_tggcov_file $SRC)
 
-    _compare_coverage "$GCOV_FILE" "$TGGCOV_FILE" "gcov" "tggcov"
+    _compare_coverage "$GCOV_FILE" "$TGGCOV_FILE"
 }
 
 compare_file ()
 {
     vcmd "compare_file $*"
     local SRC="$1"
-    local EXPECTED_FILE="$srcdir/$SRC$SUBTEST.expected"
-    local TGGCOV_FILE=`_tggcov_file $SRC`
+    local EXPECTED_FILE=$(_srcfile $SRC$SUBTEST.expected)
+    local TGGCOV_FILE=$(_tggcov_file $SRC)
 
-    case " $TGGCOV_FLAGS " in
-    *" -P "*)
-	_compare_callgraph "$EXPECTED_FILE" "$TGGCOV_FILE" "expected" "tggcov"
-	;;
-    *)
-	_compare_coverage "$EXPECTED_FILE" "$TGGCOV_FILE" "expected" "tggcov"
-	;;
-    esac
+    _compare_coverage "$EXPECTED_FILE" "$TGGCOV_FILE"
+}
+
+compare_callgraph ()
+{
+    vcmd "compare_callgraph"
+    local SRC=callgraph
+    local EXPECTED_FILE=$(_srcfile $SRC$SUBTEST.expected)
+    local TGGCOV_FILE=$(_tggcov_file $SRC)
+
+    _compare_callgraph "$EXPECTED_FILE" "$TGGCOV_FILE"
 }

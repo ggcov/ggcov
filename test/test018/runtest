@@ -20,4 +20,4 @@ compare_lines foo.c
 subtest 2
 tggcov_flags -P
 run_tggcov foo.c
-compare_file callgraph
+compare_callgraph
