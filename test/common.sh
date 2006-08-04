@@ -1,22 +1,23 @@
+#!/bin/bash
 #
 # ggcov - A GTK frontend for exploring gcov coverage data
 # Copyright (c) 2004-2005 Greg Banks <gnb@alphalink.com.au>
-# 
+#
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-# 
-# $Id: common.sh,v 1.18 2006-08-04 12:40:21 gnb Exp $
+#
+# $Id: common.sh,v 1.19 2006-08-04 13:00:42 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -48,7 +49,6 @@ else
     PLATFORM=`sh ../platform.sh`
     CANNED=no
 fi
-O=o.$PLATFORM
 
 TMP1=/tmp/ggcov-test-$$a
 TMP2=/tmp/ggcov-test-$$b
@@ -91,17 +91,19 @@ vcmd ()
     echo "==$*"
 }
 
+CLEAN_FILES="*.o *.S *.exe *.bb *.bbg *.gcno *.da *.gcda *.bp *.out *.gcov *.tggcov *.filt"
+
 init ()
 {
     if [ $CANNED = yes ]; then
 	vcmd "init[canned] $*"
-	[ -d $O ] || fatal "$O: No such directory"
     else
 	vcmd "init $*"
-	vdo /bin/rm -fr $O
-	vdo mkdir $O
+	for f in $CLEAN_FILES ; do
+	    [ -e $f ] && vdo /bin/rm -fr $f
+	done
+	vdo ls -AFC
     fi
-    vdo cd $O
     _DSTACK=`/bin/pwd`
     _ODSTACK=`/bin/pwd`
 }
@@ -201,9 +203,9 @@ compile_cxx ()
 link ()
 {
     vcmd "link $*"
-    local AOUT="$1"
+    local AOUT="$1.exe"
     shift
-    
+
     case "$CXXLINK" in
     yes)
 	vncdo $CXX $CXXCOVFLAGS -o "$AOUT" "$@" $LDLIBS || fatal "can't link $AOUT"
@@ -284,6 +286,14 @@ add_shlib ()
     fi
 }
 
+run ()
+{
+    vcmd "run $*"
+    local AOUT="./$1.exe"
+    shift
+    vncdo $AOUT "$@" || fatal "Can't run generated test program"
+}
+
 subtest ()
 {
     vcmd "subtest $*"
@@ -300,33 +310,43 @@ _tggcov_file ()
     echo $1$SUBTEST.tggcov
 }
 
+_subtest_file ()
+{
+    local base=${1%.*}
+    local ext=${1##*.}
+    echo $base$SUBTEST.$ext
+}
+
+_subtestize_files ()
+{
+    if [ -n "$SUBTEST" ] ; then
+	for f in $* ; do
+	    [ -f $f ] && vdo mv $f $(_subtest_file $f)
+	done
+    fi
+}
+ 
 run_gcov ()
 {
-    local O=`/bin/pwd | sed -e "s|^$srcdir/||"`
-
     vcmd "run_gcov $*"
+    local SRC="$1"
     if [ $CANNED = yes ]; then
-	echo "[skipping] gcov -b -f -o $O $SRC"
+	echo "[skipping] gcov -b -f $SRC"
 	return
     fi
-    local SRC="$1"
-    (
-        vdo cd $srcdir
-	if vcapdo $TMP1 gcov -b -f -o $O $SRC ; then
-	    cat $TMP1
-	    GCOV_FILES=`sed -n \
-		-e 's|^Creating[ \t][ \t]*\([^ \t]*\)\.gcov\.$|\1|p' \
-		-e 's|^.*:creating[ \t][ \t]*.\([^ \t]*\)\.gcov.$|\1|p' \
-		< $TMP1`
-    	    [ -z "$GCOV_FILES" ] && fatal "no output files from gcov"
-	    for f in $GCOV_FILES ; do
-		vdo mv $f.gcov $O/`_gcov_file $f`
-	    done
-	else
-	    cat $TMP1
-    	    fatal "gcov failed"
-	fi
-    ) || exit 1
+
+    if vcapdo $TMP1 gcov -b $SRC ; then
+	cat $TMP1
+	GCOV_FILES=$(sed -n \
+	    -e 's|^Creating[ \t][ \t]*\([^ \t]*\.gcov\)\.$|\1|p' \
+	    -e 's|^.*:creating[ \t][ \t]*.\([^ \t]*\.gcov\).$|\1|p' \
+	    < $TMP1)
+	[ -z "$GCOV_FILES" ] && fatal "no output files from gcov"
+	_subtestize_files $GCOV_FILES
+    else
+	cat $TMP1
+	fatal "gcov failed"
+    fi
 }
 
 tggcov_annotate_format ()
@@ -365,27 +385,20 @@ tggcov_flags ()
 
 run_tggcov ()
 {
-    local O=`/bin/pwd | sed -e "s|^$srcdir/||"`
-
     vcmd "run_tggcov $*"
     local SRC="$1"
     local NFLAG=`_tggcov_Nflag $SRC`
+    local pwd=$(/bin/pwd)
 
-    (
-        vdo cd $srcdir
-
-	if vcapdo $TMP1 ../../src/tggcov -a $NFLAG $TGGCOV_FLAGS -o $O $SRC ; then
-	    cat $TMP1
-	    TGGCOV_FILES=`sed -n -e 's:^Writing[ \t][ \t]*'$srcdir'/\([^ \t]*\)\.tggcov$:\1:p' < $TMP1`
-    	    [ -z "$TGGCOV_FILES" ] && fatal "no output files from tggcov"
-	    for f in $TGGCOV_FILES ; do
-		vdo mv $f.tggcov $O/`_tggcov_file $f`
-	    done
-	else
-	    cat $TMP1
-    	    fatal "tggcov failed"
-	fi
-    ) || exit 1
+    if vcapdo $TMP1 ../../src/tggcov -a $NFLAG $TGGCOV_FLAGS $SRC ; then
+	cat $TMP1
+	TGGCOV_FILES=$(sed -n -e 's:^Writing[ \t][ \t]*'$pwd'/\([^ \t]*\.tggcov\)$:\1:p' < $TMP1)
+	[ -z "$TGGCOV_FILES" ] && fatal "no output files from tggcov"
+	_subtestize_files $TGGCOV_FILES
+    else
+	cat $TMP1
+	fatal "tggcov failed"
+    fi
 }
 
 
@@ -461,7 +474,7 @@ _compare_coverage ()
     echo "Filtering counts"
     _filter_spurious_counts "$1" > $1.filt
     _filter_spurious_counts "$2" > $2.filt
-    vdo diff -u $1.filt $2.filt && pass || fail "$1.filt differs from $2.filt"
+    vdo diff -u $1.filt $2.filt || fatal "$1.filt differs from $2.filt"
 }
 
 _filter_spurious_callgraph ()
@@ -486,7 +499,7 @@ _compare_callgraph ()
     echo "Filtering callgraph"
     _filter_spurious_callgraph "$1" > $1.filt
     _filter_spurious_callgraph "$2" > $2.filt
-    vdo diff -u $1.filt $2.filt && pass || fail "$1.filt differs from $2.filt"
+    vdo diff -u $1.filt $2.filt || fatal "$1.filt differs from $2.filt"
 }
 
 compare_lines ()
@@ -503,7 +516,7 @@ compare_file ()
 {
     vcmd "compare_file $*"
     local SRC="$1"
-    local EXPECTED_FILE=$(_srcfile $SRC$SUBTEST.expected)
+    local EXPECTED_FILE=$SRC$SUBTEST.expected
     local TGGCOV_FILE=$(_tggcov_file $SRC)
 
     _compare_coverage "$EXPECTED_FILE" "$TGGCOV_FILE"
@@ -513,7 +526,7 @@ compare_callgraph ()
 {
     vcmd "compare_callgraph"
     local SRC=callgraph
-    local EXPECTED_FILE=$(_srcfile $SRC$SUBTEST.expected)
+    local EXPECTED_FILE=$SRC$SUBTEST.expected
     local TGGCOV_FILE=$(_tggcov_file $SRC)
 
     _compare_callgraph "$EXPECTED_FILE" "$TGGCOV_FILE"

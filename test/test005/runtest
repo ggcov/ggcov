@@ -8,31 +8,31 @@ compile_cxx foo.C
 link foo foo.o
 
 subtest 1
-vncdo ./foo 1
+run foo 1
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C
 
 subtest 2
-vncdo ./foo 2
+run foo 2
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C
 
 subtest 3
-vncdo ./foo 3
+run foo 3
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C
 
 subtest 42
-vncdo ./foo 42
+run foo 42
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C
 
 subtest -1
-vncdo ./foo -1
+run foo -1
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C

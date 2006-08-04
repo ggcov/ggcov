@@ -2,6 +2,7 @@
 
 . ../common.sh
 
+CLEAN_FILES="$CLEAN_FILES bar baz"
 init
 
 subdir_push bar
@@ -19,10 +20,10 @@ add_shlib bar/bar
 add_shlib -abs baz/baz
 link foo foo.o
 
-vncdo ./foo 1
-vncdo ./foo 2
-vncdo ./foo 3
-vncdo ./foo 4
+run foo 1
+run foo 2
+run foo 3
+run foo 4
 
 run_gcov foo.c
 run_tggcov foo.c

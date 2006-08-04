@@ -8,25 +8,25 @@ compile_c foo.c
 link foo foo.o
 
 subtest 0
-vncdo ./foo 0 12
+run foo 0 12
 run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
 
 subtest 1
-vncdo ./foo 1 12L32
+run foo 1 12L32
 run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
 
 subtest 3
-vncdo ./foo 3 12L32L32L32
+run foo 3 12L32L32L32
 run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
 
 subtest 10
-vncdo ./foo 10 12L32L32L32L32L32L32L32L32L32L32
+run foo 10 12L32L32L32L32L32L32L32L32L32L32
 run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
