@@ -13,4 +13,4 @@ run foo 3
 run foo 4
 
 run_tggcov -N foo.c
-compare_file foo.c
+compare_counts foo.c

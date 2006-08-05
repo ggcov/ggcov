@@ -30,15 +30,18 @@ run foo 4
 run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
+compare_counts foo.c
 
 subdir_push bar/fnarp
 run_gcov bar.c
 run_tggcov bar.c
 compare_lines bar.c
+compare_counts bar.c
 subdir_pop
 
 subdir_push baz
 run_gcov baz.c
 run_tggcov baz.c
 compare_lines baz.c
+compare_counts baz.c
 subdir_pop

@@ -12,21 +12,25 @@ run foo 0 12
 run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
+compare_counts foo.c
 
 subtest 1
 run foo 1 12L32
 run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
+compare_counts foo.c
 
 subtest 3
 run foo 3 12L32L32L32
 run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
+compare_counts foo.c
 
 subtest 10
 run foo 10 12L32L32L32L32L32L32L32L32L32L32
 run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
+compare_counts foo.c

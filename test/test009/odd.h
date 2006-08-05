@@ -2,5 +2,6 @@
 static inline int
 do_odd_stuff(int x)
 {
-    return x+42;
+    return x+42;		    /* C(3) */
 }
+

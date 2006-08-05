@@ -13,9 +13,9 @@ run foo 23 423
 
 subtest 1
 run_tggcov -N foo.c
-compare_file foo.c
+compare_counts foo.c
 
 subtest 2
 run_tggcov -X FOO -N foo.c
-compare_file foo.c
+compare_counts foo.c
 

@@ -14,3 +14,4 @@ run foo 23 423
 run_gcov foo.c
 run_tggcov foo.c
 compare_lines foo.c
+compare_counts foo.c

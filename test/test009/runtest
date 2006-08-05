@@ -16,6 +16,9 @@ run foo 5
 run_gcov foo.C
 run_tggcov foo.C
 compare_lines foo.C
+compare_counts foo.C
 compare_lines odd.h
+compare_counts odd.h
 compare_lines even.h
+compare_counts odd.h
 

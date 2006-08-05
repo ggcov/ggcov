@@ -1,20 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "baz.h"
-
+#include <stdio.h>			    /* C(-) */
+#include <stdlib.h>			    /* C(-) */
+#include "baz.h"			    /* C(-) */
+					    /* C(-) */
 void
 function_two(int x)
 {
-    printf("    function_two\n");
-    if (!x)
-    	exit(0);
+    printf("    function_two\n");	    /* C(3) */
+    if (!x)				    /* C(3) */
+    	exit(0);			    /* C(1) */
 }
-
+					    /* C(-) */
 void
 function_three(int x)
 {
-    printf("    function_three\n");
-    if (!x)
-    	exit(0);
+    printf("    function_three\n");	    /* C(2) */
+    if (!x)				    /* C(2) */
+    	exit(0);			    /* C(1) */
 }
-

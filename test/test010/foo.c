@@ -1,17 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "bar.c"
-
+#include <stdio.h>		    /* C(-) */
+#include <stdlib.h>		    /* C(-) */
+				    /* C(-) */
+#include "bar.c"		    /* C(-) */
+				    /* C(-) */
 int
 main(int argc, char **argv)
 {
     int x;
 
-    printf("foo running\n");
-    x = atoi(argv[1]);
-    function_one(--x); function_two(--x) ; function_three(--x);
-    x += 4;
+    printf("foo running\n");	    /* C(4) */
+    x = atoi(argv[1]);		    /* C(4) */
+    function_one(--x); function_two(--x) ; function_three(--x);	/* C(4) */
+    x += 4;			    /* C(1) */
 
-    return 0;
+    return 0;			    /* C(1) */
 }

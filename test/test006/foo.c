@@ -1,67 +1,67 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <errno.h>
-#include <sys/wait.h>
-
-const char *me = "parent";
-
+#include <stdio.h>			    /* C(-) */
+#include <stdlib.h>			    /* C(-) */
+#include <unistd.h>			    /* C(-) */
+#include <errno.h>			    /* C(-) */
+#include <sys/wait.h>			    /* C(-) */
+					    /* C(-) */
+const char *me = "parent";		    /* C(-) */
+					    /* C(-) */
 void
 function_three(int x)
 {
-    printf("%s:    function_three\n", me);
+    printf("%s:    function_three\n", me);  /* C(2) */
 }
-
+					    /* C(-) */
 void
 function_two(int x)
 {
-    printf("%s:    function_two\n", me);
-    if (--x)
-	function_three(x);
+    printf("%s:    function_two\n", me);    /* C(3) */
+    if (--x)				    /* C(3) */
+	function_three(x);		    /* C(2) */
 }
-
+					    /* C(-) */
 void
 function_one(int x)
 {
-    printf("%s:    function_one\n", me);
-    if (--x)
-	function_two(x);
+    printf("%s:    function_one\n", me);    /* C(4) */
+    if (--x)				    /* C(4) */
+	function_two(x);		    /* C(3) */
 }
-
+					    /* C(-) */
 void
 do_stuff(const char *arg)
 {
     int x;
 
-    x = atoi(arg);
-    function_one(x);
+    x = atoi(arg);			    /* C(4) */
+    function_one(x);			    /* C(4) */
 }
-
+					    /* C(-) */
 pid_t
 start_child(const char *arg)
 {
     pid_t pid;
 
-    pid = fork();
-    if (pid < 0)
+    pid = fork();			    /* C(2) */
+    if (pid < 0)			    /* C(4) */
     {
-	perror("fork");
-	exit(0);
+	perror("fork");			    /* C(0) */
+	exit(0);			    /* C(0) */
     }
-    else if (pid == 0)
+    else if (pid == 0)			    /* C(4) */
     {
 	/* child */
-	me = "child";
-	do_stuff(arg);
-	exit(0);
+	me = "child";			    /* C(2) */
+	do_stuff(arg);			    /* C(2) */
+	exit(0);			    /* C(2) */
     }
     else
     {
 	/* parent */
-	return pid;
+	return pid;			    /* C(2) */
     }
 }
-
+					    /* C(-) */
 int
 wait_for_child(pid_t pid)
 {
@@ -98,15 +98,15 @@ wait_for_child(pid_t pid)
     }
     /* NOTREACHED */
 }
-    
+						/* C(-) */
 int
 main(int argc, char **argv)
 {
     pid_t pid;
     
-    pid = start_child(argv[1]);
-    do_stuff(argv[2]);
-    wait_for_child(pid);
+    pid = start_child(argv[1]);			/* C(2) */
+    do_stuff(argv[2]);				/* C(2) */
+    wait_for_child(pid);			/* C(2) */
 
-    return 0;
+    return 0;					/* C(2) */
 }

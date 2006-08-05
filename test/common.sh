@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.27 2006-08-04 14:17:59 gnb Exp $
+# $Id: common.sh,v 1.28 2006-08-04 14:48:07 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -541,13 +541,17 @@ _compare_filtered ()
 compare_lines ()
 {
     vcmd "compare_lines $*"
-    _compare_filtered coverage $(_gcov_file $1) $(_tggcov_file $1)
+    _compare_filtered expected $(_gcov_file $1) $(_tggcov_file $1)
 }
 
-compare_file ()
+compare_counts ()
 {
-    vcmd "compare_file $*"
-    _compare_filtered coverage $(_srcfile $1$SUBTEST.expected) $(_tggcov_file $1)
+    vcmd "compare_counts $*"
+    local TF=$(_tggcov_file $1)
+
+    _filter expected $1 $TF.ex
+    _filter expected $TF
+    _diff $TF.ex $TF.filt
 }
 
 compare_callgraph ()

@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio.h>			    /* C(-) */
+#include <stdlib.h>			    /* C(-) */
 
 /* single line comment in the middle of nowhere */
 int function_one(int x);
