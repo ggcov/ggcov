@@ -18,7 +18,7 @@ sub is_system
     return 0;
 }
 
-while (<>)
+while (<STDIN>)
 {
     chomp;
 

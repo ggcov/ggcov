@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.26 2006-08-04 14:12:02 gnb Exp $
+# $Id: common.sh,v 1.27 2006-08-04 14:17:59 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -517,116 +517,41 @@ run_tggcov ()
     fi
 }
 
-
-_filter_spurious_counts ()
+_filter ()
 {
-    local FILE="$1"
-
-perl -e '
-use strict;
-my $in_decls = 0;
-while (<STDIN>)
-{
-    next if m/^(call|branch|function)/;
-    next if m/^        -:    0:/;
-    my ($count, $lineno, $text) = m/^( *[#0-9-]*):( *[0-9]*):(.*)$/;
-    my $zap = 0;
-    if ($text =~ m/^\s*}/)
-    {
-	# ignore lonely closing brace
-	$zap = 1;
-    }
-    elsif ($text =~ m/^{/)
-    {
-	# ignore lonely opening brace for a function
-	$in_decls = 1;
-	$zap = 1;
-    }
-    elsif ($text =~ m/^\s+{/)
-    {
-	# ignore all other lonely opening brace
-	$zap = 1;
-    }
-    elsif ($text =~ m/^\s*for\s*\(.*;.*;.*\)\s*$/)
-#    elsif ($text =~ m/^\s*for/)
-    {
-    	# entire for loop on a line...the gcov algorithm
-	# changed historically and ggcov uses the old crappy
-	# algorithm, so just ignore these lines
-	$zap = 1;
-    }
-    elsif ($text =~ m/^\s*catch\s*\(.*\)\s*$/)
-    {
-	# catch statement; gcc 4.1 + gcov seem to account catch
-	# statements differently than tggcov.  Our test code is
-	# organised so that the catch block code is on sepearate
-	# lines so the count for the catch statement itself is
-	# redundant.
-	# TODO: need to work out why in detail.
-	# TODO: test the case where the catch statement and its
-	#       block are all on the same line.
-	$zap = 1;
-    }
-    elsif ($text =~ m/^\s*$/)
-    {
-	$in_decls = 0;
-    }
-    elsif ($in_decls && $text =~ m/^[^={}()]*$/)
-    {
-	# ignore lines after the opening brace for a function
-	# until the first empty line, if they contain only
-	# variable declarations.
-	$zap = 1;
-    }
-    $count = "        ." if ($zap);
-    print "$count:$lineno:$text\n";
-}
-' < $FILE
-
+    local filter=$1
+    local infile=$2
+    local outfile=${3:-$2.filt}
+    local starg="${SUBTEST:+--subtest=${SUBTEST#.}}"
+    vdo "perl $top_srcdir/${_DUP}test/filter-$filter.pl $starg < $infile > $outfile" || fatal "Can't apply filter \"$filter\" to $infile"
 }
 
-_compare_coverage ()
+_diff ()
 {
-    echo "Filtering counts"
-    _filter_spurious_counts "$1" > $1.filt
-    _filter_spurious_counts "$2" > $2.filt
-    vdo diff -u $1.filt $2.filt && pass || fail "$1.filt differs from $2.filt"
+    vdo diff -u $1 $2 && pass || fail "$1 differs from $2"
 }
 
-_compare_callgraph ()
+_compare_filtered ()
 {
-    echo "Filtering callgraph"
-    perl $top_srcdir/test/filter-callgraph.pl "$1" > $1.filt
-    perl $top_srcdir/test/filter-callgraph.pl "$2" > $2.filt
-    vdo diff -u $1.filt $2.filt && pass || fail "$1.filt differs from $2.filt"
+    _filter $1 $2
+    _filter $1 $3
+    _diff $2.filt $3.filt
 }
 
 compare_lines ()
 {
     vcmd "compare_lines $*"
-    local SRC="$1"
-    local GCOV_FILE=$(_gcov_file $SRC)
-    local TGGCOV_FILE=$(_tggcov_file $SRC)
-
-    _compare_coverage "$GCOV_FILE" "$TGGCOV_FILE"
+    _compare_filtered coverage $(_gcov_file $1) $(_tggcov_file $1)
 }
 
 compare_file ()
 {
     vcmd "compare_file $*"
-    local SRC="$1"
-    local EXPECTED_FILE=$(_srcfile $SRC$SUBTEST.expected)
-    local TGGCOV_FILE=$(_tggcov_file $SRC)
-
-    _compare_coverage "$EXPECTED_FILE" "$TGGCOV_FILE"
+    _compare_filtered coverage $(_srcfile $1$SUBTEST.expected) $(_tggcov_file $1)
 }
 
 compare_callgraph ()
 {
-    vcmd "compare_callgraph"
-    local SRC=callgraph
-    local EXPECTED_FILE=$(_srcfile $SRC$SUBTEST.expected)
-    local TGGCOV_FILE=$(_tggcov_file $SRC)
-
-    _compare_callgraph "$EXPECTED_FILE" "$TGGCOV_FILE"
+    vcmd "compare_callgraph $*"
+    _compare_filtered callgraph $(_srcfile $1$SUBTEST.expected) $(_tggcov_file $1)
 }
