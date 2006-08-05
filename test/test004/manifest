@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.1 2005-04-03 09:00:45 gnb Exp $
+# $Id: manifest,v 1.1 2006-08-04 15:08:23 gnb Exp $
 #
-
-EXTRA_DIST=	runtest foo.c bar.c bar.h
+runtest
+foo.cc

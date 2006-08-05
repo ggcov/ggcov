@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.71 2006-07-02 09:04:17 gnb Exp $
+dnl $Id: configure.in,v 1.72 2006-08-04 15:08:22 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -290,21 +290,5 @@ AC_OUTPUT([
     ggcov.spec
     version.m4
     test/Makefile
-    test/test001/Makefile
-    test/test002/Makefile
-    test/test004/Makefile
-    test/test005/Makefile
-    test/test006/Makefile
-    test/test007/Makefile
-    test/test008/Makefile
-    test/test009/subdir/Makefile
-    test/test009/Makefile
-    test/test010/Makefile
-    test/test011/Makefile
-    test/test013/Makefile
-    test/test014/Makefile
-    test/test015/Makefile
-    test/test016/Makefile
-    test/test018/Makefile
 ])
 dnl intl/Makefile po/Makefile.in

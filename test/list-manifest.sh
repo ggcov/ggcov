@@ -1,6 +1,7 @@
+#!/bin/sh
 #
 # ggcov - A GTK frontend for exploring gcov coverage data
-# Copyright (c) 2005 Greg Banks <gnb@alphalink.com.au>
+# Copyright (c) 2006 Greg Banks <gnb@alphalink.com.au>
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +17,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.1 2006-02-19 03:40:00 gnb Exp $
+# $Id: list-manifest.sh,v 1.1 2006-08-04 15:08:22 gnb Exp $
 #
 
-EXTRA_DIST=	runtest foo.c
+echo test???/manifest
+echo test???/README
+for d in test??? ; do
+    sed -e '/^#/d' -e "s:^:$d/:" < $d/manifest
+done
