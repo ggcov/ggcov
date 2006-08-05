@@ -21,6 +21,6 @@ for st in $SUBTESTS ; do
     run_gcov ${st}f.c
     run_tggcov ${st}f.c
     compare_lines ${st}f.c
-    vdo $top_builddir/${_DUP}src/tggcov -G ${st}f.c
+    run_tggcov -G ${st}f.c
 done
 

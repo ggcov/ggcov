@@ -11,15 +11,11 @@ run foo 1
 run foo 2
 run foo 23 423
 
-tggcov_annotate_format new
-
 subtest 1
-tggcov_flags
-run_tggcov foo.c
+run_tggcov -N foo.c
 compare_file foo.c
 
 subtest 2
-tggcov_flags "-Y BAZ -Z FOO,BAR"
-run_tggcov foo.c
+run_tggcov -Y BAZ -Z FOO,BAR -N foo.c
 compare_file foo.c
 

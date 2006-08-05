@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
-ENABLE_DB_FLAG=1
 . ../common.sh
 
 init "parsing debug RTL dump from gcc -db for callgraph"
 
-compile_c foo.c
+compile_c -db foo.c
 link foo foo.o
 
 run foo 1
@@ -18,6 +17,5 @@ run_tggcov foo.c
 compare_lines foo.c
 
 subtest 2
-tggcov_flags -P
-run_tggcov foo.c
+run_tggcov -P foo.c
 compare_callgraph

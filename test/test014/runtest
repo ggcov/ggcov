@@ -7,18 +7,17 @@ init "code in C shared libraries linked by absolute searchable names"
 
 subdir_push bar/fnarp
 need_files bar.c bar.h
-compile_c -pic bar.c
+compile_c -fpic bar.c
 link_shlib bar bar.o
 subdir_pop
 
 subdir_push baz
 need_files baz.c baz.h
-compile_c -pic baz.c
+compile_c -fpic baz.c
 link_shlib baz baz.o
 subdir_pop
 
-CDEFINES="-Ibar/fnarp -Ibaz"
-compile_c foo.c
+compile_c -Ibar/fnarp -Ibaz foo.c
 add_shlib bar/fnarp/bar
 add_shlib -abs baz/baz
 link foo foo.o

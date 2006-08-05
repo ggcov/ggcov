@@ -17,13 +17,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.24 2006-08-04 13:42:33 gnb Exp $
+# $Id: common.sh,v 1.25 2006-08-04 14:02:24 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
 
-DBFLAG=
-[ x"$ENABLE_DB_FLAG" = x1 ] && DBFLAG="-db"
 top_builddir=../..
 top_srcdir=${top_srcdir:-../..}
 builddir=.
@@ -34,12 +32,12 @@ VALGRIND="valgrind --tool=memcheck --num-callers=16 --leak-check=yes"
 
 CC="gcc"
 CWARNFLAGS="-Wall"
-CCOVFLAGS="-g $DBFLAG -fprofile-arcs -ftest-coverage"
+CCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
 CDEFINES=
 
 CXX="c++"
 CXXWARNFLAGS="-Wall"
-CXXCOVFLAGS="-g $DBFLAG -fprofile-arcs -ftest-coverage"
+CXXCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
 CXXDEFINES=
 
 LDLIBS=
@@ -128,6 +126,13 @@ fatal ()
 
 while [ $# -gt 0 ]; do
     case "$1" in
+    -D)
+	TGGCOV_FLAGS="$TGGCOV_FLAGS $1 $2"
+	shift
+	;;
+    --debug=*)
+	TGGCOV_FLAGS="$TGGCOV_FLAGS $1"
+	;;
     --no-log)
 	LOG=
 	;;
@@ -274,67 +279,51 @@ need_files ()
 
 compile_c ()
 {
-    local picflag=
     local cfile=
-    
+    local cflags="$CWARNFLAGS $CCOVFLAGS $CDEFINES"
+
+    vcmd "compile_c $*"
+
     while [ $# -gt 0 ] ; do
     	case "$1" in
-	-pic) picflag="-fpic" ;;
-	-*)
-	    echo "compile_c: unknown flag \"$1\""
-	    exit 1
-	    ;;
+	-d*|-f*|-m*|-I*|-D*) cflags="$cflags $1" ;;
+	-*) fatal "compile_c: unknown flag \"$1\"" ;;
 	*)
-	    if [ ! -z "$cfile" ]; then
-    		echo "compile_c: too many cfiles given"
-		exit 1
-	    fi
+	    [ -n "$cfile" ] && fatal "compile_c: too many cfiles given"
 	    cfile="$1"
 	    ;;
 	esac
 	shift
     done
-    
-    if [ -z "$cfile" ]; then
-    	echo "compile_c: no cfile given"
-	exit 1
-    fi
 
-    vcmd "compile_c $cfile"
-    vncdo $CC $CWARNFLAGS $CCOVFLAGS $CDEFINES $picflag -c $cfile || fatal "can't compile $cfile"
+    [ -z "$cfile" ] && fatal "compile_c: no cfile given"
+
+    vncdo $CC $cflags -c $cfile || fatal "can't compile $cfile"
 }
 
 compile_cxx ()
 {
-    local picflag=
     local cfile=
-    
+    local cflags="$CXXWARNFLAGS $CXXCOVFLAGS $CXXDEFINES"
+
+    vcmd "compile_cxx $*"
+
     while [ $# -gt 0 ] ; do
     	case "$1" in
-	-pic) picflag="-fpic" ;;
-	-*)
-	    echo "compile_cxx: unknown flag \"$1\""
-	    exit 1
-	    ;;
+	-d*|-f*|-m*|-I*|-D*) cflags="$cflags $1" ;;
+	-*) fatal "compile_cxx: unknown flag \"$1\"" ;;
 	*)
-	    if [ ! -z "$cfile" ]; then
-    		echo "compile_cxx: too many cfiles given"
-		exit 1
-	    fi
+	    [ -n "$cfile" ] && fatal "compile_cxx: too many cfiles given"
 	    cfile="$1"
 	    ;;
 	esac
 	shift
     done
-    
-    if [ -z "$cfile" ]; then
-    	echo "compile_cxx: no cfile given"
-	exit 1
-    fi
 
-    vcmd "compile_cxx $cfile"
+    [ -z "$cfile" ] && fatal "compile_cxx: no cfile given"
+
     CXXLINK=yes
-    vncdo $CXX $CXXWARNFLAGS $CXXCOVFLAGS $CXXDEFINES $picflag -c $cfile || fatal "can't compile $cfile"
+    vncdo $CXX $cflags -c $cfile || fatal "can't compile $cfile"
 }
 
 link ()
@@ -463,7 +452,7 @@ run_gcov ()
     vcmd "run_gcov $*"
     local SRC="$1"
     if [ $CANNED = yes ]; then
-	echo "[skipping] gcov -b -f $SRC"
+	echo "[skipping] gcov -b $SRC"
 	return
     fi
 
@@ -481,55 +470,46 @@ run_gcov ()
     fi
 }
 
-tggcov_annotate_format ()
-{
-    vcmd "tggcov_annotate_format $*"
-    
-    TGGCOV_ANNOTATE_FORMAT=$1
-}
-
 _tggcov_Nflag ()
 {
-    local SRC="$1"
-    
-    case "$TGGCOV_ANNOTATE_FORMAT" in
-    new)
-    	echo "-N"
-	;;
-    old)
-    	;;
-    auto)
-	local gcovfile=$(_gcov_file $SRC)
-	if [ -f $gcovfile ]; then
-	    egrep '^[ \t]+(-|[0-9]+):[ \t]+[01]:' $gcovfile >/dev/null && echo "-N"
-	fi
-    	;;
-    *)
-    	fatal "unknown annotate format \"$TGGCOV_ANNOTATE_FORMAT\""
-	;;
-    esac
-}
-
-
-tggcov_flags ()
-{
-    vcmd "tggcov_flags $*"
-    
-    TGGCOV_FLAGS="$*"
+    local gcovfile=$(_gcov_file $1)
+    if [ -f $gcovfile ]; then
+	egrep '^[ \t]+(-|[0-9]+):[ \t]+[01]:' $gcovfile >/dev/null && echo "-N"
+    fi
 }
 
 run_tggcov ()
 {
     vcmd "run_tggcov $*"
-    local SRC="$1"
-    local NFLAG=`_tggcov_Nflag $SRC`
+    local SRC=
+    local mode="-a"
+    local flags="$TGGCOV_FLAGS"
+    local nflag=
     local pwd=$(/bin/pwd)
 
-    if vcapdo $TMP1 $_VALGRIND $top_builddir/${_DUP}src/tggcov -a $NFLAG $TGGCOV_FLAGS $SRC ; then
+    while [ $# -gt 0 ] ; do
+    	case "$1" in
+	-a|-G) mode="$1" ;;
+	-N) nflag="$1" ;;
+	-P) flags="$flags $1" ;;
+	-D|-X|-Y|-Z) flags="$flags $1 $2" ; shift ;;
+	-*) fatal "run_tggcov: unknown option \"$1\"" ;;
+	*)
+	    SRC="$SRC $1"
+	    ;;
+	esac
+	shift
+    done
+
+    [ -z "$SRC" ] && fatal "run_tggcov: no source files given"
+    [ -z "$nflag" ] && nflag=$(_tggcov_Nflag $SRC)
+    if vcapdo $TMP1 $_VALGRIND $top_builddir/${_DUP}src/tggcov $mode $nflag $flags $SRC ; then
 	cat $TMP1
-	TGGCOV_FILES=$(sed -n -e 's:^Writing[ \t][ \t]*'$pwd'/\([^ \t]*\.tggcov\)$:\1:p' < $TMP1)
-	[ -z "$TGGCOV_FILES" ] && fail "no output files from tggcov"
-	_subtestize_files $TGGCOV_FILES
+	if [ x$mode = "x-a" ] ; then
+	    TGGCOV_FILES=$(sed -n -e 's:^Writing[ \t][ \t]*'$pwd'/\([^ \t]*\.tggcov\)$:\1:p' < $TMP1)
+	    [ -z "$TGGCOV_FILES" ] && fail "no output files from tggcov"
+	    _subtestize_files $TGGCOV_FILES
+	fi
 	pass
     else
 	cat $TMP1

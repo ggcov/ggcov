@@ -12,6 +12,5 @@ run foo 2
 run foo 3
 run foo 4
 
-tggcov_annotate_format new
-run_tggcov foo.c
+run_tggcov -N foo.c
 compare_file foo.c
