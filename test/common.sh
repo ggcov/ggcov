@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.28 2006-08-04 14:48:07 gnb Exp $
+# $Id: common.sh,v 1.29 2006-08-04 15:30:25 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -47,6 +47,7 @@ TGGCOV_ANNOTATE_FORMAT=auto
 TGGCOV_FLAGS=
 TEST=$(cd $(dirname $0) ; basename $(pwd))
 SUBTEST=
+TESTBASEDIR=`/bin/pwd`
 #
 # `RESULT' tracks the running result for the whole test.  Values are:
 #   ""	    no `pass' or `fail' calls, indeterminate
@@ -66,8 +67,17 @@ fi
 
 TMP1=/tmp/ggcov-test-$$a
 /bin/rm -f $TMP1
-trap "/bin/rm -f $TMP1 ; _result ERROR signal caught ; return 1" 1 11 13 15
-trap "/bin/rm -f $TMP1 ; _resonexit" 0
+trap "_cleanup ; _result ERROR signal caught ; return 1" 1 11 13 15
+trap "_cleanup ; _resonexit" 0
+POST_CLEAN_FILES="$TMP1"
+
+_cleanup ()
+{
+    cd $TESTBASEDIR
+    for f in $POST_CLEAN_FILES ; do
+	[ -e $f ] && /bin/rm -fr $f
+    done
+}
 
 _resmsg ()
 {
