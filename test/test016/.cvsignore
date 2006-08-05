@@ -1,2 +1,12 @@
-Makefile
-Makefile.in
+*.gcda
+*.gcno
+*.bbg
+*.da
+*.bb
+*.filt
+*.o
+*.exe
+*.gcov
+*.tggcov
+*.ex
+log

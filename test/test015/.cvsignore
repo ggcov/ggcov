@@ -1,5 +1,14 @@
-o.*
-Makefile
-Makefile.in
 a*f.c
 a*m.c
+*.gcda
+*.gcno
+*.bbg
+*.da
+*.bb
+*.filt
+*.o
+*.exe
+*.gcov
+*.tggcov
+*.ex
+log
