@@ -1,132 +1,132 @@
-===src/popttest 
+===popttest 
 boolopt=0
 spoolopt=0
 stringopt="before"
 ropeopt="BEFORE"
 files=
-===src/popttest -b
+===popttest -b
 boolopt=1
 spoolopt=0
 stringopt="before"
 ropeopt="BEFORE"
 files=
-===src/popttest --bool
+===popttest --bool
 boolopt=1
 spoolopt=0
 stringopt="before"
 ropeopt="BEFORE"
 files=
-===src/popttest -b -b
+===popttest -b -b
 boolopt=1
 spoolopt=0
 stringopt="before"
 ropeopt="BEFORE"
 files=
-===src/popttest -b -S
+===popttest -b -S
 boolopt=1
 spoolopt=1
 stringopt="before"
 ropeopt="BEFORE"
 files=
-===src/popttest --bool --spool
+===popttest --bool --spool
 boolopt=1
 spoolopt=1
 stringopt="before"
 ropeopt="BEFORE"
 files=
-===src/popttest -bS
+===popttest -bS
 boolopt=1
 spoolopt=1
 stringopt="before"
 ropeopt="BEFORE"
 files=
-===src/popttest -s
-src/popttest:no value at or near -s
-===src/popttest -s FOO
+===popttest -s
+popttest:no value at or near -s
+===popttest -s FOO
 boolopt=0
 spoolopt=0
 stringopt="FOO"
 ropeopt="BEFORE"
 files=
-===src/popttest --string FOO
+===popttest --string FOO
 boolopt=0
 spoolopt=0
 stringopt="FOO"
 ropeopt="BEFORE"
 files=
-===src/popttest --string=FOO
+===popttest --string=FOO
 boolopt=0
 spoolopt=0
 stringopt="FOO"
 ropeopt="BEFORE"
 files=
-===src/popttest -b -S -s FOO
+===popttest -b -S -s FOO
 boolopt=1
 spoolopt=1
 stringopt="FOO"
 ropeopt="BEFORE"
 files=
-===src/popttest -bS -s FOO
+===popttest -bS -s FOO
 boolopt=1
 spoolopt=1
 stringopt="FOO"
 ropeopt="BEFORE"
 files=
-===src/popttest -bSSb -s FOO
+===popttest -bSSb -s FOO
 boolopt=1
 spoolopt=1
 stringopt="FOO"
 ropeopt="BEFORE"
 files=
-===src/popttest -bSSb -s FOO -R BAR
+===popttest -bSSb -s FOO -R BAR
 boolopt=1
 spoolopt=1
 stringopt="FOO"
 ropeopt="BAR"
 files=
-===src/popttest -bSSb -sR FOO BAR
+===popttest -bSSb -sR FOO BAR
 boolopt=1
 spoolopt=1
 stringopt="FOO"
 ropeopt="BAR"
 files=
-===src/popttest --string FOO --rope BAR
+===popttest --string FOO --rope BAR
 boolopt=0
 spoolopt=0
 stringopt="FOO"
 ropeopt="BAR"
 files=
-===src/popttest --fmeh
-src/popttest:bad option at or near --fmeh
-===src/popttest -z
-src/popttest:bad option at or near -z
-===src/popttest -R
-src/popttest:no value at or near -R
-===src/popttest foo
+===popttest --fmeh
+popttest:bad option at or near --fmeh
+===popttest -z
+popttest:bad option at or near -z
+===popttest -R
+popttest:no value at or near -R
+===popttest foo
 boolopt=0
 spoolopt=0
 stringopt="before"
 ropeopt="BEFORE"
 files= "foo"
-===src/popttest foo bar
+===popttest foo bar
 boolopt=0
 spoolopt=0
 stringopt="before"
 ropeopt="BEFORE"
 files= "foo" "bar"
-===src/popttest -b foo bar
+===popttest -b foo bar
 boolopt=1
 spoolopt=0
 stringopt="before"
 ropeopt="BEFORE"
 files= "foo" "bar"
-===src/popttest -b -- foo
+===popttest -b -- foo
 boolopt=1
 spoolopt=0
 stringopt="before"
 ropeopt="BEFORE"
 files= "foo"
-===src/popttest -b -- -R foo
+===popttest -b -- -R foo
 boolopt=1
 spoolopt=0
 stringopt="before"

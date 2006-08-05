@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.29 2006-08-04 15:30:25 gnb Exp $
+# $Id: common.sh,v 1.30 2006-08-04 15:42:54 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -66,10 +66,11 @@ else
 fi
 
 TMP1=/tmp/ggcov-test-$$a
-/bin/rm -f $TMP1
+TMP2=/tmp/ggcov-test-$$b
+/bin/rm -f $TMP1 $TMP2
 trap "_cleanup ; _result ERROR signal caught ; return 1" 1 11 13 15
 trap "_cleanup ; _resonexit" 0
-POST_CLEAN_FILES="$TMP1"
+POST_CLEAN_FILES="$TMP1 $TMP2"
 
 _cleanup ()
 {

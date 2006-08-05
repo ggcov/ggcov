@@ -71,6 +71,13 @@ main(int argc, char **argv)
     poptContext con;
     const char *file;
     GList *iter;
+    const char *argv0;
+
+    argv0 = strrchr(argv[0], '/');
+    if (argv0 == NULL)
+	argv0 = argv[0];
+    else
+	argv0++;
 
     con = poptGetContext("popttest", argc, (const char**)argv, options, 0);
     poptSetOtherOptionHelp(con,
@@ -81,10 +88,10 @@ main(int argc, char **argv)
     if (rc < -1)
     {
     	fprintf(stderr, "%s:%s at or near %s\n",
-	    argv[0],
+	    argv0,
 	    poptStrerror(rc),
 	    poptBadOption(con, POPT_BADOPTION_NOALIAS));
-    	exit(1);
+    	exit(0);
     }
     
     while ((file = poptGetArg(con)) != 0)

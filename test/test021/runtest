@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+. ../common.sh
+
+init "unit test for libpopt / fakepopt.c"
+
+while read args ; do
+    echo "+ $top_builddir/src/popttest $args"
+    if vcapdo $TMP1 $top_builddir/src/popttest $args ; then
+	( echo "===popttest $args" ; cat $TMP1 ) >> $TMP2
+	cat $TMP1
+	pass
+    else
+	fail "popttest $args"
+    fi
+done <<EOF
+
+-b
+--bool
+-b -b
+-b -S
+--bool --spool
+-bS
+-s
+-s FOO
+--string FOO
+--string=FOO
+-b -S -s FOO
+-bS -s FOO
+-bSSb -s FOO
+-bSSb -s FOO -R BAR
+-bSSb -sR FOO BAR
+--string FOO --rope BAR
+--fmeh
+-z
+-R
+foo
+foo bar
+-b foo bar
+-b -- foo
+-b -- -R foo
+EOF
+
+if vdo diff -u $TMP2 popttest.expected ; then pass ; else fail "expected output differs" ; fi
