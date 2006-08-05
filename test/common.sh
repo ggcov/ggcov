@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.25 2006-08-04 14:02:24 gnb Exp $
+# $Id: common.sh,v 1.26 2006-08-04 14:12:02 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -593,28 +593,11 @@ _compare_coverage ()
     vdo diff -u $1.filt $2.filt && pass || fail "$1.filt differs from $2.filt"
 }
 
-_filter_spurious_callgraph ()
-{
-    local FILE="$1"
-
-perl -e '
-use strict;
-while (<STDIN>)
-{
-    chomp;
-    s/block \d+/block NNN/;
-    s/^base .*/base PPP/;
-    print "$_\n";
-}
-' < $FILE
-
-}
-
 _compare_callgraph ()
 {
     echo "Filtering callgraph"
-    _filter_spurious_callgraph "$1" > $1.filt
-    _filter_spurious_callgraph "$2" > $2.filt
+    perl $top_srcdir/test/filter-callgraph.pl "$1" > $1.filt
+    perl $top_srcdir/test/filter-callgraph.pl "$2" > $2.filt
     vdo diff -u $1.filt $2.filt && pass || fail "$1.filt differs from $2.filt"
 }
 
