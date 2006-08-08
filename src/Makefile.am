@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.66 2006-07-10 10:24:53 gnb Exp $
+# $Id: Makefile.am,v 1.67 2006-08-07 14:36:33 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -140,6 +140,8 @@ licence.c: $(top_srcdir)/COPYING
 # --export-dynamic linker flag anymore.
 glade_callbacks.c: $(gui_SOURCES)
 	perl gencallbacks.pl $(gui_SOURCES) > $@ || ($(RM) $@ ; exit 1)
+
+EXTRA_DIST=		gencallbacks.pl
 
 EXTRA_CLEAN=		licence.c glade_callbacks.c
 

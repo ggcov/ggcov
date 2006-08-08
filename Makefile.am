@@ -16,12 +16,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.7 2006-07-10 10:19:27 gnb Exp $
+# $Id: Makefile.am,v 1.8 2006-08-07 14:36:33 gnb Exp $
 #
 
 SUBDIRS=	src ui php doc test
 
-EXTRA_DIST=	.cvsignore .gdbinit
+EXTRA_DIST=	.cvsignore .gdbinit autogen.sh
 
 ggcov:
 	cd src ; $(MAKE) ggcov

@@ -16,7 +16,26 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: manifest,v 1.1 2006-08-04 15:08:24 gnb Exp $
+# $Id: manifest,v 1.2 2006-08-07 14:36:34 gnb Exp $
 #
 runtest
 graphgen.pl
+README
+a001.graph
+a002.graph
+a003.graph
+a004.graph
+a005.graph
+a006.graph
+a007.graph
+a008.graph
+a009.graph
+a010.graph
+a011.graph
+a012.graph
+a013.graph
+a014.graph
+a015.graph
+a016.graph
+a017.graph
+a018.graph

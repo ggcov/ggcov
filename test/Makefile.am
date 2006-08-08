@@ -16,10 +16,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.9 2006-08-04 15:08:22 gnb Exp $
+# $Id: Makefile.am,v 1.10 2006-08-07 14:36:33 gnb Exp $
 #
 
-EXTRA_DIST=	common.sh platform.sh runtest $(shell sh list-manifest.sh)
+EXTRA_DIST=	common.sh platform.sh runtest list-manifest.sh \
+		filter-callgraph.pl filter-coverage.pl filter-expected.pl \
+		$(shell sh list-manifest.sh)
 
 TESTS=		   runtest
 TESTS_ENVIRONMENT= sh

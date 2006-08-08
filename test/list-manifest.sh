@@ -17,11 +17,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: list-manifest.sh,v 1.1 2006-08-04 15:08:22 gnb Exp $
+# $Id: list-manifest.sh,v 1.2 2006-08-07 14:36:33 gnb Exp $
 #
 
-echo test???/manifest
-echo test???/README
-for d in test??? ; do
-    sed -e '/^#/d' -e "s:^:$d/:" < $d/manifest
+for f in test???/manifest ; do
+    echo $f
+    d=`dirname $f`
+    sed -e '/^#/d' -e "s:^:$d/:" < $f
 done
