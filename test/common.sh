@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: common.sh,v 1.30 2006-08-04 15:42:54 gnb Exp $
+# $Id: common.sh,v 1.31 2006-08-13 09:32:08 gnb Exp $
 #
 # Common shell functions for all the test directories
 #
@@ -568,5 +568,5 @@ compare_counts ()
 compare_callgraph ()
 {
     vcmd "compare_callgraph $*"
-    _compare_filtered callgraph $(_srcfile $1$SUBTEST.expected) $(_tggcov_file $1)
+    _compare_filtered callgraph $(_srcfile callgraph$SUBTEST.expected) $(_tggcov_file callgraph)
 }
