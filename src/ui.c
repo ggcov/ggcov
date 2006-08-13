@@ -22,8 +22,9 @@
 #include "estring.H"
 #include "string_var.H"
 #include "tok.H"
+#include "confsection.H"
 
-CVSID("$Id: ui.c,v 1.33 2006-07-10 10:28:41 gnb Exp $");
+CVSID("$Id: ui.c,v 1.34 2006-08-13 09:37:58 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -729,6 +730,7 @@ ui_list_set_column_visibility(GtkWidget *w, int col, gboolean vis)
 
 #if GTK2
 static PangoFontDescription *ui_text_font_desc;
+static gboolean ui_text_font_dirty = FALSE;
 #else
 /* we have to fake a *lot* of stuff for gtk1.2 */
 static GdkFont *ui_text_font;
@@ -777,6 +779,11 @@ ui_text_line_start(GtkText *text, ui_text_data *td)
 
 #endif /* !GTK2 */
 
+#if GTK2
+#define UI_TEXT_SCALE_FACTOR	1.1
+#define UI_TEXT_DEFAULT_SIZE	10240
+#endif
+
 void
 ui_text_setup(GtkWidget *w)
 {
@@ -787,14 +794,25 @@ ui_text_setup(GtkWidget *w)
      * Override the font in the text window: it needs to be
      * fixedwidth so the source aligns properly.
      */
+    if (ui_text_font_dirty)
+    {
+	/* User changed text size */
+	g_assert(ui_text_font_desc != 0);
+	pango_font_description_free(ui_text_font_desc);
+	ui_text_font_desc = 0;
+	ui_text_font_dirty = FALSE;
+    }
     if (ui_text_font_desc == 0)
+    {
     	ui_text_font_desc = pango_font_description_from_string("monospace");
+	confsection_t *cs = confsection_t::get("general");
+	gint size = cs->get_int("text_size", UI_TEXT_DEFAULT_SIZE);
+	pango_font_description_set_size(ui_text_font_desc, size);
+    }
     gtk_widget_modify_font(w, ui_text_font_desc);
 
-#ifndef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
-    /* hacky select_region() implementation relies on not having line wrapping */
+    /* Suppress wrap: it screws up our pretence of being multi-column */
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(w), GTK_WRAP_NONE);
-#endif /* !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
 
 #else /* !GTK2 */
     ui_text_data *td;
@@ -830,6 +848,43 @@ ui_text_font_width(GtkWidget *w)
 #else /* !GTK2 */
     return uix_font_width(ui_text_font);
 #endif /* !GTK2 */
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+ui_text_adjust_text_size(GtkWidget *w, int dirn)
+{
+#if GTK2
+    static const char normal_size_key[] = "ui-text-normal-size";
+
+    PangoFontDescription *font_desc = w->style->font_desc;
+    gint size = pango_font_description_get_size(font_desc);
+
+    gint normal_size = GPOINTER_TO_INT(gtk_object_get_data(GTK_OBJECT(w),
+							    normal_size_key));
+    if (normal_size == 0)
+    {
+	normal_size = pango_font_description_get_size(ui_text_font_desc);
+	gtk_object_set_data(GTK_OBJECT(w), normal_size_key,
+			    GINT_TO_POINTER(normal_size));
+    }
+
+    if (dirn < 0)
+	size = (gint)((double)size / UI_TEXT_SCALE_FACTOR + 0.5);
+    else if (dirn == 0)
+	size = normal_size;
+    else
+	size = (gint)((double)size * UI_TEXT_SCALE_FACTOR + 0.5);
+
+    font_desc = pango_font_description_copy(font_desc);
+    pango_font_description_set_size(font_desc, size);
+    gtk_widget_modify_font(w, font_desc);
+
+    confsection_t::get("general")->set_int("text_size", size);
+    confsection_t::sync();
+    ui_text_font_dirty = TRUE;
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

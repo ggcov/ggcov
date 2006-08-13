@@ -95,8 +95,16 @@ void ui_list_set_column_visibility(GtkWidget *, int col, gboolean vis);
  */
 /* set up a text window, force the font etc */
 void ui_text_setup(GtkWidget *w);
-/* return the font width, e.g. for aligning title columns */
+/* return the current font width, e.g. for aligning title columns */
 int ui_text_font_width(GtkWidget *w);
+/*
+ * Adjust the text size in the given text widget according to `dirn':
+ *
+ *  < 0: decrease text size by 10%
+ * == 0: set text size to normal text size for the window
+ *  > 0: increase text size by 10%
+ */
+void ui_text_adjust_text_size(GtkWidget *w, int dirn);
 
 #if GTK2
 typedef GtkTextTag ui_text_tag;

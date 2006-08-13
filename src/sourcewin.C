@@ -26,7 +26,7 @@
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.30 2006-07-10 11:27:13 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.31 2006-08-13 09:37:58 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -368,7 +368,24 @@ sourcewin_t::sourcewin_t()
     title_buttons_[COL_SOURCE] = glade_xml_get_widget(xml, "source_col_source_button");
     right_pad_label_ = glade_xml_get_widget(xml, "source_right_pad_label");
     ui_register_windows_menu(ui_get_dummy_menu(xml, "source_windows_dummy"));
-    
+
+#if GTK2
+    /*
+     * The View->Text Size->Increase menu item has an accelerator
+     * which is nominally "Ctrl++", unfortunately what GTK sees on
+     * many keyboards when the user tries that is "Ctrl+=" because
+     * the + symbol is a shift-glyph on the = key and people don't
+     * understand to press Shift.  So we hack around the problem
+     * by registering a second accelerator for Ctrl+=.
+     */
+    GtkWidget *w = glade_xml_get_widget(xml, "source_text_size_increase");
+    const GSList *groups = gtk_accel_groups_from_object(G_OBJECT(window_));
+    gtk_widget_add_accelerator(w, "activate",
+			       GTK_ACCEL_GROUP(groups->data),
+			       GDK_equal, GDK_CONTROL_MASK,
+			       (GtkAccelFlags)0);
+#endif
+
     xml = ui_load_tree("source_saveas");
     saveas_dialog_ = glade_xml_get_widget(xml, "source_saveas");
     attach(saveas_dialog_);
@@ -1037,5 +1054,43 @@ on_source_save_as_activate(GtkWidget *w, gpointer data)
     gtk_widget_show(sw->saveas_dialog_);
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+#if GTK2
+
+void
+sourcewin_t::adjust_text_size(int dirn)
+{
+    ui_text_adjust_text_size(text_, dirn);
+    font_width_ = ui_text_font_width(text_);
+    delete_flows();
+    update_flows();
+    update_title_buttons();
+}
+
+GLADE_CALLBACK void
+on_source_text_size_increase_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    dprintf0(D_SOURCEWIN, "on_source_text_size_increase_activate\n");
+    sw->adjust_text_size(1);
+}
+
+GLADE_CALLBACK void
+on_source_text_size_normal_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    dprintf0(D_SOURCEWIN, "on_source_text_size_normal_activate\n");
+    sw->adjust_text_size(0);
+}
+
+GLADE_CALLBACK void
+on_source_text_size_decrease_activate(GtkWidget *w, gpointer data)
+{
+    sourcewin_t *sw = sourcewin_t::from_widget(w);
+    dprintf0(D_SOURCEWIN, "on_source_text_size_decrease_activate\n");
+    sw->adjust_text_size(-1);
+}
+
+#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

@@ -2,7 +2,7 @@
 <!DOCTYPE gconfschemafile SYSTEM "/usr/share/sgml/gconf/gconf-1.0.dtd">
 <!--
   ggcov - A GTK frontend for exploring gcov coverage data
-  Copyright (c) 2005 Greg Banks <gnb@alphalink.com.au>
+  Copyright (c) 2005-2006 Greg Banks <gnb@alphalink.com.au>
 
   This program is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-  $Id: ggcov.schemas,v 1.1 2005-03-14 08:54:36 gnb Exp $
+  $Id: ggcov.schemas,v 1.2 2006-08-13 09:37:58 gnb Exp $
 
   Note: this schema is not necessary for ggcov's correct operation,
   it merely provides textual comments for users of gconf-editor.
@@ -202,6 +202,20 @@
 	<long>If true then the same Source window is used to show
 	source every time a Summarise menu item is selected, otherwise
 	a new Summary window is opened.</long>
+      </locale>
+    </schema>
+
+    <schema>
+      <key>/schemas/apps/ggcov/general/text_size</key>
+      <applyto>/apps/ggcov/general/text_size</applyto>
+      <owner>ggcov</owner>
+      <type>int</type>
+      <default>10240</default>
+      <locale name="C">
+	<short>Text size</short>
+	<long>Size of text in the Source, Report, and Help windows,
+	measured in Pango units (where 1024 Pango units = 1 Font point).
+	</long>
       </locale>
     </schema>
 

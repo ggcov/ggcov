@@ -37,6 +37,9 @@ GLADE_CALLBACK void on_source_summarise_range_activate(GtkWidget *w, gpointer da
 GLADE_CALLBACK void on_source_flow_diagram_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_filenames_entry_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_source_functions_entry_changed(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_text_size_increase_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_text_size_decrease_activate(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_source_text_size_normal_activate(GtkWidget *w, gpointer data);
 
 class sourcewin_t : public window_t
 {
@@ -100,6 +103,7 @@ private:
     static void on_source_function_activate(GtkWidget *w, gpointer userdata);
 #if GTK2
     static void on_vadjustment_value_changed(GtkAdjustment *, gpointer);
+    void adjust_text_size(int dirn);
 #endif
 
     static sourcewin_t *from_widget(GtkWidget *w)
@@ -152,6 +156,9 @@ private:
     friend void on_source_flow_diagram_activate(GtkWidget *w, gpointer data);
     friend void on_source_filenames_entry_changed(GtkWidget *w, gpointer data);
     friend void on_source_functions_entry_changed(GtkWidget *w, gpointer data);
+    friend void on_source_text_size_increase_activate(GtkWidget *w, gpointer data);
+    friend void on_source_text_size_decrease_activate(GtkWidget *w, gpointer data);
+    friend void on_source_text_size_normal_activate(GtkWidget *w, gpointer data);
 };
 
 #endif /* _ggcov_sourcewin_H_ */
