@@ -26,7 +26,7 @@
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.31 2006-08-13 09:37:58 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.32 2006-08-13 09:45:19 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -82,6 +82,45 @@ sourcewin_t::update_flow_window()
     }
 }
 
+/*
+ * Get the first and last line number visible in the text window.
+ * Returns FALSE if there are no numbers yet.
+ */
+gboolean
+sourcewin_t::get_visible_lines(
+    unsigned long *begin_linenop,
+    unsigned long *end_linenop)
+{
+    GtkTextView *tv = GTK_TEXT_VIEW(text_);
+    GdkRectangle rect;
+    GtkTextIter begin_iter;
+    GtkTextIter end_iter;
+
+    gtk_text_view_get_visible_rect(tv, &rect);
+    dprintf4(D_SOURCEWIN, "    visible rect={%u,%u,%u,%u}\n",
+	    rect.x, rect.y, rect.width, rect.height);
+
+    gtk_text_view_get_iter_at_location(tv, &begin_iter,
+		    rect.x, rect.y);
+    gtk_text_view_get_iter_at_location(tv, &end_iter,
+		    rect.x, rect.y+rect.height);
+
+    unsigned long begin_lineno = gtk_text_iter_get_line(&begin_iter);
+    unsigned long end_lineno = gtk_text_iter_get_line(&end_iter);
+
+    dprintf2(D_SOURCEWIN, "    begin=%u end=%u\n", begin_lineno, end_lineno);
+
+    if (begin_lineno == 0 && end_lineno == 0)
+	return FALSE;
+
+    if (begin_linenop != 0)
+	*begin_linenop = begin_lineno;
+    if (end_linenop != 0)
+	*end_linenop = end_lineno;
+
+    return TRUE;
+}
+
 void
 sourcewin_t::update_flows()
 {
@@ -99,22 +138,9 @@ sourcewin_t::update_flows()
 
     dprintf0(D_SOURCEWIN, "sourcewin_t::update_flows\n");
 
-    GdkRectangle rect;
-    gtk_text_view_get_visible_rect(tv, &rect);
-    dprintf4(D_SOURCEWIN, "    visible rect={%u,%u,%u,%u}\n",
-	    rect.x, rect.y, rect.width, rect.height);
-
-    GtkTextIter begin_iter;
-    GtkTextIter end_iter;
-    gtk_text_view_get_iter_at_location(tv, &begin_iter,
-		    rect.x, rect.y);
-    gtk_text_view_get_iter_at_location(tv, &end_iter,
-		    rect.x, rect.y+rect.height);
-
-    unsigned int begin_lineno = gtk_text_iter_get_line(&begin_iter);
-    unsigned int end_lineno = gtk_text_iter_get_line(&end_iter);
-
-    dprintf2(D_SOURCEWIN, "    begin=%u end=%u\n", begin_lineno, end_lineno);
+    unsigned long begin_lineno, end_lineno;
+    if (!get_visible_lines(&begin_lineno, &end_lineno))
+	return;
 
     flow_shown_++;
     cov_function_t *oldfn = 0, *fn;
@@ -292,6 +318,39 @@ sourcewin_t::delete_flows()
 	delete flow;
     }
     flow_width_dirty_ = TRUE;
+}
+
+/*
+ * Poll and dispatch events (and in particular, the idle callbacks
+ * that GtkTextView uses to update its data structures) until we
+ * can do something with the GtkTextView that depends on that
+ * state, like update the flows.
+ */
+void
+sourcewin_t::wait_for_text_validation()
+{
+    GtkTextView *tv = GTK_TEXT_VIEW(text_);
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(tv);
+    gboolean vis = FALSE;
+    int n = 5;
+
+    while (g_main_context_iteration(NULL, FALSE))
+    {
+	dprintf0(D_SOURCEWIN, "wait_for_text_validation\n");
+
+	if (!vis)
+	    vis = get_visible_lines(0, 0);
+	if (!vis)
+	    continue;
+
+	/*
+	 * Need to run at least one more callback, otherwise
+	 * we miscalculate the size of a flow which extends
+	 * off the bottom of the visible window.
+	 */
+	if (n-- == 0)
+	    break;
+    }
 }
 
 #endif
@@ -671,9 +730,13 @@ sourcewin_t::update()
 
     ui_text_end(text_);
     /* scroll back to the line we were at before futzing with the text */
+#if GTK2
+    wait_for_text_validation();
+#endif
     ui_text_vscroll_restore(text_, scrollval);
 
 #if GTK2
+    delete_flows();
     update_flow_window();
     update_flows();
 #endif

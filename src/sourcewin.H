@@ -93,8 +93,10 @@ private:
 #if GTK2
     void delete_flows();
     void update_flow_window();
+    gboolean get_visible_lines(unsigned long*, unsigned long*);
     void update_flows();
     flow_t *create_flow(cov_function_t *, int y, int h);
+    void wait_for_text_validation();
 #endif
     cov_function_t *selected_function() const;
     gboolean save_with_annotations(const char *filename);
