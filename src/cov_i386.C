@@ -22,7 +22,7 @@
 
 #if defined(HAVE_LIBBFD) && defined(COV_I386)
 
-CVSID("$Id: cov_i386.C,v 1.7 2005-09-11 09:20:28 gnb Exp $");
+CVSID("$Id: cov_i386.C,v 1.8 2006-08-13 09:34:09 gnb Exp $");
 
 /*
  * Machine-specific code to scan i386 object code for function calls.
@@ -104,14 +104,15 @@ int
 cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
 {
     cov_bfd_section_t *sec = cbfd_->nth_code_section(section_);
-    unsigned long len = endaddr_ - startaddr_;
+    unsigned long len;
     unsigned char *p, *end;
     unsigned long callfrom, callto;
     const asymbol *sym;
-    
+
     dprintf3(D_CGRAPH|D_VERBOSE, "scan_statics: scanning %s %lx to %lx\n",
     	    cbfd_->filename(), startaddr_, endaddr_);
-    if (len < 1)
+    g_assert(endaddr_ >= startaddr_);
+    if ((len = endaddr_ - startaddr_) < 1)
     	return 0;
     if (contents_ == 0)
     {
@@ -120,7 +121,7 @@ cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
     	offset_ = 0;
     }
     end = contents_ + len - 4;
-    
+
     /*
      * It would presumably be more efficient to scan through the relocs
      * looking for PCREL32 to static functions and double-check that the

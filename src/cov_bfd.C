@@ -23,7 +23,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_bfd.C,v 1.5 2006-02-19 05:09:06 gnb Exp $");
+CVSID("$Id: cov_bfd.C,v 1.6 2006-08-13 09:34:09 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -329,6 +329,18 @@ cov_bfd_section_t::get_contents(unsigned long startaddr, unsigned long length)
     return contents;
 }
 
+static int
+compare_arelentp(const void *va, const void *vb)
+{
+    const arelent *a = *(const arelent **)va;
+    const arelent *b = *(const arelent **)vb;
+
+#ifdef BFD64
+    return u64cmp(a->address, b->address);
+#else
+    return u32cmp(a->address, b->address);
+#endif
+}
 
 arelent **
 cov_bfd_section_t::get_relocs(unsigned int *lenp)
@@ -352,6 +364,12 @@ cov_bfd_section_t::get_relocs(unsigned int *lenp)
 	g_free(relocs);
 	return 0;
     }
+
+    /*
+     * Call scanners expect the relocs to be sorted in
+     * increasing address order, so ensure this is true.
+     */
+    qsort(relocs, nrelocs, sizeof(arelent*), compare_arelentp);
     
     if (lenp != 0)
     	*lenp = nrelocs;
