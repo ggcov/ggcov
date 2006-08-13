@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.67 2006-08-07 14:36:33 gnb Exp $
+# $Id: Makefile.am,v 1.68 2006-08-13 09:31:01 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -165,3 +165,7 @@ phptest_LDADD=		$(CLI_LIBS)
 
 popttest_SOURCES=	popttest.c
 popttest_LDADD= 	$(GGCOV_CLI_LIBS)
+
+COVFLAGS=		-fprofile-arcs -ftest-coverage
+coverage:
+	$(MAKE) CFLAGS="$(CFLAGS) $(COVFLAGS)" CXXFLAGS="$(CXXFLAGS) $(COVFLAGS)" all
