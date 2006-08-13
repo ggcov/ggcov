@@ -1,0 +1,7 @@
+test0: i:42;
+test1: s:6:"foobar";
+test2: a:2:{i:0;i:37;i:1;s:5:"smurf";}
+test3: a:2:{i:0;i:25;i:1;s:7:"fnoogle";}
+test4: a:3:{i:0;i:25;i:1;a:2:{i:0;i:12;i:1;a:1:{i:0;i:123;}}i:2;s:5:"fnarp";}
+test5: d:3.141593;
+test6: N;
