@@ -16,14 +16,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.11 2005-08-01 13:04:47 gnb Exp $
+# $Id: Makefile.am,v 1.12 2006-12-04 13:02:24 gnb Exp $
 #
 
 include $(srcdir)/../phpdirs.am
 
 LIB_PHP=		basic.php 
 
-PAGE_PHP=		basic.css ../../ui/ggcov64.png \
+PAGE_PHP=		basic.css ../../ui/ggcov64.gif \
 			tests.php summary.php covbar.php files.php \
 			reports.php functions.php calls.php \
 			callbutterfly.php source.php diagram.php \

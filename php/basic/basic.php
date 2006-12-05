@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: basic.php,v 1.10 2005-07-23 10:28:55 gnb Exp $
+// $Id: basic.php,v 1.11 2006-12-04 13:02:24 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -145,7 +145,7 @@ function basic_header($title)
     </tr>
     <tr>
       <td class="nav_menu" valign="top" width="10" nowrap>
-	<img width="64" height="64" src="ggcov64.png" alt="ggcov"><br><br>
+	<img width="64" height="64" src="ggcov64.gif" alt="ggcov"><br><br>
 	<a href="<?php echo 'tests.php'; ?>">Tests</a><br>
 	<a href="<?php echo basic_url('summary.php'); ?>">Summary</a><br>
 	<a href="<?php echo basic_url('reports.php'); ?>">Reports</a><br>

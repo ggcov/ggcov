@@ -16,11 +16,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.14 2005-07-23 10:36:03 gnb Exp $
+# $Id: Makefile.am,v 1.15 2006-12-04 13:02:25 gnb Exp $
 #
 
 EXTRA_DIST=	ggcov.glade ggcov-glade2.glade \
-		ggcov64.png ggcov32.png ggcov32.xpm \
+		ggcov64.png ggcov64.gif ggcov32.png ggcov32.xpm \
 		ggcov.desktop ggcov.schemas
 
 if GUI
