@@ -21,7 +21,7 @@
 
 #include "tok.H"
 
-CVSID("$Id: tok.C,v 1.3 2007-05-25 12:07:21 gnb Exp $");
+CVSID("$Id: tok.C,v 1.4 2007-05-25 12:30:14 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -36,7 +36,7 @@ tok_t::init(char *str, const char *sep)
 
 tok_t::tok_t(const char *str, const char *sep)
 {
-    init(g_strdup(str), sep);
+    init((str == 0 ? 0 : g_strdup(str)), sep);
 }
 
 tok_t::tok_t(char *str, const char *sep)
@@ -46,7 +46,8 @@ tok_t::tok_t(char *str, const char *sep)
 
 tok_t::~tok_t()
 {
-    g_free(buf_);
+    if (buf_)
+	g_free(buf_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -54,6 +55,9 @@ tok_t::~tok_t()
 const char *
 tok_t::next()
 {
+    if (!buf_)
+	return 0;
+
     if (first_)
     {
 	first_ = FALSE;
