@@ -21,13 +21,14 @@
 
 #include "tok.H"
 
-CVSID("$Id: tok.C,v 1.2 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: tok.C,v 1.3 2007-05-25 12:07:21 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
 tok_t::init(char *str, const char *sep)
 {
+    first_ = TRUE;
     buf_ = str;
     state_ = 0;
     sep_ = (sep == 0 ? " \t\r\n" : sep);
@@ -53,7 +54,13 @@ tok_t::~tok_t()
 const char *
 tok_t::next()
 {
-    return strtok_r((state_ == 0 ? buf_ : 0), sep_, &state_);
+    if (first_)
+    {
+	first_ = FALSE;
+	return strtok_r(buf_, sep_, &state_);
+    }
+
+    return strtok_r(0, sep_, &state_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
