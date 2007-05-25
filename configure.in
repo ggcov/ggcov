@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.72 2006-08-04 15:08:22 gnb Exp $
+dnl $Id: configure.in,v 1.73 2007-05-25 11:02:07 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -274,6 +274,7 @@ AC_PROG_GCC_TRADITIONAL
 AC_TYPE_SIGNAL
 AC_FUNC_WAIT3
 AC_CHECK_FUNCS(putenv regcomp strchr)
+AC_CHECK_FUNCS(sincos)
 
 dnl AC_SUBST(ALL_LINGUAS)
 AC_SUBST(PACKAGE)

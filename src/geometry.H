@@ -139,7 +139,12 @@ struct matrix2_t
 	// [ -sin(theta) cos(theta)  0 ]
 	// [           0          0  1 ]
 	double cth, sth;
+#ifdef HAVE_SINCOS
 	sincos(theta, &sth, &cth);
+#else
+	sth = sin(theta);
+	cth = cos(theta);
+#endif
 
 	double na =  a * cth + c * sth;
 	double nb =  b * cth + d * sth;
