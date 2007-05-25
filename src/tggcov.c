@@ -39,7 +39,7 @@
 #include "callgraph_diagram.H"
 #include "check_scenegen.H"
 
-CVSID("$Id: tggcov.c,v 1.22 2006-07-31 14:20:08 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.23 2007-05-25 12:39:19 gnb Exp $");
 
 char *argv0;
 static GList *files;	    /* incoming specification from commandline */
@@ -73,7 +73,7 @@ annotate_file(cov_file_t *f)
 	return;
     }
 
-    ggcov_filename = g_strconcat(cfilename, ".tggcov", 0);
+    ggcov_filename = g_strconcat(cfilename, ".tggcov", (char *)0);
     fprintf(stderr, "Writing %s\n", ggcov_filename);
     if ((outfp = fopen(ggcov_filename, "w")) == 0)
     {

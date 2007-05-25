@@ -30,7 +30,7 @@
 #include "confsection.H"
 #include "estring.H"
 
-CVSID("$Id: confsection.C,v 1.9 2005-03-14 08:24:26 gnb Exp $");
+CVSID("$Id: confsection.C,v 1.10 2007-05-25 12:39:19 gnb Exp $");
 
 hashtable_t<const char, confsection_t> *confsection_t::all_;
 static const char filename[] = "ggcov";
@@ -70,10 +70,10 @@ char *
 confsection_t::make_key(const char *name) const
 {
 #if HAVE_LIBGCONF
-    return g_strconcat("/apps/", filename, "/", secname_.data(), "/", name, 0);
+    return g_strconcat("/apps/", filename, "/", secname_.data(), "/", name, (char *)0);
 #else
     assert(strchr(name, '/') == 0);
-    return g_strconcat(filename, "/", secname_.data(), "/", name, 0);
+    return g_strconcat(filename, "/", secname_.data(), "/", name, (char *)0);
 #endif
 }
 

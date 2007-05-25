@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.74 2006-07-31 14:32:01 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.75 2007-05-25 12:39:19 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -339,7 +339,7 @@ cov_file_t::unminimise_name(const char *name)
     {
     	/* partial, presumably minimal, name */
     	check_common_path();
-	return g_strconcat(common_path_, name, 0);
+	return g_strconcat(common_path_, name, (char *)0);
     }
 }
 

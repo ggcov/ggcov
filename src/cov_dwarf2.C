@@ -22,7 +22,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_dwarf2.C,v 1.2 2005-03-14 07:49:15 gnb Exp $");
+CVSID("$Id: cov_dwarf2.C,v 1.3 2007-05-25 12:39:19 gnb Exp $");
 
 /*
  * Machine-specific code to read DWARF v2 debug entries from an
@@ -417,7 +417,7 @@ cov_dwarf2_filename_scanner_t::get_lineinfo_filename()
     if (diridx > dir_table_->length())
     	return 0;
     path = (diridx ? 
-    	    g_strconcat(dir_table_->nth(diridx-1), "/", file, 0) :
+    	    g_strconcat(dir_table_->nth(diridx-1), "/", file, (char *)0) :
 	    g_strdup(file));
     dprintf1(D_DWARF, "get_lineinfo_filename() = \"%s\"\n", path);
     return path;
@@ -545,7 +545,7 @@ cov_dwarf2_filename_scanner_t::get_compunit_filename()
     		strings_+comp_dir_off,
 		"/",
 		strings_+name_off,
-		0);
+		(char *)0);
     dprintf1(D_DWARF, "get_compunit_filename() = \"%s\"\n", path);
     return path;
 }

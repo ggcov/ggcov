@@ -26,7 +26,7 @@
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.32 2006-08-13 09:45:19 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.33 2007-05-25 12:39:19 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -311,7 +311,7 @@ sourcewin_t::delete_flows()
 {
     flow_t *flow;
 
-    while (flow = flows_.remove_head())
+    while ((flow = flows_.remove_head()))
     {
 	gtk_widget_hide(flow->canvas_);
 	gtk_widget_unref(flow->canvas_);
@@ -330,7 +330,6 @@ void
 sourcewin_t::wait_for_text_validation()
 {
     GtkTextView *tv = GTK_TEXT_VIEW(text_);
-    GtkTextBuffer *buffer = gtk_text_view_get_buffer(tv);
     gboolean vis = FALSE;
     int n = 5;
 

@@ -24,7 +24,7 @@
 #include "tok.H"
 #include "confsection.H"
 
-CVSID("$Id: ui.c,v 1.34 2006-08-13 09:37:58 gnb Exp $");
+CVSID("$Id: ui.c,v 1.35 2007-05-25 12:39:20 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -112,7 +112,7 @@ find_file(const char *path, const char *base)
     
     while ((dir = tok.next()) != 0)
     {
-	file = g_strconcat(dir, "/", base, 0);
+	file = g_strconcat(dir, "/", base, (char *)0);
 
 	if (stat(file, &sb) == 0 && S_ISREG(sb.st_mode))
 	    return file.take();
@@ -124,7 +124,7 @@ find_file(const char *path, const char *base)
 void
 ui_prepend_glade_path(const char *dir)
 {
-    ui_glade_path = g_strconcat(dir, ":", ui_glade_path.data(), 0);
+    ui_glade_path = g_strconcat(dir, ":", ui_glade_path.data(), (char *)0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -26,7 +26,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_elf.C,v 1.1 2005-04-03 09:07:26 gnb Exp $");
+CVSID("$Id: cov_elf.C,v 1.2 2007-05-25 12:39:19 gnb Exp $");
 
 /*
  * Machine-specific code to read 32-bit or 64-bit entries from an
@@ -258,7 +258,7 @@ cov_elf_shlib_scanner_t::find_shlib(const char *name)
 
     for (i = 0 ; i < rpath_->length()  ; i++)
     {
-        file = g_strconcat(rpath_->nth(i), "/", name, 0);
+        file = g_strconcat(rpath_->nth(i), "/", name, (char *)0);
 	dprintf1(D_ELF|D_VERBOSE, "find_shlib: trying \"%s\"\n", file.data());
 	if (file_exists(file) == 0)
 	{
