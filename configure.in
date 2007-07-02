@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.73 2007-05-25 11:02:07 gnb Exp $
+dnl $Id: configure.in,v 1.74 2007-07-02 12:00:16 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -66,19 +66,59 @@ else
 fi
 AC_SUBST(GUIPROG)
 
+dnl Try to find the Berkeley DB in any of the odd places it might be hiding
+DB_LIB_db42="db-4.2"
+DB_CPPFLAGS_db42="-I/usr/include/db42"
+DB_LDFLAGS_db42=""
+
+DB_LIB_db41="db-4.1"
+DB_CPPFLAGS_db41="-I/usr/include/db41"
+DB_LDFLAGS_db41=""
+
+DB_LIB_plain="db"
+DB_CPPFLAGS_plain=""
+DB_LDFLAGS_plain=""
+
+DB_FLAVORS="db42 db41 plain"
+
+found=no
+web=yes
+for flavor in $DB_FLAVORS ; do
+    AC_MSG_NOTICE(Looking for Berkeley DB flavor $flavor)
+    eval "lib=\$DB_LIB_$flavor"
+    eval "ldflags=\$DB_LDFLAGS_$flavor"
+    eval "cppflags=\$DB_CPPFLAGS_$flavor"
+
+    oldCPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$cppflags $CPPFLAGS"
+    found=yes
+    AC_CHECK_HEADER(db.h,[],[found=no])
+    AC_CHECK_LIB($lib,db_create,[],[found=no],$ldflags)
+    test $found = yes && break
+    CPPFLAGS="$oldCPPFLAGS"
+done
+if test $found = yes ; then
+    DB_CPPFLAGS="$cppflags"
+    DB_LIBS="-l$lib $ldflags"
+    AC_SUBST(DB_CPPFLAGS)
+    AC_SUBST(DB_LIBS)
+else
+    AC_MSG_NOTICE(Cannot find db.h, disabling web interface)
+    web=no
+fi
+
 dnl Disable the web interface (useful if you haven't got Berkeley DB)
 AC_MSG_CHECKING(whether to enable the WWW interface)
 AC_ARG_ENABLE(web,
 [  --disable-web           Do not build the WWW interface],[
 case "${enableval}" in
-yes|no)
-    web=${enableval}
-    ;;
+no) web=no ;;
+yes) ;;
 *)
     AC_MSG_ERROR(bad value ${enableval} for --enable-web)
     ;;
 esac
-],[web=yes])
+])
 AC_MSG_RESULT($web)
 AM_CONDITIONAL(WEB, test x$web = xyes)
 if test x$web = xyes ; then

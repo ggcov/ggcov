@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.71 2007-07-02 11:58:58 gnb Exp $
+# $Id: Makefile.am,v 1.72 2007-07-02 12:00:16 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -110,7 +110,8 @@ ggcov_webdb_SOURCES= \
 		php_serializer.H php_serializer.C \
 		php_scenegen.H php_scenegen.C \
 		$(LIBCOV_STATIC_SOURCES)
-ggcov_webdb_LDADD=	$(CLI_LIBS) -ldb
+ggcov_webdb_CPPFLAGS=	$(DB_CPPFLAGS)
+ggcov_webdb_LDADD=	$(CLI_LIBS) $(DB_LIBS)
 
 # Note this is an automake conditional *not* a gmake conditional
 if DEBUG
