@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.76 2007-07-02 11:54:57 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.77 2007-07-02 12:12:24 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -1586,7 +1586,8 @@ cov_file_t::read_rtl_file(covio_t *io)
 		if (fromfunc != 0)
     		    fromfunc->reconcile_calls();
     	    	bb = 0;
-		fromfunc = find_function(buf.data()+sizeof(c_function)-1);
+		tok_t tok((const char *)(buf.data()+sizeof(c_function)-1));
+		fromfunc = find_function(tok.next());
 		dprintf2(D_FILES, "%s: fromfunc=%s\n",
 		    	 fn, (fromfunc == 0 ? "(null)" : fromfunc->name()));
 		continue;
