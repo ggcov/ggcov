@@ -23,7 +23,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_bfd.C,v 1.6 2006-08-13 09:34:09 gnb Exp $");
+CVSID("$Id: cov_bfd.C,v 1.7 2007-07-02 12:09:04 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -257,7 +257,7 @@ cov_bfd_t::dump_symbol(unsigned int idx, asymbol *sym)
 
     duprintf6("%5d|%08lx|%5x|%-4s|%-10s|%s",
 	      idx,
-	      sym->value,
+	      (long unsigned)sym->value,
 	      (unsigned)sym->flags,
 	      symbol_type_as_string(sym),
 	      sym->section->name,
@@ -287,8 +287,8 @@ cov_bfd_t::dump_reloc(unsigned int idx, arelent *rel)
 	    rel->howto->name);
     duprintf7("%5d|%08lx|%08lx|%-16s|%5x|%-4s|%s\n",
 	    idx,
-	    rel->address,
-	    rel->addend,
+	    (long unsigned)rel->address,
+	    (long unsigned)rel->addend,
 	    reltype,
 	    (unsigned)sym->flags,
 	    symbol_type_as_string(sym),

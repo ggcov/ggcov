@@ -26,7 +26,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_elf.C,v 1.2 2007-05-25 12:39:19 gnb Exp $");
+CVSID("$Id: cov_elf.C,v 1.3 2007-07-02 12:09:04 gnb Exp $");
 
 /*
  * Machine-specific code to read 32-bit or 64-bit entries from an
@@ -144,7 +144,7 @@ cov_elf_shlib_scanner_t::tag_as_string(const cov_dyn_t *d) const
     case DT_RUNPATH: return "RUNPATH";
     }
     
-    snprintf(buf, sizeof(buf), "0x%x", d->tag);
+    snprintf(buf, sizeof(buf), "0x%x", (unsigned int)d->tag);
     return buf;
 }
 
@@ -157,7 +157,7 @@ cov_elf_shlib_scanner_t::value_as_string(const cov_dyn_t *d) const
     if ((v = strvalue(d)) == 0)
     {
 	/* could be string, could be something else...who knows? Play it safe */
-	snprintf(buf, sizeof(buf), ELF_ADDR_FMT, d->value);
+	snprintf(buf, sizeof(buf), ELF_ADDR_FMT, (long unsigned)d->value);
 	v = buf;
     }
     return v;

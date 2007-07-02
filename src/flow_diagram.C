@@ -20,7 +20,7 @@
 #include "flow_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: flow_diagram.C,v 1.5 2006-07-10 11:39:33 gnb Exp $");
+CVSID("$Id: flow_diagram.C,v 1.6 2007-07-02 12:09:04 gnb Exp $");
 
 #define NODE_WIDTH	6.0
 #define HMARGIN		0.5
@@ -369,7 +369,7 @@ flow_diagram_t::slot_distance(node_t *node, int idx, int *distances) const
     }
     dprintf4(D_DLEGO|D_VERBOSE,
 	    "slot_distance(node=%p,idx=%d,distances=[%d,%d]\n",
-	    node, idx, distances[0], distances[1]);
+	    (void *)node, idx, distances[0], distances[1]);
 }
 
 int

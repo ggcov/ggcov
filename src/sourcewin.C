@@ -26,7 +26,7 @@
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.33 2007-05-25 12:39:19 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.34 2007-07-02 12:09:04 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -108,7 +108,7 @@ sourcewin_t::get_visible_lines(
     unsigned long begin_lineno = gtk_text_iter_get_line(&begin_iter);
     unsigned long end_lineno = gtk_text_iter_get_line(&end_iter);
 
-    dprintf2(D_SOURCEWIN, "    begin=%u end=%u\n", begin_lineno, end_lineno);
+    dprintf2(D_SOURCEWIN, "    begin=%lu end=%lu\n", begin_lineno, end_lineno);
 
     if (begin_lineno == 0 && end_lineno == 0)
 	return FALSE;
@@ -329,7 +329,6 @@ sourcewin_t::delete_flows()
 void
 sourcewin_t::wait_for_text_validation()
 {
-    GtkTextView *tv = GTK_TEXT_VIEW(text_);
     gboolean vis = FALSE;
     int n = 5;
 
