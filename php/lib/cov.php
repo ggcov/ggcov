@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: cov.php,v 1.7 2005-07-23 10:28:56 gnb Exp $
+// $Id: cov.php,v 1.8 2007-07-02 12:01:33 gnb Exp $
 //
 
 // Status defines
@@ -97,7 +97,7 @@ class cov
 	if ($this->db_ === false)
 	{
 	    $webdb_file = $this->base_directory_ . '/ggcov.webdb';
-	    $this->db_ = dba_open($webdb_file, 'r-', 'db4', 0);
+	    $this->db_ = dba_open($webdb_file, 'rd', 'db4', 0);
 	    if ($this->db_ === false)
 		$this->cb_->fatal("Couldn't open $webdb_file");
 	}
