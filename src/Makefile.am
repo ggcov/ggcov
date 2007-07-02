@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.70 2007-07-02 11:57:06 gnb Exp $
+# $Id: Makefile.am,v 1.71 2007-07-02 11:58:58 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -147,7 +147,7 @@ EXTRA_CLEAN=		licence.c glade_callbacks.c
 
 noinst_PROGRAMS=	bbdump filetest mangletest \
 			newbbgdump phptest popttest \
-			toktest
+			toktest estringtest
 
 bbdump_SOURCES= 	bbdump.c
 bbdump_LDADD=		$(CLI_LIBS)
@@ -169,6 +169,9 @@ popttest_LDADD= 	$(GGCOV_CLI_LIBS)
 
 toktest_SOURCES=	toktest.c
 toktest_LDADD=		$(CLI_LIBS)
+
+estringtest_SOURCES=	estringtest.c
+estringtest_LDADD=	$(CLI_LIBS)
 
 COVFLAGS=		-fprofile-arcs -ftest-coverage
 coverage: covered-all
