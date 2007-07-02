@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.69 2007-05-25 12:08:11 gnb Exp $
+# $Id: Makefile.am,v 1.70 2007-07-02 11:57:06 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -171,5 +171,6 @@ toktest_SOURCES=	toktest.c
 toktest_LDADD=		$(CLI_LIBS)
 
 COVFLAGS=		-fprofile-arcs -ftest-coverage
-coverage:
-	$(MAKE) CFLAGS="$(CFLAGS) $(COVFLAGS)" CXXFLAGS="$(CXXFLAGS) $(COVFLAGS)" all
+coverage: covered-all
+covered-%:
+	$(MAKE) CFLAGS="$(CFLAGS) $(COVFLAGS)" CXXFLAGS="$(CXXFLAGS) $(COVFLAGS)" $*
