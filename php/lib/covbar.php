@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: covbar.php,v 1.3 2005-05-18 14:15:52 gnb Exp $
+// $Id: covbar.php,v 1.4 2007-07-02 12:04:28 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';
@@ -38,7 +38,11 @@ class cov_covbar_page extends cov_page
     function get_number($get, $name, $def)
     {
 	if (array_key_exists($name, $get) && cov_valid::integer($get[$name]))
+	{
 	    $x = (int)$get[$name];
+	    if ($x < 0)
+		$x = $def;
+	}
 	else
 	    $x = $def;
 	return $x;
@@ -79,22 +83,27 @@ class cov_covbar_page extends cov_page
 	global $cov_rgb;
 	$cb = $this->env_->cb_;
 
-	$total = array_sum($this->values_);
-	if ($total == 0)
-	    exit;   // die and emit no output
-	else if ($total < 0)
-	    $cb->fatal("illegal count total");
-
 	$img = imagecreate($this->width_, $this->height_);
 
-	$x = 0;
-	foreach (array(COV_COVERED, COV_PARTCOVERED, COV_UNCOVERED) as $status)
+	$total = array_sum($this->values_);
+	if ($total == 0)
 	{
-	    $rgb = $cov_rgb[$status];
-	    $col = imagecolorallocate($img, $rgb[0], $rgb[1], $rgb[2]);
-	    $w = $this->width_ * $this->values_[$status] / $total;
-	    imagefilledrectangle($img, $x, 0, $x+$w, $this->height_, $col);
-	    $x += $w;
+ 	    $col = imagecolorallocate($img, 0, 0, 0);
+	    imagecolortransparent($img, $col);
+	}
+	else
+	{
+	    $x = 0;
+	    foreach (array(COV_COVERED, COV_PARTCOVERED, COV_UNCOVERED) as $status)
+	    {
+		$w = $this->width_ * $this->values_[$status] / $total;
+		if (!$w)
+		    continue;
+		$rgb = $cov_rgb[$status];
+		$col = imagecolorallocate($img, $rgb[0], $rgb[1], $rgb[2]);
+		imagefilledrectangle($img, $x, 0, $x+$w, $this->height_, $col);
+		$x += $w;
+	    }
 	}
 
 	header("Content-type: image/$this->format_");
