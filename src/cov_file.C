@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.75 2007-05-25 12:39:19 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.76 2007-07-02 11:54:57 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -50,6 +50,7 @@ void *cov_file_t::files_model_;
 #define BBG_VERSION_GCC41   	_NEW_VERSION(4,1,'*')
 #define BBG_VERSION_GCC40_UBU  	_NEW_VERSION(4,0,'U')	/* Ubuntu Dapper Drake */
 #define BBG_VERSION_GCC40_RH   	_NEW_VERSION(4,0,'R')
+#define BBG_VERSION_GCC40_APL  	_NEW_VERSION(4,0,'A')	/* Apple MacOS X*/
 #define BBG_VERSION_GCC40    	_NEW_VERSION(4,0,'*')
 #define BBG_VERSION_GCC34    	_NEW_VERSION(3,4,'*')
 /*
@@ -944,6 +945,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     case BBG_VERSION_GCC40:
     case BBG_VERSION_GCC40_RH:
     case BBG_VERSION_GCC40_UBU:
+    case BBG_VERSION_GCC40_APL:
     case BBG_VERSION_GCC41:
     case BBG_VERSION_GCC41_UBU:
     	if (expect_version == BBG_VERSION_GCC34)
@@ -978,6 +980,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 	    	format_version_ == BBG_VERSION_GCC40 ||
 		format_version_ == BBG_VERSION_GCC40_RH ||
 		format_version_ == BBG_VERSION_GCC40_UBU ||
+		format_version_ == BBG_VERSION_GCC40_APL ||
 		format_version_ == BBG_VERSION_GCC41 ||
 		format_version_ == BBG_VERSION_GCC41_UBU)
 	    {
@@ -1400,6 +1403,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 	    (format_version_ == BBG_VERSION_GCC40 ||
  	     format_version_ == BBG_VERSION_GCC40_RH ||
  	     format_version_ == BBG_VERSION_GCC40_UBU ||
+ 	     format_version_ == BBG_VERSION_GCC40_APL ||
  	     format_version_ == BBG_VERSION_GCC41 ||
 	     format_version_ == BBG_VERSION_GCC41_UBU))
 	    break;  /* end of file */
@@ -1419,6 +1423,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 	    	format_version_ == BBG_VERSION_GCC40 ||
 	    	format_version_ == BBG_VERSION_GCC40_RH ||
 	    	format_version_ == BBG_VERSION_GCC40_UBU ||
+	    	format_version_ == BBG_VERSION_GCC40_APL ||
 	    	format_version_ == BBG_VERSION_GCC41 ||
 		format_version_ == BBG_VERSION_GCC41_UBU)
 	    {
@@ -1505,6 +1510,7 @@ cov_file_t::read_da_file(covio_t *io)
     case BBG_VERSION_GCC40:
     case BBG_VERSION_GCC40_RH:
     case BBG_VERSION_GCC40_UBU:
+    case BBG_VERSION_GCC40_APL:
     case BBG_VERSION_GCC41:
     case BBG_VERSION_GCC41_UBU:
 	if (little_endian_)
