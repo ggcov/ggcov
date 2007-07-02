@@ -133,4 +133,10 @@ void ui_text_get_selected_lines(GtkWidget *w, unsigned long *startp,
 /* get the entire contents of the window, needs to be g_free()d */
 char *ui_text_get_contents(GtkWidget *w);
 
+typedef struct
+{
+    const char *name;
+    GCallback func;
+} ui_named_callback_t;
+
 #endif /* _ggcov_ui_h_ */

@@ -24,7 +24,7 @@
 #include "tok.H"
 #include "confsection.H"
 
-CVSID("$Id: ui.c,v 1.35 2007-05-25 12:39:20 gnb Exp $");
+CVSID("$Id: ui.c,v 1.36 2007-07-02 12:07:27 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -129,7 +129,7 @@ ui_prepend_glade_path(const char *dir)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-extern struct { const char *name; GCallback func; } ui_callbacks[];   /* in glade_callbacks.c */
+extern ui_named_callback_t ui_callbacks[];   /* in glade_callbacks.c */
 
 /*
  * Connect up named functions for signal handlers.
