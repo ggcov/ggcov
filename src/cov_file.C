@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.78 2010-01-08 08:23:18 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.79 2010-01-08 08:25:56 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -46,6 +46,7 @@ void *cov_file_t::files_model_;
 	 ((gnb_u32_t)('0'+(minor)/10)<<16)| \
 	 ((gnb_u32_t)('0'+(minor)%10)<<8)| \
 	 ((gnb_u32_t)(release)))
+#define BBG_VERSION_GCC43   	_NEW_VERSION(4,3,'*')
 #define BBG_VERSION_GCC41_UBU	_NEW_VERSION(4,1,'p')	/* Ubuntu Edgy */
 #define BBG_VERSION_GCC41   	_NEW_VERSION(4,1,'*')
 #define BBG_VERSION_GCC40_UBU  	_NEW_VERSION(4,0,'U')	/* Ubuntu Dapper Drake */
@@ -948,6 +949,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     case BBG_VERSION_GCC40_APL:
     case BBG_VERSION_GCC41:
     case BBG_VERSION_GCC41_UBU:
+    case BBG_VERSION_GCC43:
     	if (expect_version == BBG_VERSION_GCC34)
 	    expect_version = format_version_;
 	/* fall through */
@@ -982,7 +984,8 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 		format_version_ == BBG_VERSION_GCC40_UBU ||
 		format_version_ == BBG_VERSION_GCC40_APL ||
 		format_version_ == BBG_VERSION_GCC41 ||
-		format_version_ == BBG_VERSION_GCC41_UBU)
+		format_version_ == BBG_VERSION_GCC41_UBU ||
+		format_version_ == BBG_VERSION_GCC43)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		estring filename;
@@ -1405,7 +1408,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
  	     format_version_ == BBG_VERSION_GCC40_UBU ||
  	     format_version_ == BBG_VERSION_GCC40_APL ||
  	     format_version_ == BBG_VERSION_GCC41 ||
-	     format_version_ == BBG_VERSION_GCC41_UBU))
+	     format_version_ == BBG_VERSION_GCC41_UBU ||
+	     format_version_ == BBG_VERSION_GCC43))
 	    break;  /* end of file */
 
 	if (!io->read_u32(length))
@@ -1425,7 +1429,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
 	    	format_version_ == BBG_VERSION_GCC40_UBU ||
 	    	format_version_ == BBG_VERSION_GCC40_APL ||
 	    	format_version_ == BBG_VERSION_GCC41 ||
-		format_version_ == BBG_VERSION_GCC41_UBU)
+		format_version_ == BBG_VERSION_GCC41_UBU ||
+		format_version_ == BBG_VERSION_GCC43)
 	    {
 	    	/* RedHat just *have* to be different.  Thanks, guys */
 		gnb_u64_t funcid;
@@ -1513,6 +1518,7 @@ cov_file_t::read_da_file(covio_t *io)
     case BBG_VERSION_GCC40_APL:
     case BBG_VERSION_GCC41:
     case BBG_VERSION_GCC41_UBU:
+    case BBG_VERSION_GCC43:
 	if (little_endian_)
 	{
 	    dprintf0(D_FILES, "Detected gcc 3.4 or 4.0 (little endian) .gcda format\n");
