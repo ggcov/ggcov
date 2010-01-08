@@ -92,7 +92,7 @@ private:
 	{
 	    return last_ - first_;
 	}
-	static int compare(const arc_t **a1p, const arc_t **a1p);
+	static int compare(const arc_t **, const arc_t **);
 
 	double overlap_x() const;
 	double direct_fromx() const;
