@@ -19,7 +19,7 @@
 
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.18 2006-01-29 00:38:27 gnb Exp $");
+CVSID("$Id: common.c,v 1.19 2010-01-08 08:21:51 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -42,20 +42,45 @@ fatal(const char *fmt, ...)
 
 extern char *argv0;
 
+static void oom(void) __attribute__((noreturn));
+
+/* Do write() but handle short writes */
+static int
+do_write(int fd, const char *buf, int len)
+{
+    int remain = len;
+
+    while (remain > 0)
+    {
+	int n = write(fd, buf, remain);
+	if (n < 0)
+	    return -1;
+	buf += n;
+	remain -= n;
+    }
+    return len;
+}
+
+static void
+oom(void)
+{
+    static const char message[] = ": no memory, exiting\n";
+
+    if (do_write(2, argv0, strlen(argv0)) < 0)
+	exit(1);
+    if (do_write(2, message, sizeof(message)-1) < 0)
+	exit(1);
+    exit(1);
+}
+
 void *
 gnb_xmalloc(size_t sz)
 {
     void *x;
-    
+
     if ((x = g_malloc0(sz)) == 0)
-    {
-    	static const char message[] = ": no memory, exiting\n";
-	
-	write(2, argv0, strlen(argv0));
-	write(2, message, sizeof(message)-1);
-	exit(1);
-    }
-    
+	oom();
+
     return x;
 }
 
