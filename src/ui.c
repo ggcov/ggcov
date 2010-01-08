@@ -24,7 +24,7 @@
 #include "tok.H"
 #include "confsection.H"
 
-CVSID("$Id: ui.c,v 1.36 2007-07-02 12:07:27 gnb Exp $");
+CVSID("$Id: ui.c,v 1.37 2010-01-08 08:51:08 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -260,7 +260,7 @@ ui_get_window(GtkWidget *w)
 
 static struct
 {
-    char **xpm;
+    const char * const *xpm;
     GdkPixmap *pm;
     GdkBitmap *mask;
 } ui_default_icon;
@@ -289,13 +289,13 @@ ui_window_set_default_icon(GtkWidget *w)
     if (ui_default_icon.pm == 0)
     	ui_default_icon.pm = gdk_pixmap_create_from_xpm_d(w->window,
 	    	    	    	&ui_default_icon.mask, 0,
-				ui_default_icon.xpm);
+				(char **)ui_default_icon.xpm);
     gdk_window_set_icon(w->window, 0,
 	ui_default_icon.pm, ui_default_icon.mask);
 }
 
 void
-ui_set_default_icon(char **xpm_data)
+ui_set_default_icon(const char * const *xpm_data)
 {
     ui_default_icon.xpm = xpm_data;
     ui_default_icon.pm = 0; 	/* JIC */

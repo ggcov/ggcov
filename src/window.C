@@ -24,7 +24,7 @@
 #include "string_var.H"
 #include "prefs.H"
 
-CVSID("$Id: window.C,v 1.15 2006-01-29 00:45:30 gnb Exp $");
+CVSID("$Id: window.C,v 1.16 2010-01-08 08:51:08 gnb Exp $");
 
 static const char window_key[] = "ggcov_window_key";
 
@@ -39,7 +39,7 @@ window_t::~window_t()
 {
     /* JIC of strange gui stuff */
     assert(!deleting_);
-    deleting_ = TRUE;
+    deleting_ = true;
 
     mvc_unlisten(cov_file_t::files_model(), ~0, files_changed, this);
     
@@ -101,7 +101,7 @@ dnd_handle_uri_list(void *data, unsigned int length)
 #define URI_LIST     	    2
 static const GtkTargetEntry dnd_targets[] = 
 {
-    {"text/uri-list", 0, URI_LIST}
+    {(char *)"text/uri-list", 0, URI_LIST}
 };
 
 void
@@ -258,7 +258,7 @@ window_t::show()
     gtk_widget_show(window_);
     if (shown_)
     	gdk_window_raise(window_->window);
-    shown_ = TRUE;
+    shown_ = true;
 
     prefs.post_load(window_);
 }
