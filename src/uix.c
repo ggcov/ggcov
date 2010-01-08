@@ -20,7 +20,7 @@
 #include "uix.h"
 #include <gdk/gdkx.h>	/* This is what we want to avoid in the main code */
 
-CVSID("$Id: uix.c,v 1.6 2003-11-03 23:02:50 gnb Exp $");
+CVSID("$Id: uix.c,v 1.7 2010-01-08 08:25:09 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -164,7 +164,7 @@ uix_find_fixed(const uix_font_desc_t *origdesc)
 	};
 
     tmpdesc = *origdesc;
-    tmpdesc.spacing = "M";
+    tmpdesc.spacing = (char *)"M";
     
     /* first try everything the same except the spacing -- we might get lucky */
     if ((newfont = uix_font_desc_load(&tmpdesc)) != 0)
@@ -179,8 +179,8 @@ uix_find_fixed(const uix_font_desc_t *origdesc)
     }
 
     /* set some fields to safe defaults and try the well-known families again */
-    tmpdesc.weight = "Medium";
-    tmpdesc.slant = "R";
+    tmpdesc.weight = (char *)"Medium";
+    tmpdesc.slant = (char *)"R";
     for (i = 0 ; families[i] != 0 ; i++)
     {
     	tmpdesc.family = (char *)families[i];

@@ -73,7 +73,7 @@ gnb_stacked_bar_get_type(void)
     {
 	static const GtkTypeInfo stacked_bar_info =
 	{
-	    "GnbStackedBar",
+	    (char *)"GnbStackedBar",
 	    sizeof (GnbStackedBar),
 	    sizeof (GnbStackedBarClass),
 	    (GtkClassInitFunc) gnb_stacked_bar_class_init,

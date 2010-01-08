@@ -1,5 +1,5 @@
 /* XPM */
-static char * ggcov32_xpm[] = {
+static const char * const ggcov32_xpm[] = {
 "32 32 298 2",
 "  	c None",
 ". 	c #FEFEFF",

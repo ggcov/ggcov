@@ -5,8 +5,8 @@
 
 static int boolopt = 0;
 static int spoolopt = 0;
-char *stringopt = "before";
-char *ropeopt = "BEFORE";
+const char *stringopt = "before";
+const char *ropeopt = "BEFORE";
 GList *files;
 
 static const struct poptOption included_options[] =

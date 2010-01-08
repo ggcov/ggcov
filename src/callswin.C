@@ -24,7 +24,7 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callswin.C,v 1.22 2005-09-11 10:50:24 gnb Exp $");
+CVSID("$Id: callswin.C,v 1.23 2010-01-08 08:25:09 gnb Exp $");
 
 #define COL_FROM    0
 #define COL_TO	    1
@@ -241,7 +241,7 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 #endif
     const cov_location_t *loc;
     callswin_call_t *call;
-    char *text[NUM_COLS];
+    const char *text[NUM_COLS];
     char countbuf[32];
     char linebuf[32];
 
@@ -269,7 +269,7 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 	call = new callswin_call_t(from_fn, itr);
 
 #if !GTK2
-	row = gtk_clist_append(GTK_CLIST(clist_), text);
+	row = gtk_clist_append(GTK_CLIST(clist_), (char **)text);
 	gtk_clist_set_row_data(GTK_CLIST(clist_), row, call);
 #else
     	gtk_list_store_append(store_, &titer);

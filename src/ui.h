@@ -56,7 +56,7 @@ void ui_register_windows_entry(const char *label,
 /*
  * Set the icon that will be used for all toplevel windows.
  */
-void ui_set_default_icon(char **xpm_data);
+void ui_set_default_icon(const char * const *xpm_data);
 
 
 /*
