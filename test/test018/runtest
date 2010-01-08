@@ -4,7 +4,14 @@
 
 init "parsing debug RTL dump from gcc -db for callgraph"
 
+rm -f foo.c.*.bp
 compile_c -db foo.c
+nn=$(ls foo.c.*.bp 2>/dev/null | wc -l)
+if [ $nn != 1 ] ; then
+    fail "gcc -db not supported by this version of gcc"
+    exit 1
+fi
+
 link foo foo.o
 
 run foo 1
