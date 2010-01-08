@@ -1,3 +1,10 @@
+Fri Jan  8 19:29:58 2010  Greg Banks <gnb@users.sourceforge.net>
+	* Release 0.8.1
+
+	* Support gcc 4.3 file formats.
+	* Fix various compile warnings.
+	* Make test 018 failure message clearer.
+
 Sun Jul  2 19:04:17 2006  Greg Banks <gnb@alphalink.com.au>
 	* Release 0.8
 
