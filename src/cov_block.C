@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_block.C,v 1.19 2006-02-19 04:33:49 gnb Exp $");
+CVSID("$Id: cov_block.C,v 1.20 2010-01-08 08:23:18 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -90,7 +90,7 @@ void
 cov_block_t::set_count(count_t count)
 {
     assert(!count_valid_);
-    count_valid_ = TRUE;
+    count_valid_ = true;
     count_ = count;
 
     assert(out_ncalls_ == 0 || out_ncalls_ == 1);

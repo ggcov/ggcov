@@ -71,12 +71,12 @@ private:
     void calculate_count();
     void suppress()
     {
-    	count_valid_ = TRUE;
+    	count_valid_ = true;
 	status_ = cov::SUPPRESSED;
     }
 
     GList *blocks_;
-    gboolean count_valid_;  /* covers status_, count_ */
+    boolean count_valid_;  /* covers status_, count_ */
     cov::status_t status_;
     count_t count_;
     

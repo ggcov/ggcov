@@ -19,7 +19,7 @@
 
 #include "cov.H"
 
-CVSID("$Id: cov_line.C,v 1.7 2006-07-10 10:17:41 gnb Exp $");
+CVSID("$Id: cov_line.C,v 1.8 2010-01-08 08:23:18 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -54,7 +54,7 @@ cov_line_t::calculate_count()
     int len = 0;
 
     assert(!count_valid_);
-    count_valid_ = TRUE;
+    count_valid_ = true;
 
     /*
      * TODO: implement the new smarter algorithm from gcov 3.3 here

@@ -137,7 +137,7 @@ private:
     unsigned int idx_; 	    /* serial number in function */
     
     count_t count_;
-    gboolean count_valid_:1;
+    boolean count_valid_:1;
     
     list_t<cov_arc_t> in_arcs_;
     unsigned in_ninvalid_;   /* number of inbound non-call arcs with invalid counts */

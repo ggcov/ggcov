@@ -59,8 +59,8 @@ struct _GnbStackedBarMetric
     guint length;     	    	/* length in pixels */
     GdkColor color;
     GdkGC *gc;
-    gboolean color_set:1;
-    gboolean color_allocated:1;
+    gboolean color_set;
+    gboolean color_allocated;
 };
 
 struct _GnbStackedBar

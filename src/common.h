@@ -172,6 +172,24 @@ char *debug_enabled_tokens(void);
 
 #define boolstr(b)  	((b) ? "true" : "false")
 
+/* boolean, true, and false need to be defined always, and
+ * unsigned so that struct fields of type boolean:1 do not
+ * generate whiny gcc warnings */
+#ifdef boolean
+#undef boolean
+#endif
+#define boolean	    unsigned int
+
+#ifdef false
+#undef false
+#endif
+#define false	    (0U)
+
+#ifdef false
+#undef false
+#endif
+#define false	    (0U)
+
 #define safestr(s)  ((s) == 0 ? "" : (s))
 static inline int safe_strcmp(const char *a, const char *b)
 {

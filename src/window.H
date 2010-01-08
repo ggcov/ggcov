@@ -49,8 +49,8 @@ protected:
     void set_title(const char *);
 
     GtkWidget *window_;
-    gboolean deleting_:1;    /* handle possible GUI recursion crap */
-    gboolean shown_:1;	     /* has been shown()n at least once */
+    boolean deleting_:1;    /* handle possible GUI recursion crap */
+    boolean shown_:1;	     /* has been shown()n at least once */
 
     friend void on_window_close_activate(GtkWidget *w, gpointer data);
     friend void on_window_exit_activate(GtkWidget *w, gpointer data);

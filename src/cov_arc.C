@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_arc.C,v 1.10 2005-07-31 12:27:40 gnb Exp $");
+CVSID("$Id: cov_arc.C,v 1.11 2010-01-08 08:23:18 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -56,7 +56,7 @@ cov_arc_t::~cov_arc_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+boolean
 cov_arc_t::is_suppressed() const
 {
     const cov_location_t *loc;
@@ -78,7 +78,7 @@ void
 cov_arc_t::set_count(count_t count)
 {
     assert(!count_valid_);
-    count_valid_ = TRUE;
+    count_valid_ = true;
     count_ = count;
     if (!call_)
     {

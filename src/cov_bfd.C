@@ -23,7 +23,7 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_bfd.C,v 1.7 2007-07-02 12:09:04 gnb Exp $");
+CVSID("$Id: cov_bfd.C,v 1.8 2010-01-08 08:23:18 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -121,7 +121,7 @@ gboolean
 cov_bfd_t::get_symbols()
 {
     assert(!have_symbols_);
-    have_symbols_ = TRUE;
+    have_symbols_ = true;
 
     dprintf1(D_CGRAPH, "Reading symbols from %s\n", filename());
 
@@ -179,7 +179,7 @@ cov_bfd_t::get_code_sections()
     asection *sec;
 
     assert(!have_code_sections_);
-    have_code_sections_ = TRUE;
+    have_code_sections_ = true;
 
     if (abfd_ == 0)
     	return FALSE;

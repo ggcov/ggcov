@@ -118,8 +118,8 @@ private:
 
     bfd *abfd_;
 
-    gboolean have_symbols_:1;
-    gboolean have_code_sections_:1;
+    boolean have_symbols_:1;
+    boolean have_code_sections_:1;
 
     unsigned int num_symbols_;
     asymbol **symbols_;

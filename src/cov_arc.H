@@ -46,11 +46,11 @@ public:
     {
     	return idx_;
     }
-    gboolean is_call() const
+    boolean is_call() const
     {
     	return call_;
     }
-    gboolean
+    boolean
     is_fall_through() const
     {
     	return fall_through_;
@@ -94,7 +94,7 @@ public:
 	return from_->get_first_location();
     }
 
-    gboolean is_suppressed() const;
+    boolean is_suppressed() const;
 
     cov::status_t status()
     {
@@ -115,7 +115,7 @@ private:
 
     void suppress()
     {
-    	suppressed_ = TRUE;
+    	suppressed_ = true;
     }
 
     void set_count(count_t count);
@@ -127,11 +127,11 @@ private:
     unsigned int idx_; 	    /* serial number in from->out_arcs */
     count_t count_;
     string_var name_;     	    /* name of function called (if known) or NULL */
-    gboolean on_tree_:1;
-    gboolean call_:1;
-    gboolean fall_through_:1;
-    gboolean count_valid_:1;
-    gboolean suppressed_:1;
+    boolean on_tree_:1;
+    boolean call_:1;
+    boolean fall_through_:1;
+    boolean count_valid_:1;
+    boolean suppressed_:1;
     
     friend class cov_file_t;
     friend class cov_function_t;

@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.77 2007-07-02 12:12:24 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.78 2010-01-08 08:23:18 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -728,7 +728,7 @@ cov_file_t::read_old_bbg_function(covio_t *io)
     	    	bbg_failed2("dest=%u > nblocks=%u", dest, nblocks);
 			    
 	    a = new cov_arc_t();
-	    a->on_tree_ = (flags & BBG_ON_TREE);
+	    a->on_tree_ = !!(flags & BBG_ON_TREE);
 	    a->fall_through_ = !!(flags & BBG_FALL_THROUGH);
     	    a->call_ = (nblocks >= 2 && dest == nblocks-1 && !a->fall_through_);
 	    a->attach(fn->nth_block(bidx), fn->nth_block(dest));
@@ -1052,7 +1052,7 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 		 * for a "return" statement which the last line in a function.
 		 */
     		a->call_ = (dest == nblocks-1 && (flags & BBG_FAKE));
-		a->on_tree_ = (flags & BBG_ON_TREE);
+		a->on_tree_ = !!(flags & BBG_ON_TREE);
 		a->attach(fn->nth_block(bidx), fn->nth_block(dest));
 	    }
 	    break;
