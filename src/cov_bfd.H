@@ -163,7 +163,12 @@ public:
     
     ~cov_bfd_t() {}
     
-    gboolean open(const char *filename) { return FALSE; }
+    gboolean open(const char *filename)
+    {
+	dprintf1(D_CGRAPH, "ggcov was compiled without the BFD library, "
+			   "cannot open %s\n", filename);
+	return FALSE;
+    }
     const char *filename() const { return 0; }
     
     unsigned int num_symbols() { return 0; }
