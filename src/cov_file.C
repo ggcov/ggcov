@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.81 2010-05-09 02:36:34 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.82 2010-05-09 05:15:17 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -1568,135 +1568,6 @@ cov_file_t::read_da_file(covio_t *io)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
-cov_file_t::read_rtl_file(covio_t *io)
-{
-    int state = 0;
-    cov_function_t *fromfunc = 0;
-    cov_block_t *bb = 0;
-    string_var tofunc;
-    cov_location_var loc;
-    estring buf;
-    static const char c_function[] = ";; Function ";
-    static const char c_basic_block[] = ";; Start of basic block ";
-    static const char c_call_insn[] = "(call_insn";
-    static const char c_symbol_ref[] = "symbol_ref:SI";
-    static const char fn[] = "read_rtl_file";
-
-    dprintf2(D_FILES, "%s: reading %s\n", fn, io->filename());
-
-    while (io->gets(buf, 1024))
-    {
-    	buf.chomp();
-    	dprintf3(D_FILES|D_VERBOSE, "%s: >>> {%d} %s\n", fn, state, buf.data());
-
-    	if (state == 0)
-	{
-    	    if (!strncmp(buf, c_function, sizeof(c_function)-1))
-	    {
-		if (fromfunc != 0)
-    		    fromfunc->reconcile_calls();
-    	    	bb = 0;
-		tok_t tok((const char *)(buf.data()+sizeof(c_function)-1));
-		fromfunc = find_function(tok.next());
-		dprintf2(D_FILES, "%s: fromfunc=%s\n",
-		    	 fn, (fromfunc == 0 ? "(null)" : fromfunc->name()));
-		continue;
-	    }
-	    if (fromfunc == 0)
-	    	continue;
-    	    if (!strncmp(buf, c_basic_block, sizeof(c_basic_block)-1))
-	    {
-	    	unsigned int bbidx = 1 + atoi(buf.data()+sizeof(c_basic_block)-1);
-		if (bbidx < 1 || bbidx >= fromfunc->num_blocks())
-		{
-		    fprintf(stderr, "%s: function %s does not contain a block %u\n",
-		    	fn, fromfunc->name(), bbidx);
-		    bb = 0;
-		}
-		else
-		{
-		    bb = fromfunc->nth_block(bbidx);
-		    dprintf1(D_FILES, "bb=%d\n", bb->bindex());
-		}
-		continue;
-	    }
-	    if (bb == 0)
-	    	continue;
-    	    if (!strncmp(buf, c_call_insn, sizeof(c_call_insn)-1))
-	    {
-	    	tok_t tok((const char *)buf, " \t");
-		const char *t;
-		t = tok.next();
-		t = tok.next();
-		t = tok.next();
-		t = tok.next();
-		t = tok.next();
-		/*
-		 * Yes, we are breaking the tok_t rules by writing into the
-		 * string returned from tok.next(), but we know it's OK
-		 * because a) we own the buffer it's using and b) we know
-		 * we won't be calling tok.next() on this buffer again.
-		 */
-		const char *filename = tok.next();
-		char *p = strrchr((char *)filename, ':');
-    	    	if (p != 0)
-    	    	{
-    	    	    *p++ = '\0';
-		    loc.set(make_absolute(filename), atoi(p));
-    	    	}
-    	    	else
-    	    	{
-		    loc.invalidate();
-    	    	}
-		state = 1;
-		dprintf2(D_FILES, "%s: location=%s\n", fn, loc.describe());
-	    }
-	}
-	if (state > 0)
-	{
-	    const char *p;
-	    if ((p = strstr(buf, c_symbol_ref)) != 0 || ++state == 3)
-	    {
-		state = 0;
-		if (bb->call_ != 0)
-		{
-		    if (bb->bindex() == fromfunc->num_blocks()-1)
-		    {
-			dprintf1(D_FILES, "%s: ran out of blocks!\n", fn);
-		    	fromfunc = 0;
-			continue;
-		    }
-		    dprintf1(D_FILES, "%s: advancing to next block\n", fn);
-		    bb = fromfunc->nth_block(bb->bindex()+1);
-		}
-		if (p != 0)
-		{
-	    	    p += sizeof(c_symbol_ref)-1;
-	    	    tok_t tok((const char *)p, " \t\"()");
-		    const char *t = tok.next();
-		    dprintf5(D_FILES, "%s: fromfunc=%s bb=%d tofunc=%s loc=%s\n",
-		    	    fn, fromfunc->name(), bb->bindex(), t, loc.describe());
-		    bb->add_call(t, &loc.loc_);
-		}
-		else
-		{
-		    dprintf3(D_FILES, "fromfunc=%s bb=%d (pointer) loc=%s\n",
-		    	    fromfunc->name(), bb->bindex(), loc.describe());
-		    bb->add_call(0, &loc.loc_);
-		}
-	    }
-	}
-    }
-    
-    if (fromfunc != 0)
-    	fromfunc->reconcile_calls();
-    
-    return TRUE;
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 #ifdef HAVE_LIBBFD
 
 gboolean
@@ -2105,28 +1976,11 @@ cov_file_t::read(gboolean quiet)
     }
 
     /*
-     * Try to parse the RTL debug dump produced by the -db option
-     * for accurate callgraph information.  This file is called:
-     * gcc 3.4:	    foo.c.12.bp
-     * gcc 4.0:	    foo.c.09.bp
-     * gcc 4.1:	    foo.c.14.bp
-     */
-    gboolean have_cg = FALSE;
-    if ((io = find_file("+.14.bp", TRUE)) != 0 ||
-	(io = find_file("+.12.bp", TRUE)) != 0 ||
-	(io = find_file("+.09.bp", TRUE)) != 0)
-    {
-    	have_cg = read_rtl_file(io);
-    }
-    
-    /*
      * If the data files were written by broken versions of gcc 2.96
      * the callgraph will be irretrievably broken and there's no point
      * at all trying to read the object file.
      */
 #ifdef HAVE_LIBBFD
-    if (!have_cg)
-    {
     if (gcc296_braindeath())
     {
 	static const char warnmsg[] = 
@@ -2159,12 +2013,11 @@ cov_file_t::read(gboolean quiet)
     	    fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
 	}
     }
-    }
 #endif
 
     if (!solve())
     	return FALSE;
-	
+
     return TRUE;
 }
 
