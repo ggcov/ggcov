@@ -16,7 +16,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.72 2007-07-02 12:00:16 gnb Exp $
+# $Id: Makefile.am,v 1.73 2010-05-09 01:34:54 gnb Exp $
 #
 
 SUBDIRS=	libiberty
@@ -176,5 +176,5 @@ estringtest_LDADD=	$(CLI_LIBS)
 
 COVFLAGS=		-fprofile-arcs -ftest-coverage
 coverage: covered-all
-covered-%:
-	$(MAKE) CFLAGS="$(CFLAGS) $(COVFLAGS)" CXXFLAGS="$(CXXFLAGS) $(COVFLAGS)" $*
+covered-all:
+	$(MAKE) CFLAGS="$(CFLAGS) $(COVFLAGS)" CXXFLAGS="$(CXXFLAGS) $(COVFLAGS)" all
