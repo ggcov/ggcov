@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
-# $Id: runtest,v 1.1 2006-08-13 09:28:49 gnb Exp $
+# $Id: runtest,v 1.2 2010-05-09 03:00:46 gnb Exp $
 #
 
 . ../common.sh
@@ -28,7 +28,7 @@ if vcapdo $TMP1 $top_builddir/src/phptest ; then
     cat $TMP1
     pass
 else
-    fail "popttest $args"
+    fail "phpttest $args"
 fi
 
 if vdo diff -u $TMP1 phptest.expected ; then pass ; else fail "expected output differs" ; fi
