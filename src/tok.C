@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2002-2003 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2002-2003 Greg Banks <gnb@users.sourceforge.net>
  * copied from
  * CANT - A C implementation of the Apache/Tomcat ANT build system
  * 
@@ -21,7 +21,7 @@
 
 #include "tok.H"
 
-CVSID("$Id: tok.C,v 1.4 2007-05-25 12:30:14 gnb Exp $");
+CVSID("$Id: tok.C,v 1.5 2010-05-09 05:37:15 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

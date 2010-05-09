@@ -7,7 +7,7 @@ Group: Development/C
 Source: http://www.alphalink.com.au/~gnb/%{name}/%{name}-%{version}.tar.gz
 BuildRoot: /var/tmp/%{name}-root
 BuildPreReq: gdbm-devel
-Vendor: Greg Banks <gnb@alphalink.com.au>
+Vendor: Greg Banks <gnb@users.sourceforge.net>
 
 %description
 Ggcov is a simple GUI program for browsing test coverage data
@@ -75,6 +75,8 @@ rm -rf $RPM_BUILD_ROOT
 %doc php/ggcov.conf doc/HOWTO.web
 
 %changelog
+* Sun May  9 2010 Greg Banks <gnb@users.sourceforge.net>
+- Update email address
 * Sun Jun 19 2005 Greg Banks <gnb@alphalink.com.au>
 - Add manpage, empty ggcov test dir to web package
 * Sat Apr 30 2005 Greg Banks <gnb@alphalink.com.au>

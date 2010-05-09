@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2003 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2003 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #ifndef HAVE_LIBPOPT
 
-CVSID("$Id: fakepopt.c,v 1.4 2006-01-29 22:52:48 gnb Exp $");
+CVSID("$Id: fakepopt.c,v 1.5 2010-05-09 05:37:15 gnb Exp $");
 
 /*
  * Simulate enough of the popt interface so that I only have

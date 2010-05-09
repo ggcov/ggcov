@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2004 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2004 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include "tok.H"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.30 2006-07-13 15:09:23 gnb Exp $");
+CVSID("$Id: cov.C,v 1.31 2010-05-09 05:37:14 gnb Exp $");
 
 static gboolean cov_read_one_object_file(const char *exefilename, int depth);
 extern char *argv0;

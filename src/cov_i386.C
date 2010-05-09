@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 #if defined(HAVE_LIBBFD) && defined(COV_I386)
 
-CVSID("$Id: cov_i386.C,v 1.8 2006-08-13 09:34:09 gnb Exp $");
+CVSID("$Id: cov_i386.C,v 1.9 2010-05-09 05:37:15 gnb Exp $");
 
 /*
  * Machine-specific code to scan i386 object code for function calls.

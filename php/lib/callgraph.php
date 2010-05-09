@@ -1,7 +1,7 @@
 <?php
 //
 // ggcov - A GTK frontend for exploring gcov coverage data
-// Copyright (c) 2005 Greg Banks <gnb@alphalink.com.au>
+// Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
 // 
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // 
-// $Id: callgraph.php,v 1.2 2005-05-18 14:03:10 gnb Exp $
+// $Id: callgraph.php,v 1.3 2010-05-09 05:37:14 gnb Exp $
 //
 
 require_once 'ggcov/lib/cov.php';

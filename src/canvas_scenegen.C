@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include "ui.h"
 #include "canvas_function_popup.H"
 
-CVSID("$Id: canvas_scenegen.C,v 1.3 2006-07-10 10:14:39 gnb Exp $");
+CVSID("$Id: canvas_scenegen.C,v 1.4 2010-05-09 05:37:14 gnb Exp $");
 
 #define RGB_TO_STR(b, rgb) \
     snprintf((b), sizeof((b)), "#%02x%02x%02x", \

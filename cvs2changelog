@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # ggcov - A GTK frontend for exploring gcov coverage data
-# Copyright (c) 2001-2004 Greg Banks <gnb@alphalink.com.au>
+# Copyright (c) 2001-2004 Greg Banks <gnb@users.sourceforge.net>
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: cvs2changelog,v 1.10 2005-09-11 14:34:14 gnb Exp $
+# $Id: cvs2changelog,v 1.11 2010-05-09 05:37:14 gnb Exp $
 #
 # Shell script to build a change log for a new release
 # from CVS logs. The change log will still need some
@@ -30,7 +30,7 @@ PACKAGE=`sed -n -e 's|^AM_INIT_AUTOMAKE(\([^,]\+\),\([^)]\+\))|\1|p' < configure
 DRYRUN=no
 NREVS=0
 ME="Greg Banks"
-EMAIL="gnb@alphalink.com.au"
+EMAIL="gnb@users.sourceforge.net"
 #FILES="Makefile.in Makefile configure.in"
 DATE_FORMAT="%a %b %_d %H:%M:%S %Y"
 CHECKFILE="configure.in"

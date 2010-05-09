@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 #include "fakepopt.h"
 #include <db.h>
 
-CVSID("$Id: ggcov-webdb.c,v 1.10 2006-01-29 22:52:48 gnb Exp $");
+CVSID("$Id: ggcov-webdb.c,v 1.11 2010-05-09 05:37:15 gnb Exp $");
 
 #define V(major,minor,patch)    ((major)*10000+(minor)*1000+(patch))
 #define DB_VERSION_CODE V(DB_VERSION_MAJOR,DB_VERSION_MINOR,DB_VERSION_PATCH)

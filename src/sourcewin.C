@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2006 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2006 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include "estring.H"
 #include "prefs.H"
 
-CVSID("$Id: sourcewin.C,v 1.34 2007-07-02 12:09:04 gnb Exp $");
+CVSID("$Id: sourcewin.C,v 1.35 2010-05-09 05:37:15 gnb Exp $");
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \

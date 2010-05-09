@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2003-2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2003-2005 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 #include "hashtable.H"
 
-CVSID("$Id: hashtable.C,v 1.5 2006-02-19 04:27:51 gnb Exp $");
+CVSID("$Id: hashtable.C,v 1.6 2010-05-09 05:37:15 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

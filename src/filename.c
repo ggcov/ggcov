@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2003 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2001-2003 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.12 2010-05-09 02:10:18 gnb Exp $");
+CVSID("$Id: filename.c,v 1.13 2010-05-09 05:37:15 gnb Exp $");
 
 #ifndef __set_errno
 #define __set_errno(v)	 errno = (v)

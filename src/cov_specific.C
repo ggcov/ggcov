@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2003-2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2003-2005 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #include "filename.h"
 #include "demangle.h"
 
-CVSID("$Id: cov_specific.C,v 1.7 2005-09-11 09:14:06 gnb Exp $");
+CVSID("$Id: cov_specific.C,v 1.8 2010-05-09 05:37:15 gnb Exp $");
 
  
 cov_factory_item_t *cov_factory_item_t::all_;

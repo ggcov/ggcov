@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2004-2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2004-2005 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 #define ISBLANK(c)  	((c) == ' ' || (c) == '\t')
 
-CVSID("$Id: cpp_parser.C,v 1.6 2005-07-31 11:30:08 gnb Exp $");
+CVSID("$Id: cpp_parser.C,v 1.7 2010-05-09 05:37:15 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

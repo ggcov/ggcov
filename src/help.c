@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2002-2003 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2002-2003 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include "estring.H"
 #include "ui.h"
 
-CVSID("$Id: help.c,v 1.7 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: help.c,v 1.8 2010-05-09 05:37:15 gnb Exp $");
 
 static GtkWidget *about_window;
 static GtkWidget *licence_window;
@@ -90,7 +90,7 @@ on_about_activate(GtkWidget *w, gpointer data)
 	estring blurb;
 	blurb.append_string(blurb_proto);
 	blurb.replace_all("@VERSION@", VERSION);
-	blurb.replace_all("@AUTHOR@", "Greg Banks <gnb@alphalink.com.au>");
+	blurb.replace_all("@AUTHOR@", "Greg Banks <gnb@users.sourceforge.net>");
 	blurb.replace_all("@WARRANTY@", _(warranty_str));
 	gtk_label_set_text(GTK_LABEL(about_label), blurb.data());
     }

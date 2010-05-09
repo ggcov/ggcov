@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2004 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2004 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@
 #include "uix.h"
 #include "gnbstackedbar.h"
 
-CVSID("$Id: reportwin.C,v 1.3 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: reportwin.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

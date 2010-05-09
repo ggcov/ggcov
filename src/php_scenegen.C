@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "php_scenegen.H"
 #include <math.h>
 
-CVSID("$Id: php_scenegen.C,v 1.3 2006-07-10 10:14:39 gnb Exp $");
+CVSID("$Id: php_scenegen.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

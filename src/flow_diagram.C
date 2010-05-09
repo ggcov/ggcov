@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2006 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2006 Greg Banks <gnb@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "flow_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: flow_diagram.C,v 1.6 2007-07-02 12:09:04 gnb Exp $");
+CVSID("$Id: flow_diagram.C,v 1.7 2010-05-09 05:37:15 gnb Exp $");
 
 #define NODE_WIDTH	6.0
 #define HMARGIN		0.5

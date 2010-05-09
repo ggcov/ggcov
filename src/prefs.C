@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2002-2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2002-2005 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include "prefs.H"
 #include "colors.h"
 
-CVSID("$Id: prefs.C,v 1.10 2006-01-29 00:45:30 gnb Exp $");
+CVSID("$Id: prefs.C,v 1.11 2010-05-09 05:37:15 gnb Exp $");
 
 prefs_t prefs;
 

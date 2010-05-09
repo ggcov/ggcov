@@ -1,7 +1,7 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Derived from ggui code
- * Copyright (c) 2000-2003 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2000-2003 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

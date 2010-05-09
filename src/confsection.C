@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2002-2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2002-2005 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 #include "confsection.H"
 #include "estring.H"
 
-CVSID("$Id: confsection.C,v 1.10 2007-05-25 12:39:19 gnb Exp $");
+CVSID("$Id: confsection.C,v 1.11 2010-05-09 05:37:14 gnb Exp $");
 
 hashtable_t<const char, confsection_t> *confsection_t::all_;
 static const char filename[] = "ggcov";

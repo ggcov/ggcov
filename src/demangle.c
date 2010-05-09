@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2003 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2003 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ extern "C" {
 }
 #endif
 
-CVSID("$Id: demangle.c,v 1.3 2005-03-14 07:49:16 gnb Exp $");
+CVSID("$Id: demangle.c,v 1.4 2010-05-09 05:37:15 gnb Exp $");
 
 #define LEFT_BRACKET	'('
 #define RIGHT_BRACKET	')'

@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2002-2003 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2002-2003 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 #include "string_var.H"
 #include "prefs.H"
 
-CVSID("$Id: window.C,v 1.16 2010-01-08 08:51:08 gnb Exp $");
+CVSID("$Id: window.C,v 1.17 2010-05-09 05:37:15 gnb Exp $");
 
 static const char window_key[] = "ggcov_window_key";
 

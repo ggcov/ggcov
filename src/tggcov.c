@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2003-2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2003-2005 Greg Banks <gnb@users.sourceforge.net>
  * 
  *
  * TODO: attribution for decode-gcov.c
@@ -39,7 +39,7 @@
 #include "callgraph_diagram.H"
 #include "check_scenegen.H"
 
-CVSID("$Id: tggcov.c,v 1.23 2007-05-25 12:39:19 gnb Exp $");
+CVSID("$Id: tggcov.c,v 1.24 2010-05-09 05:37:15 gnb Exp $");
 
 char *argv0;
 static GList *files;	    /* incoming specification from commandline */

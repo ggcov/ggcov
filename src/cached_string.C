@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2005 Greg Banks <gnb@alphalink.com.au>
+ * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 
 #include "cached_string.H"
 
-CVSID("$Id: cached_string.C,v 1.1 2006-02-19 04:25:32 gnb Exp $");
+CVSID("$Id: cached_string.C,v 1.2 2010-05-09 05:37:14 gnb Exp $");
 
 hashtable_t<const char, char> *cached_string::all_;
 
