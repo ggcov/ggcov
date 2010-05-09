@@ -25,7 +25,7 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.11 2006-07-13 15:09:23 gnb Exp $");
+CVSID("$Id: filename.c,v 1.12 2010-05-09 02:10:18 gnb Exp $");
 
 #ifndef __set_errno
 #define __set_errno(v)	 errno = (v)
@@ -199,8 +199,8 @@ file_make_absolute_to(
 	}
 	if (!strcmp(part, ".."))
 	{
-	    char *p = strrchr(abs.data(), '/');
-	    
+	    const char *p = strrchr(abs.data(), '/');
+
 	    if (p != abs.data())
 	    	abs.truncate_to(p - abs.data());
 	    continue;
@@ -209,7 +209,7 @@ file_make_absolute_to(
 	    abs.append_char('/');
 	abs.append_string(part);
     }
-    
+
     return abs.take();
 }
 
