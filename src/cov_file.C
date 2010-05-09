@@ -30,7 +30,7 @@
 #include "cpp_parser.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_file.C,v 1.79 2010-01-08 08:25:56 gnb Exp $");
+CVSID("$Id: cov_file.C,v 1.80 2010-05-09 02:23:46 gnb Exp $");
 
 static gboolean filename_is_common(const char *filename);
 
@@ -1570,14 +1570,13 @@ cov_file_t::read_rtl_file(covio_t *io)
     cov_block_t *bb = 0;
     string_var tofunc;
     cov_location_var loc;
-    char *p;
     estring buf;
     static const char c_function[] = ";; Function ";
     static const char c_basic_block[] = ";; Start of basic block ";
     static const char c_call_insn[] = "(call_insn";
     static const char c_symbol_ref[] = "symbol_ref:SI";
     static const char fn[] = "read_rtl_file";
-    
+
     dprintf2(D_FILES, "%s: reading %s\n", fn, io->filename());
 
     while (io->gets(buf, 1024))
@@ -1627,8 +1626,14 @@ cov_file_t::read_rtl_file(covio_t *io)
 		t = tok.next();
 		t = tok.next();
 		t = tok.next();
+		/*
+		 * Yes, we are breaking the tok_t rules by writing into the
+		 * string returned from tok.next(), but we know it's OK
+		 * because a) we own the buffer it's using and b) we know
+		 * we won't be calling tok.next() on this buffer again.
+		 */
 		const char *filename = tok.next();
-		p = strrchr(filename, ':');
+		char *p = strrchr((char *)filename, ':');
     	    	if (p != 0)
     	    	{
     	    	    *p++ = '\0';
@@ -1644,6 +1649,7 @@ cov_file_t::read_rtl_file(covio_t *io)
 	}
 	if (state > 0)
 	{
+	    const char *p;
 	    if ((p = strstr(buf, c_symbol_ref)) != 0 || ++state == 3)
 	    {
 		state = 0;
