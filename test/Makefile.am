@@ -16,12 +16,17 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 # 
-# $Id: Makefile.am,v 1.10 2006-08-07 14:36:33 gnb Exp $
+# $Id: Makefile.am,v 1.11 2010-05-09 02:03:05 gnb Exp $
 #
 
 EXTRA_DIST=	common.sh platform.sh runtest list-manifest.sh \
-		filter-callgraph.pl filter-coverage.pl filter-expected.pl \
-		$(shell sh list-manifest.sh)
+		filter-callgraph.pl filter-coverage.pl filter-expected.pl
 
 TESTS=		   runtest
 TESTS_ENVIRONMENT= sh
+
+dist-hook:
+		@for file in `sh list-manifest.sh` ; do \
+			mkdir -p `dirname $(distdir)/$$file` ;\
+			cp $(srcdir)/$$file $(distdir)/$$file ;\
+		done
