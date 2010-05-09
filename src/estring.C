@@ -20,7 +20,7 @@
 #include "estring.H"
 #include <stdarg.h>
 
-CVSID("$Id: estring.C,v 1.8 2010-05-09 02:07:22 gnb Exp $");
+CVSID("$Id: estring.C,v 1.9 2010-05-09 05:07:08 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -67,14 +67,21 @@ estring::append_chars(const char *buf, unsigned int buflen)
 void
 estring::append_vprintf(const char *fmt, va_list args)
 {
+    va_list args2;
     int len;
 
-    /* ensure enough space exists for result, possibly too much */    
+#if HAVE_VA_COPY
+    va_copy(args2, args);
+#else
+    args2 = args;
+#endif
+
+    /* ensure enough space exists for result, possibly too much */
     len = g_printf_string_upper_bound(fmt, args);
     expand_by(len);
 
-    /* format the string into the new space */    
-    vsprintf(data_+length_, fmt, args);
+    /* format the string into the new space */
+    vsprintf(data_+length_, fmt, args2);
     length_ += strlen(data_+length_);
 }
 

@@ -18,7 +18,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl 
-dnl $Id: configure.in,v 1.76 2010-05-09 01:38:39 gnb Exp $
+dnl $Id: configure.in,v 1.77 2010-05-09 05:07:08 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
@@ -145,6 +145,49 @@ fi
 dnl Stuff for gettext
 dnl ALL_LINGUAS="la"
 dnl AM_GNU_GETTEXT
+
+dnl Check for va_copy, it might not exist or might be broken
+dnl in some compilation environments.
+AC_MSG_CHECKING([whether va_copy works])
+AC_TRY_RUN([
+#include <stdarg.h>
+#include <string.h>
+static int baz(va_list args)
+{
+	int x = 0;
+	x |= strcmp(va_arg(args, const char *), "hello");
+	x |= strcmp(va_arg(args, const char *), "world");
+	return x;
+}
+static int bar(va_list args)
+{
+	int x = 0;
+	va_list args2;
+	va_copy(args2, args);
+	x |= baz(args);
+	x |= baz(args2);
+	return x;
+}
+static int foo(int a, ...)
+{
+	int x;
+	va_list args;
+	va_start(args, a);
+	x = bar(args);
+	va_end(args);
+	return x;
+}
+int main(int argc, char **argv)
+{
+	return foo(42, "hello", "world");
+}
+],[
+    AC_DEFINE(HAVE_VA_COPY,1,[Whether the va_copy builtin works])
+    AC_MSG_RESULT(yes)
+],[
+    AC_MSG_RESULT(no)
+])
+
 
 dnl Checks for libraries.
 AC_ARG_WITH(bfd,
