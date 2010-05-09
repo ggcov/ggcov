@@ -9,6 +9,8 @@ mangletest
 newbbgdump
 phptest
 popttest
+estringtest
+toktest
 ggcov-webdb
 tggcov
 *.bck
