@@ -303,6 +303,15 @@ test_take()
 }
 
 static void
+call_append_vprintf(estring &e, const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	e.append_vprintf(fmt, args);
+	va_end(args);
+}
+
+static void
 test_append()
 {
     subtest("append_string");
@@ -402,6 +411,27 @@ test_append()
 	check(is_heap(e.data()));
 
 	e.append_printf(",%x", 0xbeef);
+	check(e.length() == 8);
+	check(e.data() != 0);
+	check(strlen(e.data()) == 8);
+	check(!strcmp(e.data(), "cow,beef"));
+	check(is_heap(e.data()));
+    }
+    subtest("append_vprintf");
+    {
+	estring e;
+
+	check(e.length() == 0);
+	check(e.data() == 0);
+
+	call_append_vprintf(e, "%sw", "co");
+	check(e.length() == 3);
+	check(e.data() != 0);
+	check(strlen(e.data()) == 3);
+	check(!strcmp(e.data(), "cow"));
+	check(is_heap(e.data()));
+
+	call_append_vprintf(e, ",%x", 0xbeef);
 	check(e.length() == 8);
 	check(e.data() != 0);
 	check(strlen(e.data()) == 8);
