@@ -1,3 +1,22 @@
+Sun May  9 15:55:03 2010  Greg Banks <gnb@users.sourceforge.net>
+	* Release 0.8.2
+
+	* Support for gcc 4.4.1 (Ubuntu 9.10), patch from Ken McDonell.
+	* Removed the ability to read files produced by gcc -db.  This
+	feature was always too fragile as it depended too closely on
+	undocumented and volatile gcc internals.  Removed test018
+	which exercised this feature and has been broken for some time.
+	* Char* constness fixes from Ken McDonell.
+	* Other minor compilation fixes.
+	* Fixed a number of complaints from automake 1.11 about gmake
+	specific features in Makefile.am files.
+	* Update CVS ignore files.
+	* Update my email address.
+	* Update the release procedure document.
+	* Fix wrong test name in test022 error message
+	* Improve the existing estring unit test and add test023 to
+	actually run it for "make check".
+
 Fri Jan  8 19:29:58 2010  Greg Banks <gnb@users.sourceforge.net>
 	* Release 0.8.1
 
