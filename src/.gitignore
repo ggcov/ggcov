@@ -15,3 +15,4 @@ ggcov-webdb
 tggcov
 *.bck
 glade_callbacks.c
+ggcov.cgi

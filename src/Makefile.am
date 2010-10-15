@@ -69,8 +69,8 @@ else
 BASEINCLUDES=	$(GGCOV_CLI_CFLAGS)
 endif
 
-bin_PROGRAMS=	$(GUIPROG) tggcov $(WEBPROG)
-EXTRA_PROGRAMS= ggcov ggcov-webdb
+bin_PROGRAMS=	$(GUIPROG) tggcov $(WEBPROG) $(WEB2PROG)
+EXTRA_PROGRAMS= ggcov ggcov-webdb ggcov.cgi
 
 gui_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		gnbstackedbar.h gnbstackedbar.c \
@@ -112,6 +112,14 @@ ggcov_webdb_SOURCES= \
 		$(LIBCOV_STATIC_SOURCES)
 ggcov_webdb_CPPFLAGS=	$(DB_CPPFLAGS)
 ggcov_webdb_LDADD=	$(CLI_LIBS) $(DB_LIBS)
+
+ggcov_cgi_SOURCES= \
+		ggcov_cgi.C \
+		json.H json.C \
+		cgi.H cgi.C \
+		$(LIBCOV_STATIC_SOURCES)
+ggcov_cgi_CPPFLAGS= $(CGICC_CPPFLAGS) -DHACKY_PROJDIR="\"$(PWD)/test\""
+ggcov_cgi_LDADD= $(CLI_LIBS) $(CGICC_LIBS)
 
 # Note this is an automake conditional *not* a gmake conditional
 if DEBUG
