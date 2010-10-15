@@ -1,3 +1,5 @@
+*.o
+lib*.a
 COPYING
 INSTALL
 config.guess
