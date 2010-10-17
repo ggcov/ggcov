@@ -1,0 +1,95 @@
+BODY { color: #000000; background: #ffffff }
+H1 { font: bold 24pt verdana,arial,helvetica,sans-serif; }
+H2 { font: bold 18pt verdana,arial,helvetica,sans-serif; }
+H3 { font: bold 14pt verdana,arial,helvetica,sans-serif; }
+UL { font: 12pt verdana,arial,helvetica,sans-serif; }
+P { font: 12pt verdana,arial,helvetica,sans-serif; }
+P B { font: bold 12pt verdana,arial,helvetica,sans-serif; }
+P EM { font: italic 12pt verdana,arial,helvetica,sans-serif; }
+TD { font: 12pt verdana,arial,helvetica,sans-serif; }
+TD B { font: bold 12pt verdana,arial,helvetica,sans-serif; }
+PRE { font: 12pt lucidatypewriter,lucidasanstypewriter,courier,monospace; }
+all.program { font: bold 12pt verdana,arial,helvetica,sans-serif; }
+all.option { font: bold 12pt verdana,arial,helvetica,sans-serif; }
+all.function { font: bold 12pt verdana,arial,helvetica,sans-serif; }
+PRE.example {
+  font: 12pt lucidatypewriter,lucidasanstypewriter,courier,monospace;
+  color: #000000;
+  background-color: #d0d0f6;
+  border-style: solid;
+  border-color: #ffffff;
+  border-width: 1pt;
+  padding: 10pt;
+  white-space: pre;
+}
+PRE.source {
+  font: 12pt lucidatypewriter,lucidasanstypewriter,courier,monospace;
+  color: #000000;
+  background-color: #d0d0f6;
+  border-style: solid;
+  border-color: #ffffff;
+  border-width: 1pt;
+  padding: 10pt;
+  white-space: pre;
+}
+TD.hilite {
+  color: #000000;
+  background-color: #d0d0f6;
+}
+TR.hilite {
+  color: #000000;
+  background-color: #d0d0f6;
+}
+TD.tocthis {
+  font: bold 14pt verdana,arial,helvetica,sans-serif;
+  color: #000000;
+  background-color: #afafcf;
+  text-align: center;
+}
+TD.tocother {
+  font: bold 14pt verdana,arial,helvetica,sans-serif;
+  color: #000000;
+  background-color: #afafcf;
+  text-align: center;
+}
+TD.tocsmall {
+  font: 10pt verdana,arial,helvetica,sans-serif;
+  color: #000000;
+  background-color: #afafcf;
+  text-align: center;
+}
+TD.tocimg {
+  background-color: #afafcf;
+  text-align: center;
+}
+#main {
+  width: 100%;
+  border: 0px;
+  background-color: #afafcf;
+}
+#title {
+  font: bold 24pt verdana,arial,helvetica,sans-serif;
+  padding: 5px;
+}
+#footer {
+  font-size: 8pt;
+  text-align: center;
+}
+#logo {
+  text-align: right;
+  vertical-align: top;
+  font: 24pt verdana,arial,helvetica,sans-serif;
+  padding: 5px;
+}
+#content {
+  background: #ffffff;
+  text-align: left;
+  vertical-align: top;
+}
+.rim {
+  background: #7575a8;
+}
+.ggcovtext {
+  font: 14pt lucidatypewriter,lucidasanstypewriter,courier,monospace;
+  white-space: pre;
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <!-- Copyright (c) 2010 Greg Banks. All Rights Reserved.  -->
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <title>Coverage Explorer</title>
+  <link REL="SHORTCUT ICON" HREF="favicon.ico">
+  <link href="ggcov.css" rel="stylesheet" type="text/css">
+  <link href="ggcov.cgi?q=colorcss" rel="stylesheet" type="text/css">
+  <script src="ggcov.js" type="text/javascript"></script>
+  <script type="text/javascript">
+window.onload = function() {
+    ggcov.init(document.getElementById("ggcov"), function(title) {
+	document.getElementById("title").innerHTML = title;
+	document.title = "Coverage Explorer: " + title;
+    });
+}
+  </script>
+</head>
+<body>
+
+<table id="main" cellspacing="0" cellpadding="0">
+  <tr>
+    <td class="rim" colspan="4" height="2px"></td>
+  </tr>
+  <tr>
+    <td class="rim" width="2px"></td>
+    <td id="title">Coverage Explorer</td>
+    <td id="logo">ggcov<img src="ggcov32.png" border="0" alt=""></td>
+    <td class="rim" width="2px"></td>
+  </tr>
+  <tr>
+    <td class="rim" width="2px"></td>
+    <td colspan="2" id="content"><div id="ggcov"></div></td>
+    <td class="rim" width="2px"></td>
+  </tr>
+  <tr>
+    <td class="rim" colspan="4" height="2px"></td>
+  </tr>
+</table>
+<p id="footer">
+Copyright &copy; 2010 Greg Banks &lt;gnb@users.sourceforge.net&gt;<br>
+Magnifying glass clipart from <a href="http://www.arttoday.com/">ArtToday.com</a>
+</p>
+
+</body>
+</html>
