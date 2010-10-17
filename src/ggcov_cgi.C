@@ -2,6 +2,7 @@
 #include "cov.H"
 #include "cgi.H"
 #include "filename.h"
+#include "colors.h"
 
 const char *argv0;
 
@@ -16,8 +17,16 @@ static const char *short_status_names[cov::NUM_STATUS] =
 
 struct cov_project_t
 {
-    const char *name_;
-    const char *basedir_;
+public:
+    cov_project_t(const char *name, const char *basedir)
+     :  name_(name),
+        basedir_(basedir)
+    {
+    }
+
+    ~cov_project_t() { }
+
+    const char *name() const { return name_; }
 
     char *
     get_pathname(const char *filename) const
@@ -48,32 +57,70 @@ struct cov_project_t
 	    }
 	}
 
-	GList *files = g_list_append(NULL, (gpointer)basedir_);
+	GList *files = g_list_append(NULL, (gpointer)basedir_.data());
 	cov_read_files(files);
 	listclear(files);
     }
+
 
     static cov_project_t *
     get(const char *name)
     {
 	if (!name || !*name)
 	    return 0;
+	init();
 
-	static cov_project_t projects[] = {
-	    { "hacky", HACKY_PROJDIR },
-	    { 0, 0 }
-	};
-
-	for (int i = 0 ; projects[i].name_ ; i++)
+	list_iterator_t<cov_project_t> itr;
+	for (itr = all_.first() ; itr != (cov_project_t *)0 ; ++itr)
 	{
-	    if (!strcmp(projects[i].name_, name))
-		return &projects[i];
+	    if (!strcmp((*itr)->name_, name))
+		return *itr;
 	}
 	return 0;
     }
 
+    static list_iterator_t<cov_project_t>
+    first()
+    {
+	init();
+	return all_.first();
+    }
+
     list_iterator_t<cov_file_t> get_files() const { return cov_file_t::first(); }
+
+private:
+    static list_t<cov_project_t> all_;
+    string_var name_;
+    string_var basedir_;
+
+    static void
+    init()
+    {
+	static boolean initialised = false;
+	if (initialised)
+	    return;
+	initialised = true;
+
+	all_.append(new cov_project_t("hacky", HACKY_PROJDIR));
+    }
 };
+
+list_t<cov_project_t> cov_project_t::all_;
+
+static void
+query_listprojects(cgi_t &cgi, cov_project_t *proj)
+{
+    json_t json;
+    json.begin_array();
+    list_iterator_t<cov_project_t> iter;
+    for (iter = cov_project_t::first() ; iter != (cov_project_t *)0 ; ++iter)
+    {
+	json.string((*iter)->name());
+    }
+    json.end_array();
+
+    cgi.set_reply(json);
+}
 
 static void
 query_listfiles(cgi_t &cgi, cov_project_t *proj)
@@ -168,13 +215,39 @@ query_annotate(cgi_t &cgi, cov_project_t *proj)
     cgi.set_reply(json);
 }
 
+static void
+query_colorcss(cgi_t &cgi, cov_project_t *proj)
+{
+    estring css;
+
+#define PASTE(x,y)  x##y
+#define ADD_COLOR(stat) \
+    css.append_printf(".status%sf { color: #%02x%02x%02x; }\n", \
+		      short_status_names[cov::stat], \
+		      PASTE(COLOR_FG_,stat)); \
+    css.append_printf(".status%sb { background-color: #%02x%02x%02x; }\n", \
+		      short_status_names[cov::stat], \
+		      PASTE(COLOR_BG_,stat))
+    ADD_COLOR(COVERED);
+    ADD_COLOR(PARTCOVERED);
+    ADD_COLOR(UNCOVERED);
+    ADD_COLOR(UNINSTRUMENTED);
+    ADD_COLOR(SUPPRESSED);
+#undef ADD_COLOR
+
+    cgi.set_reply(css, "text/css");
+}
+
 static const struct
 {
     const char *name;
     void (*func)(cgi_t &, cov_project_t *);
+    boolean needs_project;
 } queries[] = {
-    { "listfiles", query_listfiles },
-    { "annotate", query_annotate },
+    { "listprojects", query_listprojects, false },
+    { "listfiles", query_listfiles, true },
+    { "annotate", query_annotate, true },
+    { "colorcss", query_colorcss, false },
     { 0, 0 }
 };
 
@@ -190,11 +263,6 @@ main(int argc, char **argv)
 	debug_set(dbg);
 
     cov_project_t *proj = cov_project_t::get(cgi.get_variable("p"));
-    if (!proj)
-    {
-	cgi.error("Missing or bad project\n");
-	return 0;
-    }
 
     const char *qvar = cgi.get_variable("q");
     if (qvar == 0 || *qvar == '\0')
@@ -207,6 +275,12 @@ main(int argc, char **argv)
     {
 	if (!strcmp(qvar, queries[i].name))
 	{
+	    if (queries[i].needs_project && !proj)
+	    {
+		cgi.error("Missing or bad project\n");
+		return 0;
+	    }
+
 	    queries[i].func(cgi, proj);
 	    cgi.reply();
 	    return 0;
