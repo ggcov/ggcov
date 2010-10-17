@@ -38,7 +38,11 @@ public:
 
     void set_reply(json_t &json)
     {
-	set_replym("application/json", json.take());
+	set_replym(json.take(), "application/json");
+    }
+    void set_reply(estring &e, const char *type = "text/html")
+    {
+	set_replym(e.take(), type);
     }
 
     void error(const char *fmt, ...);
@@ -56,7 +60,7 @@ private:
     const char *content_type_;
     string_var reply_body_;
 
-    void set_replym(const char *type, char *body);
+    void set_replym(char *body, const char *type);
 };
 
 #endif /* _ggcov_cgi_H_ */

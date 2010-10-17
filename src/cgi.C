@@ -34,10 +34,10 @@ cgi_t::~cgi_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-cgi_t::set_replym(const char *type, char *body)
+cgi_t::set_replym(char *body, const char *type)
 {
-    content_type_ = type;
     reply_body_ = body;
+    content_type_ = type;
 }
 
 void
@@ -53,7 +53,7 @@ cgi_t::error(const char *fmt, ...)
 
     msg.append_string("</p></body></html>");
 
-    set_replym("text/html", msg.take());
+    set_reply(msg);
     reply();
 }
 
