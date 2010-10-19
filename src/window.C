@@ -26,13 +26,14 @@
 
 CVSID("$Id: window.C,v 1.17 2010-05-09 05:37:15 gnb Exp $");
 
+extern cov_project_t *project;
 static const char window_key[] = "ggcov_window_key";
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 window_t::window_t()
 {
-    mvc_listen(cov_file_t::files_model(), ~0, files_changed, this);
+    mvc_listen(project, ~0, files_changed, this);
 }
 
 window_t::~window_t()
@@ -41,7 +42,7 @@ window_t::~window_t()
     assert(!deleting_);
     deleting_ = true;
 
-    mvc_unlisten(cov_file_t::files_model(), ~0, files_changed, this);
+    mvc_unlisten(project, ~0, files_changed, this);
     
     assert(window_ != 0);
     gtk_widget_destroy(window_);
@@ -61,7 +62,6 @@ dnd_data_as_text(void *data, unsigned int length)
     return text;
 }
 
-extern cov_project_t *project;
 
 /*
  * Parse the given string as a list of URIs and load each file

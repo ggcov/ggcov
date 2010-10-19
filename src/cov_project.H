@@ -27,6 +27,11 @@
 
 class cov_bfd_t;
 
+/*
+ * Note that the project is an MVC model which can be listened
+ * to for notification of changes to its set of files.
+ */
+
 struct cov_project_t
 {
 public:

@@ -78,11 +78,6 @@ public:
     static cov_file_t *find(const char *name);
     /* Return an iterator over all the files in minimal filename order */
     static list_iterator_t<cov_file_t> first();
-    /*
-     * Returns an MVC model which can be listened to for
-     * notification of changes to the global set of files.
-     */
-    static void *files_model();
 
     /*
      * For iterating over a file's functions.  Functions are
@@ -186,7 +181,6 @@ private:
     static list_t<char> search_path_;
     static char *common_path_;
     static int common_len_;
-    static void *files_model_;
 
     string_var name_;	    /* full absolute pathname of this file */
     string_var relpath_;    /* relative path with which this file was found */

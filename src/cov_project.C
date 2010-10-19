@@ -75,7 +75,7 @@ cov_project_t::post_read(void)
     	cov_add_callarcs(*iter);
 
     /* emit an MVC notification */
-    mvc_changed(cov_file_t::files_model(), 1);
+    mvc_changed(this, 1);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

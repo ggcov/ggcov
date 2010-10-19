@@ -39,7 +39,6 @@ list_t<cov_file_t> cov_file_t::files_list_;
 list_t<char> cov_file_t::search_path_;
 char *cov_file_t::common_path_;
 int cov_file_t::common_len_;
-void *cov_file_t::files_model_;
 
 #define _NEW_VERSION(major, minor, release) \
      	(((gnb_u32_t)('0'+(major))<<24)| \
@@ -351,15 +350,6 @@ cov_file_t::common_path()
 {
     check_common_path();
     return common_path_;
-}
-
-void *
-cov_file_t::files_model()
-{
-    /* currently MVC models just need to be a unique address */
-    if (files_model_ == 0)
-    	files_model_ = (void *)&files_model_;
-    return files_model_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
