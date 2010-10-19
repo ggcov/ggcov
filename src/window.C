@@ -61,7 +61,7 @@ dnd_data_as_text(void *data, unsigned int length)
     return text;
 }
 
-extern gboolean ggcov_read_file(const char *filename);
+extern cov_project_t *project;
 
 /*
  * Parse the given string as a list of URIs and load each file
@@ -74,15 +74,15 @@ dnd_handle_uri_list(void *data, unsigned int length)
     int nfiles = 0;
     const char *uri;
 
-    cov_pre_read();
+    project->pre_read();
     while ((uri = tok.next()) != 0)
     {
     	dprintf1(D_UICORE, "dnd_handle_uri_list: uri=\"%s\"\n", uri);
-    	if (!strncmp(uri, "file:", 5) && ggcov_read_file(uri+5))
+    	if (!strncmp(uri, "file:", 5) && project->read_file(uri+5, /*recursive*/TRUE))
 	    nfiles++;
     }
     if (nfiles)
-    	cov_post_read();
+    	project->post_read();
 }
 
 /*

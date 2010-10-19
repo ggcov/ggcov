@@ -208,9 +208,8 @@ private:
     unsigned num_expected_fake_;
 
     friend void cov_add_search_directory(const char *fname);
-    friend gboolean cov_read_source_file_2(const char *fname, gboolean quiet);
     friend void cov_init(void);
-    friend void cov_post_read(void);
+    friend class cov_project_t;
     friend class cov_function_t;
     friend class cov_block_t;
     friend class cov_overall_scope_t;

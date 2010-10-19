@@ -48,10 +48,11 @@ CVSID("$Id: ggcov-webdb.c,v 1.11 2010-05-09 05:37:15 gnb Exp $");
 #endif
 
 char *argv0;
+cov_project_t *project;
 static GList *files;	    /* incoming specification from commandline */
 
 static char *dump_mode = NULL;
-static char *output_tarball = "ggcov.webdb.tgz";
+static const char *output_tarball = "ggcov.webdb.tgz";
 
 static hashtable_t<void, unsigned int> *file_index;
 static hashtable_t<void, unsigned int> *function_index;
@@ -1013,7 +1014,8 @@ create_database(void)
     DB *db;
     int ret;
 
-    cov_read_files(files);
+    project = new cov_project_t("default", 0);
+    cov_read_files(project, files);
 
     tempdir = g_strdup_printf("%s/ggcov-web-%d.d", get_tmpdir(), (int)getpid());
     webdb_file = g_strconcat(tempdir, "/", "ggcov.webdb", (char*)0);

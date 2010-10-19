@@ -42,6 +42,7 @@ CVSID("$Id: ggcov.c,v 1.53 2010-05-09 05:37:15 gnb Exp $");
 #define DEBUG_GTK 1
 
 char *argv0;
+cov_project_t *project;
 static GList *files;	    /* incoming specification from commandline */
 
 static const char ** debug_argv;
@@ -84,37 +85,6 @@ stash_argv(int argc, char **argv)
 /*
  * Read a file from the File->Open dialog.
  */
-gboolean
-ggcov_read_file(const char *filename)
-{
-    if (file_is_directory(filename) == 0)
-    {
-	if (!cov_read_directory(filename, /*recursive*/FALSE))
-	    return FALSE;
-    }
-    else if (file_is_regular(filename) == 0)
-    {
-	if (cov_is_source_filename(filename))
-	{
-	    if (!cov_read_source_file(filename))
-		return FALSE;
-	}
-	else
-	{
-	    if (!cov_read_object_file(filename))
-		return FALSE;
-	}
-    }
-    else
-    {
-    	/* TODO: gui alert to user */
-	fprintf(stderr, "%s: don't know how to handle this filename\n",
-		filename);
-	return FALSE;
-    }
-
-    return TRUE;
-}
 
 static GtkWidget *open_window = 0;
 
@@ -130,9 +100,9 @@ on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
 
     if (filename != 0 && *filename != '\0')
     {
-    	cov_pre_read();
-    	if (ggcov_read_file(filename))
-	    cov_post_read();
+    	project->pre_read();
+	if (project->read_file(filename, /*recursive*/TRUE))
+	    project->post_read();
     }
 
     gtk_widget_hide(open_window);
@@ -523,7 +493,8 @@ main(int argc, char **argv)
 #endif
 
     parse_args(argc, argv);
-    cov_read_files(files);
+    project = new cov_project_t("default", 0);
+    cov_read_files(project, files);
 
     cov_dump(stderr);
     ui_create(argv[0]);

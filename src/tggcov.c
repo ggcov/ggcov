@@ -42,6 +42,7 @@
 CVSID("$Id: tggcov.c,v 1.24 2010-05-09 05:37:15 gnb Exp $");
 
 char *argv0;
+cov_project_t *project;
 static GList *files;	    /* incoming specification from commandline */
 
 static int header_flag = FALSE;
@@ -524,7 +525,8 @@ main(int argc, char **argv)
 #endif
 
     parse_args(argc, argv);
-    cov_read_files(files);
+    project = new cov_project_t("default", 0);
+    cov_read_files(project, files);
 
     cov_dump(stderr);
 

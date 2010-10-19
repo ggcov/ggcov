@@ -33,7 +33,13 @@ query_listprojects(cgi_t &cgi, cov_project_t *proj)
 static void
 query_listfiles(cgi_t &cgi, cov_project_t *proj)
 {
-    proj->read_all_files();
+    proj->pre_read();
+    if (!proj->read_all_files())
+    {
+	cgi.error("Unable to read some filenames\n");
+	return;
+    }
+    proj->post_read();
 
     json_t json;
     json.begin_array();
@@ -61,7 +67,13 @@ query_annotate(cgi_t &cgi, cov_project_t *proj)
 	cgi.error("Missing filename\n");
 	return;
     }
-    proj->read_file(fvar);
+    proj->pre_read();
+    if (!proj->read_source_file(fvar))
+    {
+	cgi.error("Failed to read file \"%s\"\n", fvar);
+	return;
+    }
+    proj->post_read();
     string_var filename = proj->get_pathname(fvar);
 
     cov_file_t *f = cov_file_t::find(filename);
@@ -170,6 +182,7 @@ main(int argc, char **argv)
     if (dbg && *dbg)
 	debug_set(dbg);
 
+    cov_init();
     new cov_project_t("hacky", HACKY_PROJDIR);
     cov_project_t *proj = cov_project_t::get(cgi.get_variable("p"));
 

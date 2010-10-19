@@ -119,7 +119,7 @@ ggcov_cgi_SOURCES= \
 		json.H json.C \
 		cgi.H cgi.C \
 		$(LIBCOV_STATIC_SOURCES)
-ggcov_cgi_CPPFLAGS= $(CGICC_CPPFLAGS) -DHACKY_PROJDIR="\"$(PWD)/test\""
+ggcov_cgi_CPPFLAGS= $(CGICC_CPPFLAGS) -DHACKY_PROJDIR="\"$(PWD)/../test\""
 ggcov_cgi_LDADD= $(CLI_LIBS) $(CGICC_LIBS)
 
 # Note this is an automake conditional *not* a gmake conditional

@@ -23,13 +23,10 @@
 #include "filename.h"
 #include "estring.H"
 #include "string_var.H"
-#include "mvc.h"
 #include "tok.H"
-#include <dirent.h>
 
 CVSID("$Id: cov.C,v 1.31 2010-05-09 05:37:14 gnb Exp $");
 
-static gboolean cov_read_one_object_file(const char *exefilename, int depth);
 extern char *argv0;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -70,39 +67,6 @@ cov_is_source_filename(const char *filename)
     return FALSE;
 }
 
-gboolean
-cov_read_source_file_2(const char *fname, gboolean quiet)
-{
-    cov_file_t *f;
-    string_var filename;
-
-    filename = file_make_absolute(fname);
-    dprintf1(D_FILES, "Handling source file %s\n", filename.data());
-
-    if ((f = cov_file_t::find(filename)) != 0)
-    {
-    	if (!quiet)
-    	    fprintf(stderr, "Internal error: handling %s twice\n", filename.data());
-    	return FALSE;
-    }
-
-    f = new cov_file_t(filename, fname);
-
-    if (!f->read(quiet))
-    {
-	delete f;
-	return FALSE;
-    }
-    
-    return TRUE;
-}
-
-gboolean
-cov_read_source_file(const char *filename)
-{
-    return cov_read_source_file_2(filename, /*quiet*/FALSE);
-}
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #ifdef HAVE_LIBBFD
@@ -130,207 +94,7 @@ cov_init(void)
     cov_file_t::init();
 }
 
-void
-cov_pre_read(void)
-{
-}
-
-void
-cov_post_read(void)
-{
-    list_iterator_t<cov_file_t> iter;
-    
-    /* construct the list of filenames */
-    cov_file_t::post_read();
-
-    /* Build the callgraph */
-    /* TODO: only do this to newly read files */
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	cov_add_callnodes(*iter);
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	cov_add_callarcs(*iter);
-
-    /* emit an MVC notification */
-    mvc_changed(cov_file_t::files_model(), 1);
-}
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-gboolean
-cov_read_object_file(const char *exefilename)
-{
-    return cov_read_one_object_file(exefilename, 0);
-}    
-
-static gboolean
-cov_read_shlibs(cov_bfd_t *b, int depth)
-{
-    cov_factory_t<cov_shlib_scanner_t> factory;
-    cov_shlib_scanner_t *ss;
-    string_var file;
-    int successes = 0;
-
-    dprintf1(D_FILES, "Scanning \"%s\" for shared libraries\n",
-    	     b->filename());
-
-    do
-    {
-    	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
-    	if ((ss = factory.create()) != 0 && ss->attach(b))
-	    break;
-	delete ss;
-	ss = 0;
-    }
-    while (factory.next());
-
-    if (ss == 0)
-    	return FALSE;	/* no scanner can open this file */
-
-    /*
-     * TODO: instead of using the first scanner that succeeds open()
-     *       use the first one that returns any results.
-     */
-    while ((file = ss->next()) != 0)
-    {
-    	dprintf1(D_FILES, "Trying filename %s\n", file.data());
-	if (cov_read_one_object_file(file, depth))
-	    successes++;
-    }
-    
-    delete ss;
-    return (successes > 0);
-}
-
-static gboolean
-cov_read_one_object_file(const char *exefilename, int depth)
-{
-    cov_bfd_t *b;
-    cov_filename_scanner_t *fs;
-    string_var dir;
-    string_var file;
-    int successes = 0;
-    
-    dprintf1(D_FILES, "Scanning object or exe file \"%s\"\n", exefilename);
-
-    if ((b = new cov_bfd_t()) == 0)
-    	return FALSE;
-    if (!b->open(exefilename))
-    {
-    	delete b;
-	return FALSE;
-    }
-
-    cov_factory_t<cov_filename_scanner_t> factory;
-    do
-    {
-    	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
-    	if ((fs = factory.create()) != 0 && fs->attach(b))
-	    break;
-	delete fs;
-	fs = 0;
-    }
-    while (factory.next());
-
-    if (fs == 0)
-    {
-    	delete b;
-    	return FALSE;	/* no scanner can open this file */
-    }
-
-    dir = file_dirname(exefilename);
-    cov_add_search_directory(dir);
-    
-    /*
-     * TODO: instead of using the first scanner that succeeds open()
-     *       use the first one that returns any results.
-     */
-    while ((file = fs->next()) != 0)
-    {
-    	dprintf1(D_FILES, "Trying filename %s\n", file.data());
-	if (cov_is_source_filename(file) &&
-	    file_is_regular(file) == 0 &&
-	    cov_read_source_file_2(file, /*quiet*/TRUE))
-	    successes++;
-    }
-    
-    delete fs;
-    
-    successes += cov_read_shlibs(b, depth+1);
-
-    if (depth == 0 && successes == 0)
-    	fprintf(stderr, "found no coveraged source files in executable \"%s\"\n",
-	    	exefilename);
-    delete b;
-    return (successes > 0);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static unsigned int
-cov_read_directory_2(
-    const char *dirname,
-    gboolean recursive,
-    gboolean quiet)
-{
-    DIR *dir;
-    struct dirent *de;
-    int dirlen;
-    unsigned int successes = 0;
-    
-    estring child = dirname;
-    dprintf1(D_FILES, "Scanning directory \"%s\"\n", child.data());
-
-    if ((dir = opendir(dirname)) == 0)
-    {
-    	perror(child.data());
-    	return 0;
-    }
-    
-    while (child.last() == '/')
-	child.truncate_to(child.length()-1);
-    if (!strcmp(child, "."))
-	child.truncate();
-    else
-	child.append_char('/');
-    dirlen = child.length();
-    
-    while ((de = readdir(dir)) != 0)
-    {
-    	if (!strcmp(de->d_name, ".") || 
-	    !strcmp(de->d_name, ".."))
-	    continue;
-	    
-	child.truncate_to(dirlen);
-	child.append_string(de->d_name);
-	
-    	if (file_is_regular(child) == 0 &&
-	    cov_is_source_filename(child))
-	    successes += cov_read_source_file_2(child, /*quiet*/TRUE);
-	else if (recursive && file_is_directory(child) == 0)
-	    successes += cov_read_directory_2(child, recursive, /*quiet*/TRUE);
-    }
-    
-    closedir(dir);
-    if (successes == 0 && !quiet)
-    {
-	if (recursive)
-    	    fprintf(stderr, "found no coveraged source files in or under directory \"%s\"\n",
-	    	    dirname);
-	else
-    	    fprintf(stderr, "found no coveraged source files in directory \"%s\"\n",
-	    	    dirname);
-    }
-    return successes;
-}
-
-unsigned int
-cov_read_directory(const char *dirname, gboolean recursive)
-{
-    return cov_read_directory_2(dirname, recursive, /*quiet*/FALSE);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
 static char *suppressed_ifdefs = 0;
 static char *suppressed_comment_lines = 0;
@@ -442,12 +206,9 @@ cov_post_args(void)
     }
 }
 
-
-void
-cov_read_files(GList *files)
+gboolean
+cov_read_files(cov_project_t *proj, GList *files)
 {
-    GList *iter;
-    
     if (debug_enabled(D_DUMP|D_VERBOSE))
     {
     	GList *iter;
@@ -496,60 +257,15 @@ cov_read_files(GList *files)
 	}
     }
 
-    cov_pre_read();
-    
     if (object_dir != 0)
     	cov_add_search_directory(object_dir);
 
-    if (files == 0)
-    {
-    	if (!cov_read_directory(".", recursive))
-	    exit(1);
-    }
-    else
-    {
-	for (iter = files ; iter != 0 ; iter = iter->next)
-	{
-	    const char *filename = (const char *)iter->data;
-	    
-	    if (file_is_directory(filename) == 0)
-	    	cov_add_search_directory(filename);
-    	}
-
-	for (iter = files ; iter != 0 ; iter = iter->next)
-	{
-	    const char *filename = (const char *)iter->data;
-	    
-	    if (file_is_directory(filename) == 0)
-	    {
-	    	if (!cov_read_directory(filename, recursive))
-		    exit(1);
-	    }
-	    else if (file_is_regular(filename) == 0)
-	    {
-	    	if (cov_is_source_filename(filename))
-		{
-		    if (!cov_read_source_file(filename))
-			exit(1);
-		}
-		else
-		{
-		    if (!cov_read_object_file(filename))
-			exit(1);
-		}
-	    }
-	    else
-	    {
-	    	fprintf(stderr, "%s: don't know how to handle this filename\n",
-		    	filename);
-		exit(1);
-	    }
-	}
-    }
-    
-    cov_post_read();
+    proj->pre_read();
+    if (!proj->read_files(files, recursive))
+	return FALSE;
+    proj->post_read();
+    return TRUE;
 }
-
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -562,6 +278,7 @@ static const char *status_names[cov::NUM_STATUS] =
     "SUPPRESSED"
 };
 
+/* TODO: move this to a method of cov_callnode_t */
 static void
 dump_callarcs(FILE *fp, GList *arcs)
 {
@@ -577,6 +294,7 @@ dump_callarcs(FILE *fp, GList *arcs)
     }
 }
 
+/* TODO: move this to a method of cov_callnode_t */
 static void
 dump_callnode(cov_callnode_t *cn, void *userdata)
 {
@@ -605,6 +323,7 @@ dump_callnode(cov_callnode_t *cn, void *userdata)
  * of class cov_arc_t, i.e. no good reason. TODO: move the dump
  * functions into class members.
  */
+/* TODO: move this to a method of cov_arc_t */
 void
 dump_arc(FILE *fp, cov_arc_t *a)
 {
@@ -623,6 +342,7 @@ dump_arc(FILE *fp, cov_arc_t *a)
     fprintf(fp, "                    }\n");
 }
 
+/* TODO: move this to a method of cov_block_t */
 void
 dump_block(FILE *fp, cov_block_t *b)
 {
@@ -670,6 +390,7 @@ dump_block(FILE *fp, cov_block_t *b)
     fprintf(fp, "            }\n");
 }
 
+/* TODO: move this to a method of cov_function_t */
 static void
 dump_function(FILE *fp, cov_function_t *fn)
 {
@@ -683,6 +404,7 @@ dump_function(FILE *fp, cov_function_t *fn)
     fprintf(fp, "    }\n");
 }
 
+/* TODO: move this to a method of cov_file_t */
 static void
 dump_file(FILE *fp, cov_file_t *f)
 {
@@ -697,6 +419,7 @@ dump_file(FILE *fp, cov_file_t *f)
     fprintf(fp, "}\n");
 }
 
+/* TODO: move this to a method of cov_project_t */
 void
 cov_dump(FILE *fp)
 {
