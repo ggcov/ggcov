@@ -15,98 +15,6 @@ static const char *short_status_names[cov::NUM_STATUS] =
     "SU"    /* SUPPRESSED */
 };
 
-struct cov_project_t
-{
-public:
-    cov_project_t(const char *name, const char *basedir)
-     :  name_(name),
-        basedir_(basedir)
-    {
-    }
-
-    ~cov_project_t() { }
-
-    const char *name() const { return name_; }
-
-    char *
-    get_pathname(const char *filename) const
-    {
-	// TODO: ensure @filename is relative and does not escape from basedir
-	return file_make_absolute_to_dir(filename, basedir_);
-    }
-
-    void
-    read_file(const char *filename)
-    {
-	string_var path = get_pathname(filename);
-	GList *files = g_list_append(NULL, (gpointer)path.data());
-	cov_read_files(files);
-	listclear(files);
-    }
-
-    void
-    read_all_files()
-    {
-	/* Awful hack to set the global `recursive' flag */
-	for (int i = 0 ; cov_popt_options[i].shortName ; i++)
-	{
-	    if (cov_popt_options[i].shortName == 'r')
-	    {
-		*(int *)cov_popt_options[i].arg = 1;
-		break;
-	    }
-	}
-
-	GList *files = g_list_append(NULL, (gpointer)basedir_.data());
-	cov_read_files(files);
-	listclear(files);
-    }
-
-
-    static cov_project_t *
-    get(const char *name)
-    {
-	if (!name || !*name)
-	    return 0;
-	init();
-
-	list_iterator_t<cov_project_t> itr;
-	for (itr = all_.first() ; itr != (cov_project_t *)0 ; ++itr)
-	{
-	    if (!strcmp((*itr)->name_, name))
-		return *itr;
-	}
-	return 0;
-    }
-
-    static list_iterator_t<cov_project_t>
-    first()
-    {
-	init();
-	return all_.first();
-    }
-
-    list_iterator_t<cov_file_t> get_files() const { return cov_file_t::first(); }
-
-private:
-    static list_t<cov_project_t> all_;
-    string_var name_;
-    string_var basedir_;
-
-    static void
-    init()
-    {
-	static boolean initialised = false;
-	if (initialised)
-	    return;
-	initialised = true;
-
-	all_.append(new cov_project_t("hacky", HACKY_PROJDIR));
-    }
-};
-
-list_t<cov_project_t> cov_project_t::all_;
-
 static void
 query_listprojects(cgi_t &cgi, cov_project_t *proj)
 {
@@ -262,6 +170,7 @@ main(int argc, char **argv)
     if (dbg && *dbg)
 	debug_set(dbg);
 
+    new cov_project_t("hacky", HACKY_PROJDIR);
     cov_project_t *proj = cov_project_t::get(cgi.get_variable("p"));
 
     const char *qvar = cgi.get_variable("q");

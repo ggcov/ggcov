@@ -21,6 +21,7 @@
 #define _ggcov_cov_H_ 1
 
 #include "cov_types.H"
+#include "cov_project.H"
 #include "cov_file.H"
 #include "cov_function.H"
 #include "cov_block.H"

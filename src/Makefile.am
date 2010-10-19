@@ -42,6 +42,7 @@ libcov_a_SOURCES= \
 		covio.H covio.C \
 		cov_specific.H cov_specific.C \
 		cov_bfd.H cov_bfd.C \
+		cov_project.H cov_project.C \
 		cov_file.H cov_file.C \
 		cov_suppression.H cov_suppression.C \
 		cov_line.H cov_line.C \
