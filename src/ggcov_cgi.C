@@ -16,7 +16,7 @@ static const char *short_status_names[cov::NUM_STATUS] =
 };
 
 static void
-query_listprojects(cgi_t &cgi, cov_project_t *proj)
+query_listprojects(cgi_t &cgi)
 {
     json_t json;
     json.begin_array();
@@ -31,20 +31,12 @@ query_listprojects(cgi_t &cgi, cov_project_t *proj)
 }
 
 static void
-query_listfiles(cgi_t &cgi, cov_project_t *proj)
+query_listfiles(cgi_t &cgi)
 {
-    proj->pre_read();
-    if (!proj->read_all_files())
-    {
-	cgi.error("Unable to read some filenames\n");
-	return;
-    }
-    proj->post_read();
-
     json_t json;
     json.begin_array();
     list_iterator_t<cov_file_t> iter;
-    for (iter = proj->get_files() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_project_t::current()->get_files() ; iter != (cov_file_t *)0 ; ++iter)
     {
     	cov_file_t *f = *iter;
 
@@ -59,24 +51,19 @@ query_listfiles(cgi_t &cgi, cov_project_t *proj)
 }
 
 static void
-query_annotate(cgi_t &cgi, cov_project_t *proj)
+query_annotate(cgi_t &cgi)
 {
+    cov_project_t *proj = cov_project_t::current();
+
     const char *fvar = cgi.get_variable("f");
     if (!fvar || !*fvar)
     {
 	cgi.error("Missing filename\n");
 	return;
     }
-    proj->pre_read();
-    if (!proj->read_source_file(fvar))
-    {
-	cgi.error("Failed to read file \"%s\"\n", fvar);
-	return;
-    }
-    proj->post_read();
     string_var filename = proj->get_pathname(fvar);
 
-    cov_file_t *f = cov_file_t::find(filename);
+    cov_file_t *f = cov_file_t::find(fvar);
     if (!f)
     {
 	cgi.error("Failed to read cov files...sorry\n");
@@ -136,7 +123,7 @@ query_annotate(cgi_t &cgi, cov_project_t *proj)
 }
 
 static void
-query_colorcss(cgi_t &cgi, cov_project_t *proj)
+query_colorcss(cgi_t &cgi)
 {
     estring css;
 
@@ -161,7 +148,7 @@ query_colorcss(cgi_t &cgi, cov_project_t *proj)
 static const struct
 {
     const char *name;
-    void (*func)(cgi_t &, cov_project_t *);
+    void (*func)(cgi_t &);
     boolean needs_project;
 } queries[] = {
     { "listprojects", query_listprojects, false },
@@ -170,6 +157,29 @@ static const struct
     { "colorcss", query_colorcss, false },
     { 0, 0 }
 };
+
+static boolean
+setup_project(cgi_t &cgi)
+{
+    cov_project_t *proj = cov_project_t::get(cgi.get_variable("p"));
+    if (proj == 0)
+    {
+	cgi.error("Missing or bad project\n");
+	return false;
+    }
+
+    proj->pre_read();
+    if (!proj->read_all_files())
+    {
+	cgi.error("Unable to read some filenames\n");
+	return false;
+    }
+    proj->post_read();
+
+    proj->make_current();
+
+    return true;
+}
 
 int
 main(int argc, char **argv)
@@ -183,8 +193,8 @@ main(int argc, char **argv)
 	debug_set(dbg);
 
     cov_init();
+    // Hack: preinstantiate the only project.
     new cov_project_t("hacky", HACKY_PROJDIR);
-    cov_project_t *proj = cov_project_t::get(cgi.get_variable("p"));
 
     const char *qvar = cgi.get_variable("q");
     if (qvar == 0 || *qvar == '\0')
@@ -197,13 +207,10 @@ main(int argc, char **argv)
     {
 	if (!strcmp(qvar, queries[i].name))
 	{
-	    if (queries[i].needs_project && !proj)
-	    {
-		cgi.error("Missing or bad project\n");
+	    if (queries[i].needs_project && !setup_project(cgi))
 		return 0;
-	    }
 
-	    queries[i].func(cgi, proj);
+	    queries[i].func(cgi);
 	    cgi.reply();
 	    return 0;
 	}
