@@ -27,6 +27,7 @@
 #include <dirent.h>
 
 list_t<cov_project_t> cov_project_t::all_;
+cov_project_t *cov_project_t::current_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -35,11 +36,29 @@ cov_project_t::cov_project_t(const char *name, const char *basedir)
     basedir_(basedir)
 {
     all_.append(this);
+    if (current_ == 0)
+	current_ = this;
 }
 
 cov_project_t::~cov_project_t()
 {
     all_.remove(this);
+    if (current_ == this)
+	current_ = 0;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+cov_project_t *
+cov_project_t::current()
+{
+    return current_;
+}
+
+void
+cov_project_t::make_current()
+{
+    current_ = this;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

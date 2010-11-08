@@ -40,6 +40,15 @@ public:
 
     const char *name() const { return name_; }
 
+    static cov_project_t *current();
+    void make_current();
+    static cov_project_t *get(const char *name);
+    static list_iterator_t<cov_project_t>
+    first()
+    {
+	return all_.first();
+    }
+
     /* Call this before reading any files */
     void pre_read(void);
     /* Call this after reading all files; mostly just calculates callgraph */
@@ -61,13 +70,7 @@ public:
     gboolean read_all_files();
 
     char *get_pathname(const char *filename) const;
-    static cov_project_t *get(const char *name);
 
-    static list_iterator_t<cov_project_t>
-    first()
-    {
-	return all_.first();
-    }
 
     list_iterator_t<cov_file_t> get_files() const
     {
@@ -83,6 +86,7 @@ private:
 				  gboolean recursive, gboolean quiet);
 
     static list_t<cov_project_t> all_;
+    static cov_project_t *current_;
     string_var name_;
     string_var basedir_;
 };
