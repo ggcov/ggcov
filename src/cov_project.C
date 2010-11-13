@@ -19,6 +19,7 @@
 
 #include "cov.H"
 #include "cov_specific.H"
+#include "covio.H"
 #include "estring.H"
 #include "string_var.H"
 #include "filename.h"
@@ -127,6 +128,91 @@ cov_project_t::find_file(const char *name)
     assert(files_ != 0);
     string_var fullname = unminimise_name(name);
     return files_->lookup(fullname);
+}
+
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cov_project_t::add_search_directory(const char *dir)
+{
+    dprintf1(D_FILES, "Adding search directory \"%s\"\n", dir);
+    search_path_.append(g_strdup(dir));
+}
+
+static covio_t *
+try_file(const char *name, const char *dir, const char *ext)
+{
+    string_var ofilename, dfilename;
+
+    if (dir == 0)
+	ofilename = name;
+    else
+	ofilename = g_strconcat(dir, "/", file_basename_c(name), (char *)0);
+
+    if (ext[0] == '+')
+	dfilename = g_strconcat(ofilename, ext+1, (char *)0);
+    else
+	dfilename = file_change_extension(ofilename, 0, ext);
+
+    dprintf1(D_FILES|D_VERBOSE, "    try %s\n", dfilename.data());
+
+    if (file_is_regular(dfilename) < 0)
+	return 0;
+
+    covio_t *io = new covio_t(dfilename);
+    if (!io->open_read())
+    {
+	perror(dfilename);
+	delete io;
+	return 0;
+    }
+
+    return io;
+}
+
+
+covio_t *
+cov_project_t::find_file(const char *name, const char *ext) const
+{
+    list_iterator_t<char> iter;
+    covio_t *io;
+
+    dprintf2(D_FILES|D_VERBOSE,
+	    "Searching for %s file matching %s\n",
+	    ext, file_basename_c(name));
+
+    /*
+     * First try the same directory as the source file.
+     */
+    if ((io = try_file(name, 0, ext)) != 0)
+	return io;
+
+    /*
+     * Now look in the search path.
+     */
+    for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
+    {
+	if ((io = try_file(name, *iter, ext)) != 0)
+	    return io;
+    }
+
+    return 0;
+}
+
+void
+cov_project_t::file_missing(const char *name, const char *ext, const char *ext2) const
+{
+    list_iterator_t<char> iter;
+    string_var dir = file_dirname(name);
+    string_var which = (ext2 == 0 ? g_strdup("") :
+			    g_strdup_printf(" or %s", ext2));
+
+    fprintf(stderr, "Couldn't find %s%s file for %s in path:\n",
+		ext, which.data(), file_basename_c(name));
+    fprintf(stderr, "   %s\n", dir.data());
+    for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
+	fprintf(stderr, "   %s\n", *iter);
 }
 
 
@@ -242,7 +328,7 @@ cov_project_t::read_one_object_file(const char *exefilename, int depth)
     }
 
     dir = file_dirname(exefilename);
-    cov_add_search_directory(dir);
+    add_search_directory(dir);
 
     /*
      * TODO: instead of using the first scanner that succeeds open()
@@ -388,7 +474,7 @@ cov_project_t::read_files(GList *files, gboolean recursive)
 	if (!dir)
 	    dir = ".";
 	else
-	    cov_add_search_directory(dir);
+	    add_search_directory(dir);
     	if (!read_directory(dir, recursive))
 	    return FALSE;
     }
@@ -399,8 +485,7 @@ cov_project_t::read_files(GList *files, gboolean recursive)
 	    const char *filename = (const char *)iter->data;
 
 	    if (file_is_directory(filename) == 0)
-	    	cov_add_search_directory(filename);
-	    /* TODO: search dir is now wrong scope, should be project not global */
+		add_search_directory(filename);
     	}
 
 	for (iter = files ; iter != 0 ; iter = iter->next)

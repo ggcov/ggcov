@@ -112,7 +112,6 @@ private:
     void add_location(cov_block_t *, const char *, unsigned long);
     cov_line_t *get_nth_line(unsigned int lineno);
 
-    covio_t *try_file(const char *dir, const char *ext) const;
     covio_t *find_file(const char *ext, gboolean quiet) const;
     void file_missing(const char *ext, const char *ext2) const;
 
@@ -122,7 +121,6 @@ private:
     	return (num_missing_fake_ > 0 && num_expected_fake_ > 0);
     }
 
-    static void search_path_append(const char *dir);
     gboolean read(gboolean quiet);
 
     int skip_oldplus_func_header(covio_t *io, const char *prefix);
@@ -154,7 +152,6 @@ private:
 
     cov::status_t calc_stats(cov_stats_t *stats) const;
 
-    static list_t<char> search_path_;
 
     string_var name_;	    /* full absolute pathname of this file */
     string_var relpath_;    /* relative path with which this file was found */
@@ -175,7 +172,6 @@ private:
     unsigned num_missing_fake_;
     unsigned num_expected_fake_;
 
-    friend void cov_add_search_directory(const char *fname);
     friend class cov_project_t;
     friend class cov_function_t;
     friend class cov_block_t;

@@ -41,9 +41,6 @@ void cov_suppress_lines_between_comments(const char *startw, const char *endw);
 
 gboolean cov_is_source_filename(const char *filename);
 
-/* Add a directory to the search path for .bb, .bbg, .da, and .o files */
-void cov_add_search_directory(const char *dir);
-
 /*
  * If -DDEBUG > 1, dump human-readable debugging description
  * of contents of cov data structures to the given FILE*

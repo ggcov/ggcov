@@ -43,13 +43,6 @@ cov_location_t::describe() const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-cov_add_search_directory(const char *dir)
-{
-    dprintf1(D_FILES, "Adding search directory \"%s\"\n", dir);
-    cov_file_t::search_path_append(dir);
-}
-
 gboolean
 cov_is_source_filename(const char *filename)
 {
@@ -257,7 +250,7 @@ cov_read_files(cov_project_t *proj, GList *files)
     }
 
     if (object_dir != 0)
-    	cov_add_search_directory(object_dir);
+	proj->add_search_directory(object_dir);
 
     proj->pre_read();
     if (!proj->read_files(files, recursive))

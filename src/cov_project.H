@@ -91,6 +91,11 @@ public:
     void attach_file(cov_file_t *f);
     void detach_file(cov_file_t *f);
 
+    /* Add a directory to the search path for .bb, .bbg, .da, and .o files */
+    void add_search_directory(const char *dir);
+    covio_t *find_file(const char *name, const char *ext) const;
+    void file_missing(const char *name, const char *ext, const char *ext2) const;
+
     /* Read coverage data for the given source file */
     gboolean read_source_file(const char *filename);
     /* Read all the coveraged source files for the given object file or executable */
@@ -129,6 +134,7 @@ private:
 
     hashtable_t<const char, cov_file_t> *files_;
     list_t<cov_file_t> files_list_;
+    list_t<char> search_path_;
     char *common_path_;
     int common_len_;
 };

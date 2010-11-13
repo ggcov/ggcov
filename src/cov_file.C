@@ -32,7 +32,6 @@
 
 CVSID("$Id: cov_file.C,v 1.83 2010-05-09 05:37:15 gnb Exp $");
 
-list_t<char> cov_file_t::search_path_;
 #define _NEW_VERSION(major, minor, release) \
      	(((gnb_u32_t)('0'+(major))<<24)| \
 	 ((gnb_u32_t)('0'+(minor)/10)<<16)| \
@@ -1662,87 +1661,19 @@ cov_file_t::read_src_file()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-cov_file_t::search_path_append(const char *dir)
-{
-    search_path_.append(g_strdup(dir));
-}
-
-covio_t *
-cov_file_t::try_file(const char *dir, const char *ext) const
-{
-    string_var ofilename, dfilename;
-    
-    if (dir == 0)
-    	ofilename = name();
-    else
-    	ofilename = g_strconcat(dir, "/", file_basename_c(name()), (char *)0);
-
-    if (ext[0] == '+')
-    	dfilename = g_strconcat(ofilename, ext+1, (char *)0);
-    else
-	dfilename = file_change_extension(ofilename, 0, ext);
-    
-    dprintf1(D_FILES|D_VERBOSE, "    try %s\n", dfilename.data());
-    
-    if (file_is_regular(dfilename) < 0)
-    	return 0;
-	
-    covio_t *io = new covio_t(dfilename);
-    if (!io->open_read())
-    {
-    	perror(dfilename);
-    	delete io;
-    	return 0;
-    }
-
-    return io;
-}
-
 covio_t *
 cov_file_t::find_file(const char *ext, gboolean quiet) const
 {
-    list_iterator_t<char> iter;
-    covio_t *io;
-    
-    dprintf2(D_FILES|D_VERBOSE,
-    	    "Searching for %s file matching %s\n",
-    	    ext, file_basename_c(name()));
-
-    /*
-     * First try the same directory as the source file.
-     */
-    if ((io = try_file(0, ext)) != 0)
-    	return io;
-	
-    /*
-     * Now look in the search path.
-     */
-    for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
-    {
-	if ((io = try_file(*iter, ext)) != 0)
-    	    return io;
-    }
-    
-    if (!quiet)
-    	file_missing(ext, 0);
-    
-    return 0;
+    covio_t *io = cov_project_t::current()->find_file(name_, ext);
+    if (!io && !quiet)
+	file_missing(ext, 0);
+    return io;
 }
 
 void
 cov_file_t::file_missing(const char *ext, const char *ext2) const
 {
-    list_iterator_t<char> iter;
-    string_var dir = file_dirname(name());
-    string_var which = (ext2 == 0 ? g_strdup("") :
-    	    	    	    g_strdup_printf(" or %s", ext2));
-
-    fprintf(stderr, "Couldn't find %s%s file for %s in path:\n",
-	    	ext, which.data(), file_basename_c(name()));
-    fprintf(stderr, "   %s\n", dir.data());
-    for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
-	fprintf(stderr, "   %s\n", *iter);
+    cov_project_t::current()->file_missing(name_, ext, ext2);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1760,7 +1691,7 @@ cov_file_t::read(gboolean quiet)
     	if ((io = find_file(".gcno", TRUE)) == 0)
 	{
 	    if (!quiet)
-	    	file_missing(".bbg", ".gcno");
+               file_missing(".bbg", ".gcno");
 	    return FALSE;
 	}
 	/* The .da file was renamed too */
