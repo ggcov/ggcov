@@ -23,9 +23,12 @@
 #include "common.h"
 #include "cov_file.H"
 #include "list.H"
+#include "hashtable.H"
+#include "ptrarray.H"
 #include "string_var.H"
 
 class cov_bfd_t;
+class covio_t;
 
 /*
  * Note that the project is an MVC model which can be listened
@@ -54,6 +57,40 @@ public:
     /* Call this after reading all files; mostly just calculates callgraph */
     void post_read(void);
 
+    /*
+     * The project maintains a notion of the common prefix of
+     * the names of all files, and defines a minimal name
+     * as the part after the common prefix.  The common part
+     * is private, but various operations which use it are
+     * defined here.
+     *
+     * To minimise GUI clutter usually only the minimal name
+     * is displayed to the user.
+     *
+     * For a project containing source files in only one
+     * directory, the minimal name is the basename.  Minimal
+     * names are calculated on a path component basis, not
+     * a character basis, so the common path for "/home/foobar"
+     * and "/home/foobaz" is "/home/".
+     */
+    const char *minimal_name(const char *);
+    /* returns a new string */
+    char *minimise_name(const char *name);
+    /* returns a new string */
+    char *unminimise_name(const char *name);
+    /* returns the common initial part of all minimal names */
+    const char *common_path();
+
+    /* find a file by name, full or minimal */
+    cov_file_t *find_file(const char *name);
+    /* Return an iterator over all the files in minimal filename order */
+    list_iterator_t<cov_file_t> first_file() const
+    {
+	return files_list_.first();
+    }
+    void attach_file(cov_file_t *f);
+    void detach_file(cov_file_t *f);
+
     /* Read coverage data for the given source file */
     gboolean read_source_file(const char *filename);
     /* Read all the coveraged source files for the given object file or executable */
@@ -72,13 +109,13 @@ public:
     char *get_pathname(const char *filename) const;
 
 
-    list_iterator_t<cov_file_t> get_files() const
-    {
-	return cov_file_t::first();
-    }
-
-
 private:
+    static void post_read_1(const char *, cov_file_t *, gpointer);
+    void add_name(const char *name);
+    void dirty_common_path();
+    static void add_name_tramp(const char *, cov_file_t *, gpointer);
+    void check_common_path();
+
     gboolean read_source_file_2(const char *fname, gboolean quiet);
     gboolean read_shlibs(cov_bfd_t *b, int depth);
     gboolean read_one_object_file(const char *exefilename, int depth);
@@ -89,6 +126,11 @@ private:
     static cov_project_t *current_;
     string_var name_;
     string_var basedir_;
+
+    hashtable_t<const char, cov_file_t> *files_;
+    list_t<cov_file_t> files_list_;
+    char *common_path_;
+    int common_len_;
 };
 
 

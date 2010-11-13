@@ -36,7 +36,7 @@ query_listfiles(cgi_t &cgi)
     json_t json;
     json.begin_array();
     list_iterator_t<cov_file_t> iter;
-    for (iter = cov_project_t::current()->get_files() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     {
     	cov_file_t *f = *iter;
 

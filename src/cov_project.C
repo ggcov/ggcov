@@ -33,7 +33,10 @@ cov_project_t *cov_project_t::current_;
 
 cov_project_t::cov_project_t(const char *name, const char *basedir)
  :  name_(name),
-    basedir_(basedir)
+    basedir_(basedir),
+    files_(new hashtable_t<const char, cov_file_t>),
+    common_path_(0),
+    common_len_(0)
 {
     all_.append(this);
     if (current_ == 0)
@@ -45,6 +48,7 @@ cov_project_t::~cov_project_t()
     all_.remove(this);
     if (current_ == this)
 	current_ = 0;
+    // TODO: destroy files_ hashtable etc
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -79,12 +83,32 @@ cov_project_t::pre_read(void)
 }
 
 void
+cov_project_t::post_read_1(
+    const char *name,
+    cov_file_t *f,
+    gpointer userdata)
+{
+    cov_project_t *proj = (cov_project_t *)userdata;
+
+    proj->files_list_.prepend(f);
+    f->finalise();
+}
+
+static int
+compare_files(const cov_file_t *fa, const cov_file_t *fb)
+{
+    return strcmp(fa->minimal_name(), fb->minimal_name());
+}
+
+void
 cov_project_t::post_read(void)
 {
     list_iterator_t<cov_file_t> iter;
 
     /* construct the list of filenames */
-    cov_file_t::post_read();
+    files_list_.remove_all();
+    files_->foreach(post_read_1, this);
+    files_list_.sort(compare_files);
 
     /* Build the callgraph */
     /* TODO: only do this to newly read files */
@@ -96,6 +120,15 @@ cov_project_t::post_read(void)
     /* emit an MVC notification */
     mvc_changed(this, 1);
 }
+
+cov_file_t *
+cov_project_t::find_file(const char *name)
+{
+    assert(files_ != 0);
+    string_var fullname = unminimise_name(name);
+    return files_->lookup(fullname);
+}
+
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -405,6 +438,169 @@ cov_project_t::get(const char *name)
 	    return *itr;
     }
     return 0;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static gboolean
+filename_matches_directory_prefix(const char *filename, const char *dir)
+{
+    int dirlen = strlen(dir);
+
+    return (!strncmp(dir, filename, dirlen) &&
+	    (filename[dirlen] == '\0' || filename[dirlen] == '/'));
+}
+
+static gboolean
+filename_is_common(const char *filename)
+{
+    static const char * const uncommon_dirs[] = 
+    {
+	"/usr/include",
+	"/usr/lib",
+	0
+    };
+    const char * const * dirp;
+
+    for (dirp = uncommon_dirs ; *dirp != 0 ; dirp++)
+    {
+    	if (filename_matches_directory_prefix(filename, *dirp))
+	    return FALSE;
+    }
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cov_project_t::attach_file(cov_file_t *f)
+{
+    files_->insert(f->name_, f);
+    f->common_ = filename_is_common(f->name_);
+    if (f->common_)
+	add_name(f->name_);
+}
+
+void
+cov_project_t::detach_file(cov_file_t *f)
+{
+    files_list_.remove(f);
+    files_->remove(f->name_);
+    if (f->common_)
+	dirty_common_path();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cov_project_t::add_name(const char *name)
+{
+    assert(name[0] == '/');
+    if (common_path_ == 0)
+    {
+    	/* first filename: initialise the common path to the directory */
+	char *p;
+    	common_path_ = g_strdup(name);
+	if ((p = strrchr(common_path_, '/')) != 0)
+	    p[1] = '\0';
+    }
+    else
+    {
+    	/* subsequent filenames: shrink common path as necessary */
+	char *cs, *ce, *ns, *ne;
+	cs = common_path_+1;
+	ns = (char *)name+1;
+	for (;;)
+	{
+	    if ((ne = strchr(ns, '/')) == 0)
+	    	break;
+	    if ((ce = strchr(cs, '/')) == 0)
+	    	break;
+	    if ((ce - cs) != (ne - ns))
+	    	break;
+	    if (memcmp(cs, ns, (ne - ns)))
+	    	break;
+	    cs = ce+1;
+	    ns = ne+1;
+	}
+	*cs = '\0';
+    }
+    common_len_ = strlen(common_path_);
+    dprintf2(D_FILES, "cov_project_t::add_name: name=\"%s\" => common=\"%s\"\n",
+    	    	name, common_path_);
+}
+
+void
+cov_project_t::dirty_common_path()
+{
+    if (common_path_ != 0)
+    {
+	g_free(common_path_);
+	common_path_ = 0;
+	common_len_ = -1;   /* indicates dirty */
+    }
+}
+
+void
+cov_project_t::add_name_tramp(
+    const char *name,
+    cov_file_t *f,
+    gpointer userdata)
+{
+    cov_project_t *proj = (cov_project_t *)userdata;
+
+    if (f->common_)
+	proj->add_name(name);
+}
+
+void
+cov_project_t::check_common_path()
+{
+    if (common_len_ < 0)
+    {
+    	dprintf0(D_FILES, "cov_project_t::check_common_path: recalculating common path\n");
+    	common_len_ = 0;
+	files_->foreach(add_name_tramp, 0);
+    }
+}
+
+const char *
+cov_project_t::minimal_name(const char *name)
+{
+    check_common_path();
+    if (!strncmp(name, common_path_, common_len_))
+	return name + common_len_;
+    else
+	return name;
+}
+
+char *
+cov_project_t::minimise_name(const char *name)
+{
+    return g_strdup(minimal_name(name));
+}
+
+char *
+cov_project_t::unminimise_name(const char *name)
+{
+    if (name[0] == '/')
+    {
+    	/* absolute name */
+    	return g_strdup(name);
+    }
+    else
+    {
+    	/* partial, presumably minimal, name */
+    	check_common_path();
+	return g_strconcat(common_path_, name, (char *)0);
+    }
+}
+
+const char *
+cov_project_t::common_path()
+{
+    check_common_path();
+    return common_path_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

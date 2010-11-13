@@ -91,7 +91,6 @@ cov_init(void)
 #endif /* HAVE_LIBBFD */
 
     cov_callnode_t::init();
-    cov_file_t::init();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

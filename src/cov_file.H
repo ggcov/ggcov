@@ -26,6 +26,7 @@
 #include "ptrarray.H"
 #include "string_var.H"
 
+class cov_project_t;
 class cov_function_t;
 class cov_line_t;
 class covio_t;
@@ -40,22 +41,6 @@ public:
     	return name_;
     }
 
-    /*
-     * cov_file_t maintain a notion of the common prefix of
-     * the names of all instances, and defines a minimal name
-     * as the part after the common prefix.  The common part
-     * is private, but various operations which use it are
-     * defined here.
-     *
-     * To minimise GUI clutter usually only the minimal name
-     * is displayed to the user.
-     *
-     * For a project containing source files in only one
-     * directory, the minimal name is the basename.  Minimal
-     * names are calculated on a path component basis, not
-     * a character basis, so the common path for "/home/foobar"
-     * and "/home/foobaz" is "/home/".
-     */
     const char *minimal_name() const;
     /* returns a new string */
     static char *minimise_name(const char *name);
@@ -73,7 +58,7 @@ public:
     {
     	return (status() == cov::SUPPRESSED);
     }
-    
+
     /* find a file by name, full or minimal */
     static cov_file_t *find(const char *name);
     /* Return an iterator over all the files in minimal filename order */
@@ -123,13 +108,6 @@ private:
     };
     static format_rec_t formats[];
     
-    static void init();
-    static void post_read_1(const char *, cov_file_t *, gpointer);
-    static void post_read();
-    static void add_name(const char *name);
-    static void dirty_common_path();
-    static void add_name_tramp(const char *, cov_file_t *, gpointer);
-    static void check_common_path();
     cov_function_t *add_function();
     void add_location(cov_block_t *, const char *, unsigned long);
     cov_line_t *get_nth_line(unsigned int lineno);
@@ -176,11 +154,7 @@ private:
 
     cov::status_t calc_stats(cov_stats_t *stats) const;
 
-    static hashtable_t<const char, cov_file_t> *files_;
-    static list_t<cov_file_t> files_list_;
     static list_t<char> search_path_;
-    static char *common_path_;
-    static int common_len_;
 
     string_var name_;	    /* full absolute pathname of this file */
     string_var relpath_;    /* relative path with which this file was found */
@@ -202,7 +176,6 @@ private:
     unsigned num_expected_fake_;
 
     friend void cov_add_search_directory(const char *fname);
-    friend void cov_init(void);
     friend class cov_project_t;
     friend class cov_function_t;
     friend class cov_block_t;
