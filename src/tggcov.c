@@ -251,14 +251,17 @@ report(void)
 static void
 check_callgraph(void)
 {
-    check_scenegen_t sg;
-    callgraph_diagram_t diag;
+    check_scenegen_t *sg = new check_scenegen_t;
+    callgraph_diagram_t *diag = new callgraph_diagram_t;
 
-    diag.prepare();
-    diag.render(&sg);
+    diag->prepare();
+    diag->render(sg);
 
-    if (!sg.check())
+    if (!sg->check())
 	exit(1);
+
+    delete diag;
+    delete sg;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
