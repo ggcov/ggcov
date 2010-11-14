@@ -76,8 +76,6 @@ public:
     const char *minimal_name(const char *);
     /* returns a new string */
     char *minimise_name(const char *name);
-    /* returns a new string */
-    char *unminimise_name(const char *name);
     /* returns the common initial part of all minimal names */
     const char *common_path();
 
@@ -120,6 +118,8 @@ private:
     void dirty_common_path();
     static void add_name_tramp(const char *, cov_file_t *, gpointer);
     void check_common_path();
+    /* returns a new string */
+    char *unminimise_name(const char *name);
 
     gboolean read_source_file_2(const char *fname, gboolean quiet);
     gboolean read_shlibs(cov_bfd_t *b, int depth);
