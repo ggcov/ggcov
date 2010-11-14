@@ -148,12 +148,6 @@ cov_file_t::minimal_name() const
 }
 
 char *
-cov_file_t::minimise_name(const char *name)
-{
-    return cov_project_t::current()->minimise_name(name);
-}
-
-char *
 cov_file_t::unminimise_name(const char *name)
 {
     return cov_project_t::current()->unminimise_name(name);

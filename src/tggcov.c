@@ -267,7 +267,7 @@ set_printable_location(cov_location_var &loc, const cov_location_t *from)
     if (from == 0)
 	loc.set("-", 0);
     else
-	loc.set(cov_file_t::minimise_name(from->filename), from->lineno);
+	loc.set(cov_project_t::current()->minimise_name(from->filename), from->lineno);
 }
 
 static void

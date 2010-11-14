@@ -43,8 +43,6 @@ public:
 
     const char *minimal_name() const;
     /* returns a new string */
-    static char *minimise_name(const char *name);
-    /* returns a new string */
     static char *unminimise_name(const char *name);
     /* returns the common initial part of all minimal names */
     static const char *common_path();
