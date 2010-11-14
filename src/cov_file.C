@@ -147,12 +147,6 @@ cov_file_t::minimal_name() const
     return cov_project_t::current()->minimal_name(name_);
 }
 
-char *
-cov_file_t::unminimise_name(const char *name)
-{
-    return cov_project_t::current()->unminimise_name(name);
-}
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_line_t *

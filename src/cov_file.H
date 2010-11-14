@@ -42,8 +42,6 @@ public:
     }
 
     const char *minimal_name() const;
-    /* returns a new string */
-    static char *unminimise_name(const char *name);
 
     cov::status_t status() const
     {

@@ -800,7 +800,7 @@ sourcewin_t::update_title_buttons()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-sourcewin_t::set_file(cov_file_t *f)
+sourcewin_t::set_file(const cov_file_t *f)
 {
     if (f == 0 || file_ == f)
 	return;
@@ -871,20 +871,14 @@ sourcewin_t::instance()
 
 void
 sourcewin_t::show_lines(
-    const char *filename,
+    const cov_file_t *f,
     unsigned long startline,
     unsigned long endline)
 {
     sourcewin_t *sw = instance();
-    estring fullname = cov_file_t::unminimise_name(filename);
-    cov_file_t *f;
 
-    dprintf4(D_SOURCEWIN, "sourcewin_t::show_lines(\"%s\", %lu, %lu) => \"%s\"\n",
-    	    	filename, startline, endline, fullname.data());
-
-    f = cov_project_t::current()->find_file(fullname);
-    if (!f)
-	return;
+    dprintf3(D_SOURCEWIN, "sourcewin_t::show_lines(\"%s\", %lu, %lu)\n",
+    	    	f->name(), startline, endline);
 
     sw->set_file(f);
     sw->show();
@@ -896,6 +890,14 @@ sourcewin_t::show_lines(
 }
 
 void
+sourcewin_t::show_location(const cov_location_t *loc)
+{
+    const cov_file_t *f = cov_project_t::current()->find_file(loc->filename);
+    if (f)
+	show_lines(f, loc->lineno, loc->lineno);
+}
+
+void
 sourcewin_t::show_function(const cov_function_t *fn)
 {
     const cov_location_t *start, *end;
@@ -903,20 +905,16 @@ sourcewin_t::show_function(const cov_function_t *fn)
     start = fn->get_first_location();
     end = fn->get_last_location();
 
-    if (start != 0 && end != 0)
-	show_lines(start->filename, start->lineno, end->lineno);
+    if (start != 0 && end != 0) {
+	const cov_file_t *f = cov_project_t::current()->find_file(start->filename);
+	show_lines(f, start->lineno, end->lineno);
+    }
 }
 
 void
 sourcewin_t::show_file(const cov_file_t *f)
 {
-    show_lines(f->name(), 0, 0);
-}
-
-void
-sourcewin_t::show_filename(const char *filename)
-{
-    show_lines(filename, 0, 0);
+    show_lines(f, 0, 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -989,7 +987,7 @@ on_source_summarise_range_activate(GtkWidget *w, gpointer data)
 
     ui_text_get_selected_lines(sw->text_, &start, &end);
     if (start != 0)
-	summarywin_t::show_lines(sw->file_->name(), start, end);
+	summarywin_t::show_lines(sw->file_, start, end);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

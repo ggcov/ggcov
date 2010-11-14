@@ -47,7 +47,7 @@ public:
     sourcewin_t();
     ~sourcewin_t();
 
-    void set_file(cov_file_t *f);
+    void set_file(const cov_file_t *f);
     void select_region(unsigned long start, unsigned long end);
     void ensure_visible(unsigned long line);
 
@@ -55,11 +55,11 @@ public:
      * Routines to create and show a source window with a particular
      * interesting range of contents selected.
      */
-    static void show_lines(const char *filename, unsigned long startline,
+    static void show_lines(const cov_file_t *, unsigned long startline,
 			      unsigned long endline);
+    static void show_location(const cov_location_t *);
     static void show_function(const cov_function_t *);
     static void show_file(const cov_file_t *);
-    static void show_filename(const char *filename);
 
 
 private:
@@ -128,7 +128,7 @@ private:
     GtkWidget *filenames_combo_;
     GtkWidget *functions_combo_;
     gboolean populating_;
-    cov_file_t *file_;
+    const cov_file_t *file_;
 
     GtkWidget *titles_hbox_;
     GtkWidget *left_pad_label_;

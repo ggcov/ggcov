@@ -162,15 +162,11 @@ summarywin_t::show_function(const cov_function_t *fn)
 
 void
 summarywin_t::show_lines(
-    const char *filename,
+    const cov_file_t *f,
     unsigned long start,
     unsigned long end)
 {
     summarywin_t *sw;
-    cov_file_t *f;
-
-    if ((f = cov_project_t::current()->find_file(filename)) == 0)
-    	return;
 
     sw = instance();
     sw->scope_ = SU_RANGE;
@@ -567,11 +563,11 @@ GLADE_CALLBACK void
 on_summary_range_view_clicked(GtkWidget *w, gpointer data)
 {
     summarywin_t *sw = summarywin_t::from_widget(w);
-    
+
     assert(sw->scope_ == summarywin_t::SU_RANGE);
     assert(sw->file_ != 0);
     assert(!sw->populating_);
-    sourcewin_t::show_lines(sw->file_->name(), sw->start_, sw->end_);
+    sourcewin_t::show_lines(sw->file_, sw->start_, sw->end_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

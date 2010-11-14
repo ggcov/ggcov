@@ -51,13 +51,13 @@ public:
 
 	SU_NSCOPES
     };
-    
+
     static void show_overall();
     static void show_file(const cov_file_t *);
     static void show_function(const cov_function_t *);
-    static void show_lines(const char *filename, unsigned long start,
+    static void show_lines(const cov_file_t *f, unsigned long start,
     	    	    	   unsigned long end);
-    
+
 private:
     static summarywin_t *instance();
     void populate_filename_combo(GtkCombo *combo);
