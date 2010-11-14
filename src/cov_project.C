@@ -226,7 +226,7 @@ cov_project_t::read_source_file_2(const char *fname, gboolean quiet)
 
     dprintf1(D_FILES, "Handling source file %s\n", filename.data());
 
-    if ((f = cov_file_t::find(filename)) != 0)
+    if ((f = find_file(filename)) != 0)
     {
     	if (!quiet)
     	    fprintf(stderr, "Internal error: handling %s twice\n", filename.data());
