@@ -89,11 +89,6 @@ cov_overall_scope_t::calc_stats(cov_stats_t *stats)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-cov_file_scope_t::cov_file_scope_t(const char *filename)
- :  file_(cov_file_t::find(filename))
-{
-}
-
 cov_file_scope_t::cov_file_scope_t(const cov_file_t *file)
  :  file_(file)
 {
@@ -141,17 +136,6 @@ cov_function_scope_t::calc_stats(cov_stats_t *stats)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-cov_range_scope_t::cov_range_scope_t(
-    const char *filename,
-    unsigned long start,
-    unsigned long end)
- :  file_(cov_file_t::find(filename)),
-    start_(start),
-    end_(end)
-{
-    set_description();
-}
 
 cov_range_scope_t::cov_range_scope_t(
     const cov_file_t *file,

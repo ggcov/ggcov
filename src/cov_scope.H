@@ -64,7 +64,6 @@ class cov_file_t;
 class cov_file_scope_t : public cov_scope_t
 {
 public:
-    cov_file_scope_t(const char *filename);
     cov_file_scope_t(const cov_file_t *);
     ~cov_file_scope_t();
 
@@ -99,8 +98,6 @@ private:
 class cov_range_scope_t : public cov_scope_t
 {
 public:
-    cov_range_scope_t(const char *filename,
-    	    	      unsigned long start, unsigned long end);
     cov_range_scope_t(const cov_file_t *,
     	    	      unsigned long start, unsigned long end);
     ~cov_range_scope_t();
