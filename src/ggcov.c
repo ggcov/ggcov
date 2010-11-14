@@ -215,11 +215,12 @@ static void
 on_windows_new_sourcewin_activated(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *srcw;
-    list_iterator_t<cov_file_t> iter = cov_file_t::first();
+    cov_project_t *proj = cov_project_t::current();
+    list_iterator_t<cov_file_t> iter = proj->first_file();
     cov_file_t *f = *iter;
 
     srcw = new sourcewin_t();
-    srcw->set_filename(f->name(), f->minimal_name());
+    srcw->set_file(f);
     srcw->show();
 }
 

@@ -47,7 +47,7 @@ public:
     sourcewin_t();
     ~sourcewin_t();
 
-    void set_filename(const char *filename, const char *display_fname);
+    void set_file(cov_file_t *f);
     void select_region(unsigned long start, unsigned long end);
     void ensure_visible(unsigned long line);
 
@@ -128,7 +128,7 @@ private:
     GtkWidget *filenames_combo_;
     GtkWidget *functions_combo_;
     gboolean populating_;
-    string_var filename_;
+    cov_file_t *file_;
 
     GtkWidget *titles_hbox_;
     GtkWidget *left_pad_label_;

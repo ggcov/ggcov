@@ -132,10 +132,6 @@ sourcewin_t::update_flows()
     if (!GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])->active)
 	return;
 
-    cov_file_t *f;
-    if ((f = cov_file_t::find(filename_)) == 0)
-    	return;
-
     dprintf0(D_SOURCEWIN, "sourcewin_t::update_flows\n");
 
     unsigned long begin_lineno, end_lineno;
@@ -147,11 +143,11 @@ sourcewin_t::update_flows()
     unsigned int lineno;
     if (begin_lineno < 1)
 	begin_lineno = 1;
-    if (end_lineno > f->num_lines())
-	end_lineno = f->num_lines();
+    if (end_lineno > file_->num_lines())
+	end_lineno = file_->num_lines();
     for (lineno = begin_lineno ; lineno <= end_lineno ; lineno++)
     {
-	cov_line_t *ln = f->nth_line(lineno);
+	cov_line_t *ln = file_->nth_line(lineno);
 	if (ln == 0 || (fn = ln->function()) == 0 || fn == oldfn)
 	    continue;
 	oldfn = fn;
@@ -466,10 +462,10 @@ on_source_filenames_entry_changed(GtkWidget *w, gpointer userdata)
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     cov_file_t *f = (cov_file_t *)ui_combo_get_current_data(
     	    	    	    	    GTK_COMBO(sw->filenames_combo_));
-    
+
     if (sw->populating_ || !sw->shown_ || f == 0/*stupid gtk2*/)
     	return;
-    sw->set_filename(f->name(), f->minimal_name());
+    sw->set_file(f);
 }
 
 
@@ -496,37 +492,37 @@ on_source_functions_entry_changed(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
-    	    	    	    	    	    GTK_COMBO(sw->functions_combo_));
+					    GTK_COMBO(sw->functions_combo_));
     const cov_location_t *first;
     const cov_location_t *last;
-    
+
     if (sw->populating_ || !sw->shown_ || fn == 0 /*stupid gtk2*/)
-    	return;
-    
+	return;
+
     first = fn->get_first_location();
     last = fn->get_last_location();
     dprintf5(D_SOURCEWIN, "Function %s -> %s:%ld to %s:%ld\n",
-    	    	    	fn->name(),
+			fn->name(),
 			first->filename, first->lineno,
 			last->filename, last->lineno);
-    
+
     /* Check for weirdness like functions spanning files */
-    if (strcmp(first->filename, sw->filename_))
+    if (strcmp(first->filename, sw->file_->name()))
     {
-    	fprintf(stderr, "WTF?  Wrong filename for first loc: %s vs %s\n",
-	    	    	first->filename, sw->filename_.data());
+	fprintf(stderr, "WTF?  Wrong filename for first loc: %s vs %s\n",
+			first->filename, sw->file_->name());
 	return;
     }
-    if (strcmp(last->filename, sw->filename_))
+    if (strcmp(last->filename, sw->file_->name()))
     {
-    	fprintf(stderr, "WTF?  Wrong filename for last loc: %s vs %s\n",
-	    	    	last->filename, sw->filename_.data());
+	fprintf(stderr, "WTF?  Wrong filename for last loc: %s vs %s\n",
+	    	    	last->filename, sw->file_->name());
 	return;
     }
 
     sw->ensure_visible(first->lineno);
 
-    /* This only selects the span of the lines which contain executable code */		    
+    /* This only selects the span of the lines which contain executable code */
     sw->select_region(first->lineno, last->lineno);
 }
 
@@ -535,28 +531,25 @@ sourcewin_t::populate_functions()
 {
     list_t<cov_function_t> functions;
     unsigned fnidx;
-    cov_file_t *f;
     cov_function_t *fn;
-    
+
     /* build an alphabetically sorted list of functions in the file */
-    f = cov_file_t::find(filename_);
-    assert(f != 0);
-    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
+    for (fnidx = 0 ; fnidx < file_->num_functions() ; fnidx++)
     {
-    	fn = f->nth_function(fnidx);
-	
+	fn = file_->nth_function(fnidx);
+
 	if (fn->is_suppressed() ||
 	    fn->get_first_location() == 0)
 	    continue;
 	functions.prepend(fn);
     }
     functions.sort(cov_function_t::compare);
-    
+
     /* now build the menu */
 
     ui_combo_clear(GTK_COMBO(functions_combo_));
     populating_ = TRUE; /* suppress combo entry callback */
-    
+
     while ((fn = functions.remove_head()) != 0)
 	ui_combo_add_data(GTK_COMBO(functions_combo_), fn->name(), fn);
     populating_ = FALSE;
@@ -640,7 +633,6 @@ sourcewin_t::update()
 {
     FILE *fp;
     unsigned long lineno;
-    cov_file_t *f;
     cov_line_t *ln;
     int i, nstrs;
     gfloat scrollval;
@@ -650,16 +642,13 @@ sourcewin_t::update()
     char blockbuf[32];
     char countbuf[32];
     char linebuf[1024];
-    
+
     update_title_buttons();
 
-    if ((f = cov_file_t::find(filename_)) == 0)
-    	return;
-
-    if ((fp = fopen(filename_, "r")) == 0)
+    if ((fp = fopen(file_->name(), "r")) == 0)
     {
-    	/* TODO: gui error report */
-    	perror(filename_);
+	/* TODO: gui error report */
+	perror(file_->name());
 	return;
     }
 
@@ -669,31 +658,31 @@ sourcewin_t::update()
     lineno = 0;
     while (fgets_tabexpand(linebuf, sizeof(linebuf), fp) != 0)
     {
-    	++lineno;
-    	ln = f->nth_line(lineno);
-	
-    	/* choose colours */
+	++lineno;
+	ln = file_->nth_line(lineno);
+
+	/* choose colours */
 	tag = 0;
 	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
 	    tag = text_tags_[ln->status()];
 
-    	/* generate strings */
-	
+	/* generate strings */
+
 	nstrs = 0;
-	
+
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_LINE])->active)
 	{
 	    snprintf(linenobuf, sizeof(linenobuf), "%*lu ",
-	    	      column_widths_[COL_LINE]-1, lineno);
+		      column_widths_[COL_LINE]-1, lineno);
 	    strs[nstrs++] = linenobuf;
 	}
-	
+
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_BLOCK])->active)
 	{
 	    ln->format_blocks(blockbuf, column_widths_[COL_BLOCK]-1);
 	    strs[nstrs++] = pad(blockbuf, column_widths_[COL_BLOCK], ' ');
 	}
-	
+
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_COUNT])->active)
 	{
 	    switch (ln->status())
@@ -701,18 +690,18 @@ sourcewin_t::update()
 	    case cov::COVERED:
 	    case cov::PARTCOVERED:
 		snprintf(countbuf, sizeof(countbuf), "%*llu",
-		    	 column_widths_[COL_COUNT]-1, ln->count());
+			 column_widths_[COL_COUNT]-1, ln->count());
 		break;
 	    case cov::UNCOVERED:
 		strncpy(countbuf, " ######", sizeof(countbuf));
 		break;
 	    case cov::UNINSTRUMENTED:
 	    case cov::SUPPRESSED:
-	    	countbuf[0] = '\0';
+		countbuf[0] = '\0';
 		break;
 	    }
 	    strs[nstrs++] = pad(countbuf, column_widths_[COL_COUNT], ' ');
-    	}
+	}
 
 
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_SOURCE])->active)
@@ -720,10 +709,10 @@ sourcewin_t::update()
 	else
 	    strs[nstrs++] = "\n";
 
-    	for (i = 0 ; i < nstrs ; i++)
-    	    ui_text_add(text_, tag, strs[i], -1);
+	for (i = 0 ; i < nstrs ; i++)
+	    ui_text_add(text_, tag, strs[i], -1);
     }
-    
+
     fclose(fp);
 
     ui_text_end(text_);
@@ -811,10 +800,13 @@ sourcewin_t::update_title_buttons()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-sourcewin_t::set_filename(const char *filename, const char *display_fname)
+sourcewin_t::set_file(cov_file_t *f)
 {
-    set_title((display_fname == 0 ? filename : display_fname));
-    filename_ = filename;
+    if (f == 0 || file_ == f)
+	return;
+
+    set_title(f->minimal_name());
+    file_ = f;
 
     if (shown_)
     {
@@ -851,7 +843,7 @@ sourcewin_t::selected_function() const
     cov_line_t *ln;
     cov_function_t *fn;
 
-    loc.filename = (char *)filename_.data();
+    loc.filename = (char *)file_->name();
     ui_text_get_selected_lines(text_, &loc.lineno, 0);
 
     if (loc.lineno == 0 ||
@@ -885,12 +877,16 @@ sourcewin_t::show_lines(
 {
     sourcewin_t *sw = instance();
     estring fullname = cov_file_t::unminimise_name(filename);
-    estring displayname = cov_file_t::minimise_name(fullname.data());
+    cov_file_t *f;
 
     dprintf4(D_SOURCEWIN, "sourcewin_t::show_lines(\"%s\", %lu, %lu) => \"%s\"\n",
     	    	filename, startline, endline, fullname.data());
-    
-    sw->set_filename(fullname.data(), displayname.data());
+
+    f = cov_project_t::current()->find_file(fullname);
+    if (!f)
+	return;
+
+    sw->set_file(f);
     sw->show();
     if (startline > 0)
     {
@@ -971,8 +967,8 @@ GLADE_CALLBACK void
 on_source_summarise_file_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
-    
-    summarywin_t::show_file(cov_file_t::find(sw->filename_));
+
+    summarywin_t::show_file(sw->file_);
 }
 
 GLADE_CALLBACK void
@@ -990,10 +986,10 @@ on_source_summarise_range_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     unsigned long start, end;
-    
+
     ui_text_get_selected_lines(sw->text_, &start, &end);
     if (start != 0)
-	summarywin_t::show_lines(sw->filename_, start, end);
+	summarywin_t::show_lines(sw->file_->name(), start, end);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1106,12 +1102,12 @@ on_source_save_as_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
     char *txt_filename;
-    
-    txt_filename = g_strconcat(sw->filename_.data(), ".cov.txt", (char *)0);
+
+    txt_filename = g_strconcat(sw->file_->name(), ".cov.txt", (char *)0);
     gtk_file_selection_set_filename(GTK_FILE_SELECTION(sw->saveas_dialog_),
     	    	    	    	    txt_filename);
     g_free(txt_filename);
-    
+
     gtk_widget_show(sw->saveas_dialog_);
 }
 
