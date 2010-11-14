@@ -42,8 +42,8 @@ CVSID("$Id: callgraphwin.C,v 1.17 2010-05-09 05:37:14 gnb Exp $");
 static int
 callgraphwin_ancestors_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
 {
-    cov_callarc_t *ca1 = (cov_callarc_t *)((GtkCListRow *)ptr1)->data;
-    cov_callarc_t *ca2 = (cov_callarc_t *)((GtkCListRow *)ptr2)->data;
+    cov_callgraph_t::arc_t *ca1 = (cov_callgraph_t::arc_t *)((GtkCListRow *)ptr1)->data;
+    cov_callgraph_t::arc_t *ca2 = (cov_callgraph_t::arc_t *)((GtkCListRow *)ptr2)->data;
 
     switch (clist->sort_column)
     {
@@ -61,8 +61,8 @@ callgraphwin_ancestors_compare(GtkCList *clist, const void *ptr1, const void *pt
 static int
 callgraphwin_descendants_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
 {
-    cov_callarc_t *ca1 = (cov_callarc_t *)((GtkCListRow *)ptr1)->data;
-    cov_callarc_t *ca2 = (cov_callarc_t *)((GtkCListRow *)ptr2)->data;
+    cov_callgraph_t::arc_t *ca1 = (cov_callgraph_t::arc_t *)((GtkCListRow *)ptr1)->data;
+    cov_callgraph_t::arc_t *ca2 = (cov_callgraph_t::arc_t *)((GtkCListRow *)ptr2)->data;
 
     switch (clist->sort_column)
     {
@@ -86,8 +86,8 @@ callgraphwin_count_compare(
     GtkTreeIter *iter2,
     gpointer data)
 {
-    cov_callarc_t *ca1 = 0;
-    cov_callarc_t *ca2 = 0;
+    cov_callgraph_t::arc_t *ca1 = 0;
+    cov_callgraph_t::arc_t *ca2 = 0;
 
     gtk_tree_model_get(tm, iter1, COL_CLOSURE, &ca1, -1);
     gtk_tree_model_get(tm, iter2, COL_CLOSURE, &ca2, -1);
@@ -192,8 +192,8 @@ callgraphwin_t::~callgraphwin_t()
 static int
 compare_callnodes(const void *a, const void *b)
 {
-    const cov_callnode_t *cna = (const cov_callnode_t *)a;
-    const cov_callnode_t *cnb = (const cov_callnode_t *)b;
+    const cov_callgraph_t::node_t *cna = (const cov_callgraph_t::node_t *)a;
+    const cov_callgraph_t::node_t *cnb = (const cov_callgraph_t::node_t *)b;
     int ret;
     
     ret = strcmp(cna->name, cnb->name);
@@ -203,7 +203,7 @@ compare_callnodes(const void *a, const void *b)
 }
 
 static void
-add_callnode(cov_callnode_t *cn, void *userdata)
+add_callnode(cov_callgraph_t::node_t *cn, void *userdata)
 {
     GList **listp = (GList **)userdata;
     
@@ -223,21 +223,21 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
     
     ui_combo_clear(combo);    /* stupid glade2 */
 
-    cov_callnode_t::foreach(add_callnode, &list);
+    cov_project_t::current()->callgraph().foreach_node(add_callnode, &list);
     list = g_list_sort(list, compare_callnodes);
     
     for (iter = list ; iter != 0 ; iter = iter->next)
     {
-    	cov_callnode_t *cn = (cov_callnode_t *)iter->data;
+    	cov_callgraph_t::node_t *cn = (cov_callgraph_t::node_t *)iter->data;
 
     	label.truncate();
 	label.append_string(cn->name);
 
     	/* see if we need to present some more scope to uniquify the name */
 	if ((iter->next != 0 &&
-	     !strcmp(((cov_callnode_t *)iter->next->data)->name, cn->name)) ||
+	     !strcmp(((cov_callgraph_t::node_t *)iter->next->data)->name, cn->name)) ||
 	    (iter->prev != 0 &&
-	     !strcmp(((cov_callnode_t *)iter->prev->data)->name, cn->name)))
+	     !strcmp(((cov_callgraph_t::node_t *)iter->prev->data)->name, cn->name)))
 	{
 	    label.append_string(" (");
 	    if (cn->function != 0)
@@ -273,7 +273,7 @@ cov_callarcs_total(GList *list)
     count_t total = 0;
     
     for ( ; list != 0 ; list = list->next)
-    	total += ((cov_callarc_t *)list->data)->count;
+    	total += ((cov_callgraph_t::arc_t *)list->data)->count;
     
     return total;
 }
@@ -321,7 +321,7 @@ callgraphwin_t::update_clist(GtkWidget *clist, GList *arcs, gboolean isin)
 
     for (iter = arcs ; iter != 0 ; iter = iter->next)
     {
-	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
+	cov_callgraph_t::arc_t *ca = (cov_callgraph_t::arc_t *)iter->data;
 
     	format_stat(countbuf, sizeof(countbuf), /*percent*/FALSE,
 	    	    /*numerator*/ca->count, /*denominator*/total);
@@ -352,7 +352,7 @@ callgraphwin_t::update_clist(GtkWidget *clist, GList *arcs, gboolean isin)
 void
 callgraphwin_t::update()
 {
-    cov_callnode_t *cn = callnode_;
+    cov_callgraph_t::node_t *cn = callnode_;
     
     dprintf0(D_GRAPHWIN, "callgraphwin_t::update\n");
     gtk_widget_set_sensitive(function_view_, (cn->function != 0));
@@ -363,7 +363,7 @@ callgraphwin_t::update()
 }
 
 void
-callgraphwin_t::set_node(cov_callnode_t *cn)
+callgraphwin_t::set_node(cov_callgraph_t::node_t *cn)
 {
     callnode_ = cn;
     assert(callnode_ != 0);
@@ -377,9 +377,9 @@ GLADE_CALLBACK void
 on_callgraph_function_entry_changed(GtkWidget *w, gpointer data)
 {
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    cov_callnode_t *cn;
+    cov_callgraph_t::node_t *cn;
 
-    cn = (cov_callnode_t *)ui_combo_get_current_data(
+    cn = (cov_callgraph_t::node_t *)ui_combo_get_current_data(
     	    	    	    	    	GTK_COMBO(cw->function_combo_));
     if (cn != 0)
     {
@@ -403,9 +403,9 @@ on_callgraph_ancestors_clist_button_press_event(
     gpointer data)
 {
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    cov_callarc_t *ca;
+    cov_callgraph_t::arc_t *ca;
 
-    ca = (cov_callarc_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
+    ca = (cov_callgraph_t::arc_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
 
     if (ca != 0)
 	cw->set_node(ca->from);
@@ -419,9 +419,9 @@ on_callgraph_descendants_clist_button_press_event(
     gpointer data)
 {
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    cov_callarc_t *ca;
+    cov_callgraph_t::arc_t *ca;
 
-    ca = (cov_callarc_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
+    ca = (cov_callgraph_t::arc_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
 
     if (ca != 0)	
 	cw->set_node(ca->to);

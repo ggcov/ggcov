@@ -106,7 +106,7 @@ fntag(const cov_function_t *fn)
 }
 
 static inline unsigned int
-cntag(const cov_callnode_t *cn)
+cntag(const cov_callgraph_t::node_t *cn)
 {
     return *callnode_index->lookup((void *)cn);
 }
@@ -544,7 +544,7 @@ save_summaries(DB *db)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-add_callnode_to_index(cov_callnode_t *cn, void *closure)
+add_callnode_to_index(cov_callgraph_t::node_t *cn, void *closure)
 {
     unsigned int *np = (unsigned int *)closure;
     callnode_index->insert((void *)cn, new unsigned int(++(*np)));
@@ -556,21 +556,21 @@ build_callnode_index(void)
     unsigned int n = 0;
 
     callnode_index = new hashtable_t<void, unsigned int>;
-    cov_callnode_t::foreach(add_callnode_to_index, &n);
+    cov_project_t::current()->callgraph().foreach_node(add_callnode_to_index, &n);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-add_callnode(cov_callnode_t *cn, void *closure)
+add_callnode(cov_callgraph_t::node_t *cn, void *closure)
 {
-    list_t<cov_callnode_t> *list = (list_t<cov_callnode_t> *)closure;
+    list_t<cov_callgraph_t::node_t> *list = (list_t<cov_callgraph_t::node_t> *)closure;
 
     list->append(cn);
 }
 
 static int
-compare_node_by_name(const cov_callnode_t *cn1, const cov_callnode_t *cn2)
+compare_node_by_name(const cov_callgraph_t::node_t *cn1, const cov_callgraph_t::node_t *cn2)
 {
     return strcmp(cn1->name, cn2->name);
 }
@@ -578,20 +578,20 @@ compare_node_by_name(const cov_callnode_t *cn1, const cov_callnode_t *cn2)
 static void
 save_callnode_index(DB *db)
 {
-    list_t<cov_callnode_t> all;
-    list_iterator_t<cov_callnode_t> iter;
+    list_t<cov_callgraph_t::node_t> all;
+    list_iterator_t<cov_callgraph_t::node_t> iter;
     php_serializer_t ser;
     int ret;
 
     // Sort the callnode index, for the node <select>
-    cov_callnode_t::foreach(add_callnode, &all);
+    cov_project_t::current()->callgraph().foreach_node(add_callnode, &all);
     all.sort(compare_node_by_name);
 
     // PHP-serialise the callnode index
     ser.begin_array(callnode_index->size());
-    for (iter = all.first() ; iter != (cov_callnode_t *)0 ; ++iter)
+    for (iter = all.first() ; iter != (cov_callgraph_t::node_t *)0 ; ++iter)
     {
-	cov_callnode_t *cn = *iter;
+	cov_callgraph_t::node_t *cn = *iter;
 
 	ser.string(cn->name);
 	ser.integer(cntag(cn));
@@ -613,8 +613,8 @@ save_callnode_index(DB *db)
 static int
 compare_in_arc_by_count(gconstpointer a, gconstpointer b)
 {
-    const cov_callarc_t *ca1 = (const cov_callarc_t *)a;
-    const cov_callarc_t *ca2 = (const cov_callarc_t *)b;
+    const cov_callgraph_t::arc_t *ca1 = (const cov_callgraph_t::arc_t *)a;
+    const cov_callgraph_t::arc_t *ca2 = (const cov_callgraph_t::arc_t *)b;
     int r;
 
     r = -u64cmp(ca1->count, ca2->count);
@@ -626,8 +626,8 @@ compare_in_arc_by_count(gconstpointer a, gconstpointer b)
 static int
 compare_out_arc_by_count(gconstpointer a, gconstpointer b)
 {
-    const cov_callarc_t *ca1 = (const cov_callarc_t *)a;
-    const cov_callarc_t *ca2 = (const cov_callarc_t *)b;
+    const cov_callgraph_t::arc_t *ca1 = (const cov_callgraph_t::arc_t *)a;
+    const cov_callgraph_t::arc_t *ca2 = (const cov_callgraph_t::arc_t *)b;
     int r;
 
     r = -u64cmp(ca1->count, ca2->count);
@@ -646,8 +646,8 @@ serialize_arc_list(php_serializer_t *ser, GList *arcs, gboolean out)
     ser->begin_array(g_list_length(copy));
     for (iter = copy ; iter != NULL ; iter = iter->next)
     {
-	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
-	cov_callnode_t *peer;
+	cov_callgraph_t::arc_t *ca = (cov_callgraph_t::arc_t *)iter->data;
+	cov_callgraph_t::node_t *peer;
 
 	ser->next_key();
 	ser->begin_array(3);
@@ -663,7 +663,7 @@ serialize_arc_list(php_serializer_t *ser, GList *arcs, gboolean out)
 }
 
 static void
-save_callnode(cov_callnode_t *cn, void *closure)
+save_callnode(cov_callgraph_t::node_t *cn, void *closure)
 {
     DB *db = (DB *)closure;
     php_serializer_t ser;
@@ -688,7 +688,7 @@ save_callnode(cov_callnode_t *cn, void *closure)
 static void
 save_callgraph(DB *db)
 {
-    cov_callnode_t::foreach(save_callnode, db);
+    cov_project_t::current()->callgraph().foreach_node(save_callnode, db);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

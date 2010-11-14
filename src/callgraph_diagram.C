@@ -32,7 +32,7 @@ CVSID("$Id: callgraph_diagram.C,v 1.18 2010-05-09 05:37:14 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-callgraph_diagram_t::node_t::node_t(cov_callnode_t *cn)
+callgraph_diagram_t::node_t::node_t(cov_callgraph_t::node_t *cn)
 {
     callnode_ = cn;
     if (cn->function != 0)
@@ -56,7 +56,7 @@ callgraph_diagram_t::node_t::nup()
 
 	for (iter = callnode_->in_arcs ; iter != 0 ; iter = iter->next)
 	{
-	    cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	    cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	    node_t *from = node_t::from_callnode(a->from);
 
 	    if (from != 0 && from->rank_ < rank_)
@@ -76,7 +76,7 @@ callgraph_diagram_t::node_t::ndown()
 
 	for (iter = callnode_->out_arcs ; iter != 0 ; iter = iter->next)
 	{
-	    cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	    cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	    node_t *to = node_t::from_callnode(a->to);
 
 	    if (to != 0 && to->rank_ > rank_)
@@ -96,7 +96,7 @@ callgraph_diagram_t::node_t::any_self()
 
     for (iter = callnode_->out_arcs ; iter != 0 ; iter = iter->next)
     {
-	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *to = node_t::from_callnode(a->to);
 
 	if (to != 0 && to->rank_ == rank_)
@@ -120,7 +120,7 @@ callgraph_diagram_t::node_t::push_spread_rootwards(double deltaspread)
 
     for (iter = callnode_->in_arcs ; iter != 0 ; iter = iter->next)
     {
-	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *from = node_t::from_callnode(a->from);
 
 	if (from != 0 && from->rank_ < rank_)
@@ -141,7 +141,7 @@ callgraph_diagram_t::node_t::push_spread_leafwards(double deltaspread)
 
     for (iter = callnode_->out_arcs ; iter != 0 ; iter = iter->next)
     {
-	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *to = node_t::from_callnode(a->to);
 
 	if (to != 0 && to->rank_ > rank_)
@@ -152,6 +152,7 @@ callgraph_diagram_t::node_t::push_spread_leafwards(double deltaspread)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 callgraph_diagram_t::callgraph_diagram_t()
+ :  callgraph_(cov_project_t::current()->callgraph())
 {
 }
 
@@ -176,7 +177,7 @@ callgraph_diagram_t::title()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-callgraph_diagram_t::find_roots_1(cov_callnode_t *cn, void *closure)
+callgraph_diagram_t::find_roots_1(cov_callgraph_t::node_t *cn, void *closure)
 {
     callgraph_diagram_t *self = (callgraph_diagram_t *)closure;
     enum { OTHER, DISCONNECTED, ROOT } type = OTHER;
@@ -202,8 +203,8 @@ callgraph_diagram_t::find_roots_1(cov_callnode_t *cn, void *closure)
 }
 
 int
-callgraph_diagram_t::compare_root_nodes(const cov_callnode_t *a,
-    	    	    	    	    	const cov_callnode_t *b)
+callgraph_diagram_t::compare_root_nodes(const cov_callgraph_t::node_t *a,
+    	    	    	    	    	const cov_callgraph_t::node_t *b)
 {
     int r = 0;
 
@@ -225,7 +226,7 @@ callgraph_diagram_t::compare_root_nodes(const cov_callnode_t *a,
 }
 
 void
-callgraph_diagram_t::check_reached_1(cov_callnode_t *cn, void *userdata)
+callgraph_diagram_t::check_reached_1(cov_callgraph_t::node_t *cn, void *userdata)
 {
     unsigned int *nunreachedp = (unsigned int *)userdata;
     node_t *n = node_t::from_callnode(cn);
@@ -242,13 +243,13 @@ void
 callgraph_diagram_t::find_roots()
 {
     dprintf0(D_DCALLGRAPH, "finding root and disconnected nodes:\n");
-    cov_callnode_t::foreach(find_roots_1, this);
+    callgraph_.foreach_node(find_roots_1, this);
     callnode_roots_.sort(compare_root_nodes);
-    
-    list_iterator_t<cov_callnode_t> iter;
-    for (iter = callnode_roots_.first() ; iter != (cov_callnode_t *)0 ; ++iter)
+
+    list_iterator_t<cov_callgraph_t::node_t> iter;
+    for (iter = callnode_roots_.first() ; iter != (cov_callgraph_t::node_t *)0 ; ++iter)
     {
-    	cov_callnode_t *cn = (*iter);
+    	cov_callgraph_t::node_t *cn = (*iter);
 	dprintf1(D_DCALLGRAPH, "building nodes for \"%s\"\n", cn->name.data());
     	node_t *n = build_node(cn, 0);
 	if (!strcmp(cn->name, "main"))
@@ -261,7 +262,7 @@ callgraph_diagram_t::find_roots()
 	/* check for unreached nodes and whine about them */    
 	unsigned int nunreached = 0;
 
-	cov_callnode_t::foreach(check_reached_1, &nunreached);
+	callgraph_.foreach_node(check_reached_1, &nunreached);
 	if (nunreached)
 	    duprintf1("find_roots: %u nodes not reached\n", nunreached);
     }
@@ -293,7 +294,7 @@ callgraph_diagram_t::adjust_rank(callgraph_diagram_t::node_t *n, int delta)
     int minrank = n->rank_+1;
     for (iter = n->callnode_->out_arcs ; iter != 0 ; iter = iter->next)
     {
-    	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+    	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *nto = node_t::from_callnode(a->to);
 
     	if (nto != 0 &&
@@ -315,7 +316,7 @@ callgraph_diagram_t::prepare_ranks(callgraph_diagram_t::node_t *n, int depth)
 
     for (iter = n->callnode_->out_arcs ; iter != 0 ; iter = iter->next)
     {
-	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *to = node_t::from_callnode(a->to);
 
 	if (to != 0 && to->rank_ > n->rank_)
@@ -358,7 +359,7 @@ callgraph_diagram_t::maximise_ranks(callgraph_diagram_t::node_t *n)
 
     for (iter = n->callnode_->out_arcs ; iter != 0 ; iter = iter->next)
     {
-	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *to = node_t::from_callnode(a->to);
 
 	if (to != 0 && to->rank_ > n->rank_)
@@ -400,7 +401,7 @@ callgraph_diagram_t::balance_ranks(callgraph_diagram_t::node_t *n)
     
     for (iter = n->callnode_->out_arcs ; iter != 0 ; iter = iter->next)
     {
-	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *to = node_t::from_callnode(a->to);
 
 	if (to != 0 && to->rank_ > n->rank_ && (to->flags_ & node_t::FIXED_RANK))
@@ -435,7 +436,7 @@ rank_plusses(int rank)
  * have to adjust the ranks of subtrees up to the entire tree).
  */
 callgraph_diagram_t::node_t *
-callgraph_diagram_t::build_node(cov_callnode_t *cn, int rank)
+callgraph_diagram_t::build_node(cov_callgraph_t::node_t *cn, int rank)
 {
     node_t *n;
     GList *iter;
@@ -475,7 +476,7 @@ callgraph_diagram_t::build_node(cov_callnode_t *cn, int rank)
     n->on_path_ = TRUE;
     for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)
     {
-    	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+    	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
     	
     	build_node(a->to, rank+1);	
     }
@@ -512,7 +513,7 @@ callgraph_diagram_t::build_ranks(callgraph_diagram_t::node_t *n)
     
     for (iter = n->callnode_->out_arcs ; iter != 0 ; iter = iter->next)
     {
-    	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+    	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *child = node_t::from_callnode(a->to);
 
     	if (child != 0)
@@ -620,7 +621,7 @@ callgraph_diagram_t::assign_geometry()
 	for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
 	{
 	    node_t *n = (*iter);
-	    cov_callnode_t *cn = n->callnode_;
+	    cov_callgraph_t::node_t *cn = n->callnode_;
 	    double ey;
 
 	    n->h_ = n->spread_ * yperspread;
@@ -681,7 +682,7 @@ callgraph_diagram_t::dump_ranks()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
  
 void
-callgraph_diagram_t::dump_graph_1(cov_callnode_t *cn, void *closure)
+callgraph_diagram_t::dump_graph_1(cov_callgraph_t::node_t *cn, void *closure)
 {
 //    callgraph_diagram_t *self = (callgraph_diagram_t *)closure;
     node_t *n = node_t::from_callnode(cn);
@@ -694,7 +695,7 @@ callgraph_diagram_t::dump_graph_1(cov_callnode_t *cn, void *closure)
 
     for (iter = cn->in_arcs ; iter != 0 ; iter = iter->next)
     {
-	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *from = node_t::from_callnode(a->from);
 	
 	duprintf1("        in %s", a->from->name.data());
@@ -704,7 +705,7 @@ callgraph_diagram_t::dump_graph_1(cov_callnode_t *cn, void *closure)
     }
     for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)
     {
-	cov_callarc_t *a = (cov_callarc_t *)iter->data;
+	cov_callgraph_t::arc_t *a = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *to = node_t::from_callnode(a->to);
 	
 	duprintf1("        out %s", a->to->name.data());
@@ -718,7 +719,7 @@ void
 callgraph_diagram_t::dump_graph()
 {
     duprintf0("dump_graph:\n");
-    cov_callnode_t::foreach(dump_graph_1, this);
+    callgraph_.foreach_node(dump_graph_1, this);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -770,7 +771,7 @@ callgraph_diagram_t::prepare()
 void
 callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 {
-    cov_callnode_t *cn = n->callnode_;
+    cov_callgraph_t::node_t *cn = n->callnode_;
     GList *iter;
     string_var label;
     unsigned int rgb;
@@ -803,7 +804,7 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 
     for (iter = cn->out_arcs ; iter != 0 ; iter = iter->next)
     {
-    	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
+    	cov_callgraph_t::arc_t *ca = (cov_callgraph_t::arc_t *)iter->data;
 	node_t *child = node_t::from_callnode(ca->to);
 
     	if (child == 0)

@@ -25,57 +25,62 @@
 
 class cov_function_t;
 
-extern void cov_add_callnodes(cov_file_t*);
-extern void cov_add_callarcs(cov_file_t*);
-
-/*
- * Node in the callgraph, representing a function
- * which may be one of the covered functions or
- * may be an external library function.
- */
-struct cov_callnode_t
+class cov_callgraph_t
 {
-    string_var name;
-    cov_function_t *function;	/* may be NULL */
-    count_t count;
-    GList *in_arcs, *out_arcs;
-    void *userdata;
-    
-    static cov_callnode_t *find(const char *name);
-    static void foreach(void (*func)(cov_callnode_t*, void *userdata),
-    	    	        void *userdata);
+public:
+    cov_callgraph_t();
+    ~cov_callgraph_t();
+
+    struct arc_t;
+
+    /*
+     * Node in the callgraph, representing a function
+     * which may be one of the covered functions or
+     * may be an external library function.
+     */
+    struct node_t
+    {
+	string_var name;
+	cov_function_t *function;	/* may be NULL */
+	count_t count;
+	GList *in_arcs, *out_arcs;
+	void *userdata;
+
+    private:
+	node_t(const char *name);
+	~node_t();
+
+	arc_t *find_arc_to(node_t *to) const;
+
+	friend class cov_callgraph_t;
+    };
+
+    /*
+     * Arcs between nodes in the callgraph.
+     */
+    struct arc_t
+    {
+	node_t *from, *to;
+	count_t count;
+
+    private:
+	arc_t(node_t *from, node_t *to);
+	~arc_t();
+
+	void add_count(count_t);
+
+	friend class cov_callgraph_t;
+    };
+
+    node_t *add_node(const char *);
+    node_t *find_node(const char *name) const;
+    void foreach_node(void (*func)(node_t*, void *userdata), void *userdata) const;
+
+    void add_nodes(cov_file_t*);
+    void add_arcs(cov_file_t*);
 
 private:
-    cov_callnode_t(const char *name);
-    ~cov_callnode_t();
-    
-    static void init(void);
-
-    cov_callarc_t *find_arc_to(cov_callnode_t *to) const;
-
-    static hashtable_t<const char, cov_callnode_t> *all_;
-    
-    friend void cov_init(void);
-    friend void cov_add_callnodes(cov_file_t*);
-    friend void cov_add_callarcs(cov_file_t*);
+    hashtable_t<const char, node_t> *nodes_;
 };
-
-/*
- * Arcs between nodes in the callgraph.
- */
-struct cov_callarc_t
-{
-    cov_callnode_t *from, *to;
-    count_t count;
-    
-private:
-    cov_callarc_t(cov_callnode_t *from, cov_callnode_t *to);
-    ~cov_callarc_t();
-
-    void add_count(count_t);
-
-    friend void cov_add_callarcs(cov_file_t*);
-};
-
 
 #endif /* _ggcov_cov_callgraph_H_ */

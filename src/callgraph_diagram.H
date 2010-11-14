@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "cov.H"
+#include "cov_callgraph.H"
 #include "diagram.H"
 #include "ptrarray.H"
 #include "list.H"
@@ -41,7 +42,7 @@ public:
 private:
     struct node_t
     {
-    	cov_callnode_t *callnode_;
+    	cov_callgraph_t::node_t *callnode_;
 	cov_scope_t *scope_;
 	int rank_;
 	unsigned int file_;
@@ -67,11 +68,11 @@ private:
     	gboolean any_self();
         void push_spread_rootwards(double deltaspread);
     	void push_spread_leafwards(double deltaspread);
-    	static node_t *from_callnode(cov_callnode_t *cn)
+    	static node_t *from_callnode(cov_callgraph_t::node_t *cn)
 	{
 	    return (node_t *)cn->userdata;
 	}
-    	node_t(cov_callnode_t *);
+    	node_t(cov_callgraph_t::node_t *);
 	~node_t();
     };
 
@@ -81,28 +82,29 @@ private:
 	double total_spread_;
     };
 
-    static void find_roots_1(cov_callnode_t *cn, void *userdata);
-    static int compare_root_nodes(const cov_callnode_t *, const cov_callnode_t *);
-    static void check_reached_1(cov_callnode_t *cn, void *userdata);
+    static void find_roots_1(cov_callgraph_t::node_t *cn, void *userdata);
+    static int compare_root_nodes(const cov_callgraph_t::node_t *, const cov_callgraph_t::node_t *);
+    static void check_reached_1(cov_callgraph_t::node_t *cn, void *userdata);
     void find_roots();
     void adjust_rank(node_t *n, int delta);
     void prepare_ranks(node_t *n, int);
     void push_false_root(node_t *n);
     void balance_ranks(node_t *n);
-    node_t *build_node(cov_callnode_t*, int rank);
+    node_t *build_node(cov_callgraph_t::node_t*, int rank);
     void build_ranks(node_t *);
     void calc_spread(int pass, int rank);
     gboolean any_self_arcs(rank_t *r);
     void assign_geometry();
     void dump_ranks();
-    static void dump_graph_1(cov_callnode_t *cn, void *userdata);
+    static void dump_graph_1(cov_callgraph_t::node_t *cn, void *userdata);
     void dump_graph();
     void show_node(node_t *, scenegen_t *sg);
 
+    const cov_callgraph_t &callgraph_;
     unsigned int shown_;
-    list_t<cov_callnode_t> callnode_roots_;
+    list_t<cov_callgraph_t::node_t> callnode_roots_;
     list_t<node_t> roots_;
-    list_t<cov_callnode_t> disconnected_;
+    list_t<cov_callgraph_t::node_t> disconnected_;
     ptrarray_t<rank_t> *ranks_;
     dbounds_t bounds_;
     unsigned long generation_;

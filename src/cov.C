@@ -82,8 +82,6 @@ cov_init(void)
     bfd_init();
     bfd_set_error_handler(cov_bfd_error_handler);
 #endif /* HAVE_LIBBFD */
-
-    cov_callnode_t::init();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -270,13 +268,13 @@ static const char *status_names[cov::NUM_STATUS] =
     "SUPPRESSED"
 };
 
-/* TODO: move this to a method of cov_callnode_t */
+/* TODO: move this to a method of cov_callgraph_t::node_t */
 static void
 dump_callarcs(FILE *fp, GList *arcs)
 {
     for ( ; arcs != 0 ; arcs = arcs->next)
     {
-    	cov_callarc_t *ca = (cov_callarc_t *)arcs->data;
+    	cov_callgraph_t::arc_t *ca = (cov_callgraph_t::arc_t *)arcs->data;
 	
 	fprintf(fp, "        ARC {\n");
 	fprintf(fp, "            FROM=%s\n", ca->from->name.data());
@@ -286,9 +284,9 @@ dump_callarcs(FILE *fp, GList *arcs)
     }
 }
 
-/* TODO: move this to a method of cov_callnode_t */
+/* TODO: move this to a method of cov_callgraph_t::node_t */
 static void
-dump_callnode(cov_callnode_t *cn, void *userdata)
+dump_callnode(cov_callgraph_t::node_t *cn, void *userdata)
 {
     FILE *fp = (FILE *)userdata;
 
@@ -415,6 +413,8 @@ dump_file(FILE *fp, cov_file_t *f)
 void
 cov_dump(FILE *fp)
 {
+    cov_project_t *proj = cov_project_t::current();
+
     if (debug_enabled(D_DUMP))
     {
 	list_iterator_t<cov_file_t> iter;
@@ -422,10 +422,10 @@ cov_dump(FILE *fp)
 	if (fp == 0)
     	    fp = stderr;
 
-	for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
+	for (iter = proj->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     	    dump_file(fp, *iter);
 
-	cov_callnode_t::foreach(dump_callnode, fp);
+	proj->callgraph().foreach_node(dump_callnode, fp);
     }
 }
 

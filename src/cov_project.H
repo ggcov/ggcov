@@ -22,6 +22,7 @@
 
 #include "common.h"
 #include "cov_file.H"
+#include "cov_callgraph.H"
 #include "list.H"
 #include "hashtable.H"
 #include "ptrarray.H"
@@ -118,6 +119,10 @@ public:
     /* TODO: this function should return an iterator, NOT a new list */
     list_t<cov_function_t> *list_all_functions() const;
 
+    const cov_callgraph_t &callgraph() const
+    {
+	return callgraph_;
+    }
 
 private:
     static void post_read_1(const char *, cov_file_t *, gpointer);
@@ -139,11 +144,14 @@ private:
     string_var name_;
     string_var basedir_;
 
+    /* set of files */
     hashtable_t<const char, cov_file_t> *files_;
     list_t<cov_file_t> files_list_;
     list_t<char> search_path_;
     char *common_path_;
     int common_len_;
+
+    cov_callgraph_t callgraph_;
 };
 
 

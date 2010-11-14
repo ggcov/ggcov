@@ -189,7 +189,7 @@ on_windows_new_callgraphwin_activated(GtkWidget *w, gpointer userdata)
     callgraphwin_t *cgw;
     
     cgw = new callgraphwin_t();
-    cgw->set_node(cov_callnode_t::find("main"));
+    cgw->set_node(cov_project_t::current()->callgraph().find_node("main"));
     cgw->show();
 }
 

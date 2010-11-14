@@ -36,7 +36,7 @@ public:
     callgraphwin_t();
     ~callgraphwin_t();
     
-    void set_node(cov_callnode_t *);
+    void set_node(cov_callgraph_t::node_t *);
 
 private:
     void populate_function_combo(GtkCombo *combo);
@@ -55,7 +55,7 @@ private:
     	return (callgraphwin_t *)window_t::from_widget(w);
     }
     
-    cov_callnode_t *callnode_;
+    cov_callgraph_t::node_t *callnode_;
 
     GtkWidget *function_combo_;
     GtkWidget *function_view_;

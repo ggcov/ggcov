@@ -248,15 +248,15 @@ check_callgraph(void)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-add_one_node(cov_callnode_t *cn, void *userdata)
+add_one_node(cov_callgraph_t::node_t *cn, void *userdata)
 {
-    ptrarray_t<cov_callnode_t> *nodes = (ptrarray_t<cov_callnode_t> *)userdata;
+    ptrarray_t<cov_callgraph_t::node_t> *nodes = (ptrarray_t<cov_callgraph_t::node_t> *)userdata;
     
     nodes->append(cn);
 }
 
 static int
-compare_nodes_by_name(const cov_callnode_t **a, const cov_callnode_t **b)
+compare_nodes_by_name(const cov_callgraph_t::node_t **a, const cov_callgraph_t::node_t **b)
 {
     return strcmp((*a)->name, (*b)->name);
 }
@@ -283,8 +283,8 @@ dump_callgraph(void)
 	return;
     }
 
-    ptrarray_t<cov_callnode_t> *nodes = new ptrarray_t<cov_callnode_t>;
-    cov_callnode_t::foreach(add_one_node, nodes);
+    ptrarray_t<cov_callgraph_t::node_t> *nodes = new ptrarray_t<cov_callgraph_t::node_t>;
+    cov_project_t::current()->callgraph().foreach_node(add_one_node, nodes);
     nodes->sort(compare_nodes_by_name);
 
     fprintf(fp, "# tggcov callgraph version 1\n");
@@ -292,7 +292,7 @@ dump_callgraph(void)
     unsigned int i;
     for (i = 0 ; i < nodes->length() ; i++)
     {
-    	cov_callnode_t * cn = nodes->nth(i);
+    	cov_callgraph_t::node_t * cn = nodes->nth(i);
 	
 	fprintf(fp, "callnode %s\n\tsource %s\n",
 	    cn->name.data(),
@@ -301,7 +301,7 @@ dump_callgraph(void)
     	GList *iter;
 	for (iter = cn->out_arcs ; iter != NULL ; iter = iter->next)
 	{
-	    cov_callarc_t *ca = (cov_callarc_t *)iter->data;
+	    cov_callgraph_t::arc_t *ca = (cov_callgraph_t::arc_t *)iter->data;
 	    
 	    fprintf(fp, "\tcallarc %s\n\t\tcount %llu\n",
 	    	ca->to->name.data(),

@@ -22,22 +22,18 @@
 
 CVSID("$Id: cov_callgraph.C,v 1.11 2010-05-09 05:37:15 gnb Exp $");
 
-hashtable_t<const char, cov_callnode_t> *cov_callnode_t::all_;
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-cov_callnode_t::cov_callnode_t(const char *nname)
+cov_callgraph_t::node_t::node_t(const char *nname)
+ :  name(nname)
 {
-    name = nname;
-
-    all_->insert(name, this);
 }
 
-cov_callnode_t::~cov_callnode_t()
+cov_callgraph_t::node_t::~node_t()
 {
 #if 0
     all_->remove(name);
-    listdelete(out_arcs, cov_callarc_t, delete);
+    listdelete(out_arcs, arc_t, delete);
     listclear(in_arcs);
 #else
     assert(0);
@@ -46,30 +42,36 @@ cov_callnode_t::~cov_callnode_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-cov_callnode_t::init()
+cov_callgraph_t::cov_callgraph_t()
 {
-    all_ = new hashtable_t<const char, cov_callnode_t>;
+    nodes_ = new hashtable_t<const char, node_t>;
+}
+
+cov_callgraph_t::~cov_callgraph_t()
+{
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-cov_callnode_t *
-cov_callnode_t::find(const char *nname)
+cov_callgraph_t::node_t *
+cov_callgraph_t::find_node(const char *name) const
 {
-    return all_->lookup(nname);
+    return nodes_->lookup(name);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 typedef struct
 {
-    void (*func)(cov_callnode_t *, void *);
+    void (*func)(cov_callgraph_t::node_t *, void *);
     void *userdata;
 } cov_callnode_foreach_rec_t;
 
 static void
-cov_callnode_foreach_tramp(const char *name, cov_callnode_t *cn, gpointer userdata)
+cov_callnode_foreach_tramp(
+    const char *name,
+    cov_callgraph_t::node_t *cn,
+    gpointer userdata)
 {
     cov_callnode_foreach_rec_t *rec = (cov_callnode_foreach_rec_t *)userdata;
 
@@ -77,44 +79,47 @@ cov_callnode_foreach_tramp(const char *name, cov_callnode_t *cn, gpointer userda
 }
 
 void
-cov_callnode_t::foreach(
-    void (*func)(cov_callnode_t*, void *userdata),
-    void *userdata)
+cov_callgraph_t::foreach_node(
+    void (*func)(cov_callgraph_t::node_t*, void *userdata),
+    void *userdata) const
 {
     cov_callnode_foreach_rec_t rec;
 
     rec.func = func;
     rec.userdata = userdata;
-    all_->foreach(cov_callnode_foreach_tramp, &rec);
+    nodes_->foreach(cov_callnode_foreach_tramp, &rec);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #if 0
 static gboolean
-cov_callnode_t::delete_one(const char *name, cov_callnode_t *cn, gpointer userdata)
+cov_callgraph_t::delete_one(
+    const char *name,
+    cov_callgraph_t::node_t *cn,
+    gpointer userdata)
 {
     delete cn;
     return TRUE;    /* please remove me */
 }
 
 static void
-cov_callnode_t::delete_all(void)
+cov_callgraph::delete_all(void)
 {
-    all_->foreach_remove(delete_one, 0);
+    nodes_->foreach_remove(delete_one, 0);
 }
 #endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-cov_callarc_t *
-cov_callnode_t::find_arc_to(cov_callnode_t *to) const
+cov_callgraph_t::arc_t *
+cov_callgraph_t::node_t::find_arc_to(cov_callgraph_t::node_t *to) const
 {
     GList *iter;
 
     for (iter = out_arcs ; iter != 0 ; iter = iter->next)
     {
-    	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
+    	arc_t *ca = (arc_t *)iter->data;
 
 	if (ca->to == to)
 	    return ca;
@@ -125,7 +130,9 @@ cov_callnode_t::find_arc_to(cov_callnode_t *to) const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-cov_callarc_t::cov_callarc_t(cov_callnode_t *ffrom, cov_callnode_t *tto)
+cov_callgraph_t::arc_t::arc_t(
+    cov_callgraph_t::node_t *ffrom,
+    cov_callgraph_t::node_t *tto)
 {
     from = ffrom;
     from->out_arcs = g_list_append(from->out_arcs, this);
@@ -134,7 +141,7 @@ cov_callarc_t::cov_callarc_t(cov_callnode_t *ffrom, cov_callnode_t *tto)
     to->in_arcs = g_list_append(to->in_arcs, this);
 }
 
-cov_callarc_t::~cov_callarc_t()
+cov_callgraph_t::arc_t::~arc_t()
 {
 #if 0
 #else
@@ -145,7 +152,7 @@ cov_callarc_t::~cov_callarc_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-cov_callarc_t::add_count(count_t ccount)
+cov_callgraph_t::arc_t::add_count(count_t ccount)
 {
     count += ccount;
     to->count += ccount;
@@ -153,11 +160,21 @@ cov_callarc_t::add_count(count_t ccount)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+cov_callgraph_t::node_t *
+cov_callgraph_t::add_node(const char *name)
+{
+    node_t *cn = new node_t(name);
+    nodes_->insert(cn->name, cn);
+    return cn;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 void
-cov_add_callnodes(cov_file_t *f)
+cov_callgraph_t::add_nodes(cov_file_t *f)
 {
     unsigned int fnidx;
-    cov_callnode_t *cn;
+    node_t *cn;
 
     for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
     {
@@ -166,8 +183,8 @@ cov_add_callnodes(cov_file_t *f)
     	if (fn->is_suppressed())
 	    continue;
 
-	if ((cn = cov_callnode_t::find(fn->name())) == 0)
-	    cn = new cov_callnode_t(fn->name());
+	if ((cn = find_node(fn->name())) == 0)
+	    cn = add_node(fn->name());
 
 	if (cn->function != 0 && cn->function != fn)
 	    fprintf(stderr, "Callgraph name collision: %s:%s and %s:%s\n",
@@ -179,12 +196,12 @@ cov_add_callnodes(cov_file_t *f)
 }
 
 void
-cov_add_callarcs(cov_file_t *f)
+cov_callgraph_t::add_arcs(cov_file_t *f)
 {
     unsigned int fnidx;
-    cov_callnode_t *from;
-    cov_callnode_t *to;
-    cov_callarc_t *ca;
+    node_t *from;
+    node_t *to;
+    arc_t *ca;
 
     for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
     {
@@ -193,7 +210,7 @@ cov_add_callarcs(cov_file_t *f)
 	if (fn->is_suppressed())
 	    continue;
 
-	from = cov_callnode_t::find(fn->name());
+	from = find_node(fn->name());
 	assert(from != 0);
 
 	cov_call_iterator_t *itr =
@@ -203,11 +220,11 @@ cov_add_callarcs(cov_file_t *f)
 	    if (itr->name() == 0)
 		continue;
 
-	    if ((to = cov_callnode_t::find(itr->name())) == 0)
-		to = new cov_callnode_t(itr->name());
+	    if ((to = find_node(itr->name())) == 0)
+		to = add_node(itr->name());
 
 	    if ((ca = from->find_arc_to(to)) == 0)
-		ca = new cov_callarc_t(from, to);
+		ca = new arc_t(from, to);
 
 	    /* TODO: when new files are opened, old counts are double-counted */
 	    ca->add_count(itr->count());

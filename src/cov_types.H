@@ -35,8 +35,6 @@ class cov_file_t;
 class cov_function_t;
 class cov_block_t;
 class cov_arc_t;
-struct cov_callnode_t;
-struct cov_callarc_t;
 struct cov_read_state_t;
 
 struct cov_location_t
