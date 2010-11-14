@@ -73,12 +73,6 @@ public:
     static int compare(const cov_function_t*, const cov_function_t*);
     
     /*
-     * Returns a new list of all unsuppressed functions
-     * sorted by the compare function.
-     */
-    static list_t<cov_function_t> *list_all();
-
-    /*
      * Controls whether function solving is tolerant of inconsistent
      * arc counts.  Tolerant means: don't fail an assert.
      */

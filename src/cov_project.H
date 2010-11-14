@@ -111,6 +111,13 @@ public:
 
     char *get_pathname(const char *filename) const;
 
+    /*
+     * Returns a new list of all unsuppressed functions
+     * sorted by the compare function.
+     */
+    /* TODO: this function should return an iterator, NOT a new list */
+    list_t<cov_function_t> *list_all_functions() const;
+
 
 private:
     static void post_read_1(const char *, cov_file_t *, gpointer);

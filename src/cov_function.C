@@ -464,29 +464,4 @@ cov_function_t::solve()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-list_t<cov_function_t> *
-cov_function_t::list_all()
-{
-    list_t<cov_function_t> *list = new list_t<cov_function_t>;
-    list_iterator_t<cov_file_t> iter;
-    unsigned int fnidx;
-
-    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
-    {
-    	cov_file_t *f = *iter;
-
-	for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
-	{
-    	    cov_function_t *fn = f->nth_function(fnidx);
-
-	    if (fn->status() != cov::SUPPRESSED)
-		list->prepend(fn);
-	}
-    }
-    list->sort(cov_function_t::compare);
-    return list;
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

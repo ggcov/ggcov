@@ -203,7 +203,7 @@ summarywin_t::populate_function_combo(GtkCombo *combo)
 {
     list_t<cov_function_t> *list;
     
-    list = cov_function_t::list_all();
+    list = cov_project_t::current()->list_all_functions();
 
     ::populate_function_combo(combo, list, /*add_all_item*/FALSE, &function_);
 

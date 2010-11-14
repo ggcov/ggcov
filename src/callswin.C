@@ -221,7 +221,7 @@ void
 callswin_t::populate()
 {
     dprintf0(D_CALLSWIN, "callswin_t::populate\n");
-    functions_ = cov_function_t::list_all();
+    functions_ = cov_project_t::current()->list_all_functions();
     ::populate_function_combo(GTK_COMBO(from_function_combo_), functions_,
     	    	    	      /*add_all_item*/TRUE, /*currentp*/0);
     ::populate_function_combo(GTK_COMBO(to_function_combo_), functions_,
