@@ -113,9 +113,9 @@ cov_project_t::post_read(void)
 
     /* Build the callgraph */
     /* TODO: only do this to newly read files */
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = files_list_.first() ; iter != (cov_file_t *)0 ; ++iter)
     	cov_add_callnodes(*iter);
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = files_list_.first() ; iter != (cov_file_t *)0 ; ++iter)
     	cov_add_callarcs(*iter);
 
     /* emit an MVC notification */

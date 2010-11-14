@@ -422,7 +422,7 @@ cov_dump(FILE *fp)
 	if (fp == 0)
     	    fp = stderr;
 
-	for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+	for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     	    dump_file(fp, *iter);
 
 	cov_callnode_t::foreach(dump_callnode, fp);

@@ -141,14 +141,6 @@ cov_file_t::finalise()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-list_iterator_t<cov_file_t>
-cov_file_t::first()
-{
-    return cov_project_t::current()->first_file();
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 const char *
 cov_file_t::minimal_name() const
 {

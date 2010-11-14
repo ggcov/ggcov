@@ -94,7 +94,7 @@ report_summary_per_directory(FILE *fp)
     
     ht = new hashtable_t<char, cov_stats_t>;
     
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (fiter = cov_project_t::current()->first_file() ; fiter != (cov_file_t *)0 ; ++fiter)
     {
     	dprintf1(D_REPORT, "report_summary_per_directory: [1] \"%s\"\n",
 	    	(*fiter)->minimal_name());
@@ -144,7 +144,7 @@ report_untested_functions_per_file(FILE *fp)
     gboolean did_head1 = FALSE;
     int nlines = 0;
     
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (fiter = cov_project_t::current()->first_file() ; fiter != (cov_file_t *)0 ; ++fiter)
     {
     	cov_file_t *f = (*fiter);
 	unsigned int i;
@@ -195,7 +195,7 @@ report_poorly_covered_functions_per_file(FILE *fp)
     gboolean did_head1 = FALSE;
     int nlines = 0;
 
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (fiter = cov_project_t::current()->first_file() ; fiter != (cov_file_t *)0 ; ++fiter)
     {
     	cov_file_t *f = (*fiter);
 	unsigned int i;
@@ -243,7 +243,7 @@ report_incompletely_covered_functions_per_file(FILE *fp)
     gboolean did_head1 = FALSE;
     int nlines = 0;
 
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (fiter = cov_project_t::current()->first_file() ; fiter != (cov_file_t *)0 ; ++fiter)
     {
     	cov_file_t *f = (*fiter);
 	unsigned int i;

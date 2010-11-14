@@ -81,7 +81,7 @@ cov_overall_scope_t::calc_stats(cov_stats_t *stats)
 {
     list_iterator_t<cov_file_t> iter;
     
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     	(*iter)->calc_stats(stats);
 
     return stats->status_by_blocks();

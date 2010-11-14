@@ -241,7 +241,7 @@ functionswin_t::populate()
 
     dprintf0(D_FUNCSWIN, "functionswin_t::populate\n");
     
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     {
     	cov_file_t *f = *iter;
 

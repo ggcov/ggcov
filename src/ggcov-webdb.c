@@ -182,7 +182,7 @@ save_lines(DB *db)
 {
     list_iterator_t<cov_file_t> iter;
     
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     	save_file_lines(db, *iter);
 }
 
@@ -196,7 +196,7 @@ build_filename_index(void)
 
     // Build the filename index
     file_index = new hashtable_t<void, unsigned int>;
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     {
 	cov_file_t *f = *iter;
 	file_index->insert((void *)f, new unsigned int(++n));
@@ -212,7 +212,7 @@ save_filename_index(DB *db)
 
     // PHP-serialise the filename index.
     ser.begin_array(file_index->size());
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     {
 	cov_file_t *f = *iter;
 	ser.string(f->minimal_name());
@@ -238,8 +238,8 @@ really_list_all_functions(void)
 {
     list_t<cov_function_t> *all = new list_t<cov_function_t>;
     list_iterator_t<cov_file_t> iter;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     {
     	cov_file_t *f = *iter;
 	unsigned int fnidx;
@@ -398,8 +398,8 @@ static void
 save_file_function_indexes(DB *db)
 {
     list_iterator_t<cov_file_t> iter;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     {
     	cov_file_t *f = *iter;
 	unsigned int fnidx;
@@ -520,7 +520,7 @@ save_summaries(DB *db)
 
     // Save a file scope object for each file
     list_iterator_t<cov_file_t> fiter;
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (fiter = cov_project_t::current()->first_file() ; fiter != (cov_file_t *)0 ; ++fiter)
     {
 	cov_file_t *f = *fiter;
 	sc = new cov_file_scope_t(f);
@@ -883,7 +883,7 @@ create_source_symlinks(const char *tempdir)
 {
     list_iterator_t<cov_file_t> iter;
 
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     {
 	cov_file_t *f = *iter;
 	string_var link = g_strconcat(tempdir, "/", f->minimal_name(), (char *)0);

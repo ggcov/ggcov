@@ -190,7 +190,7 @@ summarywin_t::populate_filename_combo(GtkCombo *combo)
     list_iterator_t<cov_file_t> iter;
     
     ui_combo_clear(GTK_COMBO(combo));    /* stupid glade2 */
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     {
     	cov_file_t *f = *iter;
 

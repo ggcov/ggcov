@@ -155,8 +155,8 @@ static void
 annotate(void)
 {
     list_iterator_t<cov_file_t> iter;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     	annotate_file(*iter);
 }
 

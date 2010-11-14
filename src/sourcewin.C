@@ -476,7 +476,7 @@ sourcewin_t::populate_filenames()
    
     populating_ = TRUE; /* suppress combo entry callback */
     ui_combo_clear(GTK_COMBO(filenames_combo_));    /* stupid glade2 */
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     {
     	cov_file_t *f = *iter;
 

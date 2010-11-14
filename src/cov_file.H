@@ -59,9 +59,6 @@ public:
     	return (status() == cov::SUPPRESSED);
     }
 
-    /* Return an iterator over all the files in minimal filename order */
-    static list_iterator_t<cov_file_t> first();
-
     /*
      * For iterating over a file's functions.  Functions are
      * numbered 0..num_functions-1

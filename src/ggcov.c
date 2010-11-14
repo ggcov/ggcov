@@ -111,7 +111,7 @@ on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
      * No files loaded: user started ggcov without a commandline
      * argument and failed to load a file in the Open dialog.
      */
-    if (!*cov_file_t::first())
+    if (!*project->first_file())
     	exit(1);
 }
 
@@ -125,7 +125,7 @@ on_open_cancel_button_clicked(GtkWidget *w, gpointer userdata)
      * No files loaded: user started ggcov without a commandline
      * argument and cancelled the Open dialog.
      */
-    if (!*cov_file_t::first())
+    if (!*project->first_file())
     	exit(1);
 }
 
@@ -288,7 +288,7 @@ ui_create(const char *full_argv0)
     {
     	/* Nothing on commandline...show the File->Open dialog to get some */
     	on_file_open_activate(0, 0);
-	while (!*cov_file_t::first())
+	while (!*project->first_file())
 	    gtk_main_iteration();
     }
 
