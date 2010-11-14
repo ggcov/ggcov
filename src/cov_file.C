@@ -153,12 +153,6 @@ cov_file_t::unminimise_name(const char *name)
     return cov_project_t::current()->unminimise_name(name);
 }
 
-const char *
-cov_file_t::common_path()
-{
-    return cov_project_t::current()->common_path();
-}
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_line_t *

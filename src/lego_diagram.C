@@ -119,7 +119,7 @@ char *
 lego_diagram_t::root_name() const
 {
     /* common_path always includes a trailing / */
-    const char *cpath = cov_file_t::common_path();
+    const char *cpath = cov_project_t::current()->common_path();
     const char *start, *end;
 
     for (end = cpath + strlen(cpath) - 1 ;

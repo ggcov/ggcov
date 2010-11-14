@@ -302,15 +302,16 @@ dump_file_tree(file_rec_t *fr, int indent)
 void
 fileswin_t::populate()
 {
+    cov_project_t *proj = cov_project_t::current();
     list_iterator_t<cov_file_t> iter;
 
     dprintf0(D_FILESWIN, "fileswin_t::populate\n");
 
     if (root_ != 0)
     	delete root_;
-    root_ = new file_rec_t(cov_file_t::common_path(), 0);
+    root_ = new file_rec_t(proj->common_path(), 0);
     
-    for (iter = cov_project_t::current()->first_file() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = proj->first_file() ; iter != (cov_file_t *)0 ; ++iter)
     {
     	cov::status_t st = (*iter)->status();
 	

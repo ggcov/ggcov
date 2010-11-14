@@ -288,7 +288,7 @@ dump_callgraph(void)
     nodes->sort(compare_nodes_by_name);
 
     fprintf(fp, "# tggcov callgraph version 1\n");
-    fprintf(fp, "base %s\n", cov_file_t::common_path());
+    fprintf(fp, "base %s\n", cov_project_t::current()->common_path());
     unsigned int i;
     for (i = 0 ; i < nodes->length() ; i++)
     {
