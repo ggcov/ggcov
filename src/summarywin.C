@@ -168,10 +168,10 @@ summarywin_t::show_lines(
 {
     summarywin_t *sw;
     cov_file_t *f;
-    
-    if ((f = cov_file_t::find(filename)) == 0)
+
+    if ((f = cov_project_t::current()->find_file(filename)) == 0)
     	return;
-	
+
     sw = instance();
     sw->scope_ = SU_RANGE;
     sw->file_ = f;

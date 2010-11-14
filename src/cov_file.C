@@ -71,7 +71,6 @@ cov_file_t::cov_file_t(const char *name, const char *relpath)
      * with an absolute filename which is not already known.
      */
     assert(name[0] == '/');
-    assert(find(name_) == 0);
 
     functions_ = new ptrarray_t<cov_function_t>();
     functions_by_name_ = new hashtable_t<const char, cov_function_t>;
@@ -150,14 +149,6 @@ cov_file_t::first()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-cov_file_t *
-cov_file_t::find(const char *name)
-{
-    return cov_project_t::current()->find_file(name);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 const char *
 cov_file_t::minimal_name() const
 {
@@ -224,7 +215,7 @@ cov_file_t::add_location(
 	 */
     	f = this;
     }
-    else if ((f = find(filename)) == 0)
+    else if ((f = cov_project_t::current()->find_file(filename)) == 0)
     {
     	f = new cov_file_t(filename, filename);
 	assert(f != 0);

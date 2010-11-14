@@ -59,8 +59,6 @@ public:
     	return (status() == cov::SUPPRESSED);
     }
 
-    /* find a file by name, full or minimal */
-    static cov_file_t *find(const char *name);
     /* Return an iterator over all the files in minimal filename order */
     static list_iterator_t<cov_file_t> first();
 

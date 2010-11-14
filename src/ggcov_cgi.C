@@ -63,7 +63,7 @@ query_annotate(cgi_t &cgi)
     }
     string_var filename = proj->get_pathname(fvar);
 
-    cov_file_t *f = cov_file_t::find(fvar);
+    cov_file_t *f = proj->find_file(fvar);
     if (!f)
     {
 	cgi.error("Failed to read cov files...sorry\n");

@@ -560,6 +560,7 @@ filename_is_common(const char *filename)
 void
 cov_project_t::attach_file(cov_file_t *f)
 {
+    assert(find_file(f->name_) == 0);
     files_->insert(f->name_, f);
     f->common_ = filename_is_common(f->name_);
     if (f->common_)

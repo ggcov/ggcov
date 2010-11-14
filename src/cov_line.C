@@ -87,7 +87,9 @@ cov_line_t::find(const cov_location_t *loc)
 {
     cov_file_t *f;
 
-    return ((f = cov_file_t::find(loc->filename)) == 0 ||
+    f = cov_project_t::current()->find_file(loc->filename);
+
+    return (f == 0 ||
     	    loc->lineno < 1 ||
 	    loc->lineno > f->num_lines()
     	    ? 0
