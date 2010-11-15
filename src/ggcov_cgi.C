@@ -158,6 +158,33 @@ static const struct
     { 0, 0 }
 };
 
+static gboolean
+read_one_project(const char *filename, void *userdata)
+{
+    list_t<char> *bases = (list_t<char> *)userdata;
+
+    if (file_is_directory(filename) == 0)
+	bases->prepend(g_strdup(filename));
+
+    return TRUE;
+}
+
+static void
+read_projects(void)
+{
+    list_t<char> bases;
+    char *base;
+
+    file_apply_children(HACKY_PROJDIR, read_one_project, (void *)&bases);
+
+    bases.sort(strcmp);
+    while ((base = bases.remove_head()) != 0)
+    {
+	new cov_project_t(file_basename_c(base), base);
+	g_free(base);
+    }
+}
+
 static boolean
 setup_project(cgi_t &cgi)
 {
@@ -168,6 +195,7 @@ setup_project(cgi_t &cgi)
 	return false;
     }
 
+    proj->make_current();
     proj->pre_read();
     if (!proj->read_all_files())
     {
@@ -175,8 +203,6 @@ setup_project(cgi_t &cgi)
 	return false;
     }
     proj->post_read();
-
-    proj->make_current();
 
     return true;
 }
@@ -193,8 +219,7 @@ main(int argc, char **argv)
 	debug_set(dbg);
 
     cov_init();
-    // Hack: preinstantiate the only project.
-    new cov_project_t("hacky", HACKY_PROJDIR);
+    read_projects();
 
     const char *qvar = cgi.get_variable("q");
     if (qvar == 0 || *qvar == '\0')
