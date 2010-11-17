@@ -22,7 +22,7 @@ function htmlEntities(str)
 var ggcov = {
     maindiv: null,
     settitle: null,
-    project: "hacky",
+    project: null,
     status_short_names: [
 	"CO",   /* COVERED */
 	"PA",   /* PARTCOVERED */
@@ -42,7 +42,8 @@ var ggcov = {
 	var url = "ggcov.cgi";
 	if (ggcov.project != null)
 	    vars.p = ggcov.project;
-	vars.q = query;
+	if (query != null)
+	    vars.q = query;
 	var sep = "?";
 	for (name in vars)
 	{
@@ -50,6 +51,23 @@ var ggcov = {
 	    sep = "&";
 	}
 	return url;
+    },
+    url_var: function(url, name)
+    {
+	url = url.replace(/^[^?]*\?/, '');
+	var a = url.split('&');
+	for (var i = 0; i < a.length ; i++)
+	{
+	    var kv = a[i];
+	    var j = kv.indexOf('=');
+	    if (j > 0)
+	    {
+		var k = kv.substr(0, j);
+		if (k == name)
+		    return kv.substr(j+1);
+	    }
+	}
+	return null;
     },
     on_query_error: function(req, url)
     {
@@ -67,7 +85,12 @@ var ggcov = {
 	    if (req.readyState == 4)
 	    {
 		if (req.status == 200)
-		    onreply(req.responseText);
+		{
+		    var results = req.responseText;
+		    if (req.getResponseHeader("Content-Type") == "application/json")
+			results = eval("(" + results + ")");
+		    onreply(results);
+		}
 		else
 		    onerror(req, url);
 	    }
@@ -76,12 +99,10 @@ var ggcov = {
     },
     show_source: function(filename)
     {
-	ggcov.settitle("Source " + filename);
+	ggcov.settitle("Source - " + filename);
 	ggcov.maindiv.innerHTML = "Loading...";
-	ggcov.query("annotate", { f: filename }, function(response)
+	ggcov.query("annotate", { f: filename }, function(results)
 	{
-// 	    ggcov.maindiv.innerHTML = "<p>Response was:</p><pre>" + response + "</pre>";
-	    var results = eval("(" + response + ")");
 	    var table = "<table>\n";
 	    var countstr;
 	    var lineno = 1;
@@ -104,24 +125,64 @@ var ggcov = {
 	    ggcov.maindiv.innerHTML = table;
 	});
     },
+    on_choose_file: function(ev)
+    {
+	var file = ggcov.url_var(ev.target.href, "f");
+	ggcov.show_source(file);
+    },
+    show_files: function()
+    {
+	ggcov.settitle("Files - " + htmlEntities(ggcov.project));
+	ggcov.maindiv.innerHTML = "Loading...";
+	ggcov.query("listfiles", { }, function(results)
+	{
+	    var table = "<table>\n";
+	    for (var i = 0; i < results.length; i++)
+	    {
+		var url = ggcov.cgi_url(null, { f: results[i].n });
+		var label = htmlEntities(results[i].n);
+		var onclick = "ggcov.on_choose_file(event); return false;";
+
+		table += "<tr>";
+		table += "<td><a href=\"" + url + "\" onclick=\"" + onclick + "\">" + label + "</a></td>";
+		table += "</tr>";
+	    }
+	    table += "</table>";
+	    ggcov.maindiv.innerHTML = table;
+	});
+    },
+    on_choose_project: function(ev)
+    {
+	ggcov.project = ggcov.url_var(ev.target.href, "p");
+	ggcov.show_files();
+    },
+    show_projects: function()
+    {
+	ggcov.settitle("Project Browser");
+	ggcov.maindiv.innerHTML = "Loading...";
+	ggcov.query("listprojects", { }, function(results)
+	{
+	    var table = "<table>\n";
+	    for (var i = 0; i < results.length; i++)
+	    {
+		var url = ggcov.cgi_url(null, { p: results[i] });
+		var label = htmlEntities(results[i]);
+		var onclick = "ggcov.on_choose_project(event); return false;";
+
+		table += "<tr>";
+		table += "<td><a href=\"" + url + "\" onclick=\"" + onclick + "\">" + label + "</a></td>";
+		table += "</tr>";
+	    }
+	    table += "</table>";
+	    ggcov.maindiv.innerHTML = table;
+	});
+    },
     init: function(maindiv, settitle)
     {
 	ggcov.maindiv = maindiv;
 	ggcov.settitle = settitle;
 
-
-// 	var txt = "";
-// 	for (i = 0 ; i < ggcov.status_short_names.length ; i++)
-// 	{
-// 	    var sn = ggcov.status_short_names[i];
-// 	    var ln = ggcov.status_long_names[i];
-// 	    txt += "<p>";
-// 	    txt += "<span class=\"status" + sn + "f\">" + ln + "</span>";
-// 	    txt += "<span class=\"status" + sn + "b\">" + ln + "</span>";
-// 	    txt += "</p>";
-// 	}
-// 	maindiv.innerHTML = txt;
-
-	ggcov.show_source("test001/foo.c");
+	if (ggcov.project == null)
+	    ggcov.show_projects();
     }
 };
