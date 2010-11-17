@@ -13,6 +13,7 @@ test_target=    $(HOME)/public_html/ggcovtest/
 # install_target=	gnb@redcape:/home/www/www.fmeh.org/
 
 # test install:
+.PHONY: test
 test: $(ALL_FILES)
 	rsync -rpLv --delete $($@_flags) $(ALL_FILES) $($@_target)
 
@@ -21,6 +22,9 @@ ggcov.cgi:  ../src/ggcov.cgi
 
 ggcov32.png: ../ui/ggcov32.png
 	ln -s $< $@
+
+clean:
+	$(RM) ggcov.cgi
 
 # %.css: %.css.in
 # 	m4 $(M4FLAGS) $< > $@
