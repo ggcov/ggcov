@@ -37,6 +37,9 @@ var ggcov = {
 	"UNINSTRUMENTED",
 	"SUPPRESSED"
     ],
+    //
+    // Build and return a backend query URL
+    //
     cgi_url: function(query, vars)
     {
 	var url = "ggcov.cgi";
@@ -52,6 +55,10 @@ var ggcov = {
 	}
 	return url;
     },
+    //
+    // Extract, and return, from the given URL's query string,
+    // the value of the given variable.
+    //
     url_var: function(url, name)
     {
 	url = url.replace(/^[^?]*\?/, '');
@@ -136,19 +143,21 @@ var ggcov = {
 	ggcov.maindiv.innerHTML = "Loading...";
 	ggcov.query("listfiles", { }, function(results)
 	{
-	    var table = "<table>\n";
+	    var html = "";
+	    html += "<p>Please select a file...</p>\n";
+	    html += "<table>\n";
 	    for (var i = 0; i < results.length; i++)
 	    {
 		var url = ggcov.cgi_url(null, { f: results[i].n });
 		var label = htmlEntities(results[i].n);
 		var onclick = "ggcov.on_choose_file(event); return false;";
 
-		table += "<tr>";
-		table += "<td><a href=\"" + url + "\" onclick=\"" + onclick + "\">" + label + "</a></td>";
-		table += "</tr>";
+		html += "<tr>";
+		html += "<td><a href=\"" + url + "\" onclick=\"" + onclick + "\">" + label + "</a></td>";
+		html += "</tr>";
 	    }
-	    table += "</table>";
-	    ggcov.maindiv.innerHTML = table;
+	    html += "</table>";
+	    ggcov.maindiv.innerHTML = html;
 	});
     },
     on_choose_project: function(ev)
@@ -162,19 +171,21 @@ var ggcov = {
 	ggcov.maindiv.innerHTML = "Loading...";
 	ggcov.query("listprojects", { }, function(results)
 	{
-	    var table = "<table>\n";
+	    var html = "";
+	    html += "<p>Please select a project...</p>\n";
+	    html += "<table>\n";
 	    for (var i = 0; i < results.length; i++)
 	    {
 		var url = ggcov.cgi_url(null, { p: results[i] });
 		var label = htmlEntities(results[i]);
 		var onclick = "ggcov.on_choose_project(event); return false;";
 
-		table += "<tr>";
-		table += "<td><a href=\"" + url + "\" onclick=\"" + onclick + "\">" + label + "</a></td>";
-		table += "</tr>";
+		html += "<tr>";
+		html += "<td><a href=\"" + url + "\" onclick=\"" + onclick + "\">" + label + "</a></td>";
+		html += "</tr>";
 	    }
-	    table += "</table>";
-	    ggcov.maindiv.innerHTML = table;
+	    html += "</table>";
+	    ggcov.maindiv.innerHTML = html;
 	});
     },
     init: function(maindiv, settitle)
