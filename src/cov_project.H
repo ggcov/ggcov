@@ -43,6 +43,8 @@ public:
     ~cov_project_t();
 
     const char *name() const { return name_; }
+    time_t mtime() const;
+    const char *description() const { return description_; }
 
     static cov_project_t *current();
     void make_current();
@@ -125,6 +127,8 @@ public:
     }
 
 private:
+    void read_description();
+
     static void post_read_1(const char *, cov_file_t *, gpointer);
     void add_name(const char *name);
     void dirty_common_path();
@@ -143,6 +147,7 @@ private:
     static cov_project_t *current_;
     string_var name_;
     string_var basedir_;
+    string_var description_;
 
     /* set of files */
     hashtable_t<const char, cov_file_t> *files_;

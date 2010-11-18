@@ -176,12 +176,15 @@ var ggcov = {
 	    html += "<table>\n";
 	    for (var i = 0; i < results.length; i++)
 	    {
-		var url = ggcov.cgi_url(null, { p: results[i] });
-		var label = htmlEntities(results[i]);
+		var url = ggcov.cgi_url(null, { p: results[i].n });
+		var label = htmlEntities(results[i].n);
 		var onclick = "ggcov.on_choose_project(event); return false;";
+		var mtime = new Date(1000*results[i].m);
 
 		html += "<tr>";
 		html += "<td><a href=\"" + url + "\" onclick=\"" + onclick + "\">" + label + "</a></td>";
+		html += "<td>" + mtime.toLocaleString() + "</td>\n";
+		html += "<td>" + htmlEntities(results[i].d) + "</td>\n";
 		html += "</tr>";
 	    }
 	    html += "</table>";

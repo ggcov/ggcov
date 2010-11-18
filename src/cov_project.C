@@ -42,6 +42,7 @@ cov_project_t::cov_project_t(const char *name, const char *basedir)
     all_.append(this);
     if (current_ == 0)
 	current_ = this;
+    read_description();
 }
 
 cov_project_t::~cov_project_t()
@@ -64,6 +65,27 @@ void
 cov_project_t::make_current()
 {
     current_ = this;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cov_project_t::read_description()
+{
+    description_ = (const char *)"Hello World";
+}
+
+time_t
+cov_project_t::mtime() const
+{
+    struct stat sb;
+
+    if (stat(basedir_, &sb) < 0)
+    {
+	perror(basedir_);
+	return -1;
+    }
+    return sb.st_mtime;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

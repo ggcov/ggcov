@@ -23,7 +23,13 @@ query_listprojects(cgi_t &cgi)
     list_iterator_t<cov_project_t> iter;
     for (iter = cov_project_t::first() ; iter != (cov_project_t *)0 ; ++iter)
     {
-	json.string((*iter)->name());
+	cov_project_t *proj = *iter;
+
+	json.begin_object();
+	json.string_field("n", proj->name());
+	json.ulong_field("m", proj->mtime());
+	json.string_field("d", proj->description());
+	json.end_object();
     }
     json.end_array();
 
