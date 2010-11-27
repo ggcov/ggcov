@@ -1,20 +1,3 @@
-
-// function form_get_url(form)
-// {
-//     var url = form.action;
-//     var sep = "?";
-//     if (url == "")
-// 	url = form.baseURI.replace(/\?.*/, "");
-//     for (var i = 0; i < form.elements.length; i++)
-//     {
-// 	if (form.elements[i].name != "")
-// 	{
-// 	    url += sep + encodeURIComponent(form.elements[i].name) + "=" + encodeURIComponent(form.elements[i].value);
-// 	    sep = "&";
-// 	}
-//     }
-//     return url;
-// }
 function htmlEntities(str)
 {
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -76,119 +59,96 @@ var ggcov = {
 	}
 	return null;
     },
-    on_query_error: function(req, url)
+    _switch_page: function(pp)
     {
-	ggcov.maindiv.innerHTML = "<p>Error loading results: url = " + url + " status = " + req.statusText + " response = " + req.responseText + "</p>";
+	$('#ggcov div').css('display', 'none');
+	$('#ggcov #' + pp).css('display', 'block');
     },
-    query: function(query, vars, onreply, onerror)
-    {
-	if (onerror == null)
-	    onerror = ggcov.on_query_error;
-	var req = new XMLHttpRequest();
-	var url = ggcov.cgi_url(query, vars);
-	req.open('GET', url, true);
-	req.onreadystatechange = function(ev)
-	{
-	    if (req.readyState == 4)
-	    {
-		if (req.status == 200)
-		{
-		    var results = req.responseText;
-		    if (req.getResponseHeader("Content-Type") == "application/json")
-			results = eval("(" + results + ")");
-		    onreply(results);
-		}
-		else
-		    onerror(req, url);
-	    }
-	};
-	req.send(null);
-    },
-    show_source: function(filename)
+    show_source_page: function(filename)
     {
 	ggcov.settitle("Source - " + filename);
-	ggcov.maindiv.innerHTML = "Loading...";
-	ggcov.query("annotate", { f: filename }, function(results)
+	ggcov._switch_page('loading');
+	$.getJSON(ggcov.cgi_url('annotate', { f: filename }), function(data)
 	{
-	    var table = "<table>\n";
-	    var countstr;
+	    var tbody = $('#ggcov #source #list tbody');
+	    tbody.empty();
 	    var lineno = 1;
-	    for (var i = 0; i < results.length; i++)
+	    for (var i = 0; i < data.length; i++)
 	    {
-		table += "<tr class=\"status" + results[i].s + "f\">";
-		table += "<td align=\"right\">" + lineno + "</td>";
-		if (results[i].s == "CO" || results[i].s == "PA")
-		    countstr = "" + results[i].c;
-		else if (results[i].s == "UC")
+		var tr = "<tr class=\"status" + data[i].s + "f\">";
+		tr += "<td align=\"right\">" + lineno + "</td>";
+
+		var countstr;
+		if (data[i].s == "CO" || data[i].s == "PA")
+		    countstr = "" + data[i].c;
+		else if (data[i].s == "UC")
 		    countstr = "######";
 		else
 		    countstr = "";
-		table += "<td align=\"right\">" + countstr + "</td>";
-		table += "<td class=\"ggcovtext\">" + htmlEntities(results[i].t) + "</td>";
-		table += "</tr>";
+		tr += "<td align=\"right\">" + countstr + "</td>";
+
+		tr += "<td class=\"ggcovtext\">" + htmlEntities(data[i].t) + "</td>";
+		tr += "</tr>";
+		tbody.append(tr);
 		lineno++;
 	    }
-	    table += "</table>";
-	    ggcov.maindiv.innerHTML = table;
+	    ggcov._switch_page('source');
 	});
     },
-    on_choose_file: function(ev)
-    {
-	var file = ggcov.url_var(ev.target.href, "f");
-	ggcov.show_source(file);
-    },
-    show_files: function()
+    show_files_page: function()
     {
 	ggcov.settitle("Files - " + htmlEntities(ggcov.project));
-	ggcov.maindiv.innerHTML = "Loading...";
-	ggcov.query("listfiles", { }, function(results)
+	ggcov._switch_page('loading');
+	$.getJSON(ggcov.cgi_url('listfiles', { }), function(data)
 	{
-	    var html = "";
-	    html += "<p>Please select a file...</p>\n";
-	    html += "<table>\n";
-	    for (var i = 0; i < results.length; i++)
+	    var tbody = $('#ggcov #files #list tbody');
+	    tbody.empty();
+	    for (var i = 0; i < data.length; i++)
 	    {
-		var url = ggcov.cgi_url(null, { f: results[i].n });
-		var label = htmlEntities(results[i].n);
-		var onclick = "ggcov.on_choose_file(event); return false;";
+		var url = ggcov.cgi_url(null, { f: data[i].n });
+		var label = htmlEntities(data[i].n);
 
-		html += "<tr>";
-		html += "<td><a href=\"" + url + "\" onclick=\"" + onclick + "\">" + label + "</a></td>";
-		html += "</tr>";
+		var tr = "<tr>";
+		tr += "<td><a href=\"" + url + "\">" + label + "</a></td>";
+		tr += "</tr>";
+		tbody.append(tr);
 	    }
-	    html += "</table>";
-	    ggcov.maindiv.innerHTML = html;
+	    $('#ggcov #files #list tbody a').click(function(ev)
+		{
+		    var file = ggcov.url_var(ev.target.href, "f");
+		    ggcov.show_source_page(file);
+		    return false;
+		});
+	    ggcov._switch_page('files');
 	});
     },
-    on_choose_project: function(ev)
-    {
-	ggcov.project = ggcov.url_var(ev.target.href, "p");
-	ggcov.show_files();
-    },
-    show_projects: function()
+    show_projects_page: function()
     {
 	ggcov.settitle("Project Browser");
-	ggcov.maindiv.innerHTML = "Loading...";
-	ggcov.query("listprojects", { }, function(results)
+	ggcov._switch_page('loading');
+	$.getJSON(ggcov.cgi_url('listprojects', { }), function(data)
 	{
-	    var html = "";
-	    html += "<p>Please select a project...</p>\n";
-	    html += "<table>\n";
-	    for (var i = 0; i < results.length; i++)
+	    var tbody = $('#ggcov #projects #list tbody');
+	    tbody.empty();
+	    for (var i = 0; i < data.length; i++)
 	    {
-		var url = ggcov.cgi_url(null, { p: results[i].n });
-		var label = htmlEntities(results[i].n);
-		var onclick = "ggcov.on_choose_project(event); return false;";
-		var mtime = new Date(1000*results[i].m);
+		var url = ggcov.cgi_url(null, { p: data[i].n });
+		var mtime = new Date(1000*data[i].m);
 
-		html += "<tr>";
-		html += "<td><a href=\"" + url + "\" onclick=\"" + onclick + "\">" + label + "</a></td>";
-		html += "<td>" + mtime.toLocaleString() + "</td>\n";
-		html += "<td>" + htmlEntities(results[i].d) + "</td>\n";
-		html += "</tr>";
+		var tr = "<tr>";
+		tr += "<td><a href=\"" + url + "\">" + htmlEntities(data[i].n) + "</a></td>";
+		tr += "<td>" + mtime.toLocaleString() + "</td>\n";
+		tr += "<td>" + htmlEntities(data[i].d) + "</td>\n";
+		tr += "</tr>";
+		tbody.append(tr);
 	    }
-	    html += "</table>";
-	    ggcov.maindiv.innerHTML = html;
+	    $('#ggcov #projects #list tbody a').click(function(ev)
+		{
+		    ggcov.project = ggcov.url_var(ev.target.href, "p");
+		    ggcov.show_files_page();
+		    return false;
+		});
+	    ggcov._switch_page('projects');
 	});
     },
     init: function(maindiv, settitle)
@@ -197,6 +157,8 @@ var ggcov = {
 	ggcov.settitle = settitle;
 
 	if (ggcov.project == null)
-	    ggcov.show_projects();
+	    ggcov.show_projects_page();
+	else
+	    ggcov.show_files_page();
     }
 };

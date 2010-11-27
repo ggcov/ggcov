@@ -93,3 +93,8 @@ TD.tocimg {
   font: 14pt lucidatypewriter,lucidasanstypewriter,courier,monospace;
   white-space: pre;
 }
+
+#ggcov div {
+    display: none;
+}
+

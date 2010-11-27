@@ -1,6 +1,6 @@
 
 CSS_FILES=	ggcov.css
-JS_FILES=	ggcov.js
+JS_FILES=	ggcov.js jquery-1.4.4.min.js
 HTML_FILES=	index.html
 IMAGE_FILES=	favicon.ico ggcov32.png
 CGI_FILES=	ggcov.cgi .htaccess
@@ -24,7 +24,7 @@ ggcov32.png: ../ui/ggcov32.png
 	ln -s $< $@
 
 clean:
-	$(RM) ggcov.cgi
+	$(RM) ggcov.cgi ggcov32.png
 
 # %.css: %.css.in
 # 	m4 $(M4FLAGS) $< > $@

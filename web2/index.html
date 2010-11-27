@@ -7,12 +7,14 @@
   <link REL="SHORTCUT ICON" HREF="favicon.ico">
   <link href="ggcov.css" rel="stylesheet" type="text/css">
   <link href="ggcov.cgi?q=colorcss" rel="stylesheet" type="text/css">
+  <script src="jquery-1.4.4.min.js" type="text/javascript"></script>
   <script src="ggcov.js" type="text/javascript"></script>
   <script type="text/javascript">
-window.onload = function() {
-    ggcov.init(document.getElementById("ggcov"), function(title) {
-	document.getElementById("title").innerHTML = title;
-	document.title = "Coverage Explorer: " + title;
+    $(document).ready(function()
+    {
+	ggcov.init(document.getElementById("ggcov"), function(title) {
+	    $('#title').text(title);
+	    document.title = "Coverage Explorer: " + title;
     });
 }
   </script>
@@ -31,7 +33,49 @@ window.onload = function() {
   </tr>
   <tr>
     <td class="rim" width="2px"></td>
-    <td colspan="2" id="content"><div id="ggcov"></div></td>
+    <td colspan="2" id="content">
+	<div id="ggcov">
+
+	    <div id="loading">
+		<p>Loading, please wait...</p>
+	    </div>
+
+	    <div id="projects">
+		<p>Please select a project...</p>
+		<table id="list">
+		    <thead>
+			<tr>
+			    <th>Name</th>
+			    <th>Modified</th>
+			    <th>Description</th>
+			</tr>
+		    </thead>
+		    <tbody></tbody>
+		</table>
+	    </div>
+
+	    <div id="files">
+		<p>Please select a file...</p>
+		<table id="list">
+		    <tbody></tbody>
+		</table>
+	    </div>
+
+	    <div id="source">
+		<table id="list">
+		    <thead>
+			<tr>
+			    <th>Line</th>
+			    <th>Count</th>
+			    <th>Source</th>
+			</tr>
+		    </thead>
+		    <tbody></tbody>
+		</table>
+	    </div>
+
+	</div>
+    </td>
     <td class="rim" width="2px"></td>
   </tr>
   <tr>
