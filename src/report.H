@@ -20,6 +20,9 @@
 #ifndef _ggcov_report_H_
 #define _ggcov_report_H_ 1
 
+#include <stdio.h>
+#include "estring.H"
+
 typedef struct
 {
     const char *name;	    /* name for commandline option */
@@ -29,5 +32,7 @@ typedef struct
 report_t;
 
 extern const report_t all_reports[];	/* ends with .name=0 */
+
+extern gboolean report_run(const report_t *rep, estring &e);
 
 #endif /* _ggcov_report_H_ */

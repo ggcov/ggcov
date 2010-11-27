@@ -283,6 +283,51 @@ report_incompletely_covered_functions_per_file(FILE *fp)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static FILE *
+open_temp_file(string_var &fname)
+{
+    int fd;
+    FILE *fp = 0;
+
+    fname = g_strdup("/tmp/gcov-reportXXXXXX");
+    if ((fd = mkstemp((char *)fname.data())) < 0)
+    {
+	perror(fname);
+    }
+    else if ((fp = fdopen(fd, "w+")) == 0)
+    {
+	perror(fname);
+	close(fd);
+    }
+    return fp;
+}
+
+
+gboolean
+report_run(const report_t *rep, estring &e)
+{
+    FILE *fp;
+    string_var fname;
+    int n;
+    char buf[1024];
+
+    if ((fp = open_temp_file(fname)) == 0)
+	return FALSE;
+
+    rep->func(fp);
+    fflush(fp);
+    fseek(fp, 0L, SEEK_SET);
+
+    while ((n = fread(buf, 1, sizeof(buf), fp)) > 0)
+	e.append_chars(buf, n);
+
+    fclose(fp);
+    unlink(fname);
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 const report_t all_reports[] = 
 {
 #define report(name, label) { #name, label, report_##name },

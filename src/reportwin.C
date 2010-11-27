@@ -99,38 +99,11 @@ reportwin_t::grey_items()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static FILE *
-open_temp_file()
-{
-    char *fname;
-    int fd;
-    FILE *fp = 0;
-    
-    fname = g_strdup("/tmp/gcov-reportXXXXXX");
-    if ((fd = mkstemp(fname)) < 0)
-    {
-    	perror(fname);
-    }
-    else if ((fp = fdopen(fd, "w+")) == 0)
-    {
-    	perror(fname);
-	close(fd);
-    }
-    g_free(fname);
-    return fp;
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 void
 reportwin_t::update()
 {
-    FILE *fp;
-    int n;
-    char buf[1024];
-
     dprintf0(D_REPORTWIN, "reportwin_t::update\n");
-    
+
     grey_items();
 
     populating_ = TRUE;
@@ -140,19 +113,14 @@ reportwin_t::update()
 
     set_title(_(report_->label));
 
-    if ((fp = open_temp_file()) == 0)
+    estring buf;
+    if (!report_run(report_, buf))
     	return;
-	
-    report_->func(fp);
-    fflush(fp);
-    fseek(fp, 0L, SEEK_SET);
 
     ui_text_begin(text_);
-    while ((n = fread(buf, 1, sizeof(buf), fp)) > 0)
-	ui_text_add(text_, 0, buf, n);
+    if (buf.length())
+	ui_text_add(text_, 0, buf.data(), buf.length());
     ui_text_end(text_);
-    
-    fclose(fp);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

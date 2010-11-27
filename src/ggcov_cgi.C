@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "cov.H"
 #include "cgi.H"
+#include "report.H"
 #include "filename.h"
 #include "colors.h"
 
@@ -14,6 +15,57 @@ static const char *short_status_names[cov::NUM_STATUS] =
     "UI",   /* UNINSTRUMENTED */
     "SU"    /* SUPPRESSED */
 };
+
+static void
+query_listreports(cgi_t &cgi)
+{
+    json_t json;
+    json.begin_array();
+    const report_t *rep;
+    for (rep = all_reports ; rep->name != 0 ; rep++)
+    {
+	json.begin_object();
+	json.string_field("n", rep->name);
+	json.string_field("l", _(rep->label));
+	json.end_object();
+    }
+    json.end_array();
+
+    cgi.set_reply(json);
+}
+
+static void
+query_report(cgi_t &cgi)
+{
+    const char *rvar = cgi.get_variable("r");
+    if (!rvar || !*rvar)
+    {
+	cgi.error("Missing report name\n");
+	return;
+    }
+
+    const report_t *rep;
+    for (rep = all_reports ; rep->name != 0 ; rep++)
+    {
+	if (!strcmp(rep->name, rvar))
+	    break;
+    }
+    if (!rep->name)
+    {
+	cgi.error("Bad report name\n");
+	return;
+    }
+
+    estring text;
+    if (!report_run(rep, text))
+    {
+	cgi.error("Report error\n");
+	return;
+    }
+
+    cgi.set_reply(text, "text/plain");
+}
+
 
 static void
 query_listprojects(cgi_t &cgi)
@@ -161,6 +213,8 @@ static const struct
     { "listfiles", query_listfiles, true },
     { "annotate", query_annotate, true },
     { "colorcss", query_colorcss, false },
+    { "listreports", query_listreports, true },
+    { "report", query_report, true },
     { 0, 0 }
 };
 
