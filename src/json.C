@@ -34,40 +34,68 @@ json_t::~json_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+/*
+ * Append an escaped string literal to the buffer.
+ */
 void
-json_t::string(const char *value)
+json_t::escaped_string(const char *s)
 {
-    begin_value();
-    if (!value)
+    if (!s)
     {
 	buf_.append_string("null");
     }
     else
     {
-	buf_.append_char('\'');
-	for ( ; *value ; value++)
+	buf_.append_char('"');
+	for ( ; *s ; s++)
 	{
-	    /* TODO: do the proper JSON escaping rules in the RFC */
-	    switch (*value)
+	    switch (*s)
 	    {
+	    /* Characters to be escaped with a leading backslash */
 	    case '"':
-	    case '\'':
 	    case '\\':
+	    case '/':
 		buf_.append_char('\\');
-		buf_.append_char(*value);
+		buf_.append_char(*s);
 		break;
-	    case '\r':
-		buf_.append_string("\\r");
+	    /* Control characters with defined special escapes. */
+	    case '\b':
+		buf_.append_string("\\b");
+		break;
+	    case '\f':
+		buf_.append_string("\\f");
 		break;
 	    case '\n':
 		buf_.append_string("\\n");
 		break;
+	    case '\r':
+		buf_.append_string("\\r");
+		break;
+	    case '\t':
+		buf_.append_string("\\t");
+		break;
 	    default:
-		buf_.append_char(*value);
+		if (iscntrl(*s))
+		{
+		    /* other control characters: UCS16 escape */
+		    buf_.append_printf("\\u%04x", (unsigned)*s);
+		}
+		else
+		{
+		    /* normal printable characters */
+		    buf_.append_char(*s);
+		}
 	    }
 	}
-	buf_.append_char('\'');
+	buf_.append_char('"');
     }
+}
+
+void
+json_t::string(const char *value)
+{
+    begin_value();
+    escaped_string(value);
     end_value();
 }
 
@@ -134,7 +162,8 @@ json_t::begin_field(const char *label)
 	buf_.append_char(',');
     if (ispretty_)
 	indent();
-    buf_.append_printf("'%s':", label);
+    escaped_string(label);
+    buf_.append_char(':');
     infield_ = true;
 }
 
@@ -169,6 +198,7 @@ json_t::indent()
     for (int i = 0 ; i < depth_ ; i++)
 	buf_.append_string("  ");
 }
+
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

@@ -96,6 +96,7 @@ private:
 	int nitems_;
     } stack_[MAXDEPTH];
 
+    void escaped_string(const char *);
     void push(int type);
     void pop(int type);
     void begin_value();
