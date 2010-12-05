@@ -95,13 +95,16 @@ var ggcov = {
 	    ggcov._switch_page('source');
 	});
     },
-    show_files_page: function()
+    show_report_page: function(report)
     {
-	ggcov.settitle("Files - " + htmlEntities(ggcov.project));
+    },
+    show_project_page: function()
+    {
+	ggcov.settitle("Project - " + htmlEntities(ggcov.project));
 	ggcov._switch_page('loading');
 	$.getJSON(ggcov.cgi_url('listfiles', { }), function(data)
 	{
-	    var tbody = $('#ggcov #files #list tbody');
+	    var tbody = $('#ggcov #project #file_list tbody');
 	    tbody.empty();
 	    for (var i = 0; i < data.length; i++)
 	    {
@@ -113,22 +116,43 @@ var ggcov = {
 		tr += "</tr>";
 		tbody.append(tr);
 	    }
-	    $('#ggcov #files #list tbody a').click(function(ev)
+	    $('a', tbody).click(function(ev)
 		{
 		    var file = ggcov.url_var(ev.target.href, "f");
 		    ggcov.show_source_page(file);
 		    return false;
 		});
-	    ggcov._switch_page('files');
+	    ggcov._switch_page('project');
+	});
+	$.getJSON(ggcov.cgi_url('listreports', { }), function(data)
+	{
+	    var tbody = $('#ggcov #project #report_list tbody');
+	    tbody.empty();
+	    for (var i = 0; i < data.length; i++)
+	    {
+		var url = ggcov.cgi_url(null, { r: data[i].n });
+		var label = htmlEntities(data[i].l);
+
+		var tr = "<tr>";
+		tr += "<td><a href=\"" + url + "\">" + label + "</a></td>";
+		tr += "</tr>";
+		tbody.append(tr);
+	    }
+	    $('a', tbody).click(function(ev)
+		{
+		    var report = ggcov.url_var(ev.target.href, "r");
+		    ggcov.show_report_page(report);
+		    return false;
+		});
 	});
     },
-    show_projects_page: function()
+    show_project_list_page: function()
     {
 	ggcov.settitle("Project Browser");
 	ggcov._switch_page('loading');
 	$.getJSON(ggcov.cgi_url('listprojects', { }), function(data)
 	{
-	    var tbody = $('#ggcov #projects #list tbody');
+	    var tbody = $('#ggcov #project_list #list tbody');
 	    tbody.empty();
 	    for (var i = 0; i < data.length; i++)
 	    {
@@ -142,13 +166,13 @@ var ggcov = {
 		tr += "</tr>";
 		tbody.append(tr);
 	    }
-	    $('#ggcov #projects #list tbody a').click(function(ev)
+	    $('a', tbody).click(function(ev)
 		{
 		    ggcov.project = ggcov.url_var(ev.target.href, "p");
-		    ggcov.show_files_page();
+		    ggcov.show_project_page();
 		    return false;
 		});
-	    ggcov._switch_page('projects');
+	    ggcov._switch_page('project_list');
 	});
     },
     init: function(maindiv, settitle)
@@ -157,8 +181,8 @@ var ggcov = {
 	ggcov.settitle = settitle;
 
 	if (ggcov.project == null)
-	    ggcov.show_projects_page();
+	    ggcov.show_project_list_page();
 	else
-	    ggcov.show_files_page();
+	    ggcov.show_project_page();
     }
 };
