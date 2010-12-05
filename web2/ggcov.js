@@ -92,6 +92,11 @@ var ggcov = {
 		tbody.append(tr);
 		lineno++;
 	    }
+	    $('#ggcov #source #project_a').click(function(ev)
+		{
+		    ggcov.show_project_page();
+		    return false;
+		});
 	    ggcov._switch_page('source');
 	});
     },
