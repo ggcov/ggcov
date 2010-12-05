@@ -134,16 +134,18 @@ var ggcov = {
 		tbody.append(tr);
 		lineno++;
 	    }
-	    $('#ggcov #source #project_a').click(function(ev)
-		{
-		    ggcov.show_project_page();
-		    return false;
-		});
 	    ggcov._switch_page('source');
 	});
     },
-    show_report_page: function(report)
+    show_report_page: function(report, title)
     {
+	ggcov.settitle("Report - " + title);
+	ggcov._switch_page('loading');
+	$.get(ggcov.cgi_url('report', { r: report }), function(data)
+	{
+	    $('#ggcov #report pre').html(data);
+	    ggcov._switch_page('report');
+	},'text');
     },
     show_project_page: function()
     {
@@ -188,7 +190,7 @@ var ggcov = {
 	    $('a', tbody).click(function(ev)
 		{
 		    var report = ggcov.url_var(ev.target.href, "r");
-		    ggcov.show_report_page(report);
+		    ggcov.show_report_page(report, $(ev.target).html());
 		    return false;
 		});
 	});
@@ -235,6 +237,11 @@ var ggcov = {
 	{
 	    $(this).html('<p>AJAX call failed to ' + settings.url +
 			 ' failed with: ' + xhr.responseText + '</p>');
+	});
+	$('#ggcov #project_a').click(function(ev)
+	{
+	    ggcov.show_project_page();
+	    return false;
 	});
 
 	if (ggcov.project == null)
