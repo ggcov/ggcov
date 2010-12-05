@@ -185,6 +185,12 @@ var ggcov = {
 	ggcov.maindiv = maindiv;
 	ggcov.settitle = settitle;
 
+	$('#error').ajaxError(function(ev, xhr, settings)
+	{
+	    $(this).html('<p>AJAX call failed to ' + settings.url +
+			 ' failed with: ' + xhr.responseText + '</p>');
+	});
+
 	if (ggcov.project == null)
 	    ggcov.show_project_list_page();
 	else

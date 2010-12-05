@@ -98,3 +98,6 @@ TD.tocimg {
     display: none;
 }
 
+#error {
+    color: #ff0000;
+}
