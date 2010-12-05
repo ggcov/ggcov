@@ -66,6 +66,111 @@ query_report(cgi_t &cgi)
     cgi.set_reply(text, "text/plain");
 }
 
+static cov_file_t *
+get_file(cgi_t &cgi)
+{
+    cov_project_t *proj = cov_project_t::current();
+
+    const char *fvar = cgi.get_variable("f");
+    if (!fvar || !*fvar)
+    {
+	cgi.error("Missing filename\n");
+	return 0;
+    }
+    string_var filename = proj->get_pathname(fvar);
+
+    cov_file_t *f = proj->find_file(fvar);
+    if (!f)
+    {
+	cgi.error("Failed to read cov files...sorry\n");
+	return 0;
+    }
+    return f;
+}
+
+static void
+query_summary(cgi_t &cgi)
+{
+    const char *svar = cgi.get_variable("s");
+    if (!svar || !*svar)
+    {
+	cgi.error("Missing scope name\n");
+	return;
+    }
+
+    cov_scope_t *sc = 0;
+    if (!strcmp(svar, "overall"))
+    {
+    	sc = new cov_overall_scope_t;
+    }
+    else if (!strcmp(svar, "filename"))
+    {
+	cov_file_t *f = get_file(cgi);
+	if (!f)
+	    return;
+	sc = new cov_file_scope_t(f);
+    }
+#if 0
+    else if (!strcmp(svar, "function"))
+    {
+    	assert(function_ != 0);
+	sc = new cov_function_scope_t(function_);
+    }
+#endif
+    else if (!strcmp(svar, "range"))
+    {
+	cov_file_t *f = get_file(cgi);
+	if (!f)
+	    return;
+	const char *stvar = cgi.get_variable("st");
+	const char *envar = cgi.get_variable("en");
+	if (!stvar || !envar)
+	{
+	    cgi.error("Missing range parameters\n");
+	    return;
+	}
+    	sc = new cov_range_scope_t(f, atoi(stvar), atoi(envar));
+    }
+    else
+    {
+	cgi.error("Bad scope name\n");
+	return;
+    }
+
+    const cov_stats_t *stats = sc->get_stats();
+    if (stats == 0)
+    {
+    	static const cov_stats_t empty;
+	stats = &empty;
+    }
+
+    static const char * const namebase[5] = { "bl", "li", "fn", "ca", "br" };
+    const unsigned long *counters[5];
+    counters[0] = stats->blocks_by_status();
+    counters[1] = stats->lines_by_status();
+    counters[2] = stats->functions_by_status();
+    counters[3] = stats->calls_by_status();
+    counters[4] = stats->branches_by_status();
+
+    json_t json;
+    json.begin_object();
+    for (int i = 0 ; i < 5 ; i++)
+    {
+	json.begin_object_field(namebase[i]);
+	for (int st = 0 ; st < cov::NUM_STATUS ; st++)
+	{
+	    if (st != cov::UNINSTRUMENTED)
+		json.ulong_field(short_status_names[st], counters[i][st]);
+	}
+	json.end_object_field();
+    }
+    json.end_object();
+
+    delete sc;
+
+    cgi.set_reply(json);
+}
+
 
 static void
 query_listprojects(cgi_t &cgi)
@@ -215,6 +320,7 @@ static const struct
     { "colorcss", query_colorcss, false },
     { "listreports", query_listreports, true },
     { "report", query_report, true },
+    { "summary", query_summary, true },
     { 0, 0 }
 };
 

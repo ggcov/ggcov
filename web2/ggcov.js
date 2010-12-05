@@ -59,6 +59,48 @@ var ggcov = {
 	}
 	return null;
     },
+    _update_summary_aux: function(frac_q, pc_q, vals)
+    {
+	var frac_str, pc_str;
+	var n = vals.CO + vals.PA;
+	var d = n + vals.UC;
+
+	if (d == 0)
+	{
+	    frac_str = '0/0';
+	    pc_str = '';
+	}
+	else if (vals.PA == 0)
+	{
+	    frac_str = '' + n + '/' + d;
+	    pc_str = '' + (100.0 * n / d) + '%';
+	}
+	else
+	{
+	    frac_str = '' + vals.CO + '+' + vals.PA + '/' + d;
+	    pc_str = '' + (100.0 * vals.CO / d) + '+' + (100.0 * vals.PA / d) + '%';
+	}
+	frac_q.html(frac_str);
+	pc_q.html(pc_str);
+    },
+    _update_summary: function(table, stats)
+    {
+	ggcov._update_summary_aux($('#lines_frac', table),
+				  $('#lines_pc', table),
+				  stats.li);
+	ggcov._update_summary_aux($('#functions_frac', table),
+				  $('#functions_pc', table),
+				  stats.fn);
+	ggcov._update_summary_aux($('#calls_frac', table),
+				  $('#calls_pc', table),
+				  stats.ca);
+	ggcov._update_summary_aux($('#branches_frac', table),
+				  $('#branches_pc', table),
+				  stats.br);
+	ggcov._update_summary_aux($('#blocks_frac', table),
+				  $('#blocks_pc', table),
+				  stats.bl);
+    },
     _switch_page: function(pp)
     {
 	$('#ggcov div').css('display', 'none');
@@ -149,6 +191,10 @@ var ggcov = {
 		    ggcov.show_report_page(report);
 		    return false;
 		});
+	});
+	$.getJSON(ggcov.cgi_url('summary', { s: 'overall' }), function(data)
+	{
+	    ggcov._update_summary($('#ggcov #project #summary'), data);
 	});
     },
     show_project_list_page: function()
