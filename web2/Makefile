@@ -1,6 +1,7 @@
 
+MIN=		.min
 CSS_FILES=	ggcov.css
-JS_FILES=	ggcov.js jquery-1.4.4.min.js
+JS_FILES=	ggcov.js jquery-1.4.4$(MIN).js
 HTML_FILES=	index.html
 IMAGE_FILES=	favicon.ico ggcov32.png
 CGI_FILES=	ggcov.cgi .htaccess
