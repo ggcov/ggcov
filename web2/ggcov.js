@@ -54,7 +54,7 @@ var ggcov = {
 	    {
 		var k = kv.substr(0, j);
 		if (k == name)
-		    return kv.substr(j+1);
+		    return decodeURIComponent(kv.substr(j+1));
 	    }
 	}
 	return null;
