@@ -94,10 +94,39 @@ TD.tocimg {
   white-space: pre;
 }
 
+#ggcov {
+    margin: 10px;
+}
+
 #ggcov div {
     display: none;
 }
 
 #error {
     color: #ff0000;
+}
+
+/* Yes I should use the :nth-child(odd) selector, but it
+ * doesn't work in FF 3.0. */
+#project_list #list .odd {
+    background: #afafcf;
+}
+#project_list #list .even {
+    background: #d8d8ff;
+}
+#project_list #name {
+    font: 18pt verdana,arial,helvetica,sans-serif;
+}
+#project_list #date {
+    font: 10pt verdana,arial,helvetica,sans-serif;
+}
+#project_list #description p {
+    font: 10pt verdana,arial,helvetica,sans-serif;
+    margin-left: 30pt;
+}
+#project_list #list :link {
+    color: #000000;
+}
+#project_list #list :visited {
+    color: #000000;
 }

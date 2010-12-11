@@ -38,25 +38,41 @@
 
 	<div id="ggcov">
 
-	    <div id="loading">
+	    <div class="page" id="loading">
 		<p>Loading, please wait...</p>
 	    </div>
 
-	    <div id="project_list">
-		<p>Please select a project...</p>
-		<table id="list">
+	    <div class="page" id="project_list">
+		<p>Please select a project.</p>
+		<table id="list" width="500" cellspacing="0" border="0" cellpadding="0">
 		    <thead>
-			<tr>
-			    <th>Name</th>
-			    <th>Modified</th>
-			    <th>Description</th>
+			<tr class="nav">
+			    <td align="left" width="1">
+				<a id="first" href="">&lt;&lt;First</a>&nbsp;<a id="prev" href="">&lt;Prev</a>
+			    </td>
+			    <td id="loc" align="center">x..y of z</td>
+			    <td align="right" width="1">
+				<a id="next" href="">Next&gt;</a>&nbsp;<a id="last" href="">Last&gt;&gt;</a>
+			    </td>
 			</tr>
 		    </thead>
-		    <tbody></tbody>
+		    <tbody>
+		    </tbody>
+		    <tfoot>
+			<tr class="nav">
+			    <td align="left" width="1">
+				<a id="first" href="">&lt;&lt;First</a>&nbsp;<a id="prev" href="">&lt;Prev</a>
+			    </td>
+			    <td id="loc" align="center">x..y of z</td>
+			    <td align="right" width="1">
+				<a id="next" href="">Next&gt;</a>&nbsp;<a id="last" href="">Last&gt;&gt;</a>
+			    </td>
+			</tr>
+		    </tfoot>
 		</table>
 	    </div>
 
-	    <div id="project">
+	    <div class="page" id="project">
 		<table border="1">
 		    <tr>
 			<td rowspan="2" valign="top">
@@ -107,7 +123,7 @@
 		</table>
 	    </div>
 
-	    <div id="source">
+	    <div class="page" id="source">
 		<p><a id="project_a" href="">Back to project</a></p>
 		<table id="list">
 		    <thead>
@@ -122,7 +138,7 @@
 		<p><a id="project_a" href="">Back to project</a></p>
 	    </div>
 
-	    <div id="report">
+	    <div class="page" id="report">
 		<p><a id="project_a" href="">Back to project</a></p>
 		<pre></pre>
 		<p><a id="project_a" href="">Back to project</a></p>

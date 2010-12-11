@@ -6,6 +6,11 @@ var ggcov = {
     maindiv: null,
     settitle: null,
     project: null,
+    projects: {
+	curr_page: 0,
+	page_size: 10,
+	data: null
+    },
     status_short_names: [
 	"CO",   /* COVERED */
 	"PA",   /* PARTCOVERED */
@@ -103,7 +108,7 @@ var ggcov = {
     },
     _switch_page: function(pp)
     {
-	$('#ggcov div').css('display', 'none');
+	$('#ggcov .page').css('display', 'none');
 	$('#ggcov #' + pp).css('display', 'block');
     },
     show_source_page: function(filename)
@@ -199,33 +204,88 @@ var ggcov = {
 	    ggcov._update_summary($('#ggcov #project #summary'), data);
 	});
     },
+    _update_project_list: function(page)
+    {
+	var npages = parseInt((ggcov.projects.data.length + ggcov.projects.page_size -1 )
+			    / ggcov.projects.page_size);
+	if (page < 0)
+	    page = 0;
+	else if (page >= npages)
+	    page = npages-1;
+	ggcov.projects.curr_page = page;
+
+	var tbody = $('#ggcov #project_list #list tbody');
+	tbody.empty();
+	for (var pi = 0 ; pi < ggcov.projects.page_size ; pi++)
+	{
+	    var i = page * ggcov.projects.page_size + pi;
+	    if (i >= ggcov.projects.data.length)
+		break;
+	    var proj = ggcov.projects.data[i];
+	    var url = ggcov.cgi_url(null, { p: proj.n });
+	    var mtime = new Date(1000*proj.m);
+	    var rclass = (pi % 2 ? 'odd' : 'even');
+
+	    var row = "<tr><td colspan=\"3\"><table width=\"100%\" cellspacing=\"0\"><tr class=\"" + rclass + "\">";
+	    row += "<td align=\"left\" width=\"1\" rowspan=\"2\">";
+	    if (0)  // client authorised to delete or edit
+		row += "DEL<br>PROP";
+	    row += "</td>";
+	    row += "<td id=\"name\" align=\"left\">";
+	    row += "<a href=\"" + url + "\">" + htmlEntities(proj.n) + "</a>";
+	    row += "</td>";
+	    row += "<td id=\"date\" width=\"1\" align=\"right\">";
+	    row += mtime.toLocaleDateString().replace(/ /g, '&nbsp;');
+	    row += "</td>";
+	    row += "</tr><tr class=\"" + rclass + "\">";
+	    row += "<td id=\"description\" colspan=\"2\">";
+	    row += "<p>" + htmlEntities(proj.d) + "</p>";
+	    row += "</td>";
+	    row += "</tr></table></td></tr>";
+
+	    tbody.append(row);
+	}
+	$('a', tbody).click(function(ev)
+	    {
+		ggcov.project = ggcov.url_var(ev.target.href, "p");
+		ggcov.show_project_page();
+		return false;
+	    });
+
+	var first = page * ggcov.projects.page_size + 1;
+	var last = first + ggcov.projects.page_size - 1;
+	if (last > ggcov.projects.data.length)
+	    last = ggcov.projects.data.length;
+	var nav = $('#ggcov #project_list .nav');
+	$('#loc', nav).html(first + ".." + last + " of " + ggcov.projects.data.length);
+	$('#first, #prev', nav).css('visibility', (page == 0 ? 'hidden' : 'visible'));
+	$('#next, #last', nav).css('visibility', (page == npages-1 ? 'hidden' : 'visible'));
+    },
     show_project_list_page: function()
     {
 	ggcov.settitle("Project Browser");
 	ggcov._switch_page('loading');
 	$.getJSON(ggcov.cgi_url('listprojects', { }), function(data)
 	{
-	    var tbody = $('#ggcov #project_list #list tbody');
-	    tbody.empty();
-	    for (var i = 0; i < data.length; i++)
-	    {
-		var url = ggcov.cgi_url(null, { p: data[i].n });
-		var mtime = new Date(1000*data[i].m);
-
-		var tr = "<tr>";
-		tr += "<td><a href=\"" + url + "\">" + htmlEntities(data[i].n) + "</a></td>";
-		tr += "<td>" + mtime.toLocaleString() + "</td>\n";
-		tr += "<td>" + htmlEntities(data[i].d) + "</td>\n";
-		tr += "</tr>";
-		tbody.append(tr);
-	    }
-	    $('a', tbody).click(function(ev)
-		{
-		    ggcov.project = ggcov.url_var(ev.target.href, "p");
-		    ggcov.show_project_page();
-		    return false;
-		});
+	    ggcov.projects.data = data;
+	    ggcov._update_project_list(0);
 	    ggcov._switch_page('project_list');
+	});
+	$('#ggcov #project_list .nav a').click(function(ev)
+	{
+	    var a = ev.target.id;
+	    var page = ggcov.projects.curr_page;
+	    if (a == "first") {
+		page = 0;
+	    } else if (a == "prev") {
+		page--;
+	    } else if (a == "next") {
+		page++;
+	    } else if (a == "last") {
+		page = 10000;
+	    }
+	    ggcov._update_project_list(page);
+	    return false;
 	});
     },
     init: function(maindiv, settitle)
