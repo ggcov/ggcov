@@ -72,7 +72,41 @@ cov_project_t::make_current()
 void
 cov_project_t::read_description()
 {
-    description_ = (const char *)"Hello World";
+    string_var readme = g_strconcat(basedir_.data(), "/README", (char *)0);
+    FILE *fp;
+    char *p;
+    char buf[1024];
+
+fprintf(stderr, "read_description: name=\"%s\" readme=\"%s\"\n",
+	name_.data(), readme.data());
+    fp = fopen(readme, "r");
+    if (!fp)
+    {
+	description_ = "Please add a README to this directory";
+	return;
+    }
+
+    while (fgets(buf, sizeof(buf), fp))
+    {
+	/* lose trailing whitespace */
+	for (p = buf+strlen(buf)-1 ; p > buf && isspace(*p) ; p--)
+	    *p = '\0';
+
+	/* skip leading whitespace */
+	for (p = buf ; *p && isspace(*p) ; p++)
+	    ;
+
+	if (!*p)
+	    continue;	/* skip empty lines */
+
+	description_ = (const char *)p;
+	break;
+    }
+
+    if (!description_.data())
+	description_ = "Please add a non-empty README to this directory";
+
+    fclose(fp);
 }
 
 time_t
