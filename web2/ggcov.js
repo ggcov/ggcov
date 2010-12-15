@@ -64,33 +64,42 @@ var ggcov = {
 	}
 	return null;
     },
-    _update_bar: function(q, vals)
+    _statusbar: function(vals)
     {
 	var d = vals.CO + vals.PA + vals.UC;
-	var W = 80;
-	var H = 20;
 
 	if (d == 0)
+	    return null;
+
+	var W = 80;
+	var H = 20;
+	var names = [ "CO", "PA", "UC" ];
+	var x = 0;
+
+	var html = "<div style=\"position:relative;top:0px;width:" +
+		    W + "px;height:" + H + "px;\">";
+	for (var i = 0 ; i < names.length ; i++) {
+	    var n = names[i];
+	    var w = parseInt(W * vals[n] / d);
+	    html += "<div style=\"position:absolute;left:" + x + "px;top:0px;height:" + H +
+		    "px;width:" + w + "px;\" class=\"status" + n + "b\">&nbsp;</div>";
+	    x += w;
+	}
+	html += "</div>";
+
+	return html;
+    },
+    _update_statusbar: function(q, vals)
+    {
+	var html = ggcov._statusbar(vals);
+
+	if (html == null)
 	{
 	    q.css('visibility', 'hidden');
 	}
 	else
 	{
 	    q.empty();
-	    var names = [ "CO", "PA", "UC" ];
-	    var x = 0;
-
-	    var html = "<div style=\"position:relative;top:0px;width:" +
-			W + "px;height:" + H + "px;\">";
-	    for (var i = 0 ; i < names.length ; i++) {
-		var n = names[i];
-		var w = parseInt(W * vals[n] / d);
-		html += "<div style=\"position:absolute;left:" + x + "px;top:0px;height:" + H +
-			"px;width:" + w + "px;\" class=\"status" + n + "b\">&nbsp;</div>";
-		x += w;
-	    }
-	    html += "</div>";
-
 	    q.html(html);
 	    q.css('visibility', 'visible');
 	}
@@ -136,11 +145,11 @@ var ggcov = {
 	ggcov._update_summary_aux($('#blocks_frac', table),
 				  $('#blocks_pc', table),
 				  stats.bl);
-	ggcov._update_bar($('#lines_bar', table), stats.li);
-	ggcov._update_bar($('#functions_bar', table), stats.fn);
-	ggcov._update_bar($('#calls_bar', table), stats.ca);
-	ggcov._update_bar($('#branches_bar', table), stats.br);
-	ggcov._update_bar($('#blocks_bar', table), stats.bl);
+	ggcov._update_statusbar($('#lines_bar', table), stats.li);
+	ggcov._update_statusbar($('#functions_bar', table), stats.fn);
+	ggcov._update_statusbar($('#calls_bar', table), stats.ca);
+	ggcov._update_statusbar($('#branches_bar', table), stats.br);
+	ggcov._update_statusbar($('#blocks_bar', table), stats.bl);
     },
     _switch_page: function(pp)
     {
@@ -202,7 +211,8 @@ var ggcov = {
 		var label = htmlEntities(data[i].n);
 
 		var tr = "<tr>";
-		tr += "<td><a href=\"" + url + "\">" + label + "</a></td>";
+		tr += "<td align=\"left\"><a href=\"" + url + "\">" + label + "</a></td>";
+		tr += "<td align=\"right\">" + ggcov._statusbar(data[i].s.li) + "</td>";
 		tr += "</tr>";
 		tbody.append(tr);
 	    }
