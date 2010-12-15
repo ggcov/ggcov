@@ -77,8 +77,6 @@ cov_project_t::read_description()
     char *p;
     char buf[1024];
 
-fprintf(stderr, "read_description: name=\"%s\" readme=\"%s\"\n",
-	name_.data(), readme.data());
     fp = fopen(readme, "r");
     if (!fp)
     {
