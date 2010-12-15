@@ -88,6 +88,35 @@ get_file(cgi_t &cgi)
     return f;
 }
 
+static void encode_stats(json_t &json, const cov_stats_t *stats)
+{
+    static const char * const field[5] = { "bl", "li", "fn", "ca", "br" };
+    const unsigned long *counters[5];
+
+    if (!stats)
+    {
+    	static const cov_stats_t empty;
+	stats = &empty;
+    }
+
+    counters[0] = stats->blocks_by_status();
+    counters[1] = stats->lines_by_status();
+    counters[2] = stats->functions_by_status();
+    counters[3] = stats->calls_by_status();
+    counters[4] = stats->branches_by_status();
+
+    for (int i = 0 ; i < 5 ; i++)
+    {
+	json.begin_object_field(field[i]);
+	for (int st = 0 ; st < cov::NUM_STATUS ; st++)
+	{
+	    if (st != cov::UNINSTRUMENTED)
+		json.ulong_field(short_status_names[st], counters[i][st]);
+	}
+	json.end_object_field();
+    }
+}
+
 static void
 query_summary(cgi_t &cgi)
 {
@@ -137,33 +166,9 @@ query_summary(cgi_t &cgi)
 	return;
     }
 
-    const cov_stats_t *stats = sc->get_stats();
-    if (stats == 0)
-    {
-    	static const cov_stats_t empty;
-	stats = &empty;
-    }
-
-    static const char * const namebase[5] = { "bl", "li", "fn", "ca", "br" };
-    const unsigned long *counters[5];
-    counters[0] = stats->blocks_by_status();
-    counters[1] = stats->lines_by_status();
-    counters[2] = stats->functions_by_status();
-    counters[3] = stats->calls_by_status();
-    counters[4] = stats->branches_by_status();
-
     json_t json;
     json.begin_object();
-    for (int i = 0 ; i < 5 ; i++)
-    {
-	json.begin_object_field(namebase[i]);
-	for (int st = 0 ; st < cov::NUM_STATUS ; st++)
-	{
-	    if (st != cov::UNINSTRUMENTED)
-		json.ulong_field(short_status_names[st], counters[i][st]);
-	}
-	json.end_object_field();
-    }
+    encode_stats(json, sc->get_stats());
     json.end_object();
 
     delete sc;
@@ -206,6 +211,12 @@ query_listfiles(cgi_t &cgi)
 	json.begin_object();
 	json.string_field("n", f->minimal_name());
 	json.string_field("p", f->name());
+
+	json.begin_object_field("s");
+	cov_file_scope_t sc(f);
+	encode_stats(json, sc.get_stats());
+	json.end_object();
+
 	json.end_object();
     }
     json.end_array();
