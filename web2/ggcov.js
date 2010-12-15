@@ -5,7 +5,12 @@ function htmlEntities(str)
 var ggcov = {
     maindiv: null,
     settitle: null,
-    project: null,
+    project: {
+	name: null,
+	files: null,
+	reports: null,
+	summary: null
+    },
     projects: {
 	curr_page: 0,
 	page_size: 10,
@@ -31,8 +36,8 @@ var ggcov = {
     cgi_url: function(query, vars)
     {
 	var url = "ggcov.cgi";
-	if (ggcov.project != null)
-	    vars.p = ggcov.project;
+	if (ggcov.project.name != null)
+	    vars.p = ggcov.project.name;
 	if (query != null)
 	    vars.q = query;
 	var sep = "?";
@@ -128,8 +133,10 @@ var ggcov = {
 	frac_q.html(frac_str);
 	pc_q.html(pc_str);
     },
-    _update_summary: function(table, stats)
+    _project_show_summary: function()
     {
+	var table = $('#ggcov #project #summary');
+	var stats = ggcov.project.summary;
 	ggcov._update_summary_aux($('#lines_frac', table),
 				  $('#lines_pc', table),
 				  stats.li);
@@ -197,58 +204,97 @@ var ggcov = {
 	    ggcov._switch_page('report');
 	},'text');
     },
+    _project_show_files: function()
+    {
+	var tbody = $('#ggcov #project #file_list tbody');
+	var data = ggcov.project.files;
+	tbody.empty();
+	for (var i = 0; i < data.length; i++)
+	{
+	    var url = ggcov.cgi_url(null, { f: data[i].n });
+	    var label = htmlEntities(data[i].n);
+
+	    var tr = "<tr>";
+	    tr += "<td align=\"left\"><a href=\"" + url + "\">" + label + "</a></td>";
+	    tr += "<td align=\"right\">" + ggcov._statusbar(data[i].s.li) + "</td>";
+	    tr += "</tr>";
+	    tbody.append(tr);
+	}
+	$('a', tbody).click(function(ev)
+	{
+	    var file = ggcov.url_var(ev.target.href, "f");
+	    ggcov.show_source_page(file);
+	    return false;
+	});
+    },
+    _project_show_reports: function()
+    {
+	var tbody = $('#ggcov #project #report_list tbody');
+	var data = ggcov.project.reports;
+	tbody.empty();
+	for (var i = 0; i < data.length; i++)
+	{
+	    var url = ggcov.cgi_url(null, { r: data[i].n });
+	    var label = htmlEntities(data[i].l);
+
+	    var tr = "<tr>";
+	    tr += "<td><a href=\"" + url + "\">" + label + "</a></td>";
+	    tr += "</tr>";
+	    tbody.append(tr);
+	}
+	$('a', tbody).click(function(ev)
+	{
+	    var report = ggcov.url_var(ev.target.href, "r");
+	    ggcov.show_report_page(report, $(ev.target).html());
+	    return false;
+	});
+    },
     show_project_page: function()
     {
-	ggcov.settitle("Project - " + htmlEntities(ggcov.project));
+	ggcov.settitle("Project - " + htmlEntities(ggcov.project.name));
 	ggcov._switch_page('loading');
-	$.getJSON(ggcov.cgi_url('listfiles', { }), function(data)
-	{
-	    var tbody = $('#ggcov #project #file_list tbody');
-	    tbody.empty();
-	    for (var i = 0; i < data.length; i++)
-	    {
-		var url = ggcov.cgi_url(null, { f: data[i].n });
-		var label = htmlEntities(data[i].n);
 
-		var tr = "<tr>";
-		tr += "<td align=\"left\"><a href=\"" + url + "\">" + label + "</a></td>";
-		tr += "<td align=\"right\">" + ggcov._statusbar(data[i].s.li) + "</td>";
-		tr += "</tr>";
-		tbody.append(tr);
-	    }
-	    $('a', tbody).click(function(ev)
-		{
-		    var file = ggcov.url_var(ev.target.href, "f");
-		    ggcov.show_source_page(file);
-		    return false;
-		});
-	    ggcov._switch_page('project');
-	});
-	$.getJSON(ggcov.cgi_url('listreports', { }), function(data)
-	{
-	    var tbody = $('#ggcov #project #report_list tbody');
-	    tbody.empty();
-	    for (var i = 0; i < data.length; i++)
-	    {
-		var url = ggcov.cgi_url(null, { r: data[i].n });
-		var label = htmlEntities(data[i].l);
+	var pending = 3;
 
-		var tr = "<tr>";
-		tr += "<td><a href=\"" + url + "\">" + label + "</a></td>";
-		tr += "</tr>";
-		tbody.append(tr);
-	    }
-	    $('a', tbody).click(function(ev)
-		{
-		    var report = ggcov.url_var(ev.target.href, "r");
-		    ggcov.show_report_page(report, $(ev.target).html());
-		    return false;
-		});
-	});
-	$.getJSON(ggcov.cgi_url('summary', { s: 'overall' }), function(data)
+	var got_files = function(data)
 	{
-	    ggcov._update_summary($('#ggcov #project #summary'), data);
-	});
+	    if (data != null)
+		ggcov.project.files = data;
+	    ggcov._project_show_files();
+	    if (--pending == 0)
+		ggcov._switch_page('project');
+	};
+	var got_reports = function(data)
+	{
+	    if (data != null)
+		ggcov.project.reports = data;
+	    ggcov._project_show_reports();
+	    if (--pending == 0)
+		ggcov._switch_page('project');
+	};
+	var got_summary = function(data)
+	{
+	    if (data != null)
+		ggcov.project.summary = data;
+	    ggcov._project_show_summary();
+	    if (--pending == 0)
+		ggcov._switch_page('project');
+	};
+
+	if (ggcov.project.files != null)
+	    got_files(null);
+	else
+	    $.getJSON(ggcov.cgi_url('listfiles', { }), got_files);
+
+	if (ggcov.project.reports != null)
+	    got_reports(null);
+	else
+	    $.getJSON(ggcov.cgi_url('listreports', { }), got_reports);
+
+	if (ggcov.project.summary != null)
+	    got_summary(null);
+	else
+	    $.getJSON(ggcov.cgi_url('summary', { s: 'overall' }), got_summary);
     },
     _update_project_list: function(page)
     {
@@ -292,11 +338,13 @@ var ggcov = {
 	    tbody.append(row);
 	}
 	$('a', tbody).click(function(ev)
-	    {
-		ggcov.project = ggcov.url_var(ev.target.href, "p");
-		ggcov.show_project_page();
-		return false;
-	    });
+	{
+	    ggcov.project.name = ggcov.url_var(ev.target.href, "p");
+	    ggcov.project.summary = null;
+	    ggcov.project.files = null;
+	    ggcov.show_project_page();
+	    return false;
+	});
 
 	var first = page * ggcov.projects.page_size + 1;
 	var last = first + ggcov.projects.page_size - 1;
@@ -344,13 +392,13 @@ var ggcov = {
 	    $(this).html('<p>AJAX call failed to ' + settings.url +
 			 ' failed with: ' + xhr.responseText + '</p>');
 	});
-	$('#ggcov #project_a').click(function(ev)
+	$('#ggcov a.project').click(function(ev)
 	{
 	    ggcov.show_project_page();
 	    return false;
 	});
 
-	if (ggcov.project == null)
+	if (ggcov.project.name == null)
 	    ggcov.show_project_list_page();
 	else
 	    ggcov.show_project_page();
