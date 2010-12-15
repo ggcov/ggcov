@@ -98,7 +98,7 @@ TD.tocimg {
     margin: 10px;
 }
 
-#ggcov div {
+#ggcov div.page {
     display: none;
 }
 
@@ -129,4 +129,8 @@ TD.tocimg {
 }
 #project_list #list :visited {
     color: #000000;
+}
+
+table#summary td {
+    padding: 4px;
 }

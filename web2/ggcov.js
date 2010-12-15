@@ -64,6 +64,37 @@ var ggcov = {
 	}
 	return null;
     },
+    _update_bar: function(q, vals)
+    {
+	var d = vals.CO + vals.PA + vals.UC;
+	var W = 80;
+	var H = 20;
+
+	if (d == 0)
+	{
+	    q.css('visibility', 'hidden');
+	}
+	else
+	{
+	    q.empty();
+	    var names = [ "CO", "PA", "UC" ];
+	    var x = 0;
+
+	    var html = "<div style=\"position:relative;top:0px;width:" +
+			W + "px;height:" + H + "px;\">";
+	    for (var i = 0 ; i < names.length ; i++) {
+		var n = names[i];
+		var w = parseInt(W * vals[n] / d);
+		html += "<div style=\"position:absolute;left:" + x + "px;top:0px;height:" + H +
+			"px;width:" + w + "px;\" class=\"status" + n + "b\">&nbsp;</div>";
+		x += w;
+	    }
+	    html += "</div>";
+
+	    q.html(html);
+	    q.css('visibility', 'visible');
+	}
+    },
     _update_summary_aux: function(frac_q, pc_q, vals)
     {
 	var frac_str, pc_str;
@@ -78,12 +109,12 @@ var ggcov = {
 	else if (vals.PA == 0)
 	{
 	    frac_str = '' + n + '/' + d;
-	    pc_str = '' + (100.0 * n / d) + '%';
+	    pc_str = '' + (100.0 * n / d).toFixed(1) + '%';
 	}
 	else
 	{
 	    frac_str = '' + vals.CO + '+' + vals.PA + '/' + d;
-	    pc_str = '' + (100.0 * vals.CO / d) + '+' + (100.0 * vals.PA / d) + '%';
+	    pc_str = '' + (100.0 * vals.CO / d).toFixed(1) + '+' + (100.0 * vals.PA / d).toFixed(1) + '%';
 	}
 	frac_q.html(frac_str);
 	pc_q.html(pc_str);
@@ -105,6 +136,11 @@ var ggcov = {
 	ggcov._update_summary_aux($('#blocks_frac', table),
 				  $('#blocks_pc', table),
 				  stats.bl);
+	ggcov._update_bar($('#lines_bar', table), stats.li);
+	ggcov._update_bar($('#functions_bar', table), stats.fn);
+	ggcov._update_bar($('#calls_bar', table), stats.ca);
+	ggcov._update_bar($('#branches_bar', table), stats.br);
+	ggcov._update_bar($('#blocks_bar', table), stats.bl);
     },
     _switch_page: function(pp)
     {
