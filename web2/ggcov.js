@@ -273,7 +273,7 @@ var ggcov = {
 	for (var i = 0; i < data.length; i++)
 	{
 	    var url = ggcov.cgi_url(null, { r: data[i].n });
-	    var label = htmlEntities(data[i].l);
+	    var label = htmlEntities(data[i].l).replace(/ /g, '&nbsp;');
 
 	    var tr = "<tr>";
 	    tr += "<td><a href=\"" + url + "\">" + label + "</a></td>";
