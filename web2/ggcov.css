@@ -134,3 +134,11 @@ TD.tocimg {
 table#summary td {
     padding: 4px;
 }
+
+#file_list {
+    margin-left: 20px;
+    margin-right: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+

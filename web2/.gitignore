@@ -1,4 +1,10 @@
 themes
 ggcov.cgi
 jquery-1.4.4.js
-jquery.jstree.js
+jquery.treeTable.css
+jquery.treeTable.min.js
+toggle-collapse-dark.png
+toggle-collapse-light.png
+toggle-expand-dark.png
+toggle-expand-light.png
+

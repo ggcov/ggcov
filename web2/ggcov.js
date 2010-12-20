@@ -206,25 +206,63 @@ var ggcov = {
     },
     _project_show_files: function()
     {
-	var tbody = $('#ggcov #project #file_list tbody');
-	var data = ggcov.project.files;
-	tbody.empty();
-	for (var i = 0; i < data.length; i++)
-	{
-	    var url = ggcov.cgi_url(null, { f: data[i].n });
-	    var label = htmlEntities(data[i].n);
+	var table = $('#ggcov #project #file_list');
+	var files = ggcov.project.files;
+	var map = [];
+	var row = 1;
+	var root = { file: null, children: [], row: row };
+	row++;
+	table.empty();
 
-	    var tr = "<tr>";
-	    tr += "<td align=\"left\"><a href=\"" + url + "\">" + label + "</a></td>";
-	    tr += "<td align=\"right\">" + ggcov._statusbar(data[i].s.li) + "</td>";
-	    tr += "</tr>";
-	    tbody.append(tr);
+	var tr = "<tr id=\"node-1\">";
+	tr += "<td align=\"left\">" + htmlEntities(ggcov.project.name) + "</td>";
+	tr += "<td align=\"right\"></td>";
+	tr += "</tr>";
+	table.append(tr);
+
+	for (var i = 0; i < files.length; i++)
+	{
+	    var path = files[i].n.split('/');
+	    var node = root;
+	    for (var j = 0 ; j < path.length ; j++)
+	    {
+		var k = node.children.length-1;
+		while (k >= 0 && node.children[k].name != path[j])
+		    k--;
+		if (k < 0) {
+		    k = node.children.push({
+			    name: path[j],
+			    file: files[i],
+			    children: [],
+			    row: row }) - 1;
+
+		    var url = null;
+		    if (j == path.length-1)
+			url = ggcov.cgi_url(null, { f: files[i].n });
+		    var label = htmlEntities(path[j]);
+		    var tr = "<tr id=\"node-" + row + "\" class=\"child-of-node-" + node.row + "\">";
+		    tr += "<td align=\"left\">";
+		    if (url)
+			tr += "<a href=\"" + url + "\">" + label + "</a>";
+		    else
+			tr += label;
+		    tr += "</td>";
+		    tr += "<td align=\"right\">" + ggcov._statusbar(files[i].s.li) + "</td>";
+		    tr += "</tr>";
+		    table.append(tr);
+		    row++;
+		}
+		node = node.children[k];
+	    }
 	}
-	$('a', tbody).click(function(ev)
+	$('a', table).click(function(ev)
 	{
 	    var file = ggcov.url_var(ev.target.href, "f");
 	    ggcov.show_source_page(file);
 	    return false;
+	});
+	table.treeTable({
+	    initialState: "expanded"
 	});
     },
     _project_show_reports: function()
