@@ -236,18 +236,19 @@ var ggcov = {
 			    children: [],
 			    row: row }) - 1;
 
-		    var url = null;
-		    if (j == path.length-1)
-			url = ggcov.cgi_url(null, { f: files[i].n });
+		    var statusbar = "";
 		    var label = htmlEntities(path[j]);
+		    if (j == path.length-1)
+		    {
+			var url = ggcov.cgi_url(null, { f: files[i].n });
+			label = "<a href=\"" + url + "\">" + label + "</a>";
+			statusbar = ggcov._statusbar(files[i].s.li);
+		    }
 		    var tr = "<tr id=\"node-" + row + "\" class=\"child-of-node-" + node.row + "\">";
 		    tr += "<td align=\"left\">";
-		    if (url)
-			tr += "<a href=\"" + url + "\">" + label + "</a>";
-		    else
-			tr += label;
+		    tr += label;
 		    tr += "</td>";
-		    tr += "<td align=\"right\">" + ggcov._statusbar(files[i].s.li) + "</td>";
+		    tr += "<td align=\"right\">" + statusbar + "</td>";
 		    tr += "</tr>";
 		    table.append(tr);
 		    row++;
