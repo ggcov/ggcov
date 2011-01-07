@@ -225,6 +225,57 @@ query_listfiles(cgi_t &cgi)
 }
 
 static void
+query_listfunctions(cgi_t &cgi)
+{
+    const char *fvar = cgi.get_variable("f");
+    if (!fvar || !*fvar)
+    {
+	cgi.error("Missing file name\n");
+	return;
+    }
+
+    cov_file_t *f = get_file(cgi);
+    if (!f)
+	return;
+    list_t<cov_function_t> functions;
+    unsigned fnidx;
+    cov_function_t *fn;
+
+    /* build an alphabetically sorted list of functions in the file */
+    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
+    {
+	fn = f->nth_function(fnidx);
+
+	if (fn->is_suppressed() ||
+	    fn->get_first_location() == 0)
+	    continue;
+	functions.prepend(fn);
+    }
+    functions.sort(cov_function_t::compare);
+
+    /* now emit the list as JSON */
+    json_t json;
+    json.begin_array();
+    while ((fn = functions.remove_head()) != 0)
+    {
+	json.begin_object();
+	json.string_field("n", fn->name());
+	json.string_field("fl", fn->get_first_location()->describe());
+	json.string_field("ll", fn->get_last_location()->describe());
+
+	json.begin_object_field("s");
+	cov_function_scope_t sc(fn);
+	encode_stats(json, sc.get_stats());
+	json.end_object();
+
+	json.end_object();
+    }
+    json.end_array();
+
+    cgi.set_reply(json);
+}
+
+static void
 query_annotate(cgi_t &cgi)
 {
     cov_project_t *proj = cov_project_t::current();
@@ -327,6 +378,7 @@ static const struct
 } queries[] = {
     { "listprojects", query_listprojects, false },
     { "listfiles", query_listfiles, true },
+    { "listfunctions", query_listfunctions, true },
     { "annotate", query_annotate, true },
     { "colorcss", query_colorcss, false },
     { "listreports", query_listreports, true },
