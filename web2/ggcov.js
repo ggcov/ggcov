@@ -215,7 +215,9 @@ var ggcov = {
 	table.empty();
 
 	var tr = "<tr id=\"node-1\">";
-	tr += "<td align=\"left\">" + htmlEntities(ggcov.project.name) + "</td>";
+	tr += "<td align=\"left\">";
+	tr += "<img valign=\"center\" src=\"fopen.gif\">&nbsp;" + htmlEntities(ggcov.project.name)
+	tr += "</td>";
 	tr += "<td align=\"right\"></td>";
 	tr += "</tr>";
 	table.append(tr);
@@ -238,15 +240,17 @@ var ggcov = {
 
 		    var statusbar = "";
 		    var label = htmlEntities(path[j]);
+		    var icon = "fopen.gif";
 		    if (j == path.length-1)
 		    {
 			var url = ggcov.cgi_url(null, { f: files[i].n });
 			label = "<a href=\"" + url + "\">" + label + "</a>";
 			statusbar = ggcov._statusbar(files[i].s.li);
+			icon = "new.gif";
 		    }
 		    var tr = "<tr id=\"node-" + row + "\" class=\"child-of-node-" + node.row + "\">";
 		    tr += "<td align=\"left\">";
-		    tr += label;
+		    tr += "<img valign=\"center\" src=\"" + icon + "\">&nbsp;" + label;
 		    tr += "</td>";
 		    tr += "<td align=\"right\">" + statusbar + "</td>";
 		    tr += "</tr>";
