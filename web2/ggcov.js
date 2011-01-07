@@ -400,7 +400,7 @@ var ggcov = {
     },
     show_project_list_page: function()
     {
-	ggcov.settitle("Project Browser");
+	ggcov.settitle("Please Select A Project");
 	ggcov._switch_page('loading');
 	$.getJSON(ggcov.cgi_url('listprojects', { }), function(data)
 	{
