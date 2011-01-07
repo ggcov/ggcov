@@ -167,6 +167,7 @@ var ggcov = {
     {
 	ggcov.settitle("Source - " + filename);
 	ggcov._switch_page('loading');
+	var pending = 2;
 	$.getJSON(ggcov.cgi_url('annotate', { f: filename }), function(data)
 	{
 	    var tbody = $('#ggcov #source #list tbody');
@@ -175,7 +176,7 @@ var ggcov = {
 	    for (var i = 0; i < data.length; i++)
 	    {
 		var tr = "<tr class=\"status" + data[i].s + "f\">";
-		tr += "<td align=\"right\">" + lineno + "</td>";
+		tr += "<td align=\"right\"><a name=\"" + lineno + "\">" + lineno + "</td>";
 
 		var countstr;
 		if (data[i].s == "CO" || data[i].s == "PA")
@@ -191,7 +192,23 @@ var ggcov = {
 		tbody.append(tr);
 		lineno++;
 	    }
-	    ggcov._switch_page('source');
+	    if (--pending == 0)
+		ggcov._switch_page('source');
+	});
+	$.getJSON(ggcov.cgi_url('listfunctions', { f: filename }), function(data)
+	{
+	    var div = $('#ggcov #source #functions');
+	    div.empty();
+	    for (var i = 0; i < data.length; i++)
+	    {
+		var p = "<p>";
+		var fl = data[i].fl.replace(/.*:/, '');
+		p += "<a href=\"#" + fl + "\">" + htmlEntities(data[i].n) + "</a>";
+		p += "</p>";
+		div.append(p);
+	    }
+	    if (--pending == 0)
+		ggcov._switch_page('source');
 	});
     },
     show_report_page: function(report, title)
