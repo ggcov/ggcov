@@ -175,7 +175,7 @@ var ggcov = {
 	    var lineno = 1;
 	    for (var i = 0; i < data.length; i++)
 	    {
-		var tr = "<tr class=\"status" + data[i].s + "f\">";
+		var tr = "<tr class=\"status" + data[i].s + "f\" id=\"line" + lineno + "\">";
 		tr += "<td align=\"right\"><a name=\"" + lineno + "\">" + lineno + "</td>";
 
 		var countstr;
@@ -197,16 +197,21 @@ var ggcov = {
 	});
 	$.getJSON(ggcov.cgi_url('listfunctions', { f: filename }), function(data)
 	{
-	    var div = $('#ggcov #source #functions');
-	    div.empty();
+	    var select = $('#ggcov #source #functions select');
+	    select.empty();
 	    for (var i = 0; i < data.length; i++)
 	    {
-		var p = "<p>";
 		var fl = data[i].fl.replace(/.*:/, '');
-		p += "<a href=\"#" + fl + "\">" + htmlEntities(data[i].n) + "</a>";
-		p += "</p>";
-		div.append(p);
+		var label = htmlEntities(data[i].n);
+		var opt = "<option value=\"" + fl + "\">" + label + "</option>";
+		select.append(opt);
 	    }
+	    select.change(function(ev)
+	    {
+		$('html,body').animate(
+		    { scrollTop: $('#ggcov #source #list tbody #line' + ev.target.value).offset().top },
+		    { duration: 'slow' });
+	    });
 	    if (--pending == 0)
 		ggcov._switch_page('source');
 	});
