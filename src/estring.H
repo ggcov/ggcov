@@ -120,6 +120,23 @@ public:
 	}
     }
 
+    void set(char *s, unsigned int len)
+    {
+	if (data_)
+	    g_free(data_);
+	data_ = s;
+    	if (s == 0)
+	{
+	    length_ = available_ = 0;
+	}
+	else
+	{
+	    length_ = len;
+	    available_ = len+1;
+	    data_[len] = '\0';
+	}
+    }
+
     const char *data() const
     {
     	return data_;
