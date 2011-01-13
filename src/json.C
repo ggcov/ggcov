@@ -173,22 +173,13 @@ json_t::end_field()
     assert(!infield_);
 }
 
-const char *
-json_t::data() const
+estring &
+json_t::data()
 {
     // check that the serialised structure is complete
     assert(depth_ == 0);
     assert(!infield_);
-    return buf_.data();
-}
-
-char *
-json_t::take()
-{
-    // check that the serialised structure is complete
-    assert(depth_ == 0);
-    assert(!infield_);
-    return buf_.take();
+    return buf_;
 }
 
 void

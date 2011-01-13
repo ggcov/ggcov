@@ -29,8 +29,7 @@ public:
     json_t();
     ~json_t();
 
-    const char *data() const;
-    char *take();
+    estring &data();
 
     void string(const char *value);
     void null() { string(0); }

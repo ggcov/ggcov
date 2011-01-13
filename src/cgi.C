@@ -22,8 +22,7 @@
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cgi_t::cgi_t()
- :  sent_(false),
-    content_type_(0)
+ :  sent_(false)
 {
 }
 
@@ -34,9 +33,10 @@ cgi_t::~cgi_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-cgi_t::set_replym(char *body, const char *type)
+cgi_t::set_replym(estring &e, const char *type)
 {
-    reply_body_ = body;
+    int len = e.length();
+    body_.set(e.take(), len);
     content_type_ = type;
 }
 
@@ -64,16 +64,17 @@ cgi_t::reply()
 	return;
     sent_ = true;
 
-    if (content_type_ == 0)
+    if (!content_type_.data())
     {
 	// sets content_type_ as a side effect
 	error("No reply content type set");
     }
 
-    printf("Content-type: %s\r\n", content_type_);
+    printf("Content-type: %s\r\n", content_type_.data());
+    printf("Content-length: %u\r\n", body_.length());
     printf("\r\n");
-    if (reply_body_.data())
-	fputs(reply_body_.data(), stdout);
+    if (body_.data())
+	fwrite(body_.data(), 1, body_.length(), stdout);
     fflush(stdout);
 }
 

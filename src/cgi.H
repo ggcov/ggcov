@@ -23,6 +23,7 @@
 #include "common.h"
 #include <cgicc/Cgicc.h>
 #include "json.H"
+#include "estring.H"
 #include "string_var.H"
 
 class cgi_t
@@ -38,11 +39,11 @@ public:
 
     void set_reply(json_t &json)
     {
-	set_replym(json.take(), "application/json");
+	set_replym(json.data(), "application/json");
     }
     void set_reply(estring &e, const char *type = "text/html")
     {
-	set_replym(e.take(), type);
+	set_replym(e, type);
     }
 
     void error(const char *fmt, ...);
@@ -57,10 +58,10 @@ public:
 private:
     cgicc::Cgicc cgi_;
     boolean sent_;
-    const char *content_type_;
-    string_var reply_body_;
+    string_var content_type_;
+    estring body_;
 
-    void set_replym(char *body, const char *type);
+    void set_replym(estring &, const char *type);
 };
 
 #endif /* _ggcov_cgi_H_ */
