@@ -97,7 +97,7 @@ INCLUDES=	$(BASEINCLUDES) -DPKGDATADIR="\"$(pkgdatadir)\"" \
 		-DPREFIX="\"$(prefix)\"" -DDATADIR="\"$(datadir)\"" \
 		-DLIBDIR="\"$(libdir)\"" -DSYSCONFDIR="\"$(sysconfdir)\"" \
  		-DDEBUG=$(DEBUG) -DUI_DEBUG=$(UI_DEBUG) \
-		$(CPU_DEFINES) $(OS_DEFINES)
+		$(CPU_DEFINES) $(OS_DEFINES) $(GD_CFLAGS)
 ggcov_LDADD=	libcov.a libcommon.a $(GGCOV_GUI_LIBS)
 CLI_LIBS=	libcov.a libcommon.a $(GGCOV_CLI_LIBS)
 
@@ -118,9 +118,10 @@ ggcov_cgi_SOURCES= \
 		ggcov_cgi.C \
 		json.H json.C \
 		cgi.H cgi.C \
+		gd_scenegen.H gd_scenegen.C \
 		$(LIBCOV_STATIC_SOURCES)
 ggcov_cgi_CPPFLAGS= $(CGICC_CPPFLAGS) -DHACKY_PROJDIR="\"$(PWD)/../test\""
-ggcov_cgi_LDADD= $(CLI_LIBS) $(CGICC_LIBS)
+ggcov_cgi_LDADD= $(CLI_LIBS) $(CGICC_LIBS) $(GD_LIBS)
 
 # Note this is an automake conditional *not* a gmake conditional
 if DEBUG
