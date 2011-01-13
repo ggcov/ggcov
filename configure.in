@@ -154,6 +154,7 @@ if test x$web2 = xyes ; then
 	CGICC_LIBS="$cgicc_libdir/libcgicc.a"
 	AC_SUBST(CGICC_LIBS)
     fi
+    ACX_GDLIB
 fi
 WEB2PROG=
 if test x$web2 = xyes ; then
