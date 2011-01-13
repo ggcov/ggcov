@@ -4,6 +4,8 @@
 #include "report.H"
 #include "filename.h"
 #include "colors.h"
+#include "lego_diagram.H"
+#include "gd_scenegen.H"
 
 const char *argv0;
 
@@ -174,6 +176,43 @@ query_summary(cgi_t &cgi)
     delete sc;
 
     cgi.set_reply(json);
+}
+
+static void
+query_diagram(cgi_t &cgi)
+{
+    const char *dvar = cgi.get_variable("d");
+    if (!dvar || !*dvar)
+    {
+	cgi.error("Missing diagram name\n");
+	return;
+    }
+
+    diagram_t *di = 0;
+    if (!strcmp(dvar, "lego"))
+    {
+    	di = new lego_diagram_t;
+    }
+    else
+    {
+	cgi.error("Bad diagram name\n");
+	return;
+    }
+
+    di->prepare();
+    dbounds_t bounds;
+    di->get_bounds(&bounds);
+
+    /* TODO: set width & height from QUERY_STRING */
+    gd_scenegen_t sg(400, 400);
+    sg.bounds(bounds);
+    di->render(&sg);
+
+    delete di;
+
+    estring data;
+    sg.get_data(data);
+    cgi.set_reply(data, "image/png");
 }
 
 
@@ -384,6 +423,7 @@ static const struct
     { "listreports", query_listreports, true },
     { "report", query_report, true },
     { "summary", query_summary, true },
+    { "diagram", query_diagram, true },
     { 0, 0 }
 };
 

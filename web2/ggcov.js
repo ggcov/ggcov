@@ -226,6 +226,13 @@ var ggcov = {
 	    ggcov._switch_page('report');
 	},'text');
     },
+    show_diagram_page: function(diagram, title)
+    {
+	ggcov.settitle("Diagram - " + title);
+// 	ggcov._switch_page('loading');
+	$('#ggcov #diagram img').attr('src', ggcov.cgi_url('diagram', { d: diagram }));
+	ggcov._switch_page('diagram');
+    },
     _project_show_files: function()
     {
 	var table = $('#ggcov #project #file_list');
@@ -296,10 +303,11 @@ var ggcov = {
     {
 	var tbody = $('#ggcov #project #report_list tbody');
 	var data = ggcov.project.reports;
+	data[data.length] = { l: "Lego Diagram", n: "lego", t: 1 };
 	tbody.empty();
 	for (var i = 0; i < data.length; i++)
 	{
-	    var url = ggcov.cgi_url(null, { r: data[i].n });
+	    var url = ggcov.cgi_url(null, { n: data[i].n, t: data[i].t });
 	    var label = htmlEntities(data[i].l).replace(/ /g, '&nbsp;');
 
 	    var tr = "<tr>";
@@ -309,8 +317,12 @@ var ggcov = {
 	}
 	$('a', tbody).click(function(ev)
 	{
-	    var report = ggcov.url_var(ev.target.href, "r");
-	    ggcov.show_report_page(report, $(ev.target).html());
+	    var type = ggcov.url_var(ev.target.href, "t");
+	    var name = ggcov.url_var(ev.target.href, "n");
+	    if (type == 1)
+		ggcov.show_diagram_page(name, $(ev.target).html());
+	    else
+		ggcov.show_report_page(name, $(ev.target).html());
 	    return false;
 	});
     },
