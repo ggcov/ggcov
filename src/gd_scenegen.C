@@ -45,36 +45,10 @@ gd_scenegen_t::~gd_scenegen_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-unsigned int
-gd_scenegen_t::get_color(unsigned int rgb)
+color_t
+gd_scenegen_t::color_rgb(unsigned char r, unsigned char g, unsigned char b)
 {
-    return gdTrueColor((rgb>>16)&0xff, (rgb>>8)&0xff, (rgb)&0xff);
-}
-
-void
-gd_scenegen_t::noborder()
-{
-    border_flag_ = FALSE;
-}
-
-void
-gd_scenegen_t::border(unsigned int rgb)
-{
-    border_flag_ = TRUE;
-    border_pixel_ = get_color(rgb);
-}
-
-void
-gd_scenegen_t::nofill()
-{
-    fill_flag_ = FALSE;
-}
-
-void
-gd_scenegen_t::fill(unsigned int rgb)
-{
-    fill_flag_ = TRUE;
-    fill_pixel_ = get_color(rgb);
+    return (color_t)gdTrueColor(r, g, b);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -88,9 +62,9 @@ gd_scenegen_t::box(double x, double y, double w, double h)
     int iy2 = sy(y+h) - 1;
 
     if (fill_flag_)
-	gdImageFilledRectangle(image_, ix1, iy1, ix2, iy2, fill_pixel_);
+	gdImageFilledRectangle(image_, ix1, iy1, ix2, iy2, fill_color_);
     if (border_flag_)
-	gdImageRectangle(image_, ix1, iy1, ix2, iy2, border_pixel_);
+	gdImageRectangle(image_, ix1, iy1, ix2, iy2, border_color_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -105,7 +79,7 @@ gd_scenegen_t::textbox(
 {
     if (!font_)
 	font_ = gdFontGetSmall();
-    gdImageString(image_, font_, sx(x), sy(y), (unsigned char *)text, border_pixel_);
+    gdImageString(image_, font_, sx(x), sy(y), (unsigned char *)text, border_color_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -151,8 +125,8 @@ gd_scenegen_t::polyline_point(double x, double y)
 	ser_.next_key(); ser_.floating(c[i]);
     }
     ser_.end_array();
-    ser_.next_key(); ser_.integer(fill_idx_);	// fill
-    ser_.next_key(); ser_.integer(fill_idx_);	// border
+    ser_.next_key(); ser_.integer(fill_color_);	// fill
+    ser_.next_key(); ser_.integer(fill_color_);	// border
     ser_.end_array();
 #endif
 
@@ -168,7 +142,7 @@ gd_scenegen_t::polyline_end(gboolean arrow)
 
 //     if (first_arrow_flag_)
 
-    gdImageOpenPolygon(image_, points_.data, points_.count, fill_pixel_);
+    gdImageOpenPolygon(image_, points_.data, points_.count, fill_color_);
 
 //     if (arrow)
 }

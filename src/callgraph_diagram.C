@@ -786,12 +786,12 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 	    cn->name.data(),
     	    cn->function->file()->minimal_name(),
 	    100.0 * n->scope_->get_stats()->blocks_fraction());
-	rgb = bg_rgb_by_status_[n->scope_->status()];
+	rgb = bg_by_status(sg, n->scope_->status());
     }
     else
     {
 	label = g_strdup_printf("%s", cn->name.data());
-	rgb = bg_rgb_by_status_[cov::UNINSTRUMENTED];
+	rgb = bg_by_status(sg, cov::UNINSTRUMENTED);
     }
 
     double y = n->y_-BOX_HEIGHT/2.0;
@@ -813,7 +813,7 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
     	show_node(child, sg);
 
 	sg->arrow_size(ARROW_SIZE);
-	sg->fill(fg_rgb_by_status_[ca->count ? cov::COVERED : cov::UNCOVERED]);
+	sg->fill(fg_by_status(sg, ca->count ? cov::COVERED : cov::UNCOVERED));
 	sg->polyline_begin(FALSE);
 	if (child->rank_ > n->rank_)
 	{

@@ -35,10 +35,11 @@ php_scenegen_t::~php_scenegen_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-unsigned int
-php_scenegen_t::get_color(unsigned int rgb)
+color_t
+php_scenegen_t::color_rgb(unsigned char r, unsigned char g, unsigned char b)
 {
     unsigned int i;
+    unsigned int rgb = (r<<16)|(g<<8)|(b);
 
     for (i = 0 ; i < ncolors_ ; i++)
     {
@@ -55,38 +56,12 @@ php_scenegen_t::get_color(unsigned int rgb)
     ser_.begin_array(5);
     ser_.next_key(); ser_.integer(CODE_COLOR);
     ser_.next_key(); ser_.integer(i);
-    ser_.next_key(); ser_.integer((rgb>>16)&0xff);
-    ser_.next_key(); ser_.integer((rgb>>8)&0xff);
-    ser_.next_key(); ser_.integer((rgb)&0xff);
+    ser_.next_key(); ser_.integer(r);
+    ser_.next_key(); ser_.integer(g);
+    ser_.next_key(); ser_.integer(b);
     ser_.end_array();
 
     return i;
-}
-
-void
-php_scenegen_t::noborder()
-{
-    border_flag_ = FALSE;
-}
-
-void
-php_scenegen_t::border(unsigned int rgb)
-{
-    border_flag_ = TRUE;
-    border_idx_ = get_color(rgb);
-}
-
-void
-php_scenegen_t::nofill()
-{
-    fill_flag_ = FALSE;
-}
-
-void
-php_scenegen_t::fill(unsigned int rgb)
-{
-    fill_flag_ = TRUE;
-    fill_idx_ = get_color(rgb);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -104,13 +79,13 @@ php_scenegen_t::box(double x, double y, double w, double h)
 
     ser_.next_key();
     if (fill_flag_)
-	ser_.integer(fill_idx_);
+	ser_.integer(fill_color_);
     else
 	ser_.null();
 
     ser_.next_key();
     if (border_flag_)
-	ser_.integer(border_idx_);
+	ser_.integer(border_color_);
     else
 	ser_.null();
 
@@ -133,7 +108,7 @@ php_scenegen_t::textbox(
     ser_.next_key(); ser_.floating(x);
     ser_.next_key(); ser_.floating(y);
     ser_.next_key(); ser_.string(text);
-    ser_.next_key(); ser_.integer(border_idx_);
+    ser_.next_key(); ser_.integer(border_color_);
     ser_.end_array();
 }
 
@@ -180,8 +155,8 @@ php_scenegen_t::polyline_point(double x, double y)
 	ser_.next_key(); ser_.floating(c[i]);
     }
     ser_.end_array();
-    ser_.next_key(); ser_.integer(fill_idx_);	// fill
-    ser_.next_key(); ser_.integer(fill_idx_);	// border
+    ser_.next_key(); ser_.integer(fill_color_);	// fill
+    ser_.next_key(); ser_.integer(fill_color_);	// border
     ser_.end_array();
 #endif
 
@@ -221,7 +196,7 @@ php_scenegen_t::polyline_end(gboolean arrow)
     else
 	ser_.null();
 
-    ser_.next_key(); ser_.integer(fill_idx_);
+    ser_.next_key(); ser_.integer(fill_color_);
     ser_.end_array();
 }
 

@@ -37,14 +37,16 @@ public:
     virtual void render(scenegen_t *) = 0;
     virtual void get_bounds(dbounds_t *) = 0;
 
-    void set_fg(cov::status_t, unsigned int rgb);
-    void set_bg(cov::status_t, unsigned int rgb);
+    void set_fg(cov::status_t, color_t rgb);
+    void set_bg(cov::status_t, color_t rgb);
 
 protected:
-    unsigned int    fg_rgb_by_status_[cov::NUM_STATUS];
-    unsigned int    bg_rgb_by_status_[cov::NUM_STATUS];
+    color_t fg_by_status(scenegen_t *, cov::status_t);
+    color_t bg_by_status(scenegen_t *, cov::status_t);
 
 private:
+    unsigned int    fg_rgb_by_status_[cov::NUM_STATUS];
+    unsigned int    bg_rgb_by_status_[cov::NUM_STATUS];
 };
 
 #endif /* _ggcov_diagram_H_ */

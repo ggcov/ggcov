@@ -30,10 +30,7 @@ public:
     php_scenegen_t();
     ~php_scenegen_t();
 
-    void noborder();
-    void border(unsigned int rgb);
-    void nofill();
-    void fill(unsigned int rgb);
+    color_t color_rgb(unsigned char r, unsigned char g, unsigned char b);
     void box(double x, double y, double w, double h);
     void textbox(double x, double y, double w, double h,
 			 const char *text);
@@ -45,8 +42,6 @@ public:
     const estring &data();
 
 private:
-    unsigned int get_color(unsigned int rgb);
-
     enum _codes
     {
 	CODE_COLOR = 1,
@@ -60,11 +55,6 @@ private:
 
     unsigned int ncolors_;
     unsigned int *colors_;
-
-    gboolean fill_flag_;
-    unsigned int fill_idx_;
-    gboolean border_flag_;
-    unsigned int border_idx_;
 
     /* state for polylines */
     gboolean first_arrow_flag_;

@@ -821,7 +821,7 @@ flow_diagram_t::show_arc(arc_t *arc, scenegen_t *sg)
     cov::status_t status = (arc->arc_ == 0 ?
 			    arc->from_->block_->status() :
 			    arc->arc_->status());
-    sg->fill(fg_rgb_by_status_[status]);
+    sg->fill(sg->color_rgb(fg_by_status(sg, status)));
 
     node_t *from = arc->from_;
     node_t *to = arc->to_;
@@ -881,7 +881,7 @@ flow_diagram_t::show_node(node_t *node, scenegen_t *sg)
     if (!node->have_geometry())
 	return;
 
-    sg->fill(bg_rgb_by_status_[node->block_->status()]);
+    sg->fill(bg_by_status(sg, node->block_->status()));
     sg->border(RGB(0,0,0));
 //     sg->object(node->block_);
     sg->box(node->x_, node->y_, node->w_, node->h_);

@@ -37,6 +37,7 @@ inline unsigned int RGB(unsigned int r, unsigned int g, unsigned int b)
 {
     return (r<<16) | (g<<8) | (b);
 }
+typedef unsigned int color_t;
 
 class scenegen_t
 {
@@ -44,10 +45,16 @@ public:
     scenegen_t();
     virtual ~scenegen_t();
 
-    virtual void noborder() = 0;
-    virtual void border(unsigned int rgb) = 0;
-    virtual void nofill() = 0;
-    virtual void fill(unsigned int rgb) = 0;
+    virtual color_t color_rgb(unsigned char r, unsigned char g, unsigned char b);
+    color_t color_rgb(unsigned int rgb)
+    {
+	return color_rgb((rgb>>16)&0xff, (rgb>>8)&0xff, (rgb)&0xff);
+    }
+
+    virtual void noborder();
+    virtual void border(color_t);
+    virtual void nofill();
+    virtual void fill(color_t);
     virtual void box(double x, double y, double w, double h) = 0;
     virtual void textbox(double x, double y, double w, double h,
 			 const char *text) = 0;
@@ -91,6 +98,11 @@ protected:
 
     double arrow_size_;
     double arrow_shape_[3];
+
+    gboolean fill_flag_;
+    color_t fill_color_;
+    gboolean border_flag_;
+    color_t border_color_;
 
 private:
     void set_object(object_type_t, void *);

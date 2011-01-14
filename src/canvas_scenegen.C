@@ -48,30 +48,22 @@ canvas_scenegen_t::~canvas_scenegen_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-canvas_scenegen_t::noborder()
+const char *
+canvas_scenegen_t::fill_color()
 {
-    border_flag_ = FALSE;
+    if (!fill_flag_)
+	return (const char *)0;
+    RGB_TO_STR(fill_buf_, fill_color_);
+    return fill_buf_;
 }
 
-void
-canvas_scenegen_t::border(unsigned int rgb)
+const char *
+canvas_scenegen_t::border_color()
 {
-    border_flag_ = TRUE;
-    RGB_TO_STR(border_buf_, rgb);
-}
-
-void
-canvas_scenegen_t::nofill()
-{
-    fill_flag_ = FALSE;
-}
-
-void
-canvas_scenegen_t::fill(unsigned int rgb)
-{
-    fill_flag_ = TRUE;
-    RGB_TO_STR(fill_buf_, rgb);
+    if (!border_flag_)
+	return (const char *)0;
+    RGB_TO_STR(border_buf_, border_color_);
+    return border_buf_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

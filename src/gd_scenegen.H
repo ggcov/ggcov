@@ -32,10 +32,7 @@ public:
     gd_scenegen_t(int w, int h);
     ~gd_scenegen_t();
 
-    void noborder();
-    void border(unsigned int rgb);
-    void nofill();
-    void fill(unsigned int rgb);
+    color_t color_rgb(unsigned char r, unsigned char g, unsigned char b);
     void box(double x, double y, double w, double h);
     void textbox(double x, double y, double w, double h,
 			 const char *text);
@@ -50,17 +47,11 @@ public:
 private:
     int sx(double x) { return (int)((x - ox_) * sx_ + 0.5); }
     int sy(double y) { return (int)((y - oy_) * sy_ + 0.5); }
-    unsigned int get_color(unsigned int rgb);
 
     int width_, height_;
     gdImage *image_;
     double sx_, ox_, sy_, oy_;
     gdFont *font_;
-
-    gboolean fill_flag_;
-    unsigned int fill_pixel_;
-    gboolean border_flag_;
-    unsigned int border_pixel_;
 
     /* state for polylines */
     gboolean first_arrow_flag_;

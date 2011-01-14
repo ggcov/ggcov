@@ -31,10 +31,6 @@ public:
     canvas_scenegen_t(GnomeCanvas *);
     ~canvas_scenegen_t();
 
-    void noborder();
-    void border(unsigned int rgb);
-    void nofill();
-    void fill(unsigned int rgb);
     void box(double x, double y, double w, double h);
     void textbox(double x, double y, double w, double h,
 			 const char *text);
@@ -43,22 +39,14 @@ public:
     void polyline_end(gboolean arrow);
 
 private:
-    inline const char *fill_color() const
-    {
-	return (fill_flag_ ? fill_buf_ : (const char *)0);
-    }
-    inline const char *border_color() const
-    {
-	return (border_flag_ ? border_buf_ : (const char *)0);
-    }
+    const char *fill_color();
+    const char *border_color();
     void handle_object(GnomeCanvasItem*);
 
     GnomeCanvas *canvas_;
     GnomeCanvasGroup *root_;
 
-    gboolean fill_flag_;
     char fill_buf_[8];
-    gboolean border_flag_;
     char border_buf_[8];
 
     /* state for polylines */

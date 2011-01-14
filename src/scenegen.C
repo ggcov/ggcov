@@ -37,6 +37,40 @@ scenegen_t::~scenegen_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+color_t
+scenegen_t::color_rgb(unsigned char r, unsigned char g, unsigned char b)
+{
+    return (r<<16)|(g<<8)|(b);
+}
+
+void
+scenegen_t::noborder()
+{
+    border_flag_ = FALSE;
+}
+
+void
+scenegen_t::border(color_t color)
+{
+    border_flag_ = TRUE;
+    border_color_ = color;
+}
+
+void
+scenegen_t::nofill()
+{
+    fill_flag_ = FALSE;
+}
+
+void
+scenegen_t::fill(color_t color)
+{
+    fill_flag_ = TRUE;
+    fill_color_ = color;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 void
 scenegen_t::arrow_size(double s)
 {

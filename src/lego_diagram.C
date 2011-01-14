@@ -236,11 +236,11 @@ lego_diagram_t::show_node(node_t *node, scenegen_t *sg)
     dprintf3(D_DLEGO|D_VERBOSE, "legowin_t::show_node depth=%u name=\"%s\" label=\"%s\"\n",
 		node->depth_, node->name_.data(), label.data());
 
-    sg->fill(bg_rgb_by_status_[cov::COVERED]);
+    sg->fill(bg_by_status(sg, cov::COVERED));
     sg->noborder();
     sg->box(node->x_, node->y_, node->w_, node->h_cov_);
 
-    sg->fill(bg_rgb_by_status_[cov::UNCOVERED]);
+    sg->fill(bg_by_status(sg, cov::UNCOVERED));
     sg->noborder();
     sg->box(node->x_, node->y_+node->h_cov_, node->w_, node->h_uncov_);
 

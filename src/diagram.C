@@ -57,5 +57,17 @@ diagram_t::set_bg(cov::status_t st, unsigned int rgb)
     bg_rgb_by_status_[st] = rgb;
 }
 
+color_t
+diagram_t::fg_by_status(scenegen_t *sg, cov::status_t status)
+{
+    return sg->color_rgb(fg_rgb_by_status_[status]);
+}
+
+color_t
+diagram_t::bg_by_status(scenegen_t *sg, cov::status_t status)
+{
+    return sg->color_rgb(bg_rgb_by_status_[status]);
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
