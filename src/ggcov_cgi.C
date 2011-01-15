@@ -22,15 +22,30 @@ static void
 query_listreports(cgi_t &cgi)
 {
     json_t json;
+
     json.begin_array();
+
     const report_t *rep;
     for (rep = all_reports ; rep->name != 0 ; rep++)
     {
 	json.begin_object();
+	json.ulong_field("t", 0);
 	json.string_field("n", rep->name);
 	json.string_field("l", _(rep->label));
 	json.end_object();
     }
+
+    diagram_factory_iterator_t dfi;
+    const diagram_factory_t *df;
+    while ((df = dfi.next()))
+    {
+	json.begin_object();
+	json.ulong_field("t", 1);
+	json.string_field("n", df->name());
+	json.string_field("l", _(df->label()));
+	json.end_object();
+    }
+
     json.end_array();
 
     cgi.set_reply(json);
@@ -188,12 +203,8 @@ query_diagram(cgi_t &cgi)
 	return;
     }
 
-    diagram_t *di = 0;
-    if (!strcmp(dvar, "lego"))
-    {
-    	di = new lego_diagram_t;
-    }
-    else
+    diagram_t *di = diagram_factory_t::create(dvar);
+    if (!di)
     {
 	cgi.error("Bad diagram name\n");
 	return;

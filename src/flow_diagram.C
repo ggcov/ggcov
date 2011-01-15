@@ -36,6 +36,8 @@ CVSID("$Id: flow_diagram.C,v 1.7 2010-05-09 05:37:15 gnb Exp $");
 #define HQUANTUM	3.0
 #define HSLOTS(x)	((int)(((x)/HQUANTUM)+0.5))
 
+/* flow_diagram is internal and does not need a DIAGRAM_FACTORY */
+
 /* return the arc slot nearest the centre of the node at the given rank */
 static inline int
 slot_at_rank(int rank)

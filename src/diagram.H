@@ -49,4 +49,55 @@ private:
     unsigned int    bg_rgb_by_status_[cov::NUM_STATUS];
 };
 
+
+class diagram_factory_t
+{
+public:
+    virtual const char *name() const = 0;
+    virtual const char *label() const = 0;
+    static diagram_t *create(const char *name);
+
+protected:
+    diagram_factory_t()
+    {
+	next_ = all_;
+	all_ = this;
+    }
+
+    virtual diagram_t *creator(void) const = 0;
+private:
+    diagram_factory_t *next_;
+    static diagram_factory_t *all_;
+    friend class diagram_factory_iterator_t;
+};
+
+#define DIAGRAM_FACTORY(nm, lab) \
+struct nm##_diagram_factory_t : public diagram_factory_t \
+{ \
+    const char *name() const { return #nm; } \
+    const char *label() const { return lab; } \
+    diagram_t *creator() const { return new nm##_diagram_t(); } \
+}; \
+nm##_diagram_factory_t nm##_factory
+
+class diagram_factory_iterator_t
+{
+public:
+    diagram_factory_iterator_t()
+    {
+	df_ = diagram_factory_t::all_;
+    }
+
+    const diagram_factory_t *next()
+    {
+	diagram_factory_t *r = df_;
+	if (df_)
+	    df_ = df_->next_;
+	return r;
+    }
+
+private:
+    diagram_factory_t *df_;
+};
+
 #endif /* _ggcov_diagram_H_ */

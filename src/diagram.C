@@ -22,6 +22,8 @@
 
 CVSID("$Id: diagram.C,v 1.2 2010-05-09 05:37:15 gnb Exp $");
 
+diagram_factory_t *diagram_factory_t::all_ = 0;
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 diagram_t::diagram_t()
@@ -67,6 +69,21 @@ color_t
 diagram_t::bg_by_status(scenegen_t *sg, cov::status_t status)
 {
     return sg->color_rgb(bg_rgb_by_status_[status]);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+diagram_t *
+diagram_factory_t::create(const char *name)
+{
+    diagram_factory_t *df;
+
+    for (df = all_ ; df ; df = df->next_)
+    {
+	if (!strcmp(name, df->name()))
+	    return df->creator();
+    }
+    return 0;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

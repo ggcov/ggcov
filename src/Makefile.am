@@ -55,15 +55,15 @@ libcov_a_SOURCES= \
 		cov_types.H cov.H cov.C \
 		report.H report.C \
 		diagram.H diagram.C colors.h \
-		lego_diagram.H lego_diagram.C \
-		callgraph_diagram.H callgraph_diagram.C \
 		flow_diagram.H flow_diagram.C
 # This is a sad hack to work around the problem where some
 # objects need to be unconditionally linked instead of pulled
 # in from libcov.a on demand.
 LIBCOV_STATIC_SOURCES= \
-		cov_stab32.C cov_i386.C cov_dwarf2.C cov_elf.C
-		
+		cov_stab32.C cov_i386.C cov_dwarf2.C cov_elf.C \
+		callgraph_diagram.H callgraph_diagram.C \
+		lego_diagram.H lego_diagram.C
+
 if GUI
 BASEINCLUDES=	$(GGCOV_GUI_CFLAGS)
 else

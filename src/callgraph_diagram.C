@@ -30,6 +30,8 @@ CVSID("$Id: callgraph_diagram.C,v 1.18 2010-05-09 05:37:14 gnb Exp $");
 #define FILE_GAP  	    0.1
 #define ARROW_SIZE	    0.5
 
+DIAGRAM_FACTORY(callgraph, "Callgraph Diagram");
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 callgraph_diagram_t::node_t::node_t(cov_callgraph_t::node_t *cn)
