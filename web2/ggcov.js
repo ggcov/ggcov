@@ -303,7 +303,6 @@ var ggcov = {
     {
 	var tbody = $('#ggcov #project #report_list tbody');
 	var data = ggcov.project.reports;
-	data[data.length] = { l: "Lego Diagram", n: "lego", t: 1 };
 	tbody.empty();
 	for (var i = 0; i < data.length; i++)
 	{
@@ -311,18 +310,20 @@ var ggcov = {
 	    var label = htmlEntities(data[i].l).replace(/ /g, '&nbsp;');
 
 	    var tr = "<tr>";
-	    tr += "<td><a href=\"" + url + "\">" + label + "</a></td>";
+	    tr += "<td><a class=\"" + data[i].c + "\" href=\"" + url + "\">" + label + "</a></td>";
 	    tr += "</tr>";
 	    tbody.append(tr);
 	}
-	$('a', tbody).click(function(ev)
+	$('a.report', tbody).click(function(ev)
 	{
-	    var type = ggcov.url_var(ev.target.href, "t");
 	    var name = ggcov.url_var(ev.target.href, "n");
-	    if (type == 1)
-		ggcov.show_diagram_page(name, $(ev.target).html());
-	    else
-		ggcov.show_report_page(name, $(ev.target).html());
+	    ggcov.show_report_page(name, $(ev.target).html());
+	    return false;
+	});
+	$('a.diagram', tbody).click(function(ev)
+	{
+	    var name = ggcov.url_var(ev.target.href, "n");
+	    ggcov.show_diagram_page(name, $(ev.target).html());
 	    return false;
 	});
     },

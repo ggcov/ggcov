@@ -29,7 +29,7 @@ query_listreports(cgi_t &cgi)
     for (rep = all_reports ; rep->name != 0 ; rep++)
     {
 	json.begin_object();
-	json.ulong_field("t", 0);
+	json.string_field("c", "report");
 	json.string_field("n", rep->name);
 	json.string_field("l", _(rep->label));
 	json.end_object();
@@ -40,7 +40,7 @@ query_listreports(cgi_t &cgi)
     while ((df = dfi.next()))
     {
 	json.begin_object();
-	json.ulong_field("t", 1);
+	json.string_field("c", "diagram");
 	json.string_field("n", df->name());
 	json.string_field("l", _(df->label()));
 	json.end_object();
