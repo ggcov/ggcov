@@ -33,11 +33,15 @@
  * URLs or whatever to graphical primitives.
  */
 
-inline unsigned int RGB(unsigned int r, unsigned int g, unsigned int b)
-{
-    return (r<<16) | (g<<8) | (b);
-}
 typedef unsigned int color_t;
+struct rgb_t
+{
+    unsigned char r, g, b;
+    rgb_t()
+     :  r(0), g(0), b(0) {}
+    rgb_t(unsigned char xr, unsigned char xg, unsigned char xb)
+     :  r(xr), g(xg), b(xb) {}
+};
 
 class scenegen_t
 {
@@ -46,6 +50,10 @@ public:
     virtual ~scenegen_t();
 
     virtual color_t color_rgb(unsigned char r, unsigned char g, unsigned char b);
+    color_t color_rgb(const rgb_t &rgb)
+    {
+	return color_rgb(rgb.r, rgb.g, rgb.b);
+    }
     color_t color_rgb(unsigned int rgb)
     {
 	return color_rgb((rgb>>16)&0xff, (rgb>>8)&0xff, (rgb)&0xff);

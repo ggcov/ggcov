@@ -79,7 +79,7 @@ diagwin_t::zoom_all()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #define GDK_TO_RGB(gdkcol) \
-	RGB(((gdkcol)->red>>8), ((gdkcol)->green>>8), ((gdkcol)->blue>>8))
+	rgb_t(((gdkcol)->red>>8), ((gdkcol)->green>>8), ((gdkcol)->blue>>8))
 
 static void
 set_diagram_colors(diagram_t *di)

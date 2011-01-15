@@ -546,13 +546,13 @@ flow_diagram_t::show_debug_grid(scenegen_t *sg)
     unsigned num_ranks = max_rank_+1;
 
     /* draw a light blue background behind the whole diagram */
-    sg->fill(RGB(0xc0,0xc0,0xff));
+    sg->fill(sg->color_rgb(0xc0,0xc0,0xff));
     sg->noborder();
     sg->box(xpos_[0], ypos_[0],
 	    xpos_[7]-xpos_[0], ypos_[3]-ypos_[0]);
 
     /* draw light magenta rectangles behind the arc slot areas */
-    sg->fill(RGB(0xff,0xc0,0xff));
+    sg->fill(sg->color_rgb(0xff,0xc0,0xff));
     if (num_slots_[0] > 1)
 	sg->box(xpos_[1], ypos_[1],
 		xpos_[2]-xpos_[1], ypos_[2]-ypos_[1]);
@@ -561,8 +561,8 @@ flow_diagram_t::show_debug_grid(scenegen_t *sg)
 		xpos_[6]-xpos_[5], ypos_[2]-ypos_[1]);
 
     /* draw a dark magenta showing slots */
-    sg->fill(RGB(0x80,0x00,0x80));
-    sg->border(RGB(0x80,0x00,0x80));
+    sg->fill(sg->color_rgb(0x80,0x00,0x80));
+    sg->border(sg->color_rgb(0x80,0x00,0x80));
 
     /* vertical grid lines over left slot area */
     if (num_slots_[0])
@@ -591,8 +591,8 @@ flow_diagram_t::show_debug_grid(scenegen_t *sg)
     }
 
     /* draw a dark blue showing lines and ranks */
-    sg->fill(RGB(0x00,0x00,0x80));
-    sg->border(RGB(0x00,0x00,0x80));
+    sg->fill(sg->color_rgb(0x00,0x00,0x80));
+    sg->border(sg->color_rgb(0x00,0x00,0x80));
 
     /* horizontal grid lines over the node area */
     for (i = 0 ; i < num_lines_ ; i++)
@@ -823,7 +823,7 @@ flow_diagram_t::show_arc(arc_t *arc, scenegen_t *sg)
     cov::status_t status = (arc->arc_ == 0 ?
 			    arc->from_->block_->status() :
 			    arc->arc_->status());
-    sg->fill(sg->color_rgb(fg_by_status(sg, status)));
+    sg->fill(fg_by_status(sg, status));
 
     node_t *from = arc->from_;
     node_t *to = arc->to_;
@@ -884,7 +884,7 @@ flow_diagram_t::show_node(node_t *node, scenegen_t *sg)
 	return;
 
     sg->fill(bg_by_status(sg, node->block_->status()));
-    sg->border(RGB(0,0,0));
+    sg->border(sg->color_rgb(0,0,0));
 //     sg->object(node->block_);
     sg->box(node->x_, node->y_, node->w_, node->h_);
 

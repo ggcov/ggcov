@@ -28,47 +28,29 @@ diagram_factory_t *diagram_factory_t::all_ = 0;
 
 diagram_t::diagram_t()
 {
-    fg_rgb_by_status_[cov::COVERED] = RGB(COLOR_FG_COVERED);
-    fg_rgb_by_status_[cov::PARTCOVERED] = RGB(COLOR_FG_PARTCOVERED);
-    fg_rgb_by_status_[cov::UNCOVERED] = RGB(COLOR_FG_UNCOVERED);
-    fg_rgb_by_status_[cov::UNINSTRUMENTED] = RGB(COLOR_FG_UNINSTRUMENTED);
-    fg_rgb_by_status_[cov::SUPPRESSED] = RGB(COLOR_FG_SUPPRESSED);
+    static const rgb_t default_fg[cov::NUM_STATUS] =
+    {
+	rgb_t( COLOR_FG_COVERED ),
+	rgb_t( COLOR_FG_PARTCOVERED ),
+	rgb_t( COLOR_FG_UNCOVERED ),
+	rgb_t( COLOR_FG_UNINSTRUMENTED ),
+	rgb_t( COLOR_FG_SUPPRESSED )
+    };
+    static const rgb_t default_bg[cov::NUM_STATUS] =
+    {
+	rgb_t( COLOR_BG_COVERED ),
+	rgb_t( COLOR_BG_PARTCOVERED ),
+	rgb_t( COLOR_BG_UNCOVERED ),
+	rgb_t( COLOR_BG_UNINSTRUMENTED ),
+	rgb_t( COLOR_BG_SUPPRESSED )
+    };
 
-    bg_rgb_by_status_[cov::COVERED] = RGB(COLOR_BG_COVERED);
-    bg_rgb_by_status_[cov::PARTCOVERED] = RGB(COLOR_BG_PARTCOVERED);
-    bg_rgb_by_status_[cov::UNCOVERED] = RGB(COLOR_BG_UNCOVERED);
-    bg_rgb_by_status_[cov::UNINSTRUMENTED] = RGB(COLOR_BG_UNINSTRUMENTED);
-    bg_rgb_by_status_[cov::SUPPRESSED] = RGB(COLOR_BG_SUPPRESSED);
+    memcpy(fg_by_status_, default_fg, sizeof(default_fg));
+    memcpy(bg_by_status_, default_bg, sizeof(default_bg));
 }
 
 diagram_t::~diagram_t()
 {
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
-diagram_t::set_fg(cov::status_t st, unsigned int rgb)
-{
-    fg_rgb_by_status_[st] = rgb;
-}
-
-void
-diagram_t::set_bg(cov::status_t st, unsigned int rgb)
-{
-    bg_rgb_by_status_[st] = rgb;
-}
-
-color_t
-diagram_t::fg_by_status(scenegen_t *sg, cov::status_t status)
-{
-    return sg->color_rgb(fg_rgb_by_status_[status]);
-}
-
-color_t
-diagram_t::bg_by_status(scenegen_t *sg, cov::status_t status)
-{
-    return sg->color_rgb(bg_rgb_by_status_[status]);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

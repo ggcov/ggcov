@@ -247,7 +247,7 @@ lego_diagram_t::show_node(node_t *node, scenegen_t *sg)
     sg->box(node->x_, node->y_+node->h_cov_, node->w_, node->h_uncov_);
 
     sg->nofill();
-    sg->border(RGB(0,0,0));
+    sg->border(sg->color_rgb(0,0,0));
     sg->box(node->x_, node->y_, node->w_, node->h_);
     sg->object(node->file_);
     sg->textbox(node->x_, node->y_, node->w_, node->h_, label.data());

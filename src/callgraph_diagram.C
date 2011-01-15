@@ -776,7 +776,7 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
     cov_callgraph_t::node_t *cn = n->callnode_;
     GList *iter;
     string_var label;
-    unsigned int rgb;
+    color_t fill;
 
     if (n->shown_ == shown_)
     	return;     /* already been here */
@@ -788,18 +788,18 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 	    cn->name.data(),
     	    cn->function->file()->minimal_name(),
 	    100.0 * n->scope_->get_stats()->blocks_fraction());
-	rgb = bg_by_status(sg, n->scope_->status());
+	fill = bg_by_status(sg, n->scope_->status());
     }
     else
     {
 	label = g_strdup_printf("%s", cn->name.data());
-	rgb = bg_by_status(sg, cov::UNINSTRUMENTED);
+	fill = bg_by_status(sg, cov::UNINSTRUMENTED);
     }
 
     double y = n->y_-BOX_HEIGHT/2.0;
 
-    sg->fill(rgb);
-    sg->border(RGB(0,0,0));
+    sg->fill(fill);
+    sg->border(sg->color_rgb(0,0,0));
     sg->box(n->x_, y, BOX_WIDTH, BOX_HEIGHT);
     sg->object(cn->function);
     sg->textbox(n->x_, y, BOX_WIDTH, BOX_HEIGHT, label);
@@ -862,7 +862,7 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
     {
 	/* draw a red border showing the space allocated to this node */
 	sg->nofill();
-	sg->border(RGB(0xff,0,0));
+	sg->border(sg->color_rgb(0xff,0,0));
 	sg->box(n->x_, n->y_ - n->h_/2.0, BOX_WIDTH, n->h_);
     }
 }
@@ -875,7 +875,7 @@ callgraph_diagram_t::render(scenegen_t *sg)
     if (debug_enabled(D_DCALLGRAPH))
     {
 	/* draw a light blue background behind the whole diagram */
-	sg->fill(RGB(0xc0,0xc0,0xff));
+	sg->fill(sg->color_rgb(0xc0,0xc0,0xff));
 	sg->noborder();
 	sg->box(bounds_.x1+MARGIN,
 		bounds_.y1+MARGIN,
