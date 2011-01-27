@@ -233,6 +233,32 @@ var ggcov = {
 	$('#ggcov #diagram img').attr('src', ggcov.cgi_url('diagram', { d: diagram }));
 	ggcov._switch_page('diagram');
     },
+    show_builtin_page: function(name, title)
+    {
+	ggcov.settitle(title);
+	ggcov._switch_page('loading');
+	if (name == 'functions')
+	{
+	    $.getJSON(ggcov.cgi_url('listfunctions', { }), function(data)
+	    {
+		var tbody = $('#ggcov #functions_page #list tbody');
+		tbody.empty();
+		for (var i = 0; i < data.length; i++)
+		{
+		    var func_url = ggcov.cgi_url(null, { f: data[i].f, fn: data[i].n });
+		    var file_url = ggcov.cgi_url(null, { f: data[i].f });
+
+		    var tr = "<tr>";
+		    tr += "<td><a class=\"function\" href=\"" + func_url + "\">" + htmlEntities(data[i].n) + "</a></td>";
+		    tr += "<td><a class=\"file\" href=\"" + file_url + "\">" + htmlEntities(data[i].f) + "</a></td>";
+		    tr += "<td>" + ggcov._statusbar(data[i].s.li) + "</td>";
+		    tr += "</tr>";
+		    tbody.append(tr);
+		}
+		ggcov._switch_page('functions_page');
+	    });
+	}
+    },
     _project_show_files: function()
     {
 	var table = $('#ggcov #project #file_list');
@@ -303,10 +329,11 @@ var ggcov = {
     {
 	var tbody = $('#ggcov #project #report_list tbody');
 	var data = ggcov.project.reports;
+	data[data.length] = { n: 'functions', l: 'Functions', c: 'builtin' };
 	tbody.empty();
 	for (var i = 0; i < data.length; i++)
 	{
-	    var url = ggcov.cgi_url(null, { n: data[i].n, t: data[i].t });
+	    var url = ggcov.cgi_url(null, { n: data[i].n });
 	    var label = htmlEntities(data[i].l).replace(/ /g, '&nbsp;');
 
 	    var tr = "<tr>";
@@ -324,6 +351,12 @@ var ggcov = {
 	{
 	    var name = ggcov.url_var(ev.target.href, "n");
 	    ggcov.show_diagram_page(name, $(ev.target).html());
+	    return false;
+	});
+	$('a.builtin', tbody).click(function(ev)
+	{
+	    var name = ggcov.url_var(ev.target.href, "n");
+	    ggcov.show_builtin_page(name, $(ev.target).html());
 	    return false;
 	});
     },
