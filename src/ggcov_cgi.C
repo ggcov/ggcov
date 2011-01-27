@@ -275,23 +275,11 @@ query_listfiles(cgi_t &cgi)
 }
 
 static void
-query_listfunctions(cgi_t &cgi)
+add_functions(cov_file_t *f, list_t<cov_function_t> &functions)
 {
-    const char *fvar = cgi.get_variable("f");
-    if (!fvar || !*fvar)
-    {
-	cgi.error("Missing file name\n");
-	return;
-    }
-
-    cov_file_t *f = get_file(cgi);
-    if (!f)
-	return;
-    list_t<cov_function_t> functions;
     unsigned fnidx;
     cov_function_t *fn;
 
-    /* build an alphabetically sorted list of functions in the file */
     for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
     {
 	fn = f->nth_function(fnidx);
@@ -301,6 +289,35 @@ query_listfunctions(cgi_t &cgi)
 	    continue;
 	functions.prepend(fn);
     }
+}
+
+static void
+query_listfunctions(cgi_t &cgi)
+{
+    const char *fvar = cgi.get_variable("f");
+    list_t<cov_function_t> functions;
+    cov_function_t *fn;
+
+    /* build an alphabetically sorted list of functions */
+    if (!fvar || !*fvar)
+    {
+	// no file name: list all functions
+	list_iterator_t<cov_file_t> itr;
+	for (itr = cov_project_t::current()->first_file() ; itr != (cov_file_t *)0 ; ++itr)
+	    add_functions(*itr, functions);
+    }
+    else
+    {
+	// functions for a particular file
+	cov_file_t *f = get_file(cgi);
+	if (!f)
+	{
+	    cgi.error("Bad filename\n");
+	    return;
+	}
+	add_functions(f, functions);
+    }
+
     functions.sort(cov_function_t::compare);
 
     /* now emit the list as JSON */
@@ -310,6 +327,7 @@ query_listfunctions(cgi_t &cgi)
     {
 	json.begin_object();
 	json.string_field("n", fn->name());
+	json.string_field("f", fn->file()->minimal_name());
 	json.string_field("fl", fn->get_first_location()->describe());
 	json.string_field("ll", fn->get_last_location()->describe());
 
