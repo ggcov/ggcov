@@ -69,7 +69,7 @@ var ggcov = {
 	}
 	return null;
     },
-    _statusbar: function(vals)
+    _statusbar_html: function(vals)
     {
 	var d = vals.CO + vals.PA + vals.UC;
 
@@ -96,7 +96,7 @@ var ggcov = {
     },
     _update_statusbar: function(q, vals)
     {
-	var html = ggcov._statusbar(vals);
+	var html = ggcov._statusbar_html(vals);
 
 	if (html == null)
 	{
@@ -109,53 +109,65 @@ var ggcov = {
 	    q.css('visibility', 'visible');
 	}
     },
-    _update_summary_aux: function(frac_q, pc_q, vals)
+    _fraction_html: function(vals)
     {
-	var frac_str, pc_str;
 	var n = vals.CO + vals.PA;
 	var d = n + vals.UC;
 
 	if (d == 0)
 	{
-	    frac_str = '0/0';
-	    pc_str = '';
+	    return '0/0';
 	}
 	else if (vals.PA == 0)
 	{
-	    frac_str = '' + n + '/' + d;
-	    pc_str = '' + (100.0 * n / d).toFixed(1) + '%';
+	    return '' + n + '/' + d;
 	}
 	else
 	{
-	    frac_str = '' + vals.CO + '+' + vals.PA + '/' + d;
-	    pc_str = '' + (100.0 * vals.CO / d).toFixed(1) + '+' + (100.0 * vals.PA / d).toFixed(1) + '%';
+	    return '' + vals.CO + '+' + vals.PA + '/' + d;
 	}
-	frac_q.html(frac_str);
-	pc_q.html(pc_str);
+    },
+    _percent_html: function(vals)
+    {
+	var n = vals.CO + vals.PA;
+	var d = n + vals.UC;
+
+	if (d == 0)
+	{
+	    return '';
+	}
+	else if (vals.PA == 0)
+	{
+	    return '' + (100.0 * n / d).toFixed(1) + '%';
+	}
+	else
+	{
+	    return '' + (100.0 * vals.CO / d).toFixed(1) + '+' + (100.0 * vals.PA / d).toFixed(1) + '%';
+	}
     },
     _project_show_summary: function()
     {
 	var table = $('#ggcov #project #summary');
 	var stats = ggcov.project.summary;
-	ggcov._update_summary_aux($('#lines_frac', table),
-				  $('#lines_pc', table),
-				  stats.li);
-	ggcov._update_summary_aux($('#functions_frac', table),
-				  $('#functions_pc', table),
-				  stats.fn);
-	ggcov._update_summary_aux($('#calls_frac', table),
-				  $('#calls_pc', table),
-				  stats.ca);
-	ggcov._update_summary_aux($('#branches_frac', table),
-				  $('#branches_pc', table),
-				  stats.br);
-	ggcov._update_summary_aux($('#blocks_frac', table),
-				  $('#blocks_pc', table),
-				  stats.bl);
+
+	$('#lines_frac', table).html(ggcov._fraction_html(stats.li));
+	$('#lines_pc', table).html(ggcov._percent_html(stats.li));
 	ggcov._update_statusbar($('#lines_bar', table), stats.li);
+
+	$('#functions_frac', table).html(ggcov._fraction_html(stats.fn));
+	$('#functions_pc', table).html(ggcov._percent_html(stats.fn));
 	ggcov._update_statusbar($('#functions_bar', table), stats.fn);
+
+	$('#calls_frac', table).html(ggcov._fraction_html(stats.ca));
+	$('#calls_pc', table).html(ggcov._percent_html(stats.ca));
 	ggcov._update_statusbar($('#calls_bar', table), stats.ca);
+
+	$('#branches_frac', table).html(ggcov._fraction_html(stats.br));
+	$('#branches_pc', table).html(ggcov._percent_html(stats.br));
 	ggcov._update_statusbar($('#branches_bar', table), stats.br);
+
+	$('#blocks_frac', table).html(ggcov._fraction_html(stats.bl));
+	$('#blocks_pc', table).html(ggcov._percent_html(stats.bl));
 	ggcov._update_statusbar($('#blocks_bar', table), stats.bl);
     },
     _switch_page: function(pp)
@@ -251,7 +263,7 @@ var ggcov = {
 		    var tr = "<tr>";
 		    tr += "<td><a class=\"function\" href=\"" + func_url + "\">" + htmlEntities(data[i].n) + "</a></td>";
 		    tr += "<td><a class=\"file\" href=\"" + file_url + "\">" + htmlEntities(data[i].f) + "</a></td>";
-		    tr += "<td>" + ggcov._statusbar(data[i].s.li) + "</td>";
+		    tr += "<td>" + ggcov._statusbar_html(data[i].s.li) + "</td>";
 		    tr += "</tr>";
 		    tbody.append(tr);
 		}
@@ -300,7 +312,7 @@ var ggcov = {
 		    {
 			var url = ggcov.cgi_url(null, { f: files[i].n });
 			label = "<a href=\"" + url + "\">" + label + "</a>";
-			statusbar = ggcov._statusbar(files[i].s.li);
+			statusbar = ggcov._statusbar_html(files[i].s.li);
 			icon = "new.gif";
 		    }
 		    var tr = "<tr id=\"node-" + row + "\" class=\"child-of-node-" + node.row + "\">";
