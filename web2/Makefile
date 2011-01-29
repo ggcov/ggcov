@@ -14,10 +14,12 @@ TT_FILES=	$(notdir $(wildcard $(TT_png)/*.png) \
 JQTT_gif=	/home/gnb/software/jqtreetable/images
 JQTT_FILES=	new.gif fopen.gif fshut.gif
 
-CSS_FILES=	ggcov.css
-JS_FILES=	ggcov.js jquery-1.4.4$(MIN).js
+CSS_FILES=	ggcov.css ts-style.css
+JS_FILES=	ggcov.js jquery-1.4.4$(MIN).js \
+		jquery.tablesorter$(MIN).js
 HTML_FILES=	index.html
-IMAGE_FILES=	favicon.ico ggcov32.png
+IMAGE_FILES=	favicon.ico ggcov32.png \
+		ts-asc.gif ts-bg.gif ts-desc.gif
 CGI_FILES=	ggcov.cgi .htaccess
 ALL_FILES=	$(CSS_FILES) $(JS_FILES) $(HTML_FILES) $(IMAGE_FILES) \
 		$(CGI_FILES) $(TT_FILES) $(JQTT_FILES)

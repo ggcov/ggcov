@@ -253,7 +253,7 @@ var ggcov = {
 	{
 	    $.getJSON(ggcov.cgi_url('listfunctions', { }), function(data)
 	    {
-		var tbody = $('#ggcov #functions_page #list tbody');
+		var tbody = $('#ggcov #functions_page tbody');
 		tbody.empty();
 		for (var i = 0; i < data.length; i++)
 		{
@@ -264,9 +264,11 @@ var ggcov = {
 		    tr += "<td><a class=\"function\" href=\"" + func_url + "\">" + htmlEntities(data[i].n) + "</a></td>";
 		    tr += "<td><a class=\"file\" href=\"" + file_url + "\">" + htmlEntities(data[i].f) + "</a></td>";
 		    tr += "<td>" + ggcov._statusbar_html(data[i].s.li) + "</td>";
+		    tr += "<td>" + ggcov._fraction_html(data[i].s.li) + '&nbsp;' + ggcov._percent_html(data[i].s.li) + "</td>";
 		    tr += "</tr>";
 		    tbody.append(tr);
 		}
+ 		$('#ggcov #functions_page table').tablesorter({ widthFixed: false });
 		ggcov._switch_page('functions_page');
 	    });
 	}

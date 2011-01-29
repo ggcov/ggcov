@@ -8,8 +8,10 @@
   <link href="ggcov.css" rel="stylesheet" type="text/css">
   <link href="jquery.treeTable.css" rel="stylesheet" type="text/css">
   <link href="ggcov.cgi?q=colorcss" rel="stylesheet" type="text/css">
+  <link href="ts-style.css" rel="stylesheet" type="text/css">
   <script src="jquery-1.4.4.min.js" type="text/javascript"></script>
   <script src="jquery.treeTable.min.js" type="text/javascript"></script>
+  <script src="jquery.tablesorter.min.js" type="text/javascript"></script>
   <script src="ggcov.js" type="text/javascript"></script>
   <script type="text/javascript">
     $(document).ready(function()
@@ -168,12 +170,12 @@
 
 	    <div class="page" id="functions_page">
 		<p><a class="project" href="">Back to project</a></p>
-		<table id="list">
+		<table id="list" class="tablesorter">
 		    <thead>
 			<tr>
 			    <th>Function</th>
 			    <th>File</th>
-			    <th>Coverage</th>
+			    <th colspan="2">Line Coverage</th>
 			</tr>
 		    </thead>
 		    <tbody></tbody>
