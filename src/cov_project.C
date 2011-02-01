@@ -76,11 +76,12 @@ void
 cov_project_t::read_description()
 {
     string_var readme = g_strconcat(basedir_.data(), "/README", (char *)0);
-    FILE *fp;
+    FILE *fp = 0;
     char *p;
     char buf[1024];
 
-    fp = fopen(readme, "r");
+    if (readme.data())
+	fp = fopen(readme.data(), "r");
     if (!fp)
     {
 	description_ = "Please add a README to this directory";
