@@ -33,6 +33,7 @@ libcommon_a_SOURCES= \
 		list.H \
 		hashtable.H hashtable.C \
 		ptrarray.H \
+		countarray.H countarray.C \
 		mvc.h mvc.c \
 		cpp_parser.H cpp_parser.C \
 		scenegen.H scenegen.C \

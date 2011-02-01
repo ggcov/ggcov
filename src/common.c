@@ -84,6 +84,26 @@ gnb_xmalloc(size_t sz)
     return x;
 }
 
+void *gnb_xcalloc(size_t n, size_t sz)
+{
+    void *x;
+
+    if ((x = calloc(n, sz)) == 0)
+	oom();
+
+    return x;
+}
+
+void *gnb_xrealloc(void *p, size_t sz)
+{
+    void *x;
+
+    if ((x = realloc(p, sz)) == 0)
+	oom();
+
+    return x;
+}
+
 void *
 operator new(size_t sz)
 {

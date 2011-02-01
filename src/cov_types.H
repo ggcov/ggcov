@@ -26,9 +26,11 @@
 #if HAVE_STDINT_H
 typedef uint64_t  	    	count_t;
 #define COV_COUNT_MAX	    	UINT64_MAX
+#define COV_COUNT_INVALID	(~((count_t)0))
 #else
 typedef unsigned long long int  count_t;
 #define COV_COUNT_MAX	    	18446744073709551615ULL
+#define COV_COUNT_INVALID	(~0ULL)
 #endif
 
 class cov_file_t;

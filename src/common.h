@@ -215,6 +215,8 @@ __attribute__ (( format(printf,1,2) ))
 ;
 
 extern void *gnb_xmalloc(size_t sz);
+extern void *gnb_xcalloc(size_t n, size_t sz);
+extern void *gnb_xrealloc(void *p, size_t sz);
 #ifdef __cplusplus
 /*
  * Operators new and delete operators are matched to avoid
