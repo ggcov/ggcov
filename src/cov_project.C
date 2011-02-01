@@ -22,6 +22,7 @@
 #include "covio.H"
 #include "estring.H"
 #include "string_var.H"
+#include "countarray.H"
 #include "filename.h"
 #include "mvc.h"
 #include "tok.H"
@@ -42,6 +43,7 @@ cov_project_t::cov_project_t(const char *name, const char *basedir)
     all_.append(this);
     if (current_ == 0)
 	current_ = this;
+    counts_ = new countarray_t();
     read_description();
 }
 
@@ -51,6 +53,7 @@ cov_project_t::~cov_project_t()
     if (current_ == this)
 	current_ = 0;
     // TODO: destroy files_ hashtable etc
+    delete counts_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -766,6 +769,26 @@ cov_project_t::list_all_functions() const
     }
     list->sort(cov_function_t::compare);
     return list;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+count_t
+cov_project_t::get_counter(unsigned int i) const
+{
+    return counts_->nth(i);
+}
+
+void
+cov_project_t::set_counter(unsigned int i, count_t c)
+{
+    counts_->set(i, c);
+}
+
+unsigned int
+cov_project_t::next_counter()
+{
+    return counts_->next_slot();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

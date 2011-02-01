@@ -92,7 +92,7 @@ public:
     count_t
     count() const
     {
-    	return count_;
+    	return cov_project_t::current()->get_counter(counter_);
     }
     
     gboolean is_epilogue() const;
@@ -135,15 +135,11 @@ private:
 
     cov_function_t *function_;
     unsigned int idx_; 	    /* serial number in function */
-    
-    count_t count_;
-    boolean count_valid_:1;
-    
+
+    unsigned int counter_;
+
     list_t<cov_arc_t> in_arcs_;
-    unsigned in_ninvalid_;   /* number of inbound non-call arcs with invalid counts */
-    
     list_t<cov_arc_t> out_arcs_;
-    unsigned out_ninvalid_;  /* number of outbound non-call arcs with invalid counts */
     unsigned int out_ncalls_;/* number of outbound call arcs */
     
     list_t<cov_location_t> locations_;

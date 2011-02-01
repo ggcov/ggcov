@@ -21,6 +21,7 @@
 #define _ggcov_cov_arc_H_ 1
 
 #include "string_var.H"
+#include "cov_project.H"
 
 class cov_file_t;
 class cov_function_t;
@@ -38,9 +39,9 @@ public:
     count_t
     count() const
     {
-    	return count_;
+    	return cov_project_t::current()->get_counter(counter_);
     }
-    
+
     unsigned int
     aindex() const
     {
@@ -100,7 +101,7 @@ public:
     {
 	if (is_suppressed())
 	    return cov::SUPPRESSED;
-	else if (count_)
+	else if (count())
 	    return cov::COVERED;
 	else
 	    return cov::UNCOVERED;
@@ -122,15 +123,15 @@ private:
     static count_t total(const list_t<cov_arc_t> &list);
     static cov_arc_t *find_invalid(const list_t<cov_arc_t> &list,
     	    	    	    	   gboolean may_be_call);
+    static unsigned int count_invalid(const list_t<cov_arc_t> &list);
 
     cov_block_t *from_, *to_;
     unsigned int idx_; 	    /* serial number in from->out_arcs */
-    count_t count_;
+    unsigned int counter_;
     string_var name_;     	    /* name of function called (if known) or NULL */
     boolean on_tree_:1;
     boolean call_:1;
     boolean fall_through_:1;
-    boolean count_valid_:1;
     boolean suppressed_:1;
     
     friend class cov_file_t;

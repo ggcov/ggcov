@@ -21,6 +21,7 @@
 #define _ggcov_cov_project_H_ 1
 
 #include "common.h"
+#include "cov_types.H"
 #include "cov_file.H"
 #include "cov_callgraph.H"
 #include "list.H"
@@ -30,6 +31,7 @@
 
 class cov_bfd_t;
 class covio_t;
+class countarray_t;
 
 /*
  * Note that the project is an MVC model which can be listened
@@ -126,6 +128,10 @@ public:
 	return callgraph_;
     }
 
+    count_t get_counter(unsigned int) const;
+    void set_counter(unsigned int, count_t);
+    unsigned int next_counter();
+
 private:
     void read_description();
 
@@ -157,6 +163,8 @@ private:
     int common_len_;
 
     cov_callgraph_t callgraph_;
+
+    countarray_t *counts_;
 };
 
 

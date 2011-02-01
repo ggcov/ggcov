@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
+ * Copyright (c) 2001-2011 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ CVSID("$Id: cov_block.C,v 1.21 2010-05-09 05:37:15 gnb Exp $");
 
 cov_block_t::cov_block_t()
 {
+    counter_ = cov_project_t::current()->next_counter();
 }
 
 cov_block_t::~cov_block_t()
@@ -89,9 +90,8 @@ cov_block_t::add_location(const char *filename, unsigned lineno)
 void
 cov_block_t::set_count(count_t count)
 {
-    assert(!count_valid_);
-    count_valid_ = true;
-    count_ = count;
+    assert(cov_project_t::current()->get_counter(counter_) == COV_COUNT_INVALID);
+    cov_project_t::current()->set_counter(counter_, count);
 
     assert(out_ncalls_ == 0 || out_ncalls_ == 1);
     if (out_ncalls_)
@@ -265,7 +265,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
     if (suppressed_ /*externally suppressed*/ ||
     	bits == (1<<cov::SUPPRESSED)/* all lines suppressed, none covered */)
     	st = cov::SUPPRESSED;
-    else if (count_)
+    else if (count())
     	st = cov::COVERED;
     else
     	st = cov::UNCOVERED;
@@ -281,13 +281,15 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
 count_t
 cov_block_t::total(const GList *list)
 {
-    count_t total = 0;
+    count_t total = 0, c;
 
     for ( ; list != 0 ; list = list->next)
     {
     	cov_block_t *b = (cov_block_t *)list->data;
-	
-	total += b->count_;
+
+	c = b->count();
+	assert(c != COV_COUNT_INVALID);
+	total += c;
     }
     return total;
 }

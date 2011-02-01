@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
+ * Copyright (c) 2001-2011 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -303,6 +303,7 @@ cov_function_t::solve()
     int i;
     cov_arc_t *a;
     cov_block_t *b;
+    static unsigned int *out_ninvalid, *in_ninvalid, last_num_blocks;
 
     /* For every block in the file,
        - if every exit/entrance arc has a known count, then set the block count
@@ -322,7 +323,22 @@ cov_function_t::solve()
        This takes an average of slightly more than 3 passes.  */
 
     dprintf1(D_SOLVE, " ---> %s\n", name_.data());
-    
+
+    if (num_blocks() > last_num_blocks)
+    {
+	out_ninvalid = (unsigned int *)gnb_xrealloc(out_ninvalid,
+			    sizeof(unsigned int) * 2 * num_blocks());
+	in_ninvalid = out_ninvalid + num_blocks();
+	last_num_blocks = num_blocks();
+    }
+
+    for (i = num_blocks() - 1; i >= 0; i--)
+    {
+	b = nth_block(i);
+	out_ninvalid[b->bindex()] = cov_arc_t::count_invalid(b->out_arcs_);
+	in_ninvalid[b->bindex()] = cov_arc_t::count_invalid(b->in_arcs_);
+    }
+
     /*
      * In the new gcc 3.3 file format we cannot expect to get arcs into
      * the entry block and out of the exit block.  So if we don't get any,
@@ -334,13 +350,13 @@ cov_function_t::solve()
     if ((b = nth_block(0))->in_arcs_.head() == 0)
     {
     	assert(file_->format_version_ > 0);
-	b->in_ninvalid_ = ~0U;
+	in_ninvalid[b->bindex()] = ~0U;
 	dprintf0(D_SOLVE, "entry block tweaked\n");
     }
     if ((b = nth_block(num_blocks()-1))->out_arcs_.head() == 0)
     {
     	assert(file_->format_version_ > 0);
-	b->out_ninvalid_ = ~0U;
+	out_ninvalid[b->bindex()] = ~0U;
 	dprintf0(D_SOLVE, "exit block tweaked\n");
     }
 
@@ -357,11 +373,11 @@ cov_function_t::solve()
 	{
 	    b = nth_block(i);
     	    dprintf1(D_SOLVE, "[%d]\n", b->bindex());
-	    
-	    if (!b->count_valid_)
+
+	    if (b->count() == COV_COUNT_INVALID)
 	    {
     		dprintf3(D_SOLVE, "[%d] out_ninvalid_=%u in_ninvalid_=%u\n",
-		    	    b->bindex(), b->out_ninvalid_, b->in_ninvalid_);
+		    	    b->bindex(), out_ninvalid[b->bindex()], in_ninvalid[b->bindex()]);
 
     	    	/*
 		 * For blocks with calls we have to ignore the outbound total
@@ -371,13 +387,13 @@ cov_function_t::solve()
 		 * the existance of longjmp() all calls are potentially like
 		 * that.
 		 */
-		if (b->out_ncalls_ == 0 && b->out_ninvalid_ == 0)
+		if (b->out_ncalls_ == 0 && out_ninvalid[b->bindex()] == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->out_arcs_));
 		    changes++;
     	    	    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), b->count());
 		}
-		else if (b->in_ninvalid_ == 0)
+		else if (in_ninvalid[b->bindex()] == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->in_arcs_));
 		    changes++;
@@ -385,9 +401,9 @@ cov_function_t::solve()
 		}
 	    }
 	    
-	    if (b->count_valid_)
+	    if (b->count() != COV_COUNT_INVALID)
 	    {
-		if (b->out_ninvalid_ == 1)
+		if (out_ninvalid[b->bindex()] == 1)
 		{
 		    /* Search for the invalid arc, and set its count.  */
 		    if ((a = cov_arc_t::find_invalid(b->out_arcs_, FALSE)) == 0)
@@ -396,7 +412,7 @@ cov_function_t::solve()
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
 		    count_t out_total = cov_arc_t::total(b->out_arcs_);
-		    if (solve_fuzzy_flag_ && b->count_ < out_total)
+		    if (solve_fuzzy_flag_ && b->count() < out_total)
 		    {
 			fprintf(stderr, "Function %s cannot be solved because "
 				        "the arc counts are inconsistent, suppressing\n",
@@ -404,13 +420,15 @@ cov_function_t::solve()
 			suppress();
 			return TRUE;
 		    }
-		    assert(b->count_ >= out_total);
-		    a->set_count(b->count_ - out_total);
+		    assert(b->count() >= out_total);
+		    a->set_count(b->count() - out_total);
+		    out_ninvalid[a->from()->bindex()]--;
+		    in_ninvalid[a->to()->bindex()]--;
 		    changes++;
     	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
 		    	    a->from()->bindex(), a->to()->bindex(), a->count());
 		}
-		if (b->in_ninvalid_ == 1)
+		if (in_ninvalid[b->bindex()] == 1)
 		{
 		    /* Search for the invalid arc, and set its count.  */
 		    if ((a = cov_arc_t::find_invalid(b->in_arcs_, FALSE)) == 0)
@@ -419,7 +437,7 @@ cov_function_t::solve()
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
 		    count_t in_total = cov_arc_t::total(b->in_arcs_);
-		    if (solve_fuzzy_flag_ && b->count_ < in_total)
+		    if (solve_fuzzy_flag_ && b->count() < in_total)
 		    {
 			fprintf(stderr, "Function %s cannot be solved because "
 				        "the arc counts are inconsistent, suppressing\n",
@@ -427,8 +445,10 @@ cov_function_t::solve()
 			suppress();
 			return TRUE;
 		    }
-		    assert(b->count_ >= in_total);
-		    a->set_count(b->count_ - in_total);
+		    assert(b->count() >= in_total);
+		    a->set_count(b->count() - in_total);
+		    out_ninvalid[a->from()->bindex()]--;
+		    in_ninvalid[a->to()->bindex()]--;
 		    changes++;
     	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
 		    	    a->from()->bindex(), a->to()->bindex(), a->count());
@@ -445,11 +465,11 @@ cov_function_t::solve()
     for (i = 0 ; i < (int)num_blocks() ; i++)
     {
     	b = nth_block(i);
-	if (!b->count_valid_)
+	if (b->count() == COV_COUNT_INVALID)
 	    return FALSE;
-	if (b->out_ninvalid_ > 0 && b->out_ninvalid_ < ~0U)
+	if (out_ninvalid[b->bindex()] > 0 && out_ninvalid[b->bindex()] < ~0U)
 	    return FALSE;
-	if (b->in_ninvalid_ > 0 && b->in_ninvalid_ < ~0U)
+	if (in_ninvalid[b->bindex()] > 0 && in_ninvalid[b->bindex()] < ~0U)
 	    return FALSE;
 	if (cov_arc_t::find_invalid(b->in_arcs_, TRUE) != 0)
 	    return FALSE;

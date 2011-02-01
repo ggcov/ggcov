@@ -27,6 +27,7 @@ CVSID("$Id: cov_arc.C,v 1.12 2010-05-09 05:37:15 gnb Exp $");
 
 cov_arc_t::cov_arc_t()
 {
+    counter_ = cov_project_t::current()->next_counter();
 }
 
 void
@@ -36,22 +37,17 @@ cov_arc_t::attach(cov_block_t *from, cov_block_t *to)
     
     from_ = from;
     from_->out_arcs_.append(this);
-    if (!call_)
-	from_->out_ninvalid_++;
-    else
+    if (call_)
     	from_->out_ncalls_++;
 
     to_ = to;
     to_->in_arcs_.append(this);
-    if (!call_)
-	to_->in_ninvalid_++;
 }
 
 cov_arc_t::~cov_arc_t()
 {
     to_->in_arcs_.remove(this);
     from_->out_arcs_.remove(this);
-    /* TODO: ninvalid counts?!?! */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -77,29 +73,21 @@ cov_arc_t::is_suppressed() const
 void
 cov_arc_t::set_count(count_t count)
 {
-    assert(!count_valid_);
-    count_valid_ = true;
-    count_ = count;
-    if (!call_)
-    {
-	from_->out_ninvalid_--;
-	to_->in_ninvalid_--;
-    }
+    assert(cov_project_t::current()->get_counter(counter_) == COV_COUNT_INVALID);
+    cov_project_t::current()->set_counter(counter_, count);
 }
 
 count_t
 cov_arc_t::total(const list_t<cov_arc_t> &list)
 {
-    count_t total = 0;
+    count_t total = 0, c;
     list_iterator_t<cov_arc_t> iter;
-    
+
     for (iter = list.first() ; iter != (cov_arc_t *)0 ; ++iter)
     {
-	/* Some of the counts will be invalid, but they are zero,
-	   so adding it in also doesn't hurt.  */
 	cov_arc_t *a = (*iter);
-    	if (!a->call_)
-	    total += a->count_;
+    	if (!a->call_ && (c = a->count()) != COV_COUNT_INVALID)
+	    total += c;
     }
     return total;
 }
@@ -113,10 +101,27 @@ cov_arc_t::find_invalid(const list_t<cov_arc_t> &list, gboolean may_be_call)
     {
     	cov_arc_t *a = *iter;
 	
-	if (!a->count_valid_ && (may_be_call || !a->call_))
+	if (a->count() == COV_COUNT_INVALID && (may_be_call || !a->call_))
 	    return a;
     }
     return 0;
+}
+
+unsigned int
+cov_arc_t::count_invalid(const list_t<cov_arc_t> &list)
+{
+    list_iterator_t<cov_arc_t> iter;
+    unsigned int total = 0;
+
+    for (iter = list.first() ; iter != (cov_arc_t *)0 ; ++iter)
+    {
+    	cov_arc_t *a = *iter;
+
+	if (a->count() == COV_COUNT_INVALID && !a->call_)
+	    total++;
+    }
+
+    return total;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
