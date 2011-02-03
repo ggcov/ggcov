@@ -25,6 +25,7 @@
 #include "hashtable.H"
 #include "ptrarray.H"
 #include "string_var.H"
+#include "countarray.H"
 
 class cov_project_t;
 class cov_function_t;

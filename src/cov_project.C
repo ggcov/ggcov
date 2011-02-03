@@ -773,24 +773,4 @@ cov_project_t::list_all_functions() const
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-count_t
-cov_project_t::get_counter(unsigned int i) const
-{
-    return counts_->nth(i);
-}
-
-void
-cov_project_t::set_counter(unsigned int i, count_t c)
-{
-    counts_->set(i, c);
-}
-
-unsigned int
-cov_project_t::next_counter()
-{
-    return counts_->next_slot();
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

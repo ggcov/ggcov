@@ -47,26 +47,18 @@ public:
 	*get_slot(i) = c;
     }
 
-    count_t nth(unsigned i) const
+    count_t get(unsigned i) const
     {
 	count_t *ss = get_slot(i);
 	return (ss ? *ss : COV_COUNT_INVALID);
     }
-    count_t operator[](unsigned i) const
-    {
-	count_t *ss = get_slot(i);
-	return (ss ? *ss : COV_COUNT_INVALID);
-    }
-    
-//  This isn't feasible
-//     T * const *data() const
 
     unsigned int length() const
     {
 	return length_;
     }
 
-    unsigned int next_slot();
+    unsigned int allocate();
 
 private:
     count_t *get_slot(unsigned int i) const;

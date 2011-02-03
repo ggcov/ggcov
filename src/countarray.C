@@ -79,11 +79,14 @@ countarray_t::get_slot(unsigned int i)
     return &blocks_[bi][i % BLOCKSIZE];
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 unsigned int
-countarray_t::next_slot()
+countarray_t::allocate()
 {
     resize(length_);
-    return length_++;
+    unsigned int i = length_++;
+    return i;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

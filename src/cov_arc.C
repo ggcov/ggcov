@@ -27,7 +27,7 @@ CVSID("$Id: cov_arc.C,v 1.12 2010-05-09 05:37:15 gnb Exp $");
 
 cov_arc_t::cov_arc_t()
 {
-    counter_ = cov_project_t::current()->next_counter();
+    counter_ = cov_project_t::current()->counts()->allocate();
 }
 
 void
@@ -73,8 +73,8 @@ cov_arc_t::is_suppressed() const
 void
 cov_arc_t::set_count(count_t count)
 {
-    assert(cov_project_t::current()->get_counter(counter_) == COV_COUNT_INVALID);
-    cov_project_t::current()->set_counter(counter_, count);
+    assert(cov_project_t::current()->counts()->get(counter_) == COV_COUNT_INVALID);
+    cov_project_t::current()->counts()->set(counter_, count);
 }
 
 count_t

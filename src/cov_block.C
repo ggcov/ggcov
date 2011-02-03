@@ -27,7 +27,7 @@ CVSID("$Id: cov_block.C,v 1.21 2010-05-09 05:37:15 gnb Exp $");
 
 cov_block_t::cov_block_t()
 {
-    counter_ = cov_project_t::current()->next_counter();
+    counter_ = cov_project_t::current()->counts()->allocate();
 }
 
 cov_block_t::~cov_block_t()
@@ -90,8 +90,8 @@ cov_block_t::add_location(const char *filename, unsigned lineno)
 void
 cov_block_t::set_count(count_t count)
 {
-    assert(cov_project_t::current()->get_counter(counter_) == COV_COUNT_INVALID);
-    cov_project_t::current()->set_counter(counter_, count);
+    assert(cov_project_t::current()->counts()->get(counter_) == COV_COUNT_INVALID);
+    cov_project_t::current()->counts()->set(counter_, count);
 
     assert(out_ncalls_ == 0 || out_ncalls_ == 1);
     if (out_ncalls_)

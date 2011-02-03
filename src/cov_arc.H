@@ -39,7 +39,7 @@ public:
     count_t
     count() const
     {
-    	return cov_project_t::current()->get_counter(counter_);
+    	return cov_project_t::current()->counts()->get(counter_);
     }
 
     unsigned int

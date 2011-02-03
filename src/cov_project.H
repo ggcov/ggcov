@@ -128,9 +128,10 @@ public:
 	return callgraph_;
     }
 
-    count_t get_counter(unsigned int) const;
-    void set_counter(unsigned int, count_t);
-    unsigned int next_counter();
+    countarray_t *counts()
+    {
+	return counts_;
+    }
 
 private:
     void read_description();
