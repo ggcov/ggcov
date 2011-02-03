@@ -58,6 +58,16 @@ public:
 	return length_;
     }
 
+    /* For the time being we don't unallocate and
+     * we know that allocations happen in contiguous
+     * groups, so a group can be represented simply
+     * by an index range. */
+    struct group_t { unsigned int first_, last_; };
+
+    void begin_group();
+    void end_group(group_t &);
+    void invalidate(const group_t &);
+
     unsigned int allocate();
 
 private:
@@ -68,6 +78,7 @@ private:
     unsigned int length_;	// number of slots valid
     unsigned int alloc_;	// largest slot allocated+1
     count_t **blocks_;
+    group_t group_;		/* currently allocated group */
 };
 
 #endif /* _countarray_H_ */

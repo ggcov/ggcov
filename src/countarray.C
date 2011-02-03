@@ -26,6 +26,8 @@ countarray_t::countarray_t()
     alloc_(0),
     blocks_(0)
 {
+    group_.first_ = ~0U;
+    group_.last_ = ~0U;
 }
 
 countarray_t::~countarray_t()
@@ -81,12 +83,50 @@ countarray_t::get_slot(unsigned int i)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+void
+countarray_t::begin_group()
+{
+    group_.first_ = ~0U;
+    group_.last_ = ~0U;
+}
+
 unsigned int
 countarray_t::allocate()
 {
     resize(length_);
     unsigned int i = length_++;
+
+    if (group_.first_ == ~0U)
+	group_.first_ = i;
+    group_.last_ = i;
+
     return i;
+}
+
+void
+countarray_t::end_group(group_t &g)
+{
+    g = group_;
+    begin_group();
+}
+
+void
+countarray_t::invalidate(const group_t &g)
+{
+    unsigned int firstbi = g.first_ / BLOCKSIZE;
+    unsigned int lastbi = (g.last_+BLOCKSIZE-1) / BLOCKSIZE;
+    unsigned int bi;
+    unsigned int remain = (g.last_ - g.first_ + 1);
+    unsigned int off = g.first_ % BLOCKSIZE;
+
+    for (bi = firstbi ; bi <= lastbi ; bi++)
+    {
+	unsigned int n = MIN(BLOCKSIZE - off, remain);
+	if (blocks_[bi])
+	    memset(blocks_[bi]+off, 0xff, sizeof(count_t) * n);
+	remain -= n;
+	off = 0;
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
