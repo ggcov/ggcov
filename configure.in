@@ -245,6 +245,30 @@ AC_TRY_COMPILE([
 ])
 fi
 
+dnl Some systems' struct stat have a field which has
+dnl the mtime nanoseconds part.
+AC_MSG_CHECKING([struct stat mtime nanoseconds field])
+mn=none
+AC_TRY_COMPILE([
+#include <sys/stat.h>
+],[
+    return (int)(&((struct stat *)0)->st_mtimensec);
+],[
+    AC_DEFINE(HAVE_STAT_ST_MTIMENSEC,1,[whether struct stat has field st_mtimensec])
+    mn=st_mtimensec
+])
+if test x$mn = xnone ; then
+AC_TRY_COMPILE([
+#include <sys/stat.h>
+],[
+    return (int)(&((struct stat *)0)->st_mtim.tv_nsec);
+],[
+    AC_DEFINE(HAVE_STAT_ST_MTIM,1,[whether struct stat has field st_mtim.tv_nsec])
+    mn=st_mtim.tv_nsec
+])
+fi
+AC_MSG_RESULT($mn)
+
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT

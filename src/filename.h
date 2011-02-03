@@ -37,6 +37,7 @@ char *file_make_absolute_to_dir(const char *filename, const char *absdir);
 char *file_make_absolute(const char *filename);
 int file_exists(const char *filename);
 int file_is_regular(const char *filename);
+int file_mtime(const char *filename, struct timespec *);
 int file_build_tree(const char *dirname, mode_t mode);	/* make sequence of directories */
 mode_t file_mode_from_string(const char *str, mode_t base, mode_t deflt);
 int file_apply_children(const char *filename, file_apply_proc_t, void *userdata);

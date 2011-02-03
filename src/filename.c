@@ -114,6 +114,25 @@ file_mode(const char *filename)
     return (sb.st_mode & (S_IRWXU|S_IRWXG|S_IRWXO));
 }
 
+int
+file_mtime(const char *filename, struct timespec *ts)
+{
+    struct stat sb;
+
+    if (stat(filename, &sb) < 0)
+    	return -1;
+
+    ts->tv_sec = sb.st_mtime;
+#if HAVE_STAT_ST_MTIMENSEC
+    ts->tv_nsec = sb.st_mtimensec;
+#elif HAVE_STAT_ST_MTIM
+    ts->tv_nsec = sb.st_mtim.tv_nsec;
+#else
+    ts->tv_nsec = 0;
+#endif
+    return 0;
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 FILE *
