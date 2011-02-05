@@ -139,6 +139,7 @@ private:
     gboolean read_src_file();
     gboolean solve();
     void finalise();
+    gboolean re_read_counts();
 
     cov::status_t calc_stats(cov_stats_t *stats) const;
 
@@ -147,6 +148,9 @@ private:
     string_var relpath_;    /* relative path with which this file was found */
     string_var compiledir_; /* directory in which this source was compiled;
 			     * base for relative pathnames */
+    string_var countsfile_; /* full absolute pathname of .da/.gcda file */
+    struct timespec countstime_;    /* mtime of counts file when last read */
+    countarray_t::group_t countergroup_;
     gboolean common_;	    /* whether this file uses common_path_ */
     gboolean finalised_;    /* data read & post-read connections made */
     gnb_u32_t format_version_;	/* file format version */

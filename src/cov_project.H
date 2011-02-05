@@ -113,6 +113,7 @@ public:
     gboolean read_files(GList *files, gboolean recursive);
     /* Read all files under the basedir, detecting types, recursively */
     gboolean read_all_files();
+    gboolean re_read_counts();
 
     char *get_pathname(const char *filename) const;
 

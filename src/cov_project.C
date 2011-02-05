@@ -568,6 +568,20 @@ cov_project_t::read_all_files()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+gboolean
+cov_project_t::re_read_counts()
+{
+    list_iterator_t<cov_file_t> iter;
+
+    for (iter = files_list_.first() ; iter != (cov_file_t *)0 ; ++iter)
+    {
+	(*iter)->re_read_counts();
+    }
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 cov_project_t *
 cov_project_t::get(const char *name)
 {

@@ -1650,6 +1650,8 @@ cov_file_t::read(gboolean quiet)
     const char *da_ext = ".da";
     covio_var io;
 
+    cov_project_t::current()->counts()->begin_group();
+
     if ((io = find_file(".bbg", TRUE)) == 0)
     {
     	/* The .bbg file was gratuitously renamed .gcno in gcc 3.4 */
@@ -1677,10 +1679,14 @@ cov_file_t::read(gboolean quiet)
 	    return FALSE;
     }
 
+    cov_project_t::current()->counts()->end_group(countergroup_);
+
     /* TODO: read multiple .da files from the search path & accumulate */
     if ((io = find_file(da_ext, quiet)) == 0 ||
 	 !read_da_file(io))
 	return FALSE;
+    countsfile_ = io->filename();
+    file_mtime(io->filename(), &countstime_);
 
     if (cov_suppression_t::count() != 0 && !read_src_file())
     {
@@ -1735,6 +1741,38 @@ cov_file_t::read(gboolean quiet)
     if (!solve())
     	return FALSE;
 
+    return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_file_t::re_read_counts()
+{
+    covio_var io;
+    struct timespec mtime;
+
+    if (!countsfile_.data())
+	return FALSE;
+
+    if (file_mtime(countsfile_, &mtime) < 0)
+	return FALSE;
+
+    if (mtime.tv_sec == countstime_.tv_sec &&
+        mtime.tv_nsec == countstime_.tv_nsec)
+	return TRUE;
+
+    cov_project_t::current()->counts()->invalidate(countergroup_);
+
+    if ((io = new covio_t(countsfile_)) == 0 ||
+	!io->open_read() ||
+	 !read_da_file(io))
+	return FALSE;
+
+    if (!solve())
+    	return FALSE;
+
+    countstime_ = mtime;
     return TRUE;
 }
 

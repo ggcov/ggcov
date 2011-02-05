@@ -221,6 +221,12 @@ public:
     {
     	return io_;
     }
+
+    covio_t *operator->() const
+    {
+	return io_;
+    }
+
     // assignment operators
     covio_t *operator=(covio_t *io)
     {
