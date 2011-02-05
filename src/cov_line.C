@@ -47,14 +47,11 @@ cov_line_t::function() const
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-cov_line_t::calculate_count()
+cov_line_t::calculate_count(count_t &count, cov::status_t &status)
 {
     count_t minc = COV_COUNT_MAX, maxc = 0;
     GList *iter;
     int len = 0;
-
-    assert(!count_valid_);
-    count_valid_ = true;
 
     /*
      * TODO: implement the new smarter algorithm from gcov 3.3 here
@@ -62,22 +59,25 @@ cov_line_t::calculate_count()
     for (iter = blocks_ ; iter != 0 ; iter = iter->next)
     {
     	cov_block_t *b = (cov_block_t *)iter->data;
-
-	if (b->count() > maxc)
-	    maxc = b->count();
-	if (b->count() < minc)
-	    minc = b->count();
+	count_t c = b->count();
+	assert(c != COV_COUNT_INVALID);
+	if (c > maxc)
+	    maxc = c;
+	if (c < minc)
+	    minc = c;
 	len++;
     }
 
-    count_ = maxc;
+    count = maxc;
 
     if (len == 0)
-    	status_ = cov::UNINSTRUMENTED;
+    	status = cov::UNINSTRUMENTED;
     else if (maxc == 0)
-    	status_ = cov::UNCOVERED;
+    	status = cov::UNCOVERED;
     else
-	status_ = (minc == 0 ? cov::PARTCOVERED : cov::COVERED);
+	status = (minc == 0 ? cov::PARTCOVERED : cov::COVERED);
+    if (suppressed_)
+	status = cov::SUPPRESSED;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

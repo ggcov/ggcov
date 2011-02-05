@@ -28,24 +28,25 @@ class cov_function_t;
 class cov_line_t
 {
 public:
-
     count_t count()
     {
-	if (!count_valid_)
-    	    calculate_count();
-	return count_;
+	count_t c;
+	cov::status_t s;
+	calculate_count(c, s);
+	return c;
     }
 
     cov::status_t status()
     {
-	if (!count_valid_)
-    	    calculate_count();
-	return status_;
+	count_t c;
+	cov::status_t s;
+	calculate_count(c, s);
+	return s;
     }
     /* Check for suppression without the side effect of calculate_count() */
     gboolean is_suppressed() const
     {
-    	return (count_valid_ && status_ == cov::SUPPRESSED);
+    	return suppressed_;
     }
 
     const GList *blocks() const
@@ -68,18 +69,15 @@ private:
     cov_line_t();
     ~cov_line_t();
     static void remove(const cov_location_t *, cov_block_t *);
-    void calculate_count();
+    void calculate_count(count_t &, cov::status_t &);
     void suppress()
     {
-    	count_valid_ = true;
-	status_ = cov::SUPPRESSED;
+	suppressed_ = true;
     }
 
     GList *blocks_;
-    boolean count_valid_;  /* covers status_, count_ */
-    cov::status_t status_;
-    count_t count_;
-    
+    boolean suppressed_;
+
     friend class cov_file_t;
     friend class cov_block_t;
     friend class cov_file_src_parser_t;
