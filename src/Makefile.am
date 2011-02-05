@@ -159,7 +159,8 @@ EXTRA_CLEAN=		licence.c glade_callbacks.c
 
 noinst_PROGRAMS=	bbdump filetest mangletest \
 			newbbgdump phptest popttest \
-			toktest estringtest countarraytest
+			toktest estringtest countarraytest \
+			rereadtest
 
 bbdump_SOURCES= 	bbdump.c
 bbdump_LDADD=		$(CLI_LIBS)
@@ -187,6 +188,9 @@ estringtest_LDADD=	$(CLI_LIBS)
 
 countarraytest_SOURCES=	countarraytest.c
 countarraytest_LDADD=	$(CLI_LIBS)
+
+rereadtest_SOURCES=	rereadtest.c
+rereadtest_LDADD=	$(CLI_LIBS)
 
 COVFLAGS=		-fprofile-arcs -ftest-coverage
 coverage: covered-all

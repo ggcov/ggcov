@@ -11,6 +11,7 @@ phptest
 popttest
 estringtest
 countarraytest
+rereadtest
 toktest
 ggcov-webdb
 tggcov
