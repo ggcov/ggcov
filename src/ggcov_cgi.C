@@ -461,7 +461,20 @@ read_one_project(const char *filename, void *userdata)
 {
     list_t<char> *bases = (list_t<char> *)userdata;
 
-    if (file_is_directory(filename) == 0)
+    if (file_is_symlink(filename) == 0)
+    {
+	/* coverage data is internally quite path-sensitive
+	 * so to avoid hassle we follow symlinks here manually */
+	char target[PATH_MAX];
+	ssize_t r = readlink(filename, target, sizeof(target));
+	if (r > 0)
+	{
+	    string_var abstarget = file_make_absolute_to_file(target, filename);
+	    if (file_is_directory(abstarget) == 0)
+		bases->prepend(abstarget.take());
+	}
+    }
+    else if (file_is_directory(filename) == 0)
 	bases->prepend(g_strdup(filename));
 
     return TRUE;

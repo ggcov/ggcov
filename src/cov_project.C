@@ -718,7 +718,7 @@ cov_project_t::check_common_path()
     {
     	dprintf0(D_FILES, "cov_project_t::check_common_path: recalculating common path\n");
     	common_len_ = 0;
-	files_->foreach(add_name_tramp, 0);
+	files_->foreach(add_name_tramp, this);
     }
 }
 

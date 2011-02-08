@@ -42,5 +42,6 @@ int file_build_tree(const char *dirname, mode_t mode);	/* make sequence of direc
 mode_t file_mode_from_string(const char *str, mode_t base, mode_t deflt);
 int file_apply_children(const char *filename, file_apply_proc_t, void *userdata);
 int file_is_directory(const char *filename);
+int file_is_symlink(const char *filename);
 
 #endif /* _ggcov_filename_h_ */

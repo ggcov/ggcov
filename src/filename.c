@@ -296,6 +296,22 @@ file_is_regular(const char *filename)
     return 0;
 }
 
+int
+file_is_symlink(const char *filename)
+{
+    struct stat sb;
+
+    if (lstat(filename, &sb) < 0)
+	return -1;
+
+    if (!S_ISLNK(sb.st_mode))
+    {
+	__set_errno(ENOTDIR);
+	return -1;
+    }
+
+    return 0;
+}
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 int
