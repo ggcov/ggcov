@@ -176,6 +176,7 @@ private:
     gboolean read_o_file(covio_t *);
 #endif
     gboolean read_src_file();
+    void zero_arc_counts();
     gboolean solve();
     void finalise();
 

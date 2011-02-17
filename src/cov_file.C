@@ -498,6 +498,17 @@ cov_file_t::calc_stats(cov_stats_t *stats) const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+void
+cov_file_t::zero_arc_counts()
+{
+    unsigned int fnidx;
+
+    for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
+	nth_function(fnidx)->zero_arc_counts();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 gboolean
 cov_file_t::solve()
 {
@@ -1870,8 +1881,10 @@ cov_file_t::try_file(const char *dir, const char *ext) const
     covio_t *io = new covio_t(dfilename);
     if (!io->open_read())
     {
+	int e = errno;
     	perror(dfilename);
     	delete io;
+	errno = e;
     	return 0;
     }
 
@@ -1904,7 +1917,11 @@ cov_file_t::find_file(const char *ext, gboolean quiet) const
     }
     
     if (!quiet)
+    {
+	int e = errno;
     	file_missing(ext, 0);
+	errno = e;
+    }
     
     return 0;
 }
@@ -1961,8 +1978,13 @@ cov_file_t::read(gboolean quiet)
     }
 
     /* TODO: read multiple .da files from the search path & accumulate */
-    if ((io = find_file(da_ext, quiet)) == 0 ||
-	 !read_da_file(io))
+    if ((io = find_file(da_ext, quiet)) == 0)
+    {
+	if (errno != ENOENT)
+	    return FALSE;
+	zero_arc_counts();
+    }
+    else if (!read_da_file(io))
 	return FALSE;
 
     if (cov_suppression_t::count() != 0 && !read_src_file())

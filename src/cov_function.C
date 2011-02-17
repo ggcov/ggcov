@@ -489,4 +489,26 @@ cov_function_t::list_all()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cov_function_t::zero_arc_counts()
+{
+    unsigned int bidx;
+    list_iterator_t<cov_arc_t> aiter;
+
+    for (bidx = 0 ; bidx < num_blocks() ; bidx++)
+    {
+	cov_block_t *b = nth_block(bidx);
+
+	for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+	{
+	    cov_arc_t *a = *aiter;
+
+	    if (!a->on_tree_)
+		a->set_count(0UL);
+	}
+    }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

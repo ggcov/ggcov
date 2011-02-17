@@ -87,6 +87,8 @@ public:
 	solve_fuzzy_flag_ = b;
     }
 
+    void zero_arc_counts();
+
 private:
     cov_function_t();
     ~cov_function_t();
