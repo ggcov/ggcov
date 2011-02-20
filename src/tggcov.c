@@ -52,6 +52,7 @@ static int annotate_flag = FALSE;
 static int check_callgraph_flag = FALSE;
 static int dump_callgraph_flag = FALSE;
 static const char *reports = 0;
+static char *output_filename;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -61,7 +62,7 @@ static void
 annotate_file(cov_file_t *f)
 {
     const char *cfilename = f->name();
-    FILE *infp, *outfp;
+    FILE *infp, *outfp = NULL;
     unsigned long lineno;
     cov_line_t *ln;
     char *ggcov_filename;
@@ -73,17 +74,35 @@ annotate_file(cov_file_t *f)
 	return;
     }
 
-    ggcov_filename = g_strconcat(cfilename, ".tggcov", (char *)0);
-    fprintf(stderr, "Writing %s\n", ggcov_filename);
-    if ((outfp = fopen(ggcov_filename, "w")) == 0)
+    if (output_filename && !strcmp(output_filename, "-"))
     {
-    	perror(ggcov_filename);
-	g_free(ggcov_filename);
-	fclose(infp);
-	return;
+	ggcov_filename = NULL;
+	outfp = stdout;
     }
-    g_free(ggcov_filename);
-    
+    else if (output_filename)
+    {
+	estring e = (const char *)output_filename;
+	e.replace_all("{}", file_basename_c(cfilename));
+	ggcov_filename = e.take();
+    }
+    else
+    {
+	ggcov_filename = g_strconcat(cfilename, ".tggcov", (char *)0);
+    }
+
+    if (ggcov_filename)
+    {
+	fprintf(stderr, "Writing %s\n", ggcov_filename);
+	if ((outfp = fopen(ggcov_filename, "w")) == 0)
+	{
+	    perror(ggcov_filename);
+	    g_free(ggcov_filename);
+	    fclose(infp);
+	    return;
+	}
+	g_free(ggcov_filename);
+    }
+
     if (header_flag)
     {
     	fprintf(outfp, "    Count       ");
@@ -147,7 +166,8 @@ annotate_file(cov_file_t *f)
     }
     
     fclose(infp);
-    fclose(outfp);
+    if (outfp != stdout)
+	fclose(outfp);
 }
 
 static void
@@ -425,6 +445,15 @@ static struct poptOption popt_options[] =
 	&dump_callgraph_flag,			/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"dump callgraph data in text form",	/* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+    	"output",	    	    	    	/* longname */
+	'o',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&output_filename,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"output file for annotation",		/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     COV_POPT_OPTIONS
