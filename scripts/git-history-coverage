@@ -1,0 +1,619 @@
+#!/usr/bin/perl
+#
+# ggcov - A GTK frontend for exploring gcov coverage data
+# Copyright (c) 2001-2011 Greg Banks <gnb@users.sourceforge.net>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+use strict;
+use warnings;
+use DateTime;
+use Data::Dumper;
+use File::Basename;
+
+my $revlist;
+my %summaries;
+my @uninstrumented_names;
+my $now = DateTime->now->epoch;
+my $horizon = $now - 180 * 86400;
+my @history;
+my %commits;
+my %oldcommits;
+my %blames;
+my %removed;
+my $tggcov = '/home/gnb/software/ggcov/ggcov.git/src/tggcov';
+my $COVERED_THRESHOLD_PC = 10.0;
+my $SUBJECT_MAX = 95;
+my $verbose = 0;
+
+sub stats_new
+{
+    return {
+	UC => 0,	# uncovered - code exists but is not run
+	UI => 0,	# uninstrumented - no code for this line
+	CO => 0,	# covered - code exists and is run
+	UB => 0,	# unbuilt - code might exist but the whole
+			#	    file did not get built
+	remain => 0,	# remains in codebase after subsequent commits
+	patched => 0,	# added/changed in original commit
+    };
+}
+
+sub limit_subject
+{
+    my ($subj) = @_;
+
+    substr($subj, $SUBJECT_MAX-3) = "..."
+	if length $subj > $SUBJECT_MAX;
+    return $subj;
+}
+
+sub stats_accumulate
+{
+    my ($s1, $s2) = @_;
+
+    $s1->{UC} += $s2->{UC};
+    $s1->{UI} += $s2->{UI};
+    $s1->{CO} += $s2->{CO};
+    $s1->{UB} += $s2->{UB};
+    $s1->{remain} += $s2->{remain};
+    $s1->{patched} += $s2->{patched};
+}
+
+sub stats_summarise
+{
+    my ($s, $comments_flag, $prefix) = @_;
+
+    my $instrd = $s->{CO} + $s->{UC};
+    my @comments;
+
+    printf "%s%u lines patched\n", $prefix, $s->{patched};
+
+    printf "%s%u lines remain after later patches\n",
+	$prefix, $s->{remain}
+	if $s->{remain} != $s->{patched};
+
+    return if $s->{remain} == 0;
+
+    printf "%s%u lines (%.1f%%) are uninstrumented (comments, Makefiles etc)\n",
+	$prefix, $s->{UI}, 100.0 * $s->{UI} / $s->{remain}
+	if $s->{UI} > 0;
+
+    if ($instrd > 0)
+    {
+	printf "%s%u lines (%.1f%%) are UNCOVERED (not executed in tests)\n",
+		    $prefix, $s->{UC}, 100.0 * $s->{UC} / $s->{remain}
+		    if $s->{UC} > 0;
+
+	printf "%s%u lines (%.1f%%) are covered (executed in tests)\n",
+		    $prefix, $s->{CO}, 100.0 * $s->{CO} / $s->{remain}
+		    if $s->{CO} > 0;
+
+	# get all preachy
+	if ($s->{CO} == 0)
+	{
+	    push(@comments,
+		    "WARNING!! Lines of code were added or changed but\n" .
+		    "NONE of them are executed in tests.  Please go and\n" .
+		    "write some tests now before you screw around with\n" .
+		    "any more code.\n");
+	}
+	elsif (100.0 * $s->{CO} / $instrd < $COVERED_THRESHOLD_PC)
+	{
+	    push(@comments,
+		    "WARNING!! Lines of code were added or changed but\n" .
+		    "fewer than $COVERED_THRESHOLD_PC% of them are executed\n" .
+		    "in tests.  The test suite could probably do with\n" .
+		    "some improvements.\n");
+	}
+    }
+
+    printf "%s%u lines (%.1f%%) are in source files which are not built\n",
+		$prefix, $s->{UB}, 100.0 * $s->{UB} / $s->{remain}
+		if ($s->{UB} > 0);
+
+    my $unacc = ($s->{remain} - $s->{UB} -
+		$s->{CO} - $s->{UC} - $s->{UI});
+    printf "---> INTERNAL ERROR: %d lines unaccounted for: %s\n",
+	    $unacc, Dumper($s) if $unacc != 0;
+
+    if ($comments_flag && scalar(@comments))
+    {
+	printf "\n";
+	foreach my $comm (@comments)
+	{
+	    map { printf "%s%s\n", $prefix, $_; } split(/\n/, $comm);
+	}
+    }
+}
+
+sub new_commit
+{
+    my $c = {
+		commit => undef,
+		subject => '',
+		author => undef,
+		date => undef,
+		files => { }
+	    };
+    return $c;
+}
+
+sub add_commit
+{
+    my ($c) = @_;
+
+    return if ($c->{date} < $horizon);
+    push(@history, $c);
+    $commits{$c->{commit}} = $c;
+}
+
+sub is_source_file2
+{
+    my ($file) = @_;
+
+    return 0 unless ($file =~ m/\.(c|C|cc|CC|cxx|c\+\+)$/);
+    foreach my $up (@uninstrumented_names)
+    {
+	return 0 if basename($file) eq $up;
+	$up .= '/' unless ($up =~ m/\/$/);
+	return 0 if substr($file,0,length $up) eq $up;
+    }
+    return 1;
+}
+
+my %cached_source_files;
+sub is_source_file
+{
+    my ($file) = @_;
+    my $r = $cached_source_files{$file};
+    if (!defined $r)
+    {
+	$r = is_source_file2($file);
+	$cached_source_files{$file} = $r;
+	printf STDERR "==> %s %s a source file\n", $file, ($r ? "is" : "is not") if $verbose;
+    }
+    return $r;
+}
+
+sub add_commit_file
+{
+    my ($c, $file) = @_;
+
+    my $cf = {
+	    file => $file,
+	    is_source => is_source_file($file),
+	    stats => stats_new(),
+	};
+    $c->{files}->{$file} = $cf;
+    return $cf;
+}
+
+sub read_config
+{
+    my @cmd =
+    (
+	'git',
+	'config',
+	'ggcov.uninstrumented'
+    );
+    open CONFIG,'-|',@cmd
+	or die "Can't run git config";
+    while (<CONFIG>)
+    {
+	chomp;
+	push(@uninstrumented_names, split);
+	last;
+    }
+    close CONFIG;
+
+    if ($verbose)
+    {
+	print STDERR "read uninstrumented names from git config\n";
+	foreach my $up (@uninstrumented_names)
+	{
+	    printf STDERR "    \"%s\"\n", $up;
+	}
+    }
+}
+
+sub read_history
+{
+    printf STDERR "reading history\n" if $verbose;
+    my @cmd =
+    (
+	'git',
+	'log',
+	'--pretty=format:commit %H%nAuthor: %an <%ae>%nDate: %at%n%n%s%n',
+	'--numstat',
+	$revlist
+    );
+    open HISTORY,'-|',@cmd
+	or die "Cannot run git to get history: $!";
+    my $whatever;
+    my $c = new_commit();
+    my $s = 0;
+    while (<HISTORY>)
+    {
+	chomp;
+
+	printf STDERR "XXX [%u] %s\n", $s, $_ if $verbose > 1;
+
+	if (m/^\s*$/)
+	{
+	    # blank line separates headers, subject, files
+	    $s++ if ($s > 0);
+	    next;
+	}
+
+	if (m/^commit /)
+	{
+	    if ($s >= 3 && defined $c->{commit})
+	    {
+		add_commit($c);
+		$c = new_commit();
+	    }
+	    ($whatever, $c->{commit}) = split;
+	    $s = 1;
+	    next;
+	}
+
+	if ($s == 1 && m/^Author:/)
+	{
+	    s/^Author:\s*//;
+	    $c->{author} = $_;
+	    next;
+	}
+
+	if ($s == 1 && m/^Date:/)
+	{
+	    s/^Date:\s*//;
+	    $c->{date} = 0+$_;
+	    next;
+	}
+
+	if ($s == 1 && m/^\s*$/)
+	{
+	    # headers are ended by a blank line, subject comes next
+	    $s = 2;
+	    next;
+	}
+
+	if ($s == 2)
+	{
+	    # Subject line; note, this can actually be multiple lines
+	    # if the commit is sufficiently weird
+	    s/^\s*//;
+	    $c->{subject} .= $_;
+	    next;
+	}
+
+	if ($s == 3)
+	{
+	    my ($added, $removed, $file) = split;
+	    my $cf = add_commit_file($c, $file);
+	    $cf->{stats}->{patched} = 0+$added;
+	    next;
+	}
+    }
+    close HISTORY;
+
+    add_commit($c) if defined $c->{commit};
+}
+
+sub read_blames
+{
+    printf STDERR "reading blames\n" if $verbose;
+    my @cmd =
+    (
+	'git',
+	'blame',
+	'--incremental',
+	'--'
+    );
+    foreach my $c (@history)
+    {
+	printf STDERR "blames for commit %s\n", $c->{commit} if $verbose;
+
+	foreach my $f (keys %{$c->{files}})
+	{
+	    next if defined $blames{$f};
+	    if ( ! -f $f )
+	    {
+		$blames{$f} = [];
+		$removed{$f} = 1;   # actually this is a guess...TODO
+		next;
+	    }
+	    printf STDERR "git blame %s\n", $f if $verbose;
+	    open BLAME,'-|',(@cmd, $f)
+		or die "Cannot run git to blame $f: $!";
+	    my $s = 0;
+	    my @lines;
+	    my $commit;
+	    my $srcline;
+	    my $resline;
+	    my $numlines;
+	    while (<BLAME>)
+	    {
+		chomp;
+		printf STDERR "YYY [%u] %s\n", $s, $_ if $verbose > 1;
+		if (!$s && m/^[[:xdigit:]]{40}\s/)
+		{
+		    ($commit,$srcline,$resline,$numlines) = split;
+		    $s++;
+		}
+		elsif ($s == 1 && m/^filename/ && defined $numlines)
+		{
+		    my ($whatever, $otherf) = split;
+		    printf STDERR "Whoa!! WRONG FILENAME: expecting %s got %s\n",
+			    $f, $otherf
+			    if $verbose && $f ne $otherf;
+
+		    my $c = $commits{$commit};
+		    if (defined $c)
+		    {
+			my $cf = $c->{files}->{$otherf};
+			die "WTF?" unless defined $cf;
+			if (!defined $c->{files}->{$f})
+			{
+			    # set up an alias...meh
+			    $c->{files}->{$f} = $cf;
+			}
+			for (my $l = 0 ; $l < $numlines ; $l++)
+			{
+			    $lines[$resline+$l-1] = $c;
+			}
+			$cf->{stats}->{remain} += $numlines;
+		    }
+		    $commit = undef;
+		    $srcline = undef;
+		    $resline = undef;
+		    $numlines = undef;
+		    $s = 0;
+		}
+	    }
+	    close BLAME;
+	    $blames{$f} = \@lines;
+
+	}
+    }
+}
+
+sub read_coverage
+{
+    printf STDERR "reading coverage\n" if $verbose;
+    foreach my $f (keys %blames)
+    {
+	printf STDERR "    %s\n", $f if $verbose;
+	my $lines = $blames{$f};
+	my $nlines = scalar(@$lines);
+
+	my $o = $f;
+	$o =~ s/\.(c|C|cc|CC|cxx|c\+\+)$/.o/;
+
+	my $gcno = $f;
+	$gcno =~ s/\.[cC]$/.gcno/;
+
+	if ( ! -f $gcno || !is_source_file($f))
+	{
+	    my $status;
+	    if ( ! -f $o && is_source_file($f))
+	    {
+		$status = 'UB';	# a source file with no visible object
+				# or node file -> not built
+		printf STDERR "    %s is unbuilt\n", $f if $verbose;
+	    }
+	    else
+	    {
+		$status = 'UI';	# built but without --coverage; we assume
+				# this is deliberate e.g. test code
+		printf STDERR "    %s is uninstrumented\n", $f if $verbose;
+	    }
+
+	    for (my $l = 0 ; $l < $nlines ; $l++)
+	    {
+		my $c = $lines->[$l];
+		next unless defined $c;
+		my $cf = $c->{files}->{$f};
+		$cf->{stats}->{$status}++;
+	    }
+	    next;
+	}
+
+	printf STDERR "    running tggcov for %s\n", $f if $verbose;
+	my @cmd = ( $tggcov, '-N', '-a', '-o', '-', $f );
+
+	open TGGCOV,'-|',@cmd
+	    or die "Cannot run tggcov to annotate: $!";
+	my $lineno = 0;
+	while (<TGGCOV>)
+	{
+	    $lineno++;
+	    chomp;
+
+	    my $c = $blames{$f}->[$lineno-1];
+	    next unless defined $c;
+	    my $cf = $c->{files}->{$f};
+	    die "WTF?" unless defined $cf->{file};
+	    die "WTF?" unless $cf->{file} eq $f;
+	    my $status;
+	    if (m/^\s*#+:/)
+	    {
+		$status = 'UC';	    # uncovered line
+	    }
+	    elsif (m/^\s*\d+:/)
+	    {
+		$status = 'CO';	    # covered line
+	    }
+	    elsif (m/^\s*-:/)
+	    {
+		$status = 'UI';	    # uninstrumented line
+	    }
+	    $cf->{stats}->{$status}++;
+	}
+	close TGGCOV;
+    }
+}
+
+sub summarise_overall
+{
+    printf "\n";
+    printf "Overall Summary\n";
+    printf "===============\n";
+    my $stats = stats_new();
+    foreach my $c (@history)
+    {
+	foreach my $f (keys %{$c->{files}})
+	{
+	    my $cf = $c->{files}->{$f};
+	    next if $cf->{file} ne $f;	    # skip aliases
+	    stats_accumulate($stats, $cf->{stats});
+	}
+    }
+    stats_summarise($stats, 1, "");
+    printf "\n";
+}
+
+sub summarise_by_author
+{
+    my %authors;
+    my %ncommits;
+
+    foreach my $c (@history)
+    {
+	my $a = $authors{$c->{author}};
+	$a = $authors{$c->{author}} = stats_new()
+	    unless defined $a;
+	$a->{ncommits}++;
+
+	foreach my $f (keys %{$c->{files}})
+	{
+	    my $cf = $c->{files}->{$f};
+	    next if $cf->{file} ne $f;	    # skip aliases
+	    stats_accumulate($a, $cf->{stats});
+	}
+    }
+
+    return if (scalar(keys(%authors)) == 0);
+
+    my @names = sort
+	    {
+		$authors{$b}->{remain} <=> $authors{$a}->{remain}
+	    } keys %authors;
+
+    printf "\n";
+    printf "Summary By Author\n";
+    printf "=================\n";
+    foreach my $n (@names)
+    {
+	printf "%s\n", $n;
+	printf "    %u commits\n", $authors{$n}->{ncommits};
+	stats_summarise($authors{$n}, 0, "    ");
+    }
+    printf "\n";
+}
+
+sub summarise_by_commit
+{
+    printf "\n";
+    printf "Summary By Commit\n";
+    printf "=================\n";
+    foreach my $c (@history)
+    {
+	printf "\n%s %s\n", $c->{commit}, limit_subject($c->{subject});
+
+	printf "    author %s\n", $c->{author};
+
+	my $days_ago = int(($now - $c->{date})/86400 + 0.5);
+	printf "    %u days ago\n", $days_ago
+	    if $days_ago > 0;
+
+	my $cstats = stats_new();
+	my @files = keys %{$c->{files}};
+	foreach my $f (@files)
+	{
+	    my $cf = $c->{files}->{$f};
+	    next if $cf->{file} ne $f;	    # skip aliases
+	    printf "    file %s\n", $cf->{file};
+	    stats_summarise($cf->{stats}, 0, "        ")
+		if scalar @files > 1;
+	    stats_accumulate($cstats, $cf->{stats});
+	}
+	stats_summarise($cstats, 0, "    ");
+    }
+    printf "\n";
+}
+
+sub usage
+{
+    printf STDERR "Usage: git-history-coverage.pl [options] [revlist]\n";
+    printf STDERR "options are:\n";
+    printf STDERR "    --summary-overall    emit an overall summary\n";
+    printf STDERR "    --summary-by-author  emit a summary categorised by author\n";
+    printf STDERR "    --summary-by-commit  emit a summary categorised by commit\n";
+    printf STDERR "    -v, --verbose        emit debug messages\n";
+    exit 1;
+}
+
+while (my $a = shift)
+{
+    if ($a eq '--summary-overall')
+    {
+	$summaries{overall} = 1;
+    }
+    elsif ($a eq '--summary-by-author')
+    {
+	$summaries{author} = 1;
+    }
+    elsif ($a eq '--summary-by-commit')
+    {
+	$summaries{commit} = 1;
+    }
+    elsif ($a eq '-v' || $a eq '--verbose')
+    {
+	$verbose++;
+    }
+    elsif ($a =~ m/^-/)
+    {
+	usage
+    }
+    else
+    {
+	usage if defined $revlist;
+	$revlist = $a;
+    }
+}
+
+# commandline defaults
+%summaries =
+    (
+	overall => 1,
+	author => 1,
+	commit => 1,
+    ) unless scalar %summaries;
+$revlist = 'HEAD' unless defined $revlist;
+
+
+printf "==================== INCREMENTAL COVERAGE REPORT ====================\n";
+read_config();
+read_history();
+read_blames();
+read_coverage();
+summarise_overall() if defined $summaries{overall};
+summarise_by_author() if defined $summaries{author};
+summarise_by_commit() if defined $summaries{commit};
+printf "========================================\n";
+

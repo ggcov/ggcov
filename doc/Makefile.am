@@ -1,6 +1,6 @@
 #
 # ggcov - A GTK frontend for exploring gcov coverage data
-# Copyright (c) 2001-2003 Greg Banks <gnb@users.sourceforge.net>
+# Copyright (c) 2001-2011 Greg Banks <gnb@users.sourceforge.net>
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@ if WEB
 WEB_MANS=	ggcov-webdb.1
 endif
 
-man_MANS=	$(GUI_MANS) $(WEB_MANS)
+man_MANS=	$(GUI_MANS) $(WEB_MANS) \
+		git-history-coverage.1
 EXTRA_DIST=	bbg-file-format.txt dbus-decode-gcov.txt \
 		dwarf-file-format.txt HOWTO.web ggcov.1 \
 		ggcov-webdb.1

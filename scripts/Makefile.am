@@ -1,6 +1,6 @@
 #
 # ggcov - A GTK frontend for exploring gcov coverage data
-# Copyright (c) 2001-2003 Greg Banks <gnb@users.sourceforge.net>
+# Copyright (c) 2001-2011 Greg Banks <gnb@users.sourceforge.net>
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,13 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-# 
-# $Id: Makefile.am,v 1.9 2010-05-09 05:37:14 gnb Exp $
 #
 
-SUBDIRS=	src ui php doc test scripts
-
-EXTRA_DIST=	.cvsignore .gdbinit autogen.sh
-
-ggcov:
-	cd src ; $(MAKE) ggcov
+bin_SCRIPTS=	git-history-coverage

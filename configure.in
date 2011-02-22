@@ -367,6 +367,7 @@ AC_OUTPUT([
     Makefile
     src/Makefile
     src/libiberty/Makefile
+    scripts/Makefile
     ui/Makefile
     doc/Makefile
     php/Makefile
