@@ -2,37 +2,34 @@ Summary: GTK+ front end for gcov
 Name: @PACKAGE@
 Version: @VERSION@
 Release: 1
-Copyright: GPL
+License: GPL
 Group: Development/C
-Source: http://www.alphalink.com.au/~gnb/%{name}/%{name}-%{version}.tar.gz
+Source: http://sourceforge.net/projects/ggcov/files/ggcov-%{version}.tar.gz
+Url: http://ggcov.sourceforge.net/
 BuildRoot: /var/tmp/%{name}-root
 BuildPreReq: gdbm-devel
 Vendor: Greg Banks <gnb@users.sourceforge.net>
 
 %description
-Ggcov is a simple GUI program for browsing test coverage data
-from C programs, and is intended to be a graphical replacement
-for the gcov program.  See the ggcov-web package for a WWW
-interface.
+Ggcov is a simple GUI program for browsing test coverage data from C programs,
+and is intended to be a graphical replacement for the gcov program.  See the
+ggcov-web package for a WWW interface.
 
-Test coverage data is produced by programs which have been built
-with "gcc -fprofile-arcs -ftest-coverage", and indicate how
-many times each line and branch has been executed, cumulatively
-over multiple test runs.
+Test coverage data is produced by programs which have been built with "gcc
+--coverage", and indicate how many times each line and branch has been
+executed, cumulatively over multiple test runs.
 
 %package web
 Summary: WWW interface to ggcov
 Group: Development/C
 
 %description web
-The ggcov-web package provides a WWW interface for browsing
-test coverage data from C programs.  See the ggcov package
-for text-based and GNOME interfaces.
+The ggcov-web package provides a WWW interface for browsing test coverage data
+from C programs.  See the ggcov package for text-based and GNOME interfaces.
 
-Test coverage data is produced by programs which have been built
-with "gcc -fprofile-arcs -ftest-coverage", and indicate how
-many times each line and branch has been executed, cumulatively
-over multiple test runs.
+Test coverage data is produced by programs which have been built with "gcc
+--coverage", and indicate how many times each line and branch has been
+executed, cumulatively over multiple test runs.
 
 %prep
 %setup -q
@@ -75,6 +72,9 @@ rm -rf $RPM_BUILD_ROOT
 %doc php/ggcov.conf doc/HOWTO.web
 
 %changelog
+* Thu Feb 24 2011 Greg Banks <gnb@users.sourceforge.net>
+- Update Homepage, Url, and License metadata.
+- Mention --coverage gcc option in description.
 * Sun May  9 2010 Greg Banks <gnb@users.sourceforge.net>
 - Update email address
 * Sun Jun 19 2005 Greg Banks <gnb@alphalink.com.au>
