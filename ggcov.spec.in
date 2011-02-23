@@ -53,6 +53,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %{_bindir}/ggcov
 %{_bindir}/tggcov
+%{_bindir}/git-history-coverage
 %{_datadir}/ggcov/*.glade
 %{_datadir}/ggcov/*.png
 %{_datadir}/gnome/apps/Development/ggcov.desktop
@@ -61,6 +62,7 @@ rm -rf $RPM_BUILD_ROOT
 %doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
 %docdir %{_mandir}
 %{_mandir}/man1/ggcov.1*
+%{_mandir}/man1/git-history-coverage.1*
 
 %files web
 %defattr(-,root,root)
