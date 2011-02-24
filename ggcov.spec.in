@@ -1,4 +1,4 @@
-Summary: GTK+ front end for gcov
+Summary: ggcov test coverage tool
 Name: @PACKAGE@
 Version: @VERSION@
 Release: 1
@@ -7,35 +7,54 @@ Group: Development/C
 Source: http://sourceforge.net/projects/ggcov/files/ggcov-%{version}.tar.gz
 Url: http://ggcov.sourceforge.net/
 BuildRoot: /var/tmp/%{name}-root
-BuildPreReq: gdbm-devel
+@WEB_TRUE@BuildPreReq: gdbm-devel
 Vendor: Greg Banks <gnb@users.sourceforge.net>
 
-%description
-Ggcov is a simple GUI program for browsing test coverage data from C programs,
-and is intended to be a graphical replacement for the gcov program.  See the
-ggcov-web package for a WWW interface.
+@GUI_TRUE@%package gnome
+@GUI_TRUE@Summary: GNOME interface for ggcov test coverage tool
+@GUI_TRUE@Group: Development/C
+@GUI_TRUE@
+@GUI_TRUE@%description gnome
+@GUI_TRUE@Ggcov is a simple GUI program for browsing test coverage data from C programs,
+@GUI_TRUE@and is intended to be a graphical replacement for the gcov program.  See the
+@GUI_TRUE@ggcov-cli and ggcov-web packages for command line and WWW interfaces.
+@GUI_TRUE@
+@GUI_TRUE@Test coverage data is produced by programs which have been built with "gcc
+@GUI_TRUE@--coverage", and indicate how many times each line and branch has been
+@GUI_TRUE@executed, cumulatively over multiple test runs.
 
-Test coverage data is produced by programs which have been built with "gcc
---coverage", and indicate how many times each line and branch has been
-executed, cumulatively over multiple test runs.
-
-%package web
-Summary: WWW interface to ggcov
+%package cli
+Summary: Command line interface for ggcov test coverage tool
 Group: Development/C
 
-%description web
-The ggcov-web package provides a WWW interface for browsing test coverage data
-from C programs.  See the ggcov package for text-based and GNOME interfaces.
+%description cli
+The ggcov-cli package provides a command line interface for browsing
+test coverage data from C programs.  See the ggcov package for the GNOME
+interface.
 
 Test coverage data is produced by programs which have been built with "gcc
 --coverage", and indicate how many times each line and branch has been
 executed, cumulatively over multiple test runs.
+
+
+@WEB_TRUE@%package web
+@WEB_TRUE@Summary: WWW interface for ggcov test coverage tool
+@WEB_TRUE@Group: Development/C
+@WEB_TRUE@
+@WEB_TRUE@%description web
+@WEB_TRUE@The ggcov-web package provides a WWW interface for browsing test
+@WEB_TRUE@coverage data from C programs.  See the ggcov-cli and ggcov packages for
+@WEB_TRUE@text-based and GNOME interfaces.
+@WEB_TRUE@
+@WEB_TRUE@Test coverage data is produced by programs which have been built with "gcc
+@WEB_TRUE@--coverage", and indicate how many times each line and branch has been
+@WEB_TRUE@executed, cumulatively over multiple test runs.
 
 %prep
 %setup -q
 
 %build
-%configure
+%configure @RPM_SPEC_CONFIGURE_ARGS@
 make
 
 %install
@@ -49,31 +68,48 @@ rm -rf $RPM_BUILD_ROOT
 @GCONF@export GCONF_CONFIG_SOURCE=`gconftool-2 --get-default-source`
 @GCONF@gconftool-2 --makefile-install-rule %{_sysconfdir}/gconf/schemas/ggcov.schemas > /dev/null
 
-%files
+@GUI_TRUE@%files gnome
+@GUI_TRUE@%defattr(-,root,root)
+@GUI_TRUE@%{_bindir}/ggcov
+@GUI_TRUE@%{_datadir}/ggcov/*.glade
+@GUI_TRUE@%{_datadir}/ggcov/*.png
+@GUI_TRUE@%{_datadir}/gnome/apps/Development/ggcov.desktop
+@GUI_TRUE@%{_datadir}/pixmaps/ggcov64.png
+@GUI_TRUE@@GCONF@%{_sysconfdir}/gconf/schemas/ggcov.schemas
+@GUI_TRUE@%doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
+@GUI_TRUE@%docdir %{_mandir}
+@GUI_TRUE@%{_mandir}/man1/ggcov.1*
+
+%files cli
 %defattr(-,root,root)
-%{_bindir}/ggcov
 %{_bindir}/tggcov
 %{_bindir}/git-history-coverage
-%{_datadir}/ggcov/*.glade
-%{_datadir}/ggcov/*.png
-%{_datadir}/gnome/apps/Development/ggcov.desktop
-%{_datadir}/pixmaps/ggcov64.png
-@GCONF@%{_sysconfdir}/gconf/schemas/ggcov.schemas
 %doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
 %docdir %{_mandir}
-%{_mandir}/man1/ggcov.1*
 %{_mandir}/man1/git-history-coverage.1*
 
-%files web
-%defattr(-,root,root)
-%{_bindir}/ggcov-webdb
-%{_datadir}/ggcov/php
-%{_localstatedir}/ggcov/tests
-%docdir %{_mandir}
-%{_mandir}/man1/ggcov-webdb.1*
-%doc php/ggcov.conf doc/HOWTO.web
+@WEB_TRUE@%files web
+@WEB_TRUE@%defattr(-,root,root)
+@WEB_TRUE@%{_bindir}/ggcov-webdb
+@WEB_TRUE@%{_datadir}/ggcov/php
+@WEB_TRUE@%{_localstatedir}/ggcov/tests
+@WEB_TRUE@%doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
+@WEB_TRUE@%docdir %{_mandir}
+@WEB_TRUE@%{_mandir}/man1/ggcov-webdb.1*
+@WEB_TRUE@%doc php/ggcov.conf doc/HOWTO.web
+
+# The main package is never built so this is never used
+# but rpmbuild complains if its missing.  Go figure.
+%description
+Test coverage data is produced by programs which have been built with "gcc
+--coverage", and indicate how many times each line and branch has been
+executed, cumulatively over multiple test runs.
 
 %changelog
+* Thu Feb 24 2011 Greg Banks <gnb@users.sourceforge.net>
+- Split off separate ggcov-gnome and ggcov-cli packages
+- The -gnome package is not built if --disable-gui is used
+- The -web package is not built if --disable-web is used
 * Thu Feb 24 2011 Greg Banks <gnb@users.sourceforge.net>
 - Update Homepage, Url, and License metadata.
 - Mention --coverage gcc option in description.

@@ -26,6 +26,7 @@ AM_INIT_AUTOMAKE(ggcov, 0.8.2)
 AM_CONFIG_HEADER(config.h)
 
 AM_MAINTAINER_MODE
+RPM_SPEC_CONFIGURE_ARGS=
 
 dnl Enabling debugging code
 dnl This is mostly straight out of the automake manual.
@@ -63,6 +64,7 @@ if test x$gui = xyes ; then
     GUIPROG=ggcov
 else
     GUIPROG=
+    RPM_SPEC_CONFIGURE_ARGS="$RPM_SPEC_CONFIGURE_ARGS --disable-gui"
 fi
 AC_SUBST(GUIPROG)
 
@@ -125,6 +127,7 @@ if test x$web = xyes ; then
     WEBPROG=ggcov-webdb
 else
     WEBPROG=
+    RPM_SPEC_CONFIGURE_ARGS="$RPM_SPEC_CONFIGURE_ARGS --disable-web"
 fi
 AC_SUBST(WEBPROG)
 
@@ -363,6 +366,8 @@ AC_TYPE_SIGNAL
 AC_FUNC_WAIT3
 AC_CHECK_FUNCS(putenv regcomp strchr)
 AC_CHECK_FUNCS(sincos)
+
+AC_SUBST(RPM_SPEC_CONFIGURE_ARGS)
 
 dnl AC_SUBST(ALL_LINGUAS)
 AC_SUBST(PACKAGE)
