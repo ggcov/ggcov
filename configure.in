@@ -235,6 +235,10 @@ AC_GCC_ADD_CFLAGS([-fno-rtti -fno-exceptions -fno-implement-inlines])
 dnl Use the latest version of gtk which actually is complete and works.
 dnl Should result in: gtk 1.2 on RedHat 7.3, gtk 2 on RedHat 8 & greater.
 
+ifdef([PKG_PROG_PKG_CONFIG],[
+PKG_PROG_PKG_CONFIG
+])
+
 # try gtk 2.0
 have_gconf=no
 if test x$gui = xyes ; then
