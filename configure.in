@@ -92,12 +92,14 @@ for flavor in $DB_FLAVORS ; do
     eval "cppflags=\$DB_CPPFLAGS_$flavor"
 
     oldCPPFLAGS="$CPPFLAGS"
+    oldLIBS="$LIBS"
     CPPFLAGS="$cppflags $CPPFLAGS"
     found=yes
     AC_CHECK_HEADER(db.h,[],[found=no])
     AC_CHECK_LIB($lib,db_create,[],[found=no],$ldflags)
-    test $found = yes && break
     CPPFLAGS="$oldCPPFLAGS"
+    LIBS="$oldLIBS"
+    test $found = yes && break
 done
 if test $found = yes ; then
     DB_CPPFLAGS="$cppflags"
