@@ -25,3 +25,12 @@ EXTRA_DIST=	.gitignore .gdbinit autogen.sh
 
 ggcov:
 	cd src ; $(MAKE) ggcov
+
+@REDHAT_TRUE@package: dist
+@REDHAT_TRUE@	$(RM) -rf rpm.d
+@REDHAT_TRUE@	mkdir rpm.d rpm.d/SOURCES rpm.d/BUILD rpm.d/SRPMS rpm.d/RPMS
+@REDHAT_TRUE@	ln -s ../../$(distdir).tar.gz rpm.d/SOURCES
+@REDHAT_TRUE@	rpmbuild -ba --define="_topdir $(PWD)/rpm.d" ggcov.spec
+@REDHAT_TRUE@
+@REDHAT_TRUE@CLEANFILES= rpm.d
+
