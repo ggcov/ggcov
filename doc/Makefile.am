@@ -30,4 +30,4 @@ man_MANS=	$(GUI_MANS) $(WEB_MANS) \
 		git-history-coverage.1
 EXTRA_DIST=	bbg-file-format.txt dbus-decode-gcov.txt \
 		dwarf-file-format.txt HOWTO.web ggcov.1 \
-		ggcov-webdb.1
+		ggcov-webdb.1 git-history-coverage.1

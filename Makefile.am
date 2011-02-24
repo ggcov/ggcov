@@ -21,7 +21,7 @@
 
 SUBDIRS=	src ui php doc test scripts
 
-EXTRA_DIST=	.cvsignore .gdbinit autogen.sh
+EXTRA_DIST=	.gitignore .gdbinit autogen.sh
 
 ggcov:
 	cd src ; $(MAKE) ggcov
