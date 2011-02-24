@@ -34,7 +34,7 @@ my %commits;
 my %oldcommits;
 my %blames;
 my %removed;
-my $tggcov = '/home/gnb/software/ggcov/ggcov.git/src/tggcov';
+my $tggcov = 'tggcov';
 my $COVERED_THRESHOLD_PC = 10.0;
 my $SUBJECT_MAX = 95;
 my $verbose = 0;
