@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2003-2004 Greg Banks <gnb@users.sourceforge.net>
+ * Copyright (c) 2003-2011 Greg Banks <gnb@users.sourceforge.net>
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,80 @@ public:
 };
 
 extern void gnb_hash_table_add_one_key(gpointer, gpointer, gpointer);
+
+template<class K/*key*/, class T/*item*/> class hashtable_t;
+
+template<class K/*key*/, class T/*item*/> class hashtable_iter_t
+{
+private:
+    GHashTableIter hiter_;
+    gpointer key_, value_;
+    gboolean valid_;
+
+    hashtable_iter_t(GHashTable *ht)
+    {
+	g_hash_table_iter_init(&hiter_, ht);
+	key_ = value_ = 0;
+	valid_ = TRUE;
+	g_hash_table_iter_next(&hiter_, &key_, &value_);
+    }
+
+public:
+    hashtable_iter_t()
+    {
+	memset(&hiter_, 0, sizeof(hiter_));
+	key_ = value_ = 0;
+	valid_ = FALSE;
+    }
+
+    T *operator++()
+    {
+	return next() ? (T *)value_ : 0;
+    }
+    T *operator*()
+    {
+    	return (T *)value_;
+    }
+
+    gboolean next()
+    {
+	gboolean r = (valid_ && g_hash_table_iter_next(&hiter_, &key_, &value_));
+	if (!r)
+	{
+	    key_ = value_ = 0;
+	    valid_ = FALSE;
+	    return FALSE;
+	}
+	return TRUE;
+    }
+    gboolean next(K* &kt, T* &vt)
+    {
+	if (next())
+	{
+	    kt = (K *)key_;
+	    vt = (T *)value_;
+	    return TRUE;
+	}
+	return FALSE;
+    }
+
+    K *key() const
+    {
+	return (K *)key_;
+    }
+    T *value() const
+    {
+	return (T *)value_;
+    }
+
+    void remove()
+    {
+	if (valid_)
+	    g_hash_table_iter_remove(&hiter_);
+    }
+
+    friend class hashtable_t<K, T>;
+};
 
 template<class K/*key*/, class T/*item*/> class hashtable_t : public GHashTable
 {
@@ -114,6 +188,11 @@ public:
     {
     	g_hash_table_foreach((GHashTable*)this, gnb_hash_table_add_one_key, list);
 	list->sort((gint (*)(const K*, const K*))hashtable_ops_t<K>::sort_compare);
+    }
+
+    hashtable_iter_t<K, T> first() const
+    {
+	return hashtable_iter_t<K, T>((GHashTable *)this);
     }
 };
 
