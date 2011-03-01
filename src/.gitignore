@@ -10,6 +10,7 @@ newbbgdump
 phptest
 popttest
 estringtest
+hashtabletest
 toktest
 ggcov-webdb
 tggcov
