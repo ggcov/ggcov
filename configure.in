@@ -335,6 +335,13 @@ else
 fi
 AM_CONDITIONAL(GCONF, test $have_gconf = yes)
 AC_SUBST(GCONF)
+
+AC_CHECK_LIB(glib-2.0, g_hash_table_iter_init,
+	     AC_DEFINE(HAVE_G_HASH_TABLE_ITER,1,[
+ * An iterator for GHashTables may or may not be present
+ * in the glib library...we have to work around it if not.
+]),,
+	      [$GGCOV_CLI_LIBS])
     
 if test $libpopt = yes ; then
     AC_DEFINE(HAVE_LIBPOPT,,[Define to 1 if the popt library is present])

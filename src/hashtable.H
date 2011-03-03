@@ -54,45 +54,101 @@ template<class K/*key*/, class T/*item*/> class hashtable_t;
 template<class K/*key*/, class T/*item*/> class hashtable_iter_t
 {
 private:
+#if HAVE_G_HASH_TABLE_ITER
     GHashTableIter hiter_;
+#else
+    GHashTable *table_;
+    list_t<K> keys_;
+    gboolean init_;
+#endif
     gpointer key_, value_;
     gboolean valid_;
 
     hashtable_iter_t(GHashTable *ht)
+     : key_(0),
+       value_(0),
+       valid_(TRUE)
     {
+#if HAVE_G_HASH_TABLE_ITER
 	g_hash_table_iter_init(&hiter_, ht);
-	key_ = value_ = 0;
-	valid_ = TRUE;
-	g_hash_table_iter_next(&hiter_, &key_, &value_);
+	next();
+#else
+	table_ = ht;
+	init_ = FALSE;
+	/* initialise the list of keys later so we can
+	 * return the iterator from ht::first() safely */
+#endif
     }
 
 public:
     hashtable_iter_t()
+     : key_(0),
+       value_(0),
+       valid_(FALSE)
     {
+#if HAVE_G_HASH_TABLE_ITER
 	memset(&hiter_, 0, sizeof(hiter_));
-	key_ = value_ = 0;
-	valid_ = FALSE;
+#else
+	table_ = 0;
+	init_ = FALSE;
+#endif
+    }
+    ~hashtable_iter_t()
+    {
+#if !HAVE_G_HASH_TABLE_ITER
+	keys_.remove_all();
+#endif
+    }
+
+    void delayed_init()
+    {
+#if !HAVE_G_HASH_TABLE_ITER
+	if (!init_ && table_)
+	{
+	    ((hashtable_t<K, T>*)table_)->keys(&keys_);
+	    init_ = TRUE;
+	    next();
+	}
+#endif
     }
 
     T *operator++()
     {
+	delayed_init();
 	return next() ? (T *)value_ : 0;
     }
     T *operator*()
     {
+	delayed_init();
     	return (T *)value_;
     }
 
     gboolean next()
     {
+	delayed_init();
+#if HAVE_G_HASH_TABLE_ITER
 	gboolean r = (valid_ && g_hash_table_iter_next(&hiter_, &key_, &value_));
 	if (!r)
 	{
 	    key_ = value_ = 0;
 	    valid_ = FALSE;
-	    return FALSE;
 	}
-	return TRUE;
+#else
+	if (valid_)
+	{
+	    key_ = (gpointer)keys_.remove_head();
+	    if (key_)
+	    {
+		value_ = g_hash_table_lookup(table_, key_);
+	    }
+	    else
+	    {
+		value_ = 0;
+		valid_ = FALSE;
+	    }
+	}
+#endif
+	return valid_;
     }
     gboolean next(K* &kt, T* &vt)
     {
@@ -105,19 +161,27 @@ public:
 	return FALSE;
     }
 
-    K *key() const
+    K *key()
     {
+	delayed_init();
 	return (K *)key_;
     }
-    T *value() const
+    T *value()
     {
+	delayed_init();
 	return (T *)value_;
     }
 
     void remove()
     {
+	delayed_init();
+#if HAVE_G_HASH_TABLE_ITER
 	if (valid_)
 	    g_hash_table_iter_remove(&hiter_);
+#else
+	if (valid_)
+	    g_hash_table_remove(table_, key_);
+#endif
     }
 
     friend class hashtable_t<K, T>;
