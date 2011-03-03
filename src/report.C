@@ -502,7 +502,9 @@ cob_report_t::post_add_method(xml_node_t *xmethods, cov_function_t *fn)
 
     const cov_location_t *first = fn->get_first_location();
     const cov_location_t *last = fn->get_last_location();
-    if (!strcmp(first->filename, last->filename) &&
+    if (first &&
+        last &&
+	!strcmp(first->filename, last->filename) &&
 	!strcmp(first->filename, fn->file()->name()))
 	post_add_lines(xmethod, fn->file(), first->lineno, last->lineno);
 }
