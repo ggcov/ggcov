@@ -243,6 +243,8 @@ void
 cov_file_t::add_name(const char *name)
 {
     assert(name[0] == '/');
+    if (common_len_ < 0)
+	return;	/* dirty, need to recalculate later */
     if (common_path_ == 0)
     {
     	/* first filename: initialise the common path to the directory */
