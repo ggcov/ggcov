@@ -521,8 +521,14 @@ cob_report_t::post_add_class(
     xml_node_t *xclass = xclasses->new_child("class");
 
     string_var fpath = path(f);
-    xclass->add_prop("name", fpath);
     xclass->add_prop("filename", fpath);
+
+    estring name = fpath.data();
+    const char *ext = strrchr(name.data(), '.');
+    if (ext)
+	name.truncate_to(ext - name.data());
+    name.replace_all("/", ".");
+    xclass->add_prop("name", name);
 
     cov_file_scope_t scope(f);
     const cov_stats_t *stats = scope.get_stats();
