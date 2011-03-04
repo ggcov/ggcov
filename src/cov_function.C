@@ -74,9 +74,38 @@ cov_function_t::add_block()
 gboolean
 cov_function_t::is_self_suppressed() const
 {
+    static const char * const prefixes[] =
+    {
+	"_GLOBAL_",
+	0
+    };
+    static const char * const names[] =
+    {
+	/* inlines in glibc's </sys/sysmacros.h> */
+	"gnu_dev_major",
+	"gnu_dev_minor",
+	"gnu_dev_makedev",
+	/* inlines in glibc's <sys/stat.h> */
+	"stat",
+	"lstat",
+	"fstat",
+	"mknod",
+	0
+    };
+    const char * const *n;
+
     /* TODO: implement suppression by function name here */
-    if (!strncmp(name_, "_GLOBAL_", 8))
-    	return TRUE;
+
+    for (n = prefixes ; *n ; n++)
+    {
+	if (!strncmp(name_, *n, strlen(*n)))
+	    return TRUE;
+    }
+    for (n = names ; *n ; n++)
+    {
+	if (!strcmp(name_, *n))
+	    return TRUE;
+    }
     return FALSE;
 }
 
