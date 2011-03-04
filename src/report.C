@@ -385,6 +385,7 @@ cob_report_t::setup_common()
     const char *p = common_ + common_len_ - 2;
     while (p >= common_ && *p != '/')
 	--p;
+    /* common_len_ includes a trailing / */
     common_len_ = p+1 - common_;
 }
 
@@ -400,7 +401,7 @@ cob_report_t::setup_xdoc()
 			      (const xmlChar *)"coverage", 0));
     xmlDocSetRootElement(xdoc_, xroot_->unwrap());
 
-    string_var common = g_strndup(common_, common_len_);
+    string_var common = g_strndup(common_, common_len_-1);
     xroot_->new_child("sources")->new_child("source", common);
 
     /* Fake a Java timestamp which appears to be milliseconds
