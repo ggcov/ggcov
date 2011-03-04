@@ -436,6 +436,9 @@ cob_report_t::path(cov_file_t *f)
 void
 cob_report_t::add(cov_file_t *f)
 {
+    if (f->minimal_name()[0] == '/')
+	return;	    /* not common, probably in /usr/include */
+
     string_var fpath = path(f);
     string_var ppath = g_dirname(fpath);
     package_t *pkg = packages_->lookup(ppath);
