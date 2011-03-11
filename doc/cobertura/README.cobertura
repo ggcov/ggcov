@@ -1,0 +1,15 @@
+Here are some resources I used when developing the Cobertura
+report support for ggcov.
+
+ * The Cobertura software is at http://cobertura.sourceforge.net/
+   and their latest published DTDs is available at
+   http://cobertura.sourceforge.net/xml/coverage-04.dtd
+
+    coverage-04.dtd - most recent DTD for Cobertura reports
+
+ * I found a nice small example at http://coveragegoalmanager.googlecode.com/
+   which is under the Apache Licence v2.0
+
+    CoverageTest.java - simple test program in Java
+    coverage.xml - example Cobertura report for CoverageTest.java
+
