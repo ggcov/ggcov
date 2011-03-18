@@ -684,7 +684,6 @@ cov_file_t::read_old_bbg_function(covio_t *io)
     gnb_u32_t bidx, aidx;
     gnb_u32_t dest, flags;
     gnb_u32_t sep;
-    cov_block_t *b;
     cov_arc_t *a;
     cov_function_t *fn;
     
@@ -721,7 +720,6 @@ cov_file_t::read_old_bbg_function(covio_t *io)
     for (bidx = 0 ; bidx < nblocks ; bidx++)
     {
     	dprintf1(D_BBG, "BBG   block %d\n", bidx);
-	b = fn->nth_block(bidx);
 	if (!io->read_u32(narcs))
     	    bbg_failed0("short file");
 
