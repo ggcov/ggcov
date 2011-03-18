@@ -926,6 +926,35 @@ cov_file_t::make_absolute(const char *filename) const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static gboolean
+decode_new_version(gnb_u32_t ver, unsigned int *major,
+		   unsigned int *minor, unsigned char *rel)
+{
+    unsigned char b;
+
+    b = (ver>>24) & 0xff;
+    if (!isdigit(b))
+	return FALSE;
+    *major = b - '0';
+
+    b = (ver>>16) & 0xff;
+    if (!isdigit(b))
+	return FALSE;
+    *minor = b - '0';
+
+    b = (ver>>8) & 0xff;
+    if (!isdigit(b))
+	return FALSE;
+    *minor = (*minor * 10) + (b - '0');
+
+    b = (ver) & 0xff;
+    if (!isalnum(b) && b != '*')
+	return FALSE;
+    *rel = b;
+
+    return TRUE;
+}
+
 gboolean
 cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 {
@@ -974,7 +1003,17 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 	len_unit = 4;	/* records lengths are in 4-byte units now */
     	break;
     default:
-    	bbg_failed1("unknown version=0x%08x", format_version_);
+	unsigned int major, minor;
+	unsigned char rel;
+	if (!decode_new_version(format_version_, &major, &minor, &rel))
+	    fprintf(stderr, "%s: undecodable compiler version %08x, "
+			    "probably corrupted file\n",
+			    io->filename(), format_version_);
+	else
+	    fprintf(stderr, "%s: unsupported compiler version %u.%u(%c), "
+			    "contact author for support\n",
+			    io->filename(), major, minor, rel);
+	return FALSE;
     }
     if (format_version_ != expect_version)
     	bbg_failed1("unexpected version=0x%08x", format_version_);
