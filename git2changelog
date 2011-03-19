@@ -1,0 +1,140 @@
+#!/bin/sh
+#
+# ggcov - A GTK frontend for exploring gcov coverage data
+# Copyright (c) 2001-2011 Greg Banks <gnb@users.sourceforge.net>
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# 
+# Shell script to build a change log for a new release
+# from git logs. The change log will still need some
+# manual editing to re-express changes for users, etc.
+#
+
+REV1=
+REV2=
+PACKAGE=`sed -n -e 's|^AM_INIT_AUTOMAKE(\([^,]\+\),\([^)]\+\))|\1|p' < configure.in`
+DRYRUN=no
+NREVS=0
+ME="Greg Banks"
+EMAIL="gnb@users.sourceforge.net"
+DATE_FORMAT="%a %b %_d %H:%M:%S %Y"
+CHECKFILE="configure.in"
+LOG=ChangeLog
+OLDLOG=ChangeLog.$$
+VERBOSE=0
+
+canon_tag ()
+{
+    # Usage: canon_tag rev
+    echo "${PACKAGE}_$1" | tr a-z. A-Z_
+}
+
+get_last_rev_tag ()
+{
+    git describe --tags HEAD | cut -d- -f1
+}
+
+get_rev_date ()
+{
+    # Usage: get_rev_data rev
+    local tag
+    local gitdate
+
+    tag=`canon_tag $1`
+    gitdate=`git show --pretty='format:%at' $tag | sed -n -e '1s/ .0000$//p'`
+    date +"$DATE_FORMAT" -d "$gitdate"
+}
+
+usage ()
+{
+    [ -z "$*" ] || echo "git2changelog: $*"
+    echo "Usage: git2changelog [--package pkg] [--dryrun] [rev1 [rev2]]"
+    exit 0
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --package=*) PACKAGE=`echo "$1"|sed -e 's|^[^=]*=||g'` ;;
+    --package) PACKAGE="$2" ; shift ;;
+    --dryrun) DRYRUN=yes ;;
+    --help) usage ;;
+    --verbose) VERBOSE=1 ;;
+    -*) usage "bad option \"$1\"" ;;
+    [0-9]*.[0-9]*.[0-9]*|[0-9]*.[0-9]*)
+    	case "$NREVS" in
+	0) REV1="$1" ;;
+	1) REV2="$1" ;;
+	*) usage "too many revisions at \"$1\"" ;;
+	esac
+	NREVS=`expr $NREVS + 1`
+	;;
+    *) usage "unexpected argument at \"$1\"" ;;
+    esac
+    shift
+done
+
+test -z "$PACKAGE" && usage "no package specified"
+
+if [ -z "$REV1" ]; then
+    # calculate previous tagged revision by getting
+    # most recent tag of the correct format
+    TAG1=`get_last_rev_tag`
+else
+    TAG1=`canon_tag "$REV1"`
+fi
+
+if [ -z "$REV2" ]; then
+    # Use the magic tag `HEAD' which indicates the
+    # most recent revision
+    TAG2="HEAD"
+    REV2="latest revision"
+    DATE=`date +"$DATE_FORMAT"`
+    RELEASE=
+else
+    TAG2=`canon_tag "$REV2"`
+    DATE=`get_rev_date $REV2`
+    RELEASE="$REV2"
+fi
+
+# echo "PACKAGE=$PACKAGE"
+# echo "REV1=$REV1"
+# echo "TAG1=$TAG1"
+# echo "REV2=$REV2"
+# echo "TAG2=$TAG2"
+# echo "DRYRUN=$DRYRUN"
+# exit 1
+
+(
+    echo -n "Compiling changes from $PACKAGE tags $TAG1 to $TAG2"
+    test "$DRYRUN" = no && echo -n " into $LOG"
+    echo ""
+) 1>&2;
+
+gather_changes ()
+{
+    echo "$DATE  $ME <$EMAIL>"
+    test -z "$RELEASE" || echo "	* Release $RELEASE"
+    git log ${TAG1}..${TAG2} --pretty='format:	* %s' -- 2>&1
+    echo ""
+}
+
+if [ "$DRYRUN" = yes ] ; then
+    gather_changes
+else
+    mv $LOG $OLDLOG && \
+    gather_changes > $LOG && \
+    cat $OLDLOG >> $LOG && \
+    rm $OLDLOG
+fi
