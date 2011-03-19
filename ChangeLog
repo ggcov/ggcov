@@ -1,3 +1,23 @@
+Sat Mar 19 14:03:24 2011  Greg Banks <gnb@users.sourceforge.net>
+	* Release 0.8.3
+
+	* Handle gcc 4.5.
+	* Add a report which emits a Cobertura coverage.xml
+	* Add git-history-coverage which reports coverage by git commit
+	* Add -o option to tggcov
+	* Silently treat missing .gcda files as zero counts
+	* Automatically suppress some glibc inline functions
+	* Split ggcov RPM packages into three.
+	* Fix a really old bug with minimal_name()
+	* Add hashtable_iter_t to iterate a hashtable
+	* Provide a package: target in the top level
+	* Don't link (t)ggcov against Sleepycat DB
+	* Fix dist: target again
+	* Modernise RPC spec file.
+	* Use PKG_PROG_PKG_CONFIG in configure.in
+	* Converted .cvsignore files to .gitignore
+	* Use git to generate ChangeLog not CVS.
+
 Sun May  9 15:55:03 2010  Greg Banks <gnb@users.sourceforge.net>
 	* Release 0.8.2
 
