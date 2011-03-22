@@ -2,6 +2,7 @@ Sat Mar 19 14:03:24 2011  Greg Banks <gnb@users.sourceforge.net>
 	* Release 0.8.3
 
 	* Handle gcc 4.5.
+	* Work around Ubuntu libbfd b0rkages
 	* Add a report which emits a Cobertura coverage.xml
 	* Add git-history-coverage which reports coverage by git commit
 	* Add -o option to tggcov
