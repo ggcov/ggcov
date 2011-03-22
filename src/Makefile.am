@@ -181,3 +181,9 @@ COVFLAGS=		-fprofile-arcs -ftest-coverage
 coverage: covered-all
 covered-all:
 	$(MAKE) CFLAGS="$(CFLAGS) $(COVFLAGS)" CXXFLAGS="$(CXXFLAGS) $(COVFLAGS)" all
+
+if UBUNTU
+install-exec-hook:
+	$(mkdir_p) $(DESTDIR)$(bfdhackdir)
+	$(INSTALL_PROGRAM) $(LIB_BFD_SO) $(DESTDIR)$(bfdhackdir)/
+endif
