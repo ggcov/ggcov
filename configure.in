@@ -365,7 +365,6 @@ AC_MSG_CHECKING(for OS-specific defines)
 OS_DEFINES=
 is_linux=no
 is_redhat=no
-is_ubuntu=no
 case "$host_os" in
 solaris*) OS_DEFINES=-DELF_TARGET_ALL ;;
 linux*) is_linux=yes ;;
@@ -378,43 +377,9 @@ if test x$is_linux = xyes ; then
     dnl Are we on RedHat or similar, e.g. CentOS?
     if test -f /etc/redhat-release ; then
 	is_redhat=yes
-	AC_MSG_RESULT(RedHat)
-    fi
-    dnl Are we on Ubuntu?
-    if grep Ubuntu /etc/issue >/dev/null ; then
-	is_ubuntu=yes
-	AC_MSG_RESULT(Ubuntu)
     fi
 fi
 AM_CONDITIONAL(REDHAT, test x$is_redhat = xyes)
-AM_CONDITIONAL(UBUNTU, test x$is_ubuntu = xyes)
-
-dnl Special hack to work around Ubuntu's habit of making the
-dnl libbfd DSO name include the version number but not recording
-dnl application library dependencies acurately, so that binutils
-dnl can be upgraded without warning but that upgrade breaks ggcov.
-dnl We find the BFD DSO and install our own copy.
-if test x$is_ubuntu = xyes ; then
-AC_MSG_CHECKING([full pathname of libbfd])
-LIB_BFD_SO=
-AC_LINK_IFELSE(AC_LANG_PROGRAM([
-#include <bfd.h>
-],[
-    bfd_init();
-]),[
-    LIB_BFD_SO=`ldd conftest$ac_exeext | awk '$1~/^libbfd.*.so/{print $3}'`
-])
-if test "x$LIB_BFD_SO" = x ; then
-    AC_MSG_ERROR([cannot find full pathname for libbfd])
-else
-    AC_MSG_RESULT($LIB_BFD_SO)
-    AC_SUBST(LIB_BFD_SO)
-    bfdhackdir='$(pkglibdir)/'$host_cpu
-    AC_SUBST(bfdhackdir)
-    GGCOV_CLI_LIBS="$GGCOV_CLI_LIBS "'-Wl,-rpath,$(bfdhackdir)'
-    GGCOV_GUI_LIBS="$GGCOV_GUI_LIBS "'-Wl,-rpath,$(bfdhackdir)'
-fi
-fi
 
 dnl Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
