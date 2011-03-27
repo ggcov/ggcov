@@ -199,8 +199,61 @@ AC_ARG_WITH(bfd,
 [  --without-bfd           Don't use BFD library (callgraphs will not work)],
 [],[with_bfd=yes])
 if test $with_bfd = yes ; then
-AC_CHECK_LIB(iberty, obstack_free)
-AC_CHECK_LIB(bfd, bfd_init)
+
+dnl Try to link the bfd library (and it's buddy, -liberty) statically,
+dnl falling back to dynamic linking if that fails.
+dnl
+dnl Why would we care?  Ubuntu, for reasons that doubtless make sense
+dnl to them, include the binutils version number in the libbfd DSO name.
+dnl Thus when we link ggcov against -lbfd, the name which is recorded
+dnl in the ggcov executable is something like "libbfd-2.19.1.so".  When
+dnl a user upgrades to a new version of binutils, the old DSO goes away
+dnl and a new one appears, for example /usr/lib/libbfd-2.19.2.so.  Then
+dnl the next time ggcov is run, it fails to start because the runtime
+dnl linker cannot find the old DSO.  Note that this breaks ggcov every
+dnl bump of binutils, not just when the libbfd ABI is incompatibly
+dnl changed.  Compounding the problem, Ubuntu's packaging system detects
+dnl and records a dependency on binutils but not the specific version,
+dnl so there's not even a warning when the user upgrades binutils with
+dnl ggcov installed.  Linking the bfd library statically should avoid
+dnl all this unnecessary drama. -gnb 20110327
+
+Bstatic="-Wl,-Bstatic"
+bfd_libs="-lbfd -liberty"
+Bdynamic="-Wl,-Bdynamic"
+
+AC_MSG_CHECKING([for GNU bfd library, static])
+have_libbfd=no
+bfd_save_LIBS="$LIBS"
+LIBS="$LIBS $Bstatic $bfd_libs $Bdynamic"
+AC_LINK_IFELSE(
+[AC_LANG_CALL([], [bfd_init])],
+[
+    have_libbfd=yes
+    AC_DEFINE(HAVE_LIBBFD,1,[the GNU bfd library is available])
+],
+[
+    LIBS="$bfd_save_LIBS"
+])
+AC_MSG_RESULT($have_libbfd)
+
+if test $have_libbfd = no ; then
+    AC_MSG_CHECKING([for GNU bfd library, any])
+    have_libbfd=no
+    bfd_save_LIBS="$LIBS"
+    LIBS="$LIBS $bfd_libs"
+    AC_LINK_IFELSE(
+    [AC_LANG_CALL([], [bfd_init])],
+    [
+	have_libbfd=yes
+	AC_DEFINE(HAVE_LIBBFD,1,[the GNU bfd library is available])
+    ],
+    [
+	LIBS="$bfd_save_LIBS"
+    ])
+    AC_MSG_RESULT($have_libbfd)
+fi
+
 
 dnl Sometime before binutils 2.15.92.0.2, the field _raw_size
 dnl in the asection struct was renamed to rawsize.
