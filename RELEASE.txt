@@ -3,7 +3,7 @@ Description of release procedure for ggcov
 ------------------------------------------
 
 1.  Be in the ggcov top_srcdir
-    cd ~/sw/ggcov
+    cd ~/software/ggcov
 
 2.  Ensure all changes are checked in
 
@@ -12,22 +12,21 @@ Description of release procedure for ggcov
 4.  Bump revision number in configure.in
     vi configure.in
     # edit the AM_INIT_AUTOMAKE line
-    cvs ci configure.in
+    git commit configure.in
 
-5.  Tag the source:
-    cvs tag GGCOV_0_5
+5.  Build a list of change from the previous release (e.g. 0.4)
+    ./git2changelog 0.4
 
-6.  Build a list of change from the previous release (e.g. 0.4)
-    ./cvs2changelog 0.4 0.5
-
-7.  Manually edit the ChangeLog file to remove, re-express and
+6.  Manually edit the ChangeLog file to remove, re-express and
     re-order the change log items in the first section (just
-    created by the cvs2changelog script). Maintain the formatting.
+    created by the git2changelog script). Make sure you name the
+    correct release.  Maintain the formatting.
 
-8.  Checkin and re-tag ChangeLog
-    cvs ci ChangeLog
-    cvs tag -d GGCOV_0_5 ChangeLog
-    cvs tag GGCOV_0_5 ChangeLog
+7.  Checkin ChangeLog
+    git commit ChangeLog
+
+8.  Tag the source tree
+    cvs tag GGCOV_0_5
 
 9.  Build new source tarball
     make dist
