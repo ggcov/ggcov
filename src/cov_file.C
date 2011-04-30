@@ -46,29 +46,8 @@ void *cov_file_t::files_model_;
 	 ((gnb_u32_t)('0'+(minor)/10)<<16)| \
 	 ((gnb_u32_t)('0'+(minor)%10)<<8)| \
 	 ((gnb_u32_t)(release)))
-#define BBG_VERSION_GCC45  	_NEW_VERSION(4,5,'*')
-#define BBG_VERSION_GCC44  	_NEW_VERSION(4,4,'*')
-#define BBG_VERSION_GCC43   	_NEW_VERSION(4,3,'*')
-#define BBG_VERSION_GCC41_UBU	_NEW_VERSION(4,1,'p')	/* Ubuntu Edgy */
-#define BBG_VERSION_GCC41   	_NEW_VERSION(4,1,'*')
-#define BBG_VERSION_GCC40_UBU  	_NEW_VERSION(4,0,'U')	/* Ubuntu Dapper Drake */
-#define BBG_VERSION_GCC40_RH   	_NEW_VERSION(4,0,'R')
-#define BBG_VERSION_GCC40_APL  	_NEW_VERSION(4,0,'A')	/* Apple MacOS X*/
-#define BBG_VERSION_GCC40    	_NEW_VERSION(4,0,'*')
 #define BBG_VERSION_GCC34    	_NEW_VERSION(3,4,'*')
-/*
- * RedHat's FC3 compiler appears to be based on a CVS sample partway
- * between gcc 3.4.0 and gcc 4.0.  It has funcids in the .gcno file
- * but the .gcda file doesn't use a 0 tag as a terminator.
- */
-#define BBG_VERSION_GCC34_UBU	_NEW_VERSION(3,4,'U')
-#define BBG_VERSION_GCC34_RH	_NEW_VERSION(3,4,'R')
-#define BBG_VERSION_GCC34_MDK  	_NEW_VERSION(3,4,'M')	/* Mandrake crud */
 #define BBG_VERSION_GCC33   	_NEW_VERSION(3,3,'p')
-#define BBG_VERSION_GCC33_SUSE	_NEW_VERSION(3,3,'S')   /* SUSE crud */
-#define BBG_VERSION_GCC33_MDK	_NEW_VERSION(3,3,'M')   /* Mandrake crud */
-#define BBG_VERSION_OLD     	0
-#define BBG_VERSION_OLDPLUS     1
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -799,7 +778,6 @@ gboolean
 cov_file_t::read_old_bbg_file(covio_t *io)
 {
     features_ |= FF_BBFILE;
-    format_version_ = BBG_VERSION_OLD;
     return read_old_bbg_file_common(io);
 }
 
@@ -807,7 +785,6 @@ gboolean
 cov_file_t::read_oldplus_bbg_file(covio_t *io)
 {
     features_ |= FF_BBFILE|FF_OLDPLUS;
-    format_version_ = BBG_VERSION_OLDPLUS;
     return read_old_bbg_file_common(io);
 }
 
@@ -981,28 +958,28 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     	bbg_failed0("short file");
     switch (format_version_)
     {
-    case BBG_VERSION_GCC33_SUSE:
+    case _NEW_VERSION(3,3,'S'):   /* SUSE crud */
 	features_ |= FF_DAMANGLED;
 	/* fall through */
-    case BBG_VERSION_GCC33_MDK:
+    case _NEW_VERSION(3,3,'M'):   /* Mandrake crud */
     case BBG_VERSION_GCC33:
 	if (expect_version != BBG_VERSION_GCC33)
 	    bbg_failed1("unexpected version=0x%08x", format_version_);
     	break;
-    case BBG_VERSION_GCC40:
-    case BBG_VERSION_GCC40_RH:
-    case BBG_VERSION_GCC40_UBU:
-    case BBG_VERSION_GCC40_APL:
-    case BBG_VERSION_GCC41:
-    case BBG_VERSION_GCC41_UBU:
-    case BBG_VERSION_GCC43:
-    case BBG_VERSION_GCC44:
-    case BBG_VERSION_GCC45:
+    case _NEW_VERSION(4,0,'*'):
+    case _NEW_VERSION(4,0,'R'):
+    case _NEW_VERSION(4,0,'U'):	/* Ubuntu Dapper Drake */
+    case _NEW_VERSION(4,0,'A'):	/* Apple MacOS X*/
+    case _NEW_VERSION(4,1,'*'):
+    case _NEW_VERSION(4,1,'p'):	/* Ubuntu Edgy */
+    case _NEW_VERSION(4,3,'*'):
+    case _NEW_VERSION(4,4,'*'):
+    case _NEW_VERSION(4,5,'*'):
 	features_ |= FF_DA0TAG;
 	/* fall through */
-    case BBG_VERSION_GCC34_UBU:
-    case BBG_VERSION_GCC34_RH:
-    case BBG_VERSION_GCC34_MDK:
+    case _NEW_VERSION(3,4,'U'):	/* Ubuntu */
+    case _NEW_VERSION(3,4,'R'):	/* RedHat */
+    case _NEW_VERSION(3,4,'M'):	/* Mandrake crud */
 	features_ |= FF_FUNCIDS;
 	/* fall through */
     case BBG_VERSION_GCC34:
