@@ -128,6 +128,13 @@ private:
 	const char *description_;
     };
     static const format_rec_t formats[];
+
+    enum feature_flags
+    {
+	/* From 3.4 onwards: timestamps in .gcno and .gcda files, and
+	 * lengths are 4 bytes long. */
+	FF_TIMESTAMP	=(1<<0)
+    };
     
     static void init();
     static void post_read_1(const char *, cov_file_t *, gpointer);
@@ -204,6 +211,7 @@ private:
     gboolean finalised_;    /* data read & post-read connections made */
     const format_rec_t *format_;
     gnb_u32_t format_version_;	/* file format version */
+    gnb_u32_t features_;	/* FF_* flags */
     ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char, cov_function_t> *functions_by_name_;
     /* extra hashtable needed for RH-hacked gcc3.4 formats */

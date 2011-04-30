@@ -1002,9 +1002,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	    expect_version = format_version_;
 	/* fall through */
     case BBG_VERSION_GCC34:
-	io->read_u32(tmp);	/* ignore the timestamp */
-    	/* TODO: should really do something useful with this */
-	len_unit = 4;	/* records lengths are in 4-byte units now */
+	features_ = FF_TIMESTAMP;
     	break;
     default:
 	unsigned int major, minor;
@@ -1021,6 +1019,13 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     }
     if (format_version_ != expect_version)
     	bbg_failed1("unexpected version=0x%08x", format_version_);
+
+    if ((features_ & FF_TIMESTAMP))
+    {
+	io->read_u32(tmp);	/* ignore the timestamp */
+    	/* TODO: should really do something useful with this */
+	len_unit = 4;	/* records lengths are in 4-byte units now */
+    }
 
     while (io->read_u32(tag))
     {
@@ -1465,7 +1470,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
     	da_failed2("bad version=0x%08x != 0x%08x",
 	    	    version, format_version_);
 
-    if (magic == DA_GCC34_MAGIC)
+    if ((features_ & FF_TIMESTAMP))
     {
     	if (!io->read_u32(tmp))    	/* ignore timestamp */
     	    da_failed0("short file");
