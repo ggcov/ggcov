@@ -956,7 +956,9 @@ decode_new_version(gnb_u32_t ver, unsigned int *major,
 }
 
 gboolean
-cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
+cov_file_t::read_gcc3_bbg_file(covio_t *io,
+			       gnb_u32_t expect_version,
+			       covio_t::format_t ioformat)
 {
     gnb_u32_t tag, length;
     cov_function_t *fn = 0;
@@ -970,6 +972,8 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
     gnb_u32_t line, last_line = 0;
     unsigned int len_unit = 1;
     gnb_u64_t funcid = 0;
+
+    io->set_format(ioformat);
 
     if (!io->read_u32(format_version_))
     	bbg_failed0("short file");
@@ -1173,24 +1177,29 @@ cov_file_t::read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version)
 gboolean
 cov_file_t::read_gcc33_bbg_file(covio_t *io)
 {
-    io->set_format(covio_t::FORMAT_GCC33);
-    return read_gcc3_bbg_file_common(io, BBG_VERSION_GCC33);
+    return read_gcc3_bbg_file(io, BBG_VERSION_GCC33, covio_t::FORMAT_GCC33);
 }
 
 gboolean
 cov_file_t::read_gcc34l_bbg_file(covio_t *io)
 {
-    io->set_format(covio_t::FORMAT_GCC34L);
-    little_endian_ = TRUE;
-    return read_gcc3_bbg_file_common(io, BBG_VERSION_GCC34);
+    return read_gcc3_bbg_file(io, BBG_VERSION_GCC34, covio_t::FORMAT_GCC34L);
 }
 
 gboolean
 cov_file_t::read_gcc34b_bbg_file(covio_t *io)
 {
-    io->set_format(covio_t::FORMAT_GCC34B);
-    little_endian_ = FALSE;
-    return read_gcc3_bbg_file_common(io, BBG_VERSION_GCC34);
+    return read_gcc3_bbg_file(io, BBG_VERSION_GCC34, covio_t::FORMAT_GCC34B);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+gboolean
+cov_file_t::read_bbg_file(covio_t *io)
+{
+    dprintf1(D_FILES, "Reading .bbg file \"%s\"\n", io->filename());
+
+    return (this->*(format_->read_bbg_))(io);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1200,26 +1209,31 @@ cov_file_t::format_rec_t cov_file_t::formats[] =
     {
     	"gcno", 4,
 	&cov_file_t::read_gcc34b_bbg_file,
+	&cov_file_t::read_gcc34b_da_file,
 	"gcc 3.4 or 4.0 .gcno (big-endian) format"
     },
     {
     	"oncg", 4,
 	&cov_file_t::read_gcc34l_bbg_file,
+	&cov_file_t::read_gcc34l_da_file,
 	"gcc 3.4 or 4.0 .gcno (little-endian) format"
     },
     {
     	"gbbg", 4,
 	&cov_file_t::read_gcc33_bbg_file,
+	&cov_file_t::read_gcc33_da_file,
 	"gcc 3.3 .bbg format"
     },
     {
     	"\x01\x00\x00\x80", 4,
 	&cov_file_t::read_oldplus_bbg_file,
+	&cov_file_t::read_oldplus_da_file,
 	"old .bbg format plus function names (e.g. Fedora Core 1)"
     },
     {
     	0, 0,
 	&cov_file_t::read_old_bbg_file,
+	&cov_file_t::read_old_da_file,
 	"old .bbg format"
     },
 };
@@ -1228,13 +1242,12 @@ cov_file_t::format_rec_t cov_file_t::formats[] =
 
 
 gboolean
-cov_file_t::read_bbg_file(covio_t *io)
+cov_file_t::discover_format(covio_t *io)
 {
     char magic[MAX_MAGIC_LEN];
-    gboolean ret;
     format_rec_t *fmt;
     
-    dprintf1(D_FILES, "Reading .bbg file \"%s\"\n", io->filename());
+    dprintf1(D_FILES, "Detecting format of .bbg file \"%s\"\n", io->filename());
     
     if (io->read(magic, MAX_MAGIC_LEN) != MAX_MAGIC_LEN)
     {
@@ -1250,9 +1263,8 @@ cov_file_t::read_bbg_file(covio_t *io)
 	    break;
     }
     dprintf1(D_FILES, "Detected %s\n", fmt->description_);
-    ret = (this->*(fmt->read_func_))(io);
-    
-    return ret;
+    format_ = fmt;
+    return TRUE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1426,7 +1438,9 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
 #define DA_GCC33_MAGIC	    _DA_MAGIC('g','c','o','v')
 
 gboolean
-cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
+cov_file_t::read_gcc3_da_file(covio_t *io,
+			      gnb_u32_t expect_magic,
+			      covio_t::format_t ioformat)
 {
     gnb_u32_t magic, version;
     gnb_u32_t tag, length;
@@ -1436,6 +1450,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
     unsigned int bidx;
     list_iterator_t<cov_arc_t> aiter;
     unsigned int len_unit = 1;
+
+    io->set_format(ioformat);
 
     if (!io->read_u32(magic) ||
         !io->read_u32(version))
@@ -1559,6 +1575,24 @@ cov_file_t::read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic)
     return TRUE;
 }
 
+gboolean
+cov_file_t::read_gcc33_da_file(covio_t *io)
+{
+    return read_gcc3_da_file(io, DA_GCC33_MAGIC, covio_t::FORMAT_GCC33);
+}
+
+gboolean
+cov_file_t::read_gcc34b_da_file(covio_t *io)
+{
+    return read_gcc3_da_file(io, DA_GCC34_MAGIC, covio_t::FORMAT_GCC34B);
+}
+
+gboolean
+cov_file_t::read_gcc34l_da_file(covio_t *io)
+{
+    return read_gcc3_da_file(io, DA_GCC34_MAGIC, covio_t::FORMAT_GCC34L);
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gboolean
@@ -1566,60 +1600,7 @@ cov_file_t::read_da_file(covio_t *io)
 {
     dprintf1(D_FILES, "Reading runtime data file \"%s\"\n", io->filename());
 
-    switch (format_version_)
-    {
-    case BBG_VERSION_GCC34:
-    case BBG_VERSION_GCC34_UBU:
-    case BBG_VERSION_GCC34_RH:
-    case BBG_VERSION_GCC34_MDK:
-    case BBG_VERSION_GCC40:
-    case BBG_VERSION_GCC40_RH:
-    case BBG_VERSION_GCC40_UBU:
-    case BBG_VERSION_GCC40_APL:
-    case BBG_VERSION_GCC41:
-    case BBG_VERSION_GCC41_UBU:
-    case BBG_VERSION_GCC43:
-    case BBG_VERSION_GCC44:
-    case BBG_VERSION_GCC45:
-	if (little_endian_)
-	{
-	    dprintf0(D_FILES, "Detected gcc 3.4 or 4.0 (little endian) .gcda format\n");
-	    io->set_format(covio_t::FORMAT_GCC34L);
-    	    return read_gcc3_da_file(io, DA_GCC34_MAGIC);
-	}
-	else
-	{
-	    dprintf0(D_FILES, "Detected gcc 3.4 or 4.0 (big endian) .gcda format\n");
-	    io->set_format(covio_t::FORMAT_GCC34B);
-    	    return read_gcc3_da_file(io, DA_GCC34_MAGIC);
-	}
-	break;
-
-    case BBG_VERSION_GCC33:
-    case BBG_VERSION_GCC33_SUSE:
-    case BBG_VERSION_GCC33_MDK:
-    	{
-	    dprintf0(D_FILES, "Detected gcc3.3 .da format\n");
-	    io->set_format(covio_t::FORMAT_GCC33);
-    	    return read_gcc3_da_file(io, DA_GCC33_MAGIC);
-	}
-	break;
-
-    case BBG_VERSION_OLD:
-	dprintf0(D_FILES, "Detected old .da format\n");
-    	return read_old_da_file(io);
-
-    case BBG_VERSION_OLDPLUS:
-	dprintf0(D_FILES, "Detected old .da format plus function names (e.g. Fedora Core 1)\n");
-    	return read_oldplus_da_file(io);
-
-    default:
-    	fprintf(stderr, "%s: unknown format version 0x%08x\n",
-	    	io->filename(), format_version_);
-	return FALSE;
-    }
-
-    return FALSE;
+    return (this->*(format_->read_da_))(io);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -2007,6 +1988,9 @@ cov_file_t::read(gboolean quiet)
 	/* The .da file was renamed too */
 	da_ext = ".gcda";
     }
+
+    if (!discover_format(io))
+	return FALSE;
     
     if (!read_bbg_file(io))
 	return FALSE;

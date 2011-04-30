@@ -25,10 +25,10 @@
 #include "hashtable.H"
 #include "ptrarray.H"
 #include "string_var.H"
+#include "covio.H"
 
 class cov_function_t;
 class cov_line_t;
-class covio_t;
 
 class cov_file_t
 {
@@ -123,7 +123,8 @@ private:
     {
     	const char *magic_;
 	unsigned int magic_len_;
-	gboolean (cov_file_t::*read_func_)(covio_t *);
+	gboolean (cov_file_t::*read_bbg_)(covio_t *);
+	gboolean (cov_file_t::*read_da_)(covio_t *);
 	const char *description_;
     };
     static format_rec_t formats[];
@@ -160,16 +161,22 @@ private:
     gboolean read_oldplus_bbg_file(covio_t *);
     void infer_compilation_directory(const char *abspath);
     char *make_absolute(const char *filename) const;
-    gboolean read_gcc3_bbg_file_common(covio_t *io, gnb_u32_t expect_version);
+    gboolean read_gcc3_bbg_file(covio_t *io, gnb_u32_t expect_version,
+				covio_t::format_t);
     gboolean read_gcc33_bbg_file(covio_t *);
     gboolean read_gcc34l_bbg_file(covio_t *);
     gboolean read_gcc34b_bbg_file(covio_t *);
     gboolean read_bbg_file(covio_t *);
     gboolean read_old_da_file(covio_t *);
     gboolean read_oldplus_da_file(covio_t *);
-    gboolean read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic);
+    gboolean read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic,
+			       covio_t::format_t);
+    gboolean read_gcc33_da_file(covio_t *);
+    gboolean read_gcc34l_da_file(covio_t *);
+    gboolean read_gcc34b_da_file(covio_t *);
     gboolean read_da_file(covio_t *);
     gboolean read_rtl_file(covio_t *);
+    gboolean discover_format(covio_t *io);
 #ifdef HAVE_LIBBFD
     static gboolean o_file_add_call(const cov_location_t *, const char *);
     gboolean scan_o_file_calls(covio_t *);
@@ -195,8 +202,8 @@ private:
 			     * base for relative pathnames */
     gboolean common_;	    /* whether this file uses common_path_ */
     gboolean finalised_;    /* data read & post-read connections made */
+    format_rec_t *format_;
     gnb_u32_t format_version_;	/* file format version */
-    gboolean little_endian_;	/* for gcc34 format */
     ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char, cov_function_t> *functions_by_name_;
     /* extra hashtable needed for RH-hacked gcc3.4 formats */
