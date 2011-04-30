@@ -986,9 +986,6 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	/* fall through */
     case BBG_VERSION_GCC33:
     	break;
-    case BBG_VERSION_GCC34_UBU:
-    case BBG_VERSION_GCC34_RH:
-    case BBG_VERSION_GCC34_MDK:
     case BBG_VERSION_GCC40:
     case BBG_VERSION_GCC40_RH:
     case BBG_VERSION_GCC40_UBU:
@@ -998,12 +995,17 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     case BBG_VERSION_GCC43:
     case BBG_VERSION_GCC44:
     case BBG_VERSION_GCC45:
-    	if (expect_version == BBG_VERSION_GCC34)
-	    expect_version = format_version_;
+	features_ |= FF_DA0TAG;
+	/* fall through */
+    case BBG_VERSION_GCC34_UBU:
+    case BBG_VERSION_GCC34_RH:
+    case BBG_VERSION_GCC34_MDK:
 	features_ |= FF_FUNCIDS;
 	/* fall through */
     case BBG_VERSION_GCC34:
 	features_ |= FF_TIMESTAMP;
+	if (expect_version == BBG_VERSION_GCC34)
+	    expect_version = format_version_;
     	break;
     default:
 	unsigned int major, minor;
@@ -1467,16 +1469,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 
     while (io->read_u32(tag))
     {
-    	if (tag == 0 &&
-	    (format_version_ == BBG_VERSION_GCC40 ||
- 	     format_version_ == BBG_VERSION_GCC40_RH ||
- 	     format_version_ == BBG_VERSION_GCC40_UBU ||
- 	     format_version_ == BBG_VERSION_GCC40_APL ||
- 	     format_version_ == BBG_VERSION_GCC41 ||
-	     format_version_ == BBG_VERSION_GCC41_UBU ||
-	     format_version_ == BBG_VERSION_GCC43 ||
-	     format_version_ == BBG_VERSION_GCC44 ||
-	     format_version_ == BBG_VERSION_GCC45))
+	if (tag == 0 && ((features_ & FF_DA0TAG)))
 	    break;  /* end of file */
 
 	if (!io->read_u32(length))

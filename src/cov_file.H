@@ -137,7 +137,10 @@ private:
 	/* From gcc 4.0 onwards, and also in the pre-4.0 CVS snapshot
 	 * that RedHat used for the FC3 compiler.  Functions are
 	 * identified by 64b functionids rather than names. */
-	FF_FUNCIDS	=(1<<1)
+	FF_FUNCIDS	=(1<<1),
+	/* From gcc 4.0 onwards.  A zero tag in the .gcda file is valid
+	 * and a terminator. */
+	FF_DA0TAG	=(1<<2)
     };
     
     static void init();
