@@ -798,6 +798,7 @@ cov_file_t::read_old_bbg_file_common(covio_t *io)
 gboolean
 cov_file_t::read_old_bbg_file(covio_t *io)
 {
+    features_ |= FF_BBFILE;
     format_version_ = BBG_VERSION_OLD;
     return read_old_bbg_file_common(io);
 }
@@ -805,6 +806,7 @@ cov_file_t::read_old_bbg_file(covio_t *io)
 gboolean
 cov_file_t::read_oldplus_bbg_file(covio_t *io)
 {
+    features_ |= FF_BBFILE;
     format_version_ = BBG_VERSION_OLDPLUS;
     return read_old_bbg_file_common(io);
 }
@@ -1975,7 +1977,7 @@ cov_file_t::read(gboolean quiet)
      * In the new formats, the information from the .bb file has been
      * merged into the .bbg file, so only read the .bb for the old format.
      */
-    if (format_version_ <= BBG_VERSION_OLDPLUS)
+    if ((features_ & FF_BBFILE))
     {
 	if ((io = find_file(".bb", quiet)) == 0 ||
 	    !read_bb_file(io))

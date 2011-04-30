@@ -144,7 +144,10 @@ private:
 	/* In the gcc 3.3 shipped in some versions of SLES.  The
 	 * function name in the .gcda file is mangled, which matches
 	 * the function name in the .gcno file, unlike stock gcc 3.3.  */
-	FF_DAMANGLED	=(1<<3)
+	FF_DAMANGLED	=(1<<3),
+	/* Before gcc 3.3.  A separate .bb file contains some of the
+	 * compile-time coverage information. */
+	FF_BBFILE	=(1<<4)
     };
     
     static void init();
