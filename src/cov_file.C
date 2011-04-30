@@ -1204,7 +1204,7 @@ cov_file_t::read_bbg_file(covio_t *io)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-cov_file_t::format_rec_t cov_file_t::formats[] = 
+const cov_file_t::format_rec_t cov_file_t::formats[] =
 {
     {
     	"gcno", 4,
@@ -1245,10 +1245,10 @@ gboolean
 cov_file_t::discover_format(covio_t *io)
 {
     char magic[MAX_MAGIC_LEN];
-    format_rec_t *fmt;
-    
+    const format_rec_t *fmt;
+
     dprintf1(D_FILES, "Detecting format of .bbg file \"%s\"\n", io->filename());
-    
+
     if (io->read(magic, MAX_MAGIC_LEN) != MAX_MAGIC_LEN)
     {
     	/* TODO */
@@ -1256,7 +1256,7 @@ cov_file_t::discover_format(covio_t *io)
 	    	io->filename());
 	return FALSE;
     }
-    
+
     for (fmt = formats ; fmt->magic_ != 0 ; fmt++)
     {
     	if (!memcmp(magic, fmt->magic_, fmt->magic_len_))

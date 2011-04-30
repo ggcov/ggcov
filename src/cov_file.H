@@ -127,7 +127,7 @@ private:
 	gboolean (cov_file_t::*read_da_)(covio_t *);
 	const char *description_;
     };
-    static format_rec_t formats[];
+    static const format_rec_t formats[];
     
     static void init();
     static void post_read_1(const char *, cov_file_t *, gpointer);
@@ -202,7 +202,7 @@ private:
 			     * base for relative pathnames */
     gboolean common_;	    /* whether this file uses common_path_ */
     gboolean finalised_;    /* data read & post-read connections made */
-    format_rec_t *format_;
+    const format_rec_t *format_;
     gnb_u32_t format_version_;	/* file format version */
     ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char, cov_function_t> *functions_by_name_;
