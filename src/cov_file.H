@@ -147,7 +147,11 @@ private:
 	FF_DAMANGLED	=(1<<3),
 	/* Before gcc 3.3.  A separate .bb file contains some of the
 	 * compile-time coverage information. */
-	FF_BBFILE	=(1<<4)
+	FF_BBFILE	=(1<<4),
+	/* In the Fedora Core 1 compiler.  Additional information is
+	 * encoded in a per-function header which we ignore, and other
+	 * format changes. */
+	FF_OLDPLUS	=(1<<5)
     };
     
     static void init();

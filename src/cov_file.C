@@ -688,8 +688,8 @@ cov_file_t::read_old_bbg_function(covio_t *io)
     cov_function_t *fn;
     
     dprintf0(D_BBG, "BBG reading function\n");
-    
-    if (format_version_ == BBG_VERSION_OLDPLUS)
+
+    if ((features_ & FF_OLDPLUS))
     {
     	switch (skip_oldplus_func_header(io, "BBG   "))
 	{
@@ -700,7 +700,7 @@ cov_file_t::read_old_bbg_function(covio_t *io)
     
     if (!io->read_u32(nblocks))
     {
-    	if (format_version_ == BBG_VERSION_OLDPLUS)
+	if ((features_ & FF_OLDPLUS))
     	    bbg_failed0("short file");
     	return TRUE;	/* end of file */
     }
@@ -806,7 +806,7 @@ cov_file_t::read_old_bbg_file(covio_t *io)
 gboolean
 cov_file_t::read_oldplus_bbg_file(covio_t *io)
 {
-    features_ |= FF_BBFILE;
+    features_ |= FF_BBFILE|FF_OLDPLUS;
     format_version_ = BBG_VERSION_OLDPLUS;
     return read_old_bbg_file_common(io);
 }
