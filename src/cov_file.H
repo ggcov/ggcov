@@ -133,7 +133,11 @@ private:
     {
 	/* From 3.4 onwards: timestamps in .gcno and .gcda files, and
 	 * lengths are 4 bytes long. */
-	FF_TIMESTAMP	=(1<<0)
+	FF_TIMESTAMP	=(1<<0),
+	/* From gcc 4.0 onwards, and also in the pre-4.0 CVS snapshot
+	 * that RedHat used for the FC3 compiler.  Functions are
+	 * identified by 64b functionids rather than names. */
+	FF_FUNCIDS	=(1<<1)
     };
     
     static void init();

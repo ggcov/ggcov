@@ -1000,9 +1000,10 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     case BBG_VERSION_GCC45:
     	if (expect_version == BBG_VERSION_GCC34)
 	    expect_version = format_version_;
+	features_ |= FF_FUNCIDS;
 	/* fall through */
     case BBG_VERSION_GCC34:
-	features_ = FF_TIMESTAMP;
+	features_ |= FF_TIMESTAMP;
     	break;
     default:
 	unsigned int major, minor;
@@ -1038,21 +1039,8 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    if (
-	        format_version_ == BBG_VERSION_GCC34_UBU ||
-	        format_version_ == BBG_VERSION_GCC34_RH ||
-	        format_version_ == BBG_VERSION_GCC34_MDK ||
-	    	format_version_ == BBG_VERSION_GCC40 ||
-		format_version_ == BBG_VERSION_GCC40_RH ||
-		format_version_ == BBG_VERSION_GCC40_UBU ||
-		format_version_ == BBG_VERSION_GCC40_APL ||
-		format_version_ == BBG_VERSION_GCC41 ||
-		format_version_ == BBG_VERSION_GCC41_UBU ||
-		format_version_ == BBG_VERSION_GCC43 ||
-		format_version_ == BBG_VERSION_GCC44 ||
-		format_version_ == BBG_VERSION_GCC45)
+	    if ((features_ & FF_FUNCIDS))
 	    {
-	    	/* RedHat just *have* to be different.  Thanks, guys */
 		estring filename;
 
 		if (!io->read_u64(funcid) ||
@@ -1500,20 +1488,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    if (format_version_ == BBG_VERSION_GCC34_UBU ||
-	        format_version_ == BBG_VERSION_GCC34_RH ||
-	        format_version_ == BBG_VERSION_GCC34_MDK ||
-	    	format_version_ == BBG_VERSION_GCC40 ||
-	    	format_version_ == BBG_VERSION_GCC40_RH ||
-	    	format_version_ == BBG_VERSION_GCC40_UBU ||
-	    	format_version_ == BBG_VERSION_GCC40_APL ||
-	    	format_version_ == BBG_VERSION_GCC41 ||
-		format_version_ == BBG_VERSION_GCC41_UBU ||
-		format_version_ == BBG_VERSION_GCC43 ||
-		format_version_ == BBG_VERSION_GCC44 ||
-		format_version_ == BBG_VERSION_GCC45)
+	    if ((features_ & FF_FUNCIDS))
 	    {
-	    	/* RedHat just *have* to be different.  Thanks, guys */
 		gnb_u64_t funcid;
 		if (!io->read_u64(funcid))
 		    fn = 0;
