@@ -980,6 +980,8 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     switch (format_version_)
     {
     case BBG_VERSION_GCC33_SUSE:
+	features_ |= FF_DAMANGLED;
+	/* fall through */
     case BBG_VERSION_GCC33_MDK:
     	if (expect_version == BBG_VERSION_GCC33)
 	    expect_version = format_version_;
@@ -1494,7 +1496,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 		estring funcname;
 		if (!io->read_string(funcname))
 		    da_failed0("short file");
-		if (format_version_ == BBG_VERSION_GCC33_SUSE)
+		if ((features_ & FF_DAMANGLED))
 		    funcname = demangle(funcname);
 		funcname = normalise_mangled(funcname);
     		fn = find_function(funcname);

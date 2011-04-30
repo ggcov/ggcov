@@ -140,7 +140,11 @@ private:
 	FF_FUNCIDS	=(1<<1),
 	/* From gcc 4.0 onwards.  A zero tag in the .gcda file is valid
 	 * and a terminator. */
-	FF_DA0TAG	=(1<<2)
+	FF_DA0TAG	=(1<<2),
+	/* In the gcc 3.3 shipped in some versions of SLES.  The
+	 * function name in the .gcda file is mangled, which matches
+	 * the function name in the .gcno file, unlike stock gcc 3.3.  */
+	FF_DAMANGLED	=(1<<3)
     };
     
     static void init();
