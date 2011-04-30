@@ -985,10 +985,9 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	features_ |= FF_DAMANGLED;
 	/* fall through */
     case BBG_VERSION_GCC33_MDK:
-    	if (expect_version == BBG_VERSION_GCC33)
-	    expect_version = format_version_;
-	/* fall through */
     case BBG_VERSION_GCC33:
+	if (expect_version != BBG_VERSION_GCC33)
+	    bbg_failed1("unexpected version=0x%08x", format_version_);
     	break;
     case BBG_VERSION_GCC40:
     case BBG_VERSION_GCC40_RH:
@@ -1008,8 +1007,8 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	/* fall through */
     case BBG_VERSION_GCC34:
 	features_ |= FF_TIMESTAMP;
-	if (expect_version == BBG_VERSION_GCC34)
-	    expect_version = format_version_;
+	if (expect_version != BBG_VERSION_GCC34)
+	    bbg_failed1("unexpected version=0x%08x", format_version_);
     	break;
     default:
 	unsigned int major, minor;
@@ -1024,8 +1023,6 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 			    io->filename(), major, minor, rel);
 	return FALSE;
     }
-    if (format_version_ != expect_version)
-    	bbg_failed1("unexpected version=0x%08x", format_version_);
 
     if ((features_ & FF_TIMESTAMP))
     {
