@@ -10,3 +10,5 @@
 *.tggcov
 *.ex
 log
+bar
+baz
