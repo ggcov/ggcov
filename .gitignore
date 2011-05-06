@@ -1,5 +1,9 @@
 *.o
 lib*.a
+*.lo
+*.la
+.libs
+.deps
 COPYING
 INSTALL
 config.guess
@@ -18,6 +22,8 @@ install-sh
 missing
 Makefile.in
 Makefile
+libtool
+ltmain.sh
 rpm.d
 ggcov.spec
 ggcov-*.tar.gz

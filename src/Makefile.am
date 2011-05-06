@@ -19,7 +19,7 @@
 # $Id: Makefile.am,v 1.74 2010-05-09 05:37:14 gnb Exp $
 #
 
-SUBDIRS=	libiberty
+SUBDIRS=	libiberty libggcov
 
 noinst_LIBRARIES=	libcommon.a libcov.a
 
