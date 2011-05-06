@@ -1,0 +1,110 @@
+.\"
+.\" ggcov - A GTK frontend for exploring gcov coverage data
+.\" Copyright (c) 2003-2011 Greg Banks <gnb@users.sourceforge.net>
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+.\"
+.TH GGCOV-RUN "1" "May 2011" "GGCOV" "Greg Banks"
+.SH NAME
+ggcov-run \- run an instrumented test program
+.SH SYNOPSIS
+\fBggcov-run\fP [\fIoptions\fP] [\fB--\fP] \fIprogram\fP \fIargs...\fP
+.SH DESCRIPTION
+.PP
+\fBGgcov-run\fP can be used to run a test program, instrumented using
+\fBgcc --coverage\fP when built, under certain conditions.  It's use is
+entirely optional, as the default behaviour of the gcc instrumention is
+designed to be useful under most conditions.
+.PP
+\fBGgcov-run\fP takes as arguments a program and it's arguments, and
+runs the program with some behavioural modifications (in the manner of
+\fBstrace\fP).  If given no options, the program is run without any
+modifications.
+.SH GCDA FILE LOCATIONS
+.PP
+One problem with the default behaviour of the gcc instrumentation
+involves the locations of coverage data.  Instrumented test programs
+will read, modify and re-write \fI.gcda\fP files when the program exits.
+The locations of those files are chosen by the compiler at compile time;
+the files will be placed in the build directory next to the
+corresponding \fI.c\fP file.  The compiler saves this information in the
+\fI\.o\fP file.  For example, if you compile the file \fIfoo.c\fP in the
+directory \fI/home/me/software/quux\fP, then the pathname
+\fI/home/me/software/quux/foo.gcda\fP is hardcoded in the test program.
+Of course, programs that examine coverage data, like \fBggcov\fP, look
+for the \fI.gcda\fP files there.
+.PP
+For many test applications this works just fine.  Problems arise however
+when the instrumented program needs to be run on another machine, or as
+another userid, or the build directory is volatile, or in any other test
+scenario where the build directory either does not exist or is not
+writable by the running test program.  In these cases, you need to do some
+ad-hoc file moving before and after testing in order to get the
+\fI.gcda\fP files in the right location on the right machine with the
+right permissions.
+.PP
+A better approach is to use \fBggcov-run\fP with the \fB--gcda-prefix\fP
+option.  This option takes as a value a directory which is prepended to
+the pathname of each \fI.gcda\fP file the test program accesses.  So,
+continuing the above example, running the test program like this:
+.PP
+.EX
+me$ ggcov-run --gcda-prefix=/tmp/gcda ./testprogram test-args...
+.EE
+.PP
+will result in a \fI.gcda\fP file being written to
+\fI/tmp/gcda/home/me/software/quux/foo.gcda\fP.  The directory tree will
+be automatically created as the \fI.gcda\fP files are written, and the
+file and directory permissions will allow read access for all users.
+.PP
+Note that \fBggcov\fP also has a \fB--gcda-prefix\fP option which can be
+used to search for \fI.gcda\fP files in locations other than the build
+directory.  In our example:
+.PP
+.EX
+me$ cd /home/me/software/quux
+me$ ggcov --gcda-prefix=/tmp/gcda -r .
+.EE
+.SH OPTIONS
+.TP
+\fB-p\fP \fIdir\fP, \fB\-\-gcda\-prefix\fP=\fIdir\fP
+Cause the test program, and any child processes it runs, to redirect any
+absolute filename ending in \fI.gcda\fP to a filename underneath the
+directory \fIdir\fP.
+.SH CAVEATS
+.PP
+\fBGgcov-run\fP uses a shared library shim and the \fILD_PRELOAD\fP
+feature of the runtime linker to intercept certain library calls by the
+instrumented program.  For very good security reasons, \fILD_PRELOAD\fP
+is disabled for setuid or setgid programs.  So if your test program
+relies on setuid behaviour, \fBggcov-run\fP will not work.  One
+possible workaround is to use \fBsudo\fP or \fBsu\fP to change userid
+before using \fBggcov-run\fP, like this:
+.PP
+.EX
+me$ sudo -u otheruser ggcov-run --gcda-prefix=/foo ./testprogram
+.EE
+.SH AUTHOR
+Written by Greg Banks
+.IR <gnb@users.sourceforge.net> .
+.SH COPYRIGHT
+ggcov is Copyright \(co 2001\-2011 Greg Banks \fI<gnb@users.sourceforge.net>\fP.
+.br
+This is free software; see the COPYING file for copying conditions.  There
+is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.
+.SH SEE ALSO
+.PP
+\fBggcov-run\fP(1).

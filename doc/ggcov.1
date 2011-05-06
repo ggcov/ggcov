@@ -71,6 +71,11 @@ Nautilus window onto any \fBggcov\fP window.
 Add the directory \fIdir\fP to the search path for object
 files and coverage data files.
 .TP
+\fB-p\fP \fIdir\fP, \fB\-\-gcda\-prefix\fP=\fIdir\fP
+Look for runtime coverage data files (\fI.gcda\fP files) underneath the
+directory \fIdir\fP instead of next to the corresponding \fI.c\fP files.
+See the example in the \fBggcov-run\fP(1) manpage.
+.TP
 \fB\-r\fP, \fB\-\-recursive\fP
 When a directory is specified on the command line, search for
 coverage data files recursively in all child directories.
@@ -194,3 +199,6 @@ ggcov is Copyright \(co 2001\-2005 Greg Banks \fI<gnb@users.sourceforge.net>\fP.
 This is free software; see the COPYING file for copying conditions.  There
 is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.
+.SH SEE ALSO
+.PP
+\fBggcov-run\fP(1).
