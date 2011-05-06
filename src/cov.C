@@ -336,6 +336,7 @@ static char *suppressed_ifdefs = 0;
 static char *suppressed_comment_lines = 0;
 static char *suppressed_comment_ranges = 0;
 static char *object_dir = 0;
+static char *gcda_prefix = 0;
 static int solve_fuzzy_flag = FALSE;
 static const char *debug_str = 0;
 static int print_version_flag = FALSE;
@@ -376,6 +377,15 @@ const struct poptOption cov_popt_options[] =
 	&suppressed_comment_ranges,     	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"suppress source between lines containing these start and end comments", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+	"gcda-prefix",    	    	    	/* longname */
+	'p',  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&gcda_prefix,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"directory underneath which to find .da files", /* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {
@@ -500,6 +510,8 @@ cov_read_files(GList *files)
     
     if (object_dir != 0)
     	cov_add_search_directory(object_dir);
+    if (gcda_prefix)
+	cov_file_t::set_gcda_prefix(gcda_prefix);
 
     if (files == 0)
     {

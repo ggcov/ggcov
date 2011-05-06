@@ -37,6 +37,7 @@ static gboolean filename_is_common(const char *filename);
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
 list_t<cov_file_t> cov_file_t::files_list_;
 list_t<char> cov_file_t::search_path_;
+string_var cov_file_t::gcda_prefix_;
 char *cov_file_t::common_path_;
 int cov_file_t::common_len_;
 void *cov_file_t::files_model_;
@@ -1837,15 +1838,17 @@ cov_file_t::search_path_append(const char *dir)
     search_path_.append(g_strdup(dir));
 }
 
-covio_t *
-cov_file_t::try_file(const char *dir, const char *ext) const
+void
+cov_file_t::set_gcda_prefix(const char *dir)
 {
-    string_var ofilename, dfilename;
-    
-    if (dir == 0)
-    	ofilename = name();
-    else
-    	ofilename = g_strconcat(dir, "/", file_basename_c(name()), (char *)0);
+    gcda_prefix_ = dir;
+}
+
+
+covio_t *
+cov_file_t::try_file(const char *fn, const char *ext) const
+{
+    string_var ofilename = fn, dfilename;
 
     if (ext[0] == '+')
     	dfilename = g_strconcat(ofilename, ext+1, (char *)0);
@@ -1871,7 +1874,8 @@ cov_file_t::try_file(const char *dir, const char *ext) const
 }
 
 covio_t *
-cov_file_t::find_file(const char *ext, gboolean quiet) const
+cov_file_t::find_file(const char *ext, gboolean quiet,
+		      const char *prefix) const
 {
     list_iterator_t<char> iter;
     covio_t *io;
@@ -1880,10 +1884,20 @@ cov_file_t::find_file(const char *ext, gboolean quiet) const
     	    "Searching for %s file matching %s\n",
     	    ext, file_basename_c(name()));
 
+    if (prefix)
+    {
+	/*
+	 * First try the prefix.
+	 */
+	string_var fn = g_strconcat(prefix, name(), (char *)0);
+	if ((io = try_file(fn, ext)) != 0)
+	    return io;
+    }
+
     /*
-     * First try the same directory as the source file.
+     * Then try the same directory as the source file.
      */
-    if ((io = try_file(0, ext)) != 0)
+    if ((io = try_file(name(), ext)) != 0)
     	return io;
 	
     /*
@@ -1891,7 +1905,8 @@ cov_file_t::find_file(const char *ext, gboolean quiet) const
      */
     for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
     {
-	if ((io = try_file(*iter, ext)) != 0)
+	string_var fn = g_strconcat(*iter, "/", file_basename_c(name()), (char *)0);
+	if ((io = try_file(fn, ext)) != 0)
     	    return io;
     }
     
@@ -1929,10 +1944,10 @@ cov_file_t::read(gboolean quiet)
     const char *da_ext = ".da";
     covio_var io;
 
-    if ((io = find_file(".bbg", TRUE)) == 0)
+    if ((io = find_file(".bbg", TRUE, 0)) == 0)
     {
     	/* The .bbg file was gratuitously renamed .gcno in gcc 3.4 */
-    	if ((io = find_file(".gcno", TRUE)) == 0)
+	if ((io = find_file(".gcno", TRUE, 0)) == 0)
 	{
 	    if (!quiet)
 	    	file_missing(".bbg", ".gcno");
@@ -1954,13 +1969,13 @@ cov_file_t::read(gboolean quiet)
      */
     if ((features_ & FF_BBFILE))
     {
-	if ((io = find_file(".bb", quiet)) == 0 ||
+	if ((io = find_file(".bb", quiet, 0)) == 0 ||
 	    !read_bb_file(io))
 	    return FALSE;
     }
 
     /* TODO: read multiple .da files from the search path & accumulate */
-    if ((io = find_file(da_ext, quiet)) == 0)
+    if ((io = find_file(da_ext, quiet, gcda_prefix_)) == 0)
     {
 	if (errno != ENOENT)
 	    return FALSE;
@@ -2005,7 +2020,7 @@ cov_file_t::read(gboolean quiet)
 	 * files.  So if we can't find the object or can't read it,
 	 * complain and keep going.
 	 */
-    	if ((io = find_file(".o", quiet)) == 0 ||
+	if ((io = find_file(".o", quiet, 0)) == 0 ||
 	    !read_o_file(io))
 	{
 	    static const char warnmsg[] = 

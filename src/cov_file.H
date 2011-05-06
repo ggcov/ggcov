@@ -166,7 +166,8 @@ private:
     cov_line_t *get_nth_line(unsigned int lineno);
 
     covio_t *try_file(const char *dir, const char *ext) const;
-    covio_t *find_file(const char *ext, gboolean quiet) const;
+    covio_t *find_file(const char *ext, gboolean quiet,
+		       const char *prefix) const;
     void file_missing(const char *ext, const char *ext2) const;
 
     gboolean
@@ -176,6 +177,7 @@ private:
     }
 
     static void search_path_append(const char *dir);
+    static void set_gcda_prefix(const char *dir);
     gboolean read(gboolean quiet);
 
     int skip_oldplus_func_header(covio_t *io, const char *prefix);
@@ -217,6 +219,7 @@ private:
     static hashtable_t<const char, cov_file_t> *files_;
     static list_t<cov_file_t> files_list_;
     static list_t<char> search_path_;
+    static string_var gcda_prefix_;
     static char *common_path_;
     static int common_len_;
     static void *files_model_;
@@ -242,6 +245,7 @@ private:
     unsigned num_expected_fake_;
 
     friend void cov_add_search_directory(const char *fname);
+    friend void cov_read_files(GList *files);
     friend gboolean cov_read_source_file_2(const char *fname, gboolean quiet);
     friend void cov_init(void);
     friend void cov_post_read(void);
