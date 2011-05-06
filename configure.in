@@ -299,9 +299,9 @@ PKG_PROG_PKG_CONFIG
 
 # try gtk 2.0
 have_gconf=no
+libpopt=
 if test x$gui = xyes ; then
     # gui enabled
-    libpopt=no
     PKG_CHECK_MODULES(GGCOV_GUI, libglade-2.0 >= 2.0.0 libgnomeui-2.0 >= 2.0.0,
     	    	      [gtk2=yes],[gtk2=no])
     if test $gtk2 = yes ; then
@@ -323,8 +323,9 @@ if test x$gui = xyes ; then
 	GGCOV_GLADE_FILE=ggcov-glade2.glade
 	# gnome2 doesn't need popt, so it may or may not be present
 	AC_CHECK_LIB(popt,poptGetContext,
-    	    	     [ libpopt=yes ;  LIBS="$LIBS -lpopt" ],,
+		     [ libpopt=" -lpopt" ],,
 		     $GGCOV_GUI_CFLAGS $GGCOV_GUI_LIBS)
+	GGCOV_GUI_LIBS="$GGCOV_GUI_LIBS$libpopt"
 
     	gprog=no
 	AC_CHECK_LIB(gnome,gnome_program_init,[gprog=yes],,[$GGCOV_GUI_LIBS])
@@ -346,10 +347,11 @@ ifdef([AM_PATH_LIBGLADE],[
 	GGCOV_GUI_CFLAGS="$LIBGLADE_CFLAGS $IMLIB_CFLAGS"
 	GGCOV_GUI_LIBS="$LIBGLADE_LIBS $IMLIB_LIBS"
 	GGCOV_CLI_CFLAGS="$GLIB_CFLAGS"
-	GGCOV_CLI_LIBS="$GLIB_LIBS -lpopt"
+	GGCOV_CLI_LIBS="$GLIB_LIBS"
 	GGCOV_GLADE_FILE=ggcov.glade
 	# gnome1.2 requires popt so we can assume it's present
-	libpopt=yes
+	libpopt=" -lpopt"
+	GGCOV_GUI_LIBS="$GGCOV_GUI_LIBS$libpopt"
 ],[
     	AC_MSG_ERROR([ggcov requires the GNOME libraries, unless configured with --disable-gui])
 ])
@@ -373,9 +375,10 @@ ifdef([AM_PATH_LIBGLADE],[
     fi
     # we're headless, so we have no idea whether libpopt is present
     AC_CHECK_LIB(popt,poptGetContext,
-    	    	[ libpopt=yes ;  LIBS="$LIBS -lpopt" ],[ libpopt=no ],
-		$GGCOV_CLI_CFLAGS $GGCOV_CLI_LIBS)
+		 [ libpopt=" -lpopt" ],,
+		 $GGCOV_CLI_CFLAGS $GGCOV_CLI_LIBS)
 fi
+GGCOV_CLI_LIBS="$GGCOV_CLI_LIBS$libpopt"
 AC_SUBST(GGCOV_CLI_CFLAGS)
 AC_SUBST(GGCOV_CLI_LIBS)
 
@@ -396,7 +399,7 @@ AC_CHECK_LIB(glib-2.0, g_hash_table_iter_init,
 ]),,
 	      [$GGCOV_CLI_LIBS])
     
-if test $libpopt = yes ; then
+if test "x$libpopt" != x ; then
     AC_DEFINE(HAVE_LIBPOPT,,[Define to 1 if the popt library is present])
 fi
 
