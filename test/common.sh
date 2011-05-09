@@ -32,12 +32,12 @@ VALGRIND="valgrind --tool=memcheck --num-callers=16 --leak-check=yes"
 
 CC="gcc"
 CWARNFLAGS="-Wall"
-CCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
+CCOVFLAGS="-g --coverage"
 CDEFINES=
 
 CXX="c++"
 CXXWARNFLAGS="-Wall"
-CXXCOVFLAGS="-g -fprofile-arcs -ftest-coverage"
+CXXCOVFLAGS="-g --coverage"
 CXXDEFINES=
 
 LDLIBS=
