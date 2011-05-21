@@ -862,6 +862,18 @@ cov_file_t::infer_compilation_directory(const char *path)
 
     dprintf1(D_BBG, "infer_compilation_directory(\"%s\")\n", path);
 
+    /*
+     * If used without the -o option, flex generates #lines like
+     *
+     *    #line 3 "<stdout>"
+     *
+     * which results in a filename of "<stdout>" in the .gcno file.
+     * We're not going to get anywhere useful with this, so there's
+     * little point trying and complaining.
+     */
+    if (!strcmp(path, "<stdout>"))
+	return;
+
     if (path[0] == '/' &&
         (clen = path_is_suffix(path, relpath_)) > 0)
     {
