@@ -287,4 +287,43 @@ estring::chomp()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+int
+estring::find_char(int c) const
+{
+    const char *p = (data_ ? strchr(data_, c) : 0);
+    return (p ? (p - data_) : -1);
+}
+
+int
+estring::find_string(const char *s) const
+{
+    const char *p = (data_ ? strstr(data_, s) : 0);
+    return (p ? (p - data_) : -1);
+}
+
+int
+estring::find_last_char(int c) const
+{
+    const char *p = (data_ ? strrchr(data_, c) : 0);
+    return (p ? (p - data_) : -1);
+}
+
+int
+estring::find_last_string(const char *s) const
+{
+    /* libc doesn't have a strrstr(), we have to do this stupidly */
+    if (!data_)
+	return -1;
+    int slen = strlen(s);
+    const char *p;
+    for (p = data_+length_-1 ; p >= data_ ; --p)
+    {
+	if (*p == *s && !strncmp(p, s, slen))
+	    return (p - data_);
+    }
+    return -1;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

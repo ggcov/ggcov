@@ -221,6 +221,12 @@ public:
     }
     /* remove any trailing newlines or carriage returns */
     void chomp();
+
+    /* searching */
+    int find_char(int c) const;
+    int find_string(const char *s) const;
+    int find_last_char(int c) const;
+    int find_last_string(const char *s) const;
 };
 
 #undef _printf_fmt
