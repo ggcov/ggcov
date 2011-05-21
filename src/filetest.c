@@ -27,6 +27,21 @@ main(int argc, char **argv)
 	    }
 	    g_free(out);
 	}
+	else if (!strcmp(argv[i], "normalise"))
+	{
+	    in = argv[++i];
+	    expected = argv[++i];
+
+	    out = file_normalise(in);
+	    fprintf(stderr, "file_normalise(\"%s\") => \"%s\"\n", in, out);
+	    if (strcmp(out, expected))
+	    {
+		fprintf(stderr, "ERROR: expected \"%s\" got \"%s\"\n",
+			    expected, out);
+		exit(1);
+	    }
+	    g_free(out);
+	}
 	else
 	{
 	    fprintf(stderr, "Unknown function to test: %s\n", argv[i]);
