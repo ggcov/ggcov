@@ -57,7 +57,12 @@ gboolean
 cov_is_source_filename(const char *filename)
 {
     const char *ext;
-    static const char *recognised_exts[] = { ".c", ".cc", ".cxx", ".cpp", ".C", 0 };
+    static const char * const recognised_exts[] =
+    {
+	".c", ".cc", ".cxx", ".cpp", ".C",
+	".y", ".l",
+	0
+    };
     int i;
     
     if ((ext = file_extension_c(filename)) == 0)
