@@ -874,6 +874,9 @@ cov_file_t::infer_compilation_directory(const char *path)
     if (!strcmp(path, "<stdout>"))
 	return;
 
+    string_var normpath = file_normalise(path);
+    path = normpath.data();
+
     if (path[0] == '/' &&
         (clen = path_is_suffix(path, relpath_)) > 0)
     {
