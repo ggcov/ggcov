@@ -35,6 +35,7 @@ FILE *file_open_mode(const char *filename, const char *rw, mode_t mode);
 char *file_make_absolute_to_file(const char *filename, const char *absfile);
 char *file_make_absolute_to_dir(const char *filename, const char *absdir);
 char *file_make_absolute(const char *filename);
+char *file_normalise(const char *filename);
 int file_exists(const char *filename);
 int file_is_regular(const char *filename);
 int file_build_tree(const char *dirname, mode_t mode);	/* make sequence of directories */

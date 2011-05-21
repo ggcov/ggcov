@@ -231,6 +231,53 @@ file_make_absolute_to_dir(const char *filename, const char *absdir)
     return file_make_absolute_to(filename, absdir, TRUE);
 }
 
+/*
+ * Normalise an absolute or relative path.  Remove "."
+ * path components, collapse ".." path components where
+ * possible.  Returns a new string.
+ */
+char *
+file_normalise(const char *filename)
+{
+    estring up;
+    estring down;
+    tok_t tok(filename, "/");
+    const char *part;
+    gboolean is_abs = (*filename == '/');
+
+    if (is_abs)
+	up.append_char('/');
+
+    while ((part = tok.next()) != 0)
+    {
+	if (!strcmp(part, "."))
+	{
+	    continue;
+	}
+	if (!strcmp(part, ".."))
+	{
+	    int i = down.find_last_char('/');
+
+	    if (i >= 0)
+		down.truncate_to(i);
+	    else if (down.length())
+		down.truncate_to(0);
+	    else if (!is_abs)
+		up.append_string("../");
+	    continue;
+	}
+	if (down.length() > 1)
+	    down.append_char('/');
+	down.append_string(part);
+    }
+
+    if (!down.length() && !up.length())
+	return g_strdup(".");
+
+    up.append_string(down);
+    return up.take();
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 int
