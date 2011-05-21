@@ -299,6 +299,7 @@ test_take()
 	check(p == x);
 	check(strlen(p) == 25);
 	check(!strcmp(p, "our lives have just begun"));
+	g_free(p);
     }
 }
 
@@ -805,7 +806,7 @@ test_trim_nuls()
 
     subtest("trim_nuls, non-empty string with trailing nuls");
     {
-	char *x = (char *)calloc(32, 1);
+	char *x = (char *)calloc(33, 1);
 	strcpy(x, "scares the");
 	estring e(x, 32);
 
@@ -820,6 +821,31 @@ test_trim_nuls()
 	check(e.data() == x);	    // argument must be taken over
 	check(!strcmp(e.data(), "scares the"));
 	check(strlen(e.data()) == 10);
+    }
+}
+
+static void
+test_find()
+{
+    subtest("find");
+    {
+	estring e("the quick brown fox jumped over the lazy dog");
+
+	check(e.find_char('t') == 0);
+	check(e.find_char('q') == 4);
+	check(e.find_char('X') == -1);
+
+	check(e.find_last_char('t') == 32);
+	check(e.find_last_char('q') == 4);
+	check(e.find_last_char('X') == -1);
+
+	check(e.find_string("the") == 0);
+	check(e.find_string("quick") == 4);
+	check(e.find_string("Xanadu") == -1);
+
+	check(e.find_last_string("the") == 32);
+	check(e.find_last_string("quick") == 4);
+	check(e.find_last_string("Xanadu") == -1);
     }
 }
 
@@ -850,6 +876,7 @@ main(int argc, char **argv)
     test_truncate();
     test_chomp();
     test_trim_nuls();
+    test_find();
     return 0;
 }
 
