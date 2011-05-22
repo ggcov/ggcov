@@ -280,18 +280,18 @@ cov_function_t::reconcile_calls()
 	    /* TODO */
 	    if (b->get_first_location() != 0)
 	    {
-	    	/*
+		/*
 		 * Don't complain about not being to reconcile weird
 		 * calls inserted by g++, like _Unwind_Resume() or
 		 * __cxa_throw(), or any other call with no direct
 		 * relationship to the source code.
 		 */
-		fprintf(stderr, "Failed to reconcile calls for block %s\n",
-		    	desc.data());
-		fprintf(stderr, "    %d call arcs, %d recorded calls\n",
-		    	    b->out_ncalls_,
+		dprintf1(D_CGRAPH, "Failed to reconcile calls for block %s\n",
+			    desc.data());
+		dprintf2(D_CGRAPH, "    %d call arcs, %d recorded calls\n",
+			    b->out_ncalls_,
 			    (b->call_ == 0 ? 0 : 1));
-    	    }
+	    }
 	    b->call_ = (const char *)0;   /* free and null out */
 	    ret = FALSE;
 	    continue;
