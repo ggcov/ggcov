@@ -913,8 +913,8 @@ cov_file_t::infer_compilation_directory(const char *path)
 	return;
     }
 
-    /* shit, now we're for it */
-    fprintf(stderr, "Warning: could not calculate compiledir for %s from location %s!!!\n",
+    /* This might be a problem...but probably not */
+    dprintf2(D_BBG, "Could not calculate compiledir for %s from location %s\n",
 	    name_.data(), path);
 }
 
@@ -923,6 +923,10 @@ cov_file_t::make_absolute(const char *filename) const
 {
     if (compiledir_ != (const char *)0)
 	return file_make_absolute_to_dir(filename, compiledir_);
+    if (*filename != '/')
+	dprintf1(D_BBG, "Warning: no compiledir when converting "
+		        "path \"%s\" to absolute, trying plan B\n",
+			filename);
     return file_make_absolute_to_file(filename, name_);
 }
 
