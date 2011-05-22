@@ -1,0 +1,17 @@
+junk
+.nautilus-metafile.xml
+.gdbinit
+bar.c
+*.bck
+*.gcda
+*.gcno
+*.bbg
+*.da
+*.bb
+*.filt
+*.o
+*.exe
+*.gcov
+*.tggcov
+*.ex
+log
