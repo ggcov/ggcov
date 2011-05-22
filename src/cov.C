@@ -86,9 +86,8 @@ cov_read_source_file_2(const char *fname, gboolean quiet)
 
     if ((f = cov_file_t::find(filename)) != 0)
     {
-    	if (!quiet)
-    	    fprintf(stderr, "Internal error: handling %s twice\n", filename.data());
-    	return FALSE;
+	// already seen this file, no drama
+	return FALSE;
     }
 
     f = new cov_file_t(filename, fname);
@@ -462,7 +461,8 @@ void
 cov_read_files(GList *files)
 {
     GList *iter;
-    
+    unsigned int successes = 0;
+
     if (debug_enabled(D_DUMP|D_VERBOSE))
     {
     	GList *iter;
@@ -520,8 +520,7 @@ cov_read_files(GList *files)
 
     if (files == 0)
     {
-    	if (!cov_read_directory(".", recursive))
-	    exit(1);
+	successes += cov_read_directory(".", recursive);
     }
     else
     {
@@ -539,21 +538,14 @@ cov_read_files(GList *files)
 	    
 	    if (file_is_directory(filename) == 0)
 	    {
-	    	if (!cov_read_directory(filename, recursive))
-		    exit(1);
+		successes += cov_read_directory(filename, recursive);
 	    }
 	    else if (file_is_regular(filename) == 0)
 	    {
-	    	if (cov_is_source_filename(filename))
-		{
-		    if (!cov_read_source_file(filename))
-			exit(1);
-		}
+		if (cov_is_source_filename(filename))
+		    successes += cov_read_source_file(filename);
 		else
-		{
-		    if (!cov_read_object_file(filename))
-			exit(1);
-		}
+		    successes += cov_read_object_file(filename);
 	    }
 	    else
 	    {
@@ -563,7 +555,10 @@ cov_read_files(GList *files)
 	    }
 	}
     }
-    
+
+    if (!successes && !cov_file_t::length())
+	exit(1);
+
     cov_post_read();
 }
 

@@ -78,6 +78,7 @@ public:
     static cov_file_t *find(const char *name);
     /* Return an iterator over all the files in minimal filename order */
     static list_iterator_t<cov_file_t> first();
+    static unsigned int length();
     /*
      * Returns an MVC model which can be listened to for
      * notification of changes to the global set of files.
@@ -230,6 +231,7 @@ private:
 			     * base for relative pathnames */
     gboolean common_;	    /* whether this file uses common_path_ */
     gboolean finalised_;    /* data read & post-read connections made */
+    gboolean has_locations_;/* any locations added */
     const format_rec_t *format_;
     gnb_u32_t format_version_;	/* file format version */
     gnb_u32_t features_;	/* FF_* flags */

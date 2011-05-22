@@ -208,6 +208,12 @@ cov_file_t::first()
     return files_list_.first();
 }
 
+unsigned int
+cov_file_t::length()
+{
+    return files_->size();
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_file_t *
@@ -439,6 +445,7 @@ cov_file_t::add_location(
 
     ln->blocks_ = g_list_append(ln->blocks_, b);
     b->add_location(f->name_, lineno);
+    f->has_locations_ = TRUE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1987,6 +1994,19 @@ cov_file_t::read(gboolean quiet)
 	if ((io = find_file(".bb", quiet, 0)) == 0 ||
 	    !read_bb_file(io))
 	    return FALSE;
+    }
+
+    /*
+     * We can successfully read a .gcno, all of whose locations
+     * refer to *other* files.  This happens for example when
+     * we've done a directory walk and discovered both of foo.c
+     * and foo.y where foo.c is generated from foo.y.  In this
+     * case we want to silently ignore foo.c.
+     */
+    if (!has_locations_)
+    {
+	dprintf1(D_FILES, "Ignoring file %s because it has no locations\n", name_.data());
+	return FALSE;
     }
 
     /* TODO: read multiple .da files from the search path & accumulate */
