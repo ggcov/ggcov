@@ -6,6 +6,7 @@ lib*.a
 .deps
 COPYING
 INSTALL
+aclocal.m4
 config.guess
 config.sub
 config.log
