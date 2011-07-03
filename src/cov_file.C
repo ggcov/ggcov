@@ -1003,6 +1003,8 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     case _NEW_VERSION(4,4,'*'):
     case _NEW_VERSION(4,5,'*'):
     case _NEW_VERSION(4,6,'p'):	/* pre-release in Debian Wheezy */
+    case _NEW_VERSION(4,6,'*'):
+    case _NEW_VERSION(4,6,'U'):	/* Ubuntu Oneiric */
 	features_ |= FF_DA0TAG;
 	/* fall through */
     case _NEW_VERSION(3,4,'U'):	/* Ubuntu */
