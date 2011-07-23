@@ -23,6 +23,7 @@ use warnings;
 use DateTime;
 use Data::Dumper;
 use File::Basename;
+use Getopt::Long qw(:config no_ignore_case bundling);
 
 my $revlist;
 my %summaries;
@@ -35,6 +36,7 @@ my %oldcommits;
 my %blames;
 my %removed;
 my $tggcov = 'tggcov';
+my @tggcov_flags;
 my $COVERED_THRESHOLD_PC = 10.0;
 my $SUBJECT_MAX = 95;
 my $verbose = 0;
@@ -434,7 +436,7 @@ sub read_coverage
 	}
 
 	printf STDERR "    running tggcov for %s\n", $f if $verbose;
-	my @cmd = ( $tggcov, '-N', '-a', '-o', '-', $f );
+	my @cmd = ( $tggcov, '-N', '-a', '-o', '-', @tggcov_flags, $f );
 
 	open TGGCOV,'-|',@cmd
 	    or die "Cannot run tggcov to annotate: $!";
@@ -564,37 +566,22 @@ sub usage
     printf STDERR "    --summary-overall    emit an overall summary\n";
     printf STDERR "    --summary-by-author  emit a summary categorised by author\n";
     printf STDERR "    --summary-by-commit  emit a summary categorised by commit\n";
+    printf STDERR "    --gcda-prefix DIR    directory underneath which to find .da files\n";
     printf STDERR "    -v, --verbose        emit debug messages\n";
     exit 1;
 }
 
+GetOptions(
+    'verbose|v+' => \$verbose,
+    'summary-overall' => sub { $summaries{overall} = 1; },
+    'summary-by-author' => sub { $summaries{author} = 1; },
+    'summary-by-commit' => sub { $summaries{commit} = 1; },
+    'gcda-prefix=s' => sub { push(@tggcov_flags, "--gcda-prefix=$_[1]"); },
+) || usage;
 while (my $a = shift)
 {
-    if ($a eq '--summary-overall')
-    {
-	$summaries{overall} = 1;
-    }
-    elsif ($a eq '--summary-by-author')
-    {
-	$summaries{author} = 1;
-    }
-    elsif ($a eq '--summary-by-commit')
-    {
-	$summaries{commit} = 1;
-    }
-    elsif ($a eq '-v' || $a eq '--verbose')
-    {
-	$verbose++;
-    }
-    elsif ($a =~ m/^-/)
-    {
-	usage
-    }
-    else
-    {
-	usage if defined $revlist;
-	$revlist = $a;
-    }
+    usage if defined $revlist;
+    $revlist = $a;
 }
 
 # commandline defaults
