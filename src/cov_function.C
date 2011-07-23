@@ -22,8 +22,6 @@
 
 CVSID("$Id: cov_function.C,v 1.26 2010-05-09 05:37:15 gnb Exp $");
 
-gboolean cov_function_t::solve_fuzzy_flag_ = FALSE;
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_function_t::cov_function_t()
@@ -333,6 +331,8 @@ cov_function_t::solve()
     cov_arc_t *a;
     cov_block_t *b;
 
+    unsolveable_ = FALSE;
+
     /* For every block in the file,
        - if every exit/entrance arc has a known count, then set the block count
        - if the block count is known, and every exit/entrance arc but one has
@@ -425,11 +425,12 @@ cov_function_t::solve()
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
 		    count_t out_total = cov_arc_t::total(b->out_arcs_);
-		    if (solve_fuzzy_flag_ && b->count_ < out_total)
+		    if (b->count_ < out_total)
 		    {
 			fprintf(stderr, "Function %s cannot be solved because "
 				        "the arc counts are inconsistent, suppressing\n",
 					name_.data());
+			unsolveable_ = TRUE;
 			suppress();
 			return TRUE;
 		    }
@@ -448,11 +449,12 @@ cov_function_t::solve()
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
 		    count_t in_total = cov_arc_t::total(b->in_arcs_);
-		    if (solve_fuzzy_flag_ && b->count_ < in_total)
+		    if (b->count_ < in_total)
 		    {
 			fprintf(stderr, "Function %s cannot be solved because "
 				        "the arc counts are inconsistent, suppressing\n",
 					name_.data());
+			unsolveable_ = TRUE;
 			suppress();
 			return TRUE;
 		    }

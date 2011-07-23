@@ -78,15 +78,6 @@ public:
      */
     static list_t<cov_function_t> *list_all();
 
-    /*
-     * Controls whether function solving is tolerant of inconsistent
-     * arc counts.  Tolerant means: don't fail an assert.
-     */
-    static void set_solve_fuzzy_flag(gboolean b)
-    {
-	solve_fuzzy_flag_ = b;
-    }
-
     void zero_arc_counts();
 
 private:
@@ -103,11 +94,11 @@ private:
     gboolean solve();
     cov::status_t calc_stats(cov_stats_t *) const;
 
-    static gboolean solve_fuzzy_flag_;
-
     cached_string name_;
     gnb_u64_t id_;
-    gboolean suppressed_;   /* suppressed from above or by self */
+    gboolean suppressed_:1; /* suppressed from above or by self */
+    gboolean unsolveable_:1;/* function cannot be solved due to
+			       inconsistent arc counts */
     unsigned int idx_; 	    /* serial number in file */
     cov_file_t *file_;
     ptrarray_t<cov_block_t> *blocks_;

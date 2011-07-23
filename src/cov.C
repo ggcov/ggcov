@@ -341,7 +341,6 @@ static char *suppressed_comment_lines = 0;
 static char *suppressed_comment_ranges = 0;
 static char *object_dir = 0;
 static char *gcda_prefix = 0;
-static int solve_fuzzy_flag = FALSE;
 static const char *debug_str = 0;
 static int print_version_flag = FALSE;
 
@@ -402,12 +401,12 @@ const struct poptOption cov_popt_options[] =
 	0	    	    	    	    	/* argDescrip */
     },
     {
-    	"solve-fuzzy",    	    	    	/* longname */
+	"solve-fuzzy",    	    	    	/* longname */
 	'F',  	    	    	    	    	/* shortname */
 	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&solve_fuzzy_flag,     	    	    	/* arg */
+	NULL,	         	    	    	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
-	"whether to be tolerant of inconsistent arc counts", /* descrip */
+	"(silently ignored for compatibility)", /* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {
@@ -451,7 +450,6 @@ cov_post_args(void)
 	duprintf1("cov_post_args: suppressed_ifdefs=%s\n", suppressed_ifdefs);
 	duprintf1("cov_post_args: suppressed_comment_lines=%s\n", suppressed_comment_lines);
 	duprintf1("cov_post_args: suppressed_comment_ranges=%s\n", suppressed_comment_ranges);
-	duprintf1("cov_post_args: solve_fuzzy_flag=%d\n", solve_fuzzy_flag);
 	duprintf2("cov_post_args: debug = 0x%lx (%s)\n", debug, token_str.data());
     }
 }
@@ -474,8 +472,6 @@ cov_read_files(GList *files)
     }
 
     cov_init();
-
-    cov_function_t::set_solve_fuzzy_flag(solve_fuzzy_flag);
 
     if (suppressed_ifdefs != 0)
     {
