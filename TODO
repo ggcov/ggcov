@@ -1,6 +1,24 @@
 
 --- OPEN ---
 
+x  test solving a function in which a signal was delivered which
+   terminated the process.
+x  maybe mark or log the functions that failed solve to make it obvious
+   to the gui user
+x  don't pop up a file selector when we used default args to find
+   files just fine thanks
+x  the block/s which implement the failure case for the system
+   assert() macro should be suppressed by default so that they
+   don't count as uncovered blocks.
+x  version control integration: for the Source window, do a git
+   blame and have columns to show the date/age/author name/author
+   email/commit name/commit id of each line.
+x  version control integration: have a Commits window and show
+   the most recent N commits with incremental coverage
+   information, as per git-history-coverage but more graphical.
+x  the --help messages mention .da etc files - should mention .gcda
+x  in the Source window, the Filenames drop-down box should contain a tree not a list
+
 x  Test both cases in test030
    tggcov bar.c bar.y
    tggcov bar.y bar.c
@@ -323,3 +341,9 @@ x  Check to see if RedHat have released an update for gcc to fix
    the fake flag braindeath.
    Long since fixed, in gcc 3.x series.
 
+x  make the fuzzy-solve flag the default
+
+x  git-history-coverage needs the --gcda-prefix option too
+
+x  git-history-coverage needs to use Getopt or equivalent
+   so --foo=bar form works
