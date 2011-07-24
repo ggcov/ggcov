@@ -26,14 +26,14 @@ Description of release procedure for ggcov
     git commit ChangeLog
 
 8.  Tag the source tree
-    cvs tag GGCOV_0_5
+    git tag GGCOV_0_5
 
 9.  Build new source tarball
     make dist
 
 10. Test the tarball
     rm -rf x; mkdir x; cd x
-    tar -xzf ../ggcov-0.5.tar.gz
+    tar -xf ../ggcov-0.5.tar.gz
     cd ggcov-0.5
     sh autogen.sh
     make
