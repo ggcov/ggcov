@@ -33,6 +33,7 @@ Sun Jul 24 13:59:04 2011  Greg Banks <gnb@users.sourceforge.net>
 	* Some improvements to utility classes
 	* Better errors when tggcov fails in tests
 	* Use --coverage option in testing.
+	* Fix racy loop in test015 make check due to UMR
 
 Fri Apr 22 16:39:00 2011  Greg Banks <gnb@users.sourceforge.net>
 	* Release 0.8.3
