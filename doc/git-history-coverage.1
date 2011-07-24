@@ -66,6 +66,12 @@ summaries are printed).
 \fB\-\-summary\-by\-commit\fP
 Print the \fBby commit\fP summary (with no options, all three
 summaries are printed).
+.TP
+\fB\-\-gcda\-prefix\fP=\fIdir\fP
+Look for \fI.gcda\fP files underneath the directory \fIdir\fP.  This
+option is used to read runtime coverage information written when a test
+program is run using the same \fP--gcda-prefix\fP option to
+\fBggcov-run\fP.
 .SH AUTHOR
 Written by Greg Banks
 .IR <gnb@users.sourceforge.net> .
@@ -75,3 +81,6 @@ ggcov is Copyright \(co 2001\-2011 Greg Banks \fI<gnb@users.sourceforge.net>\fP.
 This is free software; see the COPYING file for copying conditions.  There
 is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.
+.SH SEE ALSO
+.PP
+\fBggcov-run\fP(1).
