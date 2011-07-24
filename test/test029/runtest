@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+. ../common.sh
+
+init "Multiple file-scope functions of the same name"
+
+compile_c foo.c
+compile_c bar.c
+compile_c baz.c
+compile_c quux.c
+link foo foo.o bar.o baz.o quux.o
+
+run foo bar
+run foo bar quux
+run foo bar quux quux bar
+
+run_gcov foo.c
+run_tggcov foo.c
+compare_counts foo.c
+
+run_gcov bar.c
+run_tggcov bar.c
+compare_counts bar.c
+
+run_gcov baz.c
+run_tggcov baz.c
+compare_counts baz.c
+
+run_gcov quux.c
+run_tggcov quux.c
+compare_counts quux.c
+
