@@ -1,3 +1,39 @@
+Sun Jul 24 13:59:04 2011  Greg Banks <gnb@users.sourceforge.net>
+	* Release 0.8.4
+
+	* Add the ggcov-run program, which can be used to run a test program in
+	such a way that the runtime generated coverage data files are stored in
+	a chosen location rather than being written to the source directory.
+	Added corresponding --gcda-prefix option to ggcov, tggcov and
+	git-history-coverage.  This feature is useful for those testing
+	scenarios where the source directory is not available or not writable.
+
+	* Reorganise compiler version handling to make it easier to add support
+	for new compiler versions, especially ones that are identical in
+	behaviour to gcc 4.0 except for the reported version string.  Also some
+	code cleanliness improvements including const correctness and fixing
+	compile warnings with newer versions of gcc.
+	* Support for gcc 4.6, including:
+	 - gcc 4.6.x in Ubuntu Oneiric -- thanks to Jim Huang.
+	 - gcc 4.6(prelease) in Debian Wheezy.
+
+	* Usability improvements:
+	 - tggcov will annotate yacc and lex input files
+	 - don't complain about source filename "<stdout>"
+	 - fuzzy function solving is always enabled
+	 - disable "failed to reconcile calls" warning.
+	 - turn off compiledir warnings entirely
+	 - handle filename clashes with yacc-produced .c
+	 - detect more recent compiler millicode functions
+	 - handle un-normalised source filenames in .gcno
+	 - useful errors when detecting that data files were produced by an
+	   unrecognised compiler version.
+
+	* Improve .gitignore -- thanks to Jim Huang.
+	* Some improvements to utility classes
+	* Better errors when tggcov fails in tests
+	* Use --coverage option in testing.
+
 Fri Apr 22 16:39:00 2011  Greg Banks <gnb@users.sourceforge.net>
 	* Release 0.8.3
 
