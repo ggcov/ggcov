@@ -47,14 +47,13 @@ cov_suppression_t::find(const char *w, type_t t)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-cov_suppression_t::foreach(
-    type_t t,
-    void (*func)(const char *, cov_suppression_t *, void *),
-    void *closure)
+cov_suppression_iter_t
+cov_suppression_t::first(type_t t)
 {
-    if (all_[t] != 0)
-	all_[t]->foreach(func, closure);
+    if (all_[t])
+	return all_[t]->first();
+    cov_suppression_iter_t i;
+    return i;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

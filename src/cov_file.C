@@ -1735,15 +1735,6 @@ private:
     unsigned int is_suppressed_;    /* mask of active suppression types */
     hashtable_t<const char, cov_suppression_t> *active_ranges_;
 
-    static void
-    check_one_ifdef(const char *key, cov_suppression_t *s, void *closure)
-    {
-	cov_file_src_parser_t *self = (cov_file_src_parser_t *)closure;
-
-	if (self->depends(key))
-	    self->is_suppressed_ |= (1<<cov_suppression_t::IFDEF);
-    }
-
     void
     depends_changed()
     {
@@ -1751,8 +1742,14 @@ private:
 	    dump();
 
 	is_suppressed_ &= ~(1<<cov_suppression_t::IFDEF);
-	cov_suppression_t::foreach(cov_suppression_t::IFDEF,
-	    	    	    	   check_one_ifdef, this);
+	for (cov_suppression_iter_t itr = cov_suppression_t::first(cov_suppression_t::IFDEF) ; *itr ; ++itr)
+	{
+	    if (depends(itr.key()))
+	    {
+		is_suppressed_ |= (1<<cov_suppression_t::IFDEF);
+		break;
+	    }
+	}
     	dprintf1(D_CPP, "depends_changed suppressed=%u\n", is_suppressed_);
     }
 

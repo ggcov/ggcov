@@ -24,6 +24,9 @@
 #include "hashtable.H"
 #include "string_var.H"
 
+struct cov_suppression_t;
+typedef hashtable_iter_t<const char, cov_suppression_t> cov_suppression_iter_t;
+
 struct cov_suppression_t
 {
     enum type_t
@@ -46,9 +49,7 @@ struct cov_suppression_t
 
     static cov_suppression_t *add(const char *w, type_t t);
     static cov_suppression_t *find(const char *w, type_t t);
-    static void foreach(type_t t,
-			void (*f)(const char *, cov_suppression_t *, void *),
-		        void *closure);
+    static cov_suppression_iter_t first(type_t t);
     static unsigned int count();
 
     static hashtable_t<const char, cov_suppression_t> *all_[NUM_TYPES];

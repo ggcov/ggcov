@@ -319,12 +319,6 @@ cpp_parser_t::depends(const char *var) const
     return ret;
 }
 
-static void
-dump_one_delta(const char *var, int *dd, void *closure)
-{
-    fprintf(stderr, " %s=%d", var, *dd);
-}
-
 void
 cpp_parser_t::dump() const
 {
@@ -334,7 +328,9 @@ cpp_parser_t::dump() const
     for (iter = depend_stack_.last() ; *iter ; --iter)
     {
     	fprintf(stderr, "    [%ld]", (*iter)->lineno_);
-    	(*iter)->deltas_->foreach(dump_one_delta, 0);
+
+	for (hashtable_iter_t<const char, int> ditr = (*iter)->deltas_->first() ; *ditr ; ++ditr)
+	    fprintf(stderr, " %s=%d", ditr.key(), ditr.value());
 	fputc('\n', stderr);
     }
 }
@@ -513,12 +509,6 @@ cpp_parser_t::parse_ifndef()
     depends_changed();
 }
 
-static void
-invert_one_delta(const char *var, int *dd, void *closure)
-{
-    *dd = -*dd;
-}
-
 void
 cpp_parser_t::parse_else()
 {
@@ -533,7 +523,11 @@ cpp_parser_t::parse_else()
 	return;
     }
     dep->lineno_ = lineno_;
-    dep->deltas_->foreach(invert_one_delta, 0);
+    for (hashtable_iter_t<const char, int> ditr = dep->deltas_->first() ; *ditr ; ++ditr)
+    {
+	int *dd = ditr.value();
+	*dd = -*dd;
+    }
 
     // notify subclasses
     depends_changed();
