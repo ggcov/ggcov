@@ -202,15 +202,6 @@ compare_callnodes(const void *a, const void *b)
     return ret;
 }
 
-static void
-add_callnode(cov_callnode_t *cn, void *userdata)
-{
-    GList **listp = (GList **)userdata;
-    
-    *listp = g_list_prepend(*listp, cn);
-}
-
-
 /*
  * TODO: invert this function and make the loop with the unambiguous
  * label building a library function which calls a callback.
@@ -223,7 +214,8 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
     
     ui_combo_clear(combo);    /* stupid glade2 */
 
-    cov_callnode_t::foreach(add_callnode, &list);
+    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
+	list = g_list_prepend(list, *cnitr);
     list = g_list_sort(list, compare_callnodes);
     
     for (iter = list ; iter != 0 ; iter = iter->next)

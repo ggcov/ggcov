@@ -176,9 +176,8 @@ callgraph_diagram_t::title()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-callgraph_diagram_t::find_roots_1(cov_callnode_t *cn, void *closure)
+callgraph_diagram_t::find_roots_1(cov_callnode_t *cn)
 {
-    callgraph_diagram_t *self = (callgraph_diagram_t *)closure;
     enum { OTHER, DISCONNECTED, ROOT } type = OTHER;
     
     if (!strcmp(cn->name, "main"))
@@ -190,11 +189,11 @@ callgraph_diagram_t::find_roots_1(cov_callnode_t *cn, void *closure)
     {
     case ROOT:
 	dprintf1(D_DCALLGRAPH, "root node \"%s\"\n", cn->name.data());
-	self->callnode_roots_.append(cn);
+	callnode_roots_.append(cn);
     	break;
     case DISCONNECTED:
 	dprintf1(D_DCALLGRAPH, "disconnected node \"%s\"\n", cn->name.data());
-	self->disconnected_.append(cn);
+	disconnected_.append(cn);
 	break;
     case OTHER:
     	break;
@@ -225,24 +224,11 @@ callgraph_diagram_t::compare_root_nodes(const cov_callnode_t *a,
 }
 
 void
-callgraph_diagram_t::check_reached_1(cov_callnode_t *cn, void *userdata)
-{
-    unsigned int *nunreachedp = (unsigned int *)userdata;
-    node_t *n = node_t::from_callnode(cn);
-
-    if (n == 0)
-    {
-	duprintf1("find_roots: \"%s\" not reached\n",
-		  cn->name.data());
-	(*nunreachedp)++;
-    }
-}
-
-void
 callgraph_diagram_t::find_roots()
 {
     dprintf0(D_DCALLGRAPH, "finding root and disconnected nodes:\n");
-    cov_callnode_t::foreach(find_roots_1, this);
+    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
+	find_roots_1(*cnitr);
     callnode_roots_.sort(compare_root_nodes);
     
     list_iterator_t<cov_callnode_t> iter;
@@ -261,7 +247,15 @@ callgraph_diagram_t::find_roots()
 	/* check for unreached nodes and whine about them */    
 	unsigned int nunreached = 0;
 
-	cov_callnode_t::foreach(check_reached_1, &nunreached);
+	for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
+	{
+	    if (!node_t::from_callnode(*cnitr))
+	    {
+		duprintf1("find_roots: \"%s\" not reached\n",
+			  (*cnitr)->name.data());
+		nunreached++;
+	    }
+	}
 	if (nunreached)
 	    duprintf1("find_roots: %u nodes not reached\n", nunreached);
     }
@@ -681,9 +675,8 @@ callgraph_diagram_t::dump_ranks()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
  
 void
-callgraph_diagram_t::dump_graph_1(cov_callnode_t *cn, void *closure)
+callgraph_diagram_t::dump_graph_1(cov_callnode_t *cn)
 {
-//    callgraph_diagram_t *self = (callgraph_diagram_t *)closure;
     node_t *n = node_t::from_callnode(cn);
     GList *iter;
 
@@ -718,7 +711,8 @@ void
 callgraph_diagram_t::dump_graph()
 {
     duprintf0("dump_graph:\n");
-    cov_callnode_t::foreach(dump_graph_1, this);
+    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
+	dump_graph_1(*cnitr);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

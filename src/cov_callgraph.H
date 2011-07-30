@@ -28,6 +28,8 @@ class cov_function_t;
 extern void cov_add_callnodes(cov_file_t*);
 extern void cov_add_callarcs(cov_file_t*);
 
+typedef hashtable_iter_t<const char, cov_callnode_t> cov_callnode_iter_t;
+
 /*
  * Node in the callgraph, representing a function
  * which may be one of the covered functions or
@@ -42,8 +44,10 @@ struct cov_callnode_t
     void *userdata;
     
     static cov_callnode_t *find(const char *name);
-    static void foreach(void (*func)(cov_callnode_t*, void *userdata),
-    	    	        void *userdata);
+    static cov_callnode_iter_t first()
+    {
+	return all_->first();
+    }
 
 private:
     cov_callnode_t(const char *name);

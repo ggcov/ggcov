@@ -586,10 +586,8 @@ dump_callarcs(FILE *fp, GList *arcs)
 }
 
 static void
-dump_callnode(cov_callnode_t *cn, void *userdata)
+dump_callnode(cov_callnode_t *cn, FILE *fp)
 {
-    FILE *fp = (FILE *)userdata;
-
     fprintf(fp, "CALLNODE {\n");
     fprintf(fp, "    NAME=%s\n", cn->name.data());
     if (cn->function == 0)
@@ -718,7 +716,8 @@ cov_dump(FILE *fp)
 	for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
     	    dump_file(fp, *iter);
 
-	cov_callnode_t::foreach(dump_callnode, fp);
+	for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
+	    dump_callnode(*cnitr, fp);
     }
 }
 

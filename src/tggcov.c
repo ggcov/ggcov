@@ -266,14 +266,6 @@ check_callgraph(void)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void
-add_one_node(cov_callnode_t *cn, void *userdata)
-{
-    ptrarray_t<cov_callnode_t> *nodes = (ptrarray_t<cov_callnode_t> *)userdata;
-    
-    nodes->append(cn);
-}
-
 static int
 compare_nodes_by_name(const cov_callnode_t **a, const cov_callnode_t **b)
 {
@@ -303,7 +295,8 @@ dump_callgraph(void)
     }
 
     ptrarray_t<cov_callnode_t> *nodes = new ptrarray_t<cov_callnode_t>;
-    cov_callnode_t::foreach(add_one_node, nodes);
+    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
+	nodes->append(*cnitr);
     nodes->sort(compare_nodes_by_name);
 
     fprintf(fp, "# tggcov callgraph version 1\n");

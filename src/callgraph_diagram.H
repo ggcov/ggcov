@@ -81,9 +81,8 @@ private:
 	double total_spread_;
     };
 
-    static void find_roots_1(cov_callnode_t *cn, void *userdata);
+    void find_roots_1(cov_callnode_t *cn);
     static int compare_root_nodes(const cov_callnode_t *, const cov_callnode_t *);
-    static void check_reached_1(cov_callnode_t *cn, void *userdata);
     void find_roots();
     void adjust_rank(node_t *n, int delta);
     void prepare_ranks(node_t *n, int);
@@ -95,7 +94,7 @@ private:
     gboolean any_self_arcs(rank_t *r);
     void assign_geometry();
     void dump_ranks();
-    static void dump_graph_1(cov_callnode_t *cn, void *userdata);
+    void dump_graph_1(cov_callnode_t *cn);
     void dump_graph();
     void show_node(node_t *, scenegen_t *sg);
 

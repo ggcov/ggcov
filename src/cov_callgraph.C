@@ -62,34 +62,6 @@ cov_callnode_t::find(const char *nname)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-typedef struct
-{
-    void (*func)(cov_callnode_t *, void *);
-    void *userdata;
-} cov_callnode_foreach_rec_t;
-
-static void
-cov_callnode_foreach_tramp(const char *name, cov_callnode_t *cn, gpointer userdata)
-{
-    cov_callnode_foreach_rec_t *rec = (cov_callnode_foreach_rec_t *)userdata;
-
-    (*rec->func)(cn, rec->userdata);
-}
-
-void
-cov_callnode_t::foreach(
-    void (*func)(cov_callnode_t*, void *userdata),
-    void *userdata)
-{
-    cov_callnode_foreach_rec_t rec;
-
-    rec.func = func;
-    rec.userdata = userdata;
-    all_->foreach(cov_callnode_foreach_tramp, &rec);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 #if 0
 static gboolean
 cov_callnode_t::delete_one(const char *name, cov_callnode_t *cn, gpointer userdata)
