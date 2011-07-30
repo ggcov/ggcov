@@ -185,20 +185,16 @@ compare_files(const cov_file_t *fa, const cov_file_t *fb)
 }
 
 void
-cov_file_t::post_read_1(
-    const char *name,
-    cov_file_t *f,
-    gpointer userdata)
-{
-    files_list_.prepend(f);
-    f->finalise();
-}
-
-void
 cov_file_t::post_read()
 {
     files_list_.remove_all();
-    files_->foreach(post_read_1, 0);
+
+    for (hashtable_iter_t<const char, cov_file_t> itr = files_->first() ; *itr ; ++itr)
+    {
+	cov_file_t *f = *itr;
+	files_list_.prepend(f);
+	f->finalise();
+    }
     files_list_.sort(compare_files);
 }
 
@@ -278,20 +274,15 @@ cov_file_t::dirty_common_path()
 }
 
 void
-cov_file_t::add_name_tramp(const char *name, cov_file_t *f, gpointer userdata)
-{
-    if (f->common_)
-	add_name(name);
-}
-
-void
 cov_file_t::check_common_path()
 {
     if (common_len_ < 0)
     {
     	dprintf0(D_FILES, "cov_file_t::check_common_path: recalculating common path\n");
     	common_len_ = 0;
-	files_->foreach(add_name_tramp, 0);
+	for (hashtable_iter_t<const char, cov_file_t> itr = files_->first() ; *itr ; ++itr)
+	    if (itr.value()->common_)
+		add_name(itr.key());
     }
 }
 
