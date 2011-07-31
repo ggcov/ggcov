@@ -146,7 +146,7 @@ flow_diagram_t::generate_nodes()
 	nodes_by_bindex_->set(b->bindex(), node);
 	num_nodes++;
 
-	for (list_iterator_t<cov_location_t> liter = b->location_iterator() ; *liter ; ++liter)
+	for (list_iterator_t<cov_location_t> liter = b->locations().first() ; *liter ; ++liter)
 	{
 	    cov_location_t *loc = *liter;
 

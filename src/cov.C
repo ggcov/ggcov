@@ -645,7 +645,7 @@ dump_block(FILE *fp, cov_block_t *b)
     fprintf(fp, "                }\n");
 
     fprintf(fp, "                LOCATIONS {\n");
-    for (list_iterator_t<cov_location_t> liter = b->location_iterator() ; *liter ; ++liter)
+    for (list_iterator_t<cov_location_t> liter = b->locations().first() ; *liter ; ++liter)
     {
     	cov_location_t *loc = *liter;
 	cov_line_t *ln = cov_line_t::find(loc);

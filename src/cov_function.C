@@ -161,7 +161,7 @@ cov_function_t::get_first_location() const
     
     for (bidx = 0 ; bidx < num_blocks() ; bidx++)
     {
-	for (list_iterator_t<cov_location_t> liter = nth_block(bidx)->location_iterator() ; *liter ; ++liter)
+	for (list_iterator_t<cov_location_t> liter = nth_block(bidx)->locations().first() ; *liter ; ++liter)
 	{
 	    loc = *liter;
 
@@ -187,7 +187,7 @@ cov_function_t::get_last_location() const
     
     for (bidx = num_blocks()-1 ; bidx >= 0 ; bidx--)
     {
-	for (list_iterator_t<cov_location_t> liter = nth_block(bidx)->location_reverse_iterator() ; *liter ; --liter)
+	for (list_iterator_t<cov_location_t> liter = nth_block(bidx)->locations().last(); *liter ; --liter)
 	{
 	    loc = *liter;
 
@@ -269,7 +269,7 @@ cov_function_t::reconcile_calls()
 	if (b->out_ncalls_ != (b->call_ == 0 ? 0U : 1U))
 	{
 	    /* TODO */
-	    if (b->get_first_location() != 0)
+	    if (b->locations().head() != 0)
 	    {
 		/*
 		 * Don't complain about not being to reconcile weird

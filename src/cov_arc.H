@@ -74,7 +74,7 @@ public:
 	 * gcc doesn't instrument those calls, so there's point trying
 	 * to handle them.
 	 */
-    	return from_->get_last_location();
+    	return from_->locations().tail();
     }
     
     cov_block_t *
@@ -91,7 +91,7 @@ public:
     const cov_location_t *
     get_from_location() const
     {
-	return from_->get_first_location();
+	return from_->locations().head();
     }
 
     boolean is_suppressed() const;

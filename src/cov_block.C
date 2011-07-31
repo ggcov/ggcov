@@ -134,7 +134,7 @@ cov_block_t::add_call(const char *name, const cov_location_t *loc)
 	name = "*pointer";
 
     if (is_call_site() &&
-    	((last = get_last_location()) == 0 || *loc == *last))
+    	((last = locations_.tail()) == 0 || *loc == *last))
     {
     	dprintf5(D_CGRAPH, "%s: call from %s:%u to %s at %s\n",
 	    	fn, function_->name(), idx_, name, loc->describe());
@@ -142,8 +142,8 @@ cov_block_t::add_call(const char *name, const cov_location_t *loc)
 	{
 	    /* multiple calls: assume the earlier one is actually pure */
     	    dprintf5(D_CGRAPH, "%s: assuming earlier call from %s:%u to %s at %s was pure\n",
-	    	fn, function_->name(), idx_, call_.data(), get_last_location()->describe());
-	    pure_calls_.append(new call_t(call_, get_last_location()));
+	    	fn, function_->name(), idx_, call_.data(), locations_.tail()->describe());
+	    pure_calls_.append(new call_t(call_, locations_.tail()));
 	}
 	call_ = name;
     }

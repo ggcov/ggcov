@@ -65,25 +65,10 @@ public:
 	return out_arcs_.first();
     }
 
-    const cov_location_t *
-    get_first_location() const
+    const list_t<cov_location_t> &
+    locations() const
     {
-    	return locations_.head();
-    }
-    const cov_location_t *
-    get_last_location() const
-    {
-    	return locations_.tail();
-    }
-    list_iterator_t<cov_location_t>
-    location_iterator() const
-    {
-    	return locations_.first();
-    }
-    list_iterator_t<cov_location_t>
-    location_reverse_iterator() const
-    {
-    	return locations_.last();
+	return locations_;
     }
 
     count_t
