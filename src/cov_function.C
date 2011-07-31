@@ -288,7 +288,7 @@ cov_function_t::reconcile_calls()
 	    continue;
 	}
 
-	for (list_iterator_t<cov_arc_t> aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
+	for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
 	{
 	    cov_arc_t *a = *aiter;
 
@@ -522,7 +522,7 @@ cov_function_t::zero_arc_counts()
     {
 	cov_block_t *b = nth_block(bidx);
 
-	for (list_iterator_t<cov_arc_t> aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
+	for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
 	{
 	    cov_arc_t *a = *aiter;
 

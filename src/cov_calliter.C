@@ -63,8 +63,7 @@ cov_call_iterator_t::block_next()
     if (state_ == 1)
     {
     	pure_ = 0;
-	list_iterator_t<cov_arc_t> oi;
-	for (oi = block_->out_arc_iterator() ; oi != (cov_arc_t *)0 ; ++oi)
+	for (list_iterator_t<cov_arc_t> oi = block_->first_arc() ; *oi ; ++oi)
 	{
 	    arc_ = *oi;
 	    if (!arc_->is_call())

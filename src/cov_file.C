@@ -1282,7 +1282,7 @@ cov_file_t::read_old_da_file(covio_t *io)
 	{
     	    cov_block_t *b = fn->nth_block(bidx);
 	
-	    for (list_iterator_t<cov_arc_t> aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
+	    for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
 	    {
 	    	cov_arc_t *a = *aiter;
 		
@@ -1382,7 +1382,7 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
 	{
     	    cov_block_t *b = fn->nth_block(bidx);
 	
-	    for (list_iterator_t<cov_arc_t> aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
+	    for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
 	    {
 	    	cov_arc_t *a = *aiter;
 		
@@ -1507,7 +1507,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 	    {
     		cov_block_t *b = fn->nth_block(bidx);
 
-		for (list_iterator_t<cov_arc_t> aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
+		for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
 		{
 	    	    cov_arc_t *a = *aiter;
 

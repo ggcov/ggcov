@@ -56,16 +56,13 @@ public:
     /* returns a new string */
     char *describe() const;
 
-    /* For iterating over outgoing and incoming arcs */
+    /* For iterating over outgoing arcs.
+     * There used to be an iterator for incoming arcs, turns out
+     * that it was not needed anywhere */
     list_iterator_t<cov_arc_t>
-    in_arc_iterator() const
+    first_arc() const
     {
-    	return in_arcs_.first();
-    }
-    list_iterator_t<cov_arc_t>
-    out_arc_iterator() const
-    {
-    	return out_arcs_.first();
+	return out_arcs_.first();
     }
 
     const cov_location_t *

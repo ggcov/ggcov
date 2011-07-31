@@ -632,7 +632,6 @@ dump_arc(FILE *fp, cov_arc_t *a)
 void
 dump_block(FILE *fp, cov_block_t *b)
 {
-    list_iterator_t<cov_arc_t> aiter;
     estring desc = b->describe();
     
     fprintf(fp, "            BLOCK {\n");
@@ -641,15 +640,10 @@ dump_block(FILE *fp, cov_block_t *b)
     fprintf(fp, "                STATUS=%s\n", status_names[b->status()]);
 
     fprintf(fp, "                OUT_ARCS {\n");
-    for (aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
+    for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
     	dump_arc(fp, *aiter);
     fprintf(fp, "                }\n");
 
-    fprintf(fp, "                IN_ARCS {\n");
-    for (aiter = b->in_arc_iterator() ; *aiter ; ++aiter)
-    	dump_arc(fp, *aiter);
-    fprintf(fp, "                }\n");
-    
     fprintf(fp, "                LOCATIONS {\n");
     for (list_iterator_t<cov_location_t> liter = b->location_iterator() ; *liter ; ++liter)
     {

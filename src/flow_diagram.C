@@ -322,7 +322,7 @@ flow_diagram_t::generate_arcs()
 	{
 	    /* last node for this block, show outgoing arcs */
 
-	    for (list_iterator_t<cov_arc_t> aiter = node->block_->out_arc_iterator() ; *aiter ; ++aiter)
+	    for (list_iterator_t<cov_arc_t> aiter = node->block_->first_arc() ; *aiter ; ++aiter)
 	    {
 		cov_arc_t *a = *aiter;
 		node_t *tonode = nodes_by_bindex_->nth(a->to()->bindex());
