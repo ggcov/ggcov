@@ -158,9 +158,8 @@ sourcewin_t::update_flows()
 
 	dprintf2(D_SOURCEWIN, "    %u: fn=%s\n", lineno, fn->name());
 
-	list_iterator_t<flow_t> fiter;
 	flow_t *flow = 0;
-	for (fiter = flows_.first() ; fiter != (flow_t *)0 ; ++fiter)
+	for (list_iterator_t<flow_t> fiter = flows_.first() ; *fiter ; ++fiter)
 	{
 	    if ((*fiter)->function_ == fn)
 	    {
@@ -198,9 +197,8 @@ sourcewin_t::update_flows()
     }
 
     /* Hide flows not just shown */
-    list_iterator_t<flow_t> fiter;
     dprintf0(D_SOURCEWIN, "    hiding flows\n");
-    for (fiter = flows_.first() ; fiter != (flow_t *)0 ; ++fiter)
+    for (list_iterator_t<flow_t> fiter = flows_.first() ; *fiter ; ++fiter)
     {
 	flow_t *flow = *fiter;
 	if (flow->shown_ < flow_shown_ &&
@@ -216,7 +214,7 @@ sourcewin_t::update_flows()
     {
 	flow_width_ = column_widths_[COL_FLOW] * font_width_;
 	dprintf0(D_SOURCEWIN, "    resizing window\n");
-	for (fiter = flows_.first() ; fiter != (flow_t *)0 ; ++fiter)
+	for (list_iterator_t<flow_t> fiter = flows_.first() ; *fiter ; ++fiter)
 	{
 	    flow_t *flow = *fiter;
 	    if (GTK_WIDGET_VISIBLE(flow->canvas_) && flow->width_ > flow_width_)
@@ -476,13 +474,11 @@ on_source_filenames_entry_changed(GtkWidget *w, gpointer userdata)
 void
 sourcewin_t::populate_filenames()
 {
-    list_iterator_t<cov_file_t> iter;
-   
     populating_ = TRUE; /* suppress combo entry callback */
     ui_combo_clear(GTK_COMBO(filenames_combo_));    /* stupid glade2 */
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
-    	cov_file_t *f = *iter;
+	cov_file_t *f = *iter;
 
     	ui_combo_add_data(GTK_COMBO(filenames_combo_), f->minimal_name(), f);
     }

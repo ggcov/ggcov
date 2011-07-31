@@ -72,8 +72,7 @@ lego_diagram_t::dump_node(node_t *node, FILE *fp)
     {
 	fputs(" {\n", fp);
 
-	list_iterator_t<node_t> niter;
-	for (niter = node->children_.first() ; niter != (node_t *)0 ; ++niter)
+	for (list_iterator_t<node_t> niter = node->children_.first() ; *niter ; ++niter)
 	    dump_node(*niter, fp);
 
 	for (i = 0 ; i < node->depth_ ; i++)
@@ -103,8 +102,7 @@ lego_diagram_t::assign_geometry(
     x += w;
     h /= (double)node->stats_.blocks_total();
 
-    list_iterator_t<node_t> niter;
-    for (niter = node->children_.first() ; niter != (node_t *)0 ; ++niter)
+    for (list_iterator_t<node_t> niter = node->children_.first() ; *niter ; ++niter)
     {
 	node_t *child = *niter;
 	double h2 = h * (double)child->stats_.blocks_total();
@@ -148,8 +146,6 @@ lego_diagram_t::root_name() const
 void
 lego_diagram_t::prepare()
 {
-    list_iterator_t<cov_file_t> iter;
-
     dprintf0(D_DLEGO, "lego_diagram_t::prepare\n");
 
     root_ = new node_t();
@@ -158,7 +154,7 @@ lego_diagram_t::prepare()
     maxdepth_ = 0;
 
     /* First pass: construct a tree of nodes */
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
 	cov_file_t *f = *iter;
 
@@ -178,12 +174,9 @@ lego_diagram_t::prepare()
 	const char *comp;
 	while ((comp = tok.next()) != 0)
 	{
-	    list_iterator_t<node_t> niter;
 	    node = 0;
 
-	    for (niter = parent->children_.first() ; 
-		 niter != (node_t *)0 ;
-		 ++niter)
+	    for (list_iterator_t<node_t> niter = parent->children_.first() ; *niter ; ++niter)
 	    {
 		if (!strcmp((*niter)->name_, comp))
 		{
@@ -227,7 +220,6 @@ void
 lego_diagram_t::show_node(node_t *node, scenegen_t *sg)
 {
     string_var label;
-    list_iterator_t<node_t> niter;
 
     label = g_strdup_printf("%s %4.2f%%",
 	node->name_.data(),
@@ -250,7 +242,7 @@ lego_diagram_t::show_node(node_t *node, scenegen_t *sg)
     sg->object(node->file_);
     sg->textbox(node->x_, node->y_, node->w_, node->h_, label.data());
 
-    for (niter = node->children_.first() ; niter != (node_t *)0 ; ++niter)
+    for (list_iterator_t<node_t> niter = node->children_.first() ; *niter ; ++niter)
 	show_node(*niter, sg);
 }
 

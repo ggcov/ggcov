@@ -51,7 +51,7 @@ char *argv0;
 static GList *files;	    /* incoming specification from commandline */
 
 static char *dump_mode = NULL;
-static char *output_tarball = "ggcov.webdb.tgz";
+static const char *output_tarball = "ggcov.webdb.tgz";
 
 static hashtable_t<void, unsigned int> *file_index;
 static hashtable_t<void, unsigned int> *function_index;
@@ -179,10 +179,8 @@ save_file_lines(DB *db, cov_file_t *f)
 static void
 save_lines(DB *db)
 {
-    list_iterator_t<cov_file_t> iter;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	save_file_lines(db, *iter);
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
+	save_file_lines(db, *iter);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -190,28 +188,23 @@ save_lines(DB *db)
 static void
 build_filename_index(void)
 {
-    list_iterator_t<cov_file_t> iter;
     unsigned int n = 0;
 
     // Build the filename index
     file_index = new hashtable_t<void, unsigned int>;
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    {
-	cov_file_t *f = *iter;
-	file_index->insert((void *)f, new unsigned int(++n));
-    }
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
+	file_index->insert((void *)*iter, new unsigned int(++n));
 }
 
 static void
 save_filename_index(DB *db)
 {
     php_serializer_t ser;
-    list_iterator_t<cov_file_t> iter;
     int ret;
 
     // PHP-serialise the filename index.
     ser.begin_array(file_index->size());
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
 	cov_file_t *f = *iter;
 	ser.string(f->minimal_name());
@@ -236,9 +229,8 @@ static list_t<cov_function_t> *
 really_list_all_functions(void)
 {
     list_t<cov_function_t> *all = new list_t<cov_function_t>;
-    list_iterator_t<cov_file_t> iter;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
     	cov_file_t *f = *iter;
 	unsigned int fnidx;
@@ -258,17 +250,13 @@ really_list_all_functions(void)
 static void
 build_global_function_index(void)
 {
-    list_iterator_t<cov_function_t> iter;
     unsigned int n = 0;
 
     all_functions = really_list_all_functions();
 
     function_index = new hashtable_t<void, unsigned int>;
-    for (iter = all_functions->first() ; iter != (cov_function_t *)0 ; ++iter)
-    {
-	cov_function_t *fn = *iter;
-	function_index->insert((void *)fn, new unsigned int(++n));
-    }
+    for (list_iterator_t<cov_function_t> iter = all_functions->first() ; *iter ; ++iter)
+	function_index->insert((void *)*iter, new unsigned int(++n));
 }
 
 static gboolean
@@ -285,13 +273,11 @@ save_global_function_index(DB *db)
     php_serializer_t ser;
     hashtable_t<const char, list_t<cov_function_t> > *unique;
     list_t<const char> keys;
-    list_iterator_t<cov_function_t> fniter;
-    list_iterator_t<const char> kiter;
     int ret;
 
     // Uniquify the function names
     unique = new hashtable_t<const char, list_t<cov_function_t> >;
-    for (fniter = all_functions->first() ; fniter != (cov_function_t *)0 ; ++fniter)
+    for (list_iterator_t<cov_function_t> fniter = all_functions->first() ; *fniter ; ++fniter)
     {
     	cov_function_t *fn = *fniter;
 	if (fn->is_suppressed())
@@ -308,14 +294,14 @@ save_global_function_index(DB *db)
     // PHP-serialise the function index
     unique->keys(&keys);
     ser.begin_array(unique->size());
-    for (kiter = keys.first() ; kiter != (const char *)0 ; ++kiter)
+    for (list_iterator_t<const char> kiter = keys.first() ; *kiter ; ++kiter)
     {
-    	const char *fname = *kiter;
+	const char *fname = *kiter;
 	list_t<cov_function_t> *list = unique->lookup(fname);
 
 	ser.string(fname);
 	ser.begin_array(list->length());
-	for (fniter = list->first() ; fniter != (cov_function_t *)0 ; ++fniter)
+	for (list_iterator_t<cov_function_t> fniter = list->first() ; *fniter ; ++fniter)
 	{
 	    cov_function_t *fn = *fniter;
 	    ser.string(fn->file()->minimal_name());
@@ -346,9 +332,9 @@ save_global_function_list(DB *db)
     unsigned int n = 0;
     int ret;
 
-    for (iter = all_functions->first() ; iter != (cov_function_t *)0 ; ++iter)
+    for (iter = all_functions->first() ; *iter ; ++iter)
     {
-    	cov_function_t *fn = *iter;
+	cov_function_t *fn = *iter;
 
 	if (fn->is_suppressed())
 	    continue;
@@ -357,9 +343,9 @@ save_global_function_list(DB *db)
 
     // PHP-serialise the function list
     ser.begin_array(n);
-    for (iter = all_functions->first() ; iter != (cov_function_t *)0 ; ++iter)
+    for (iter = all_functions->first() ; *iter ; ++iter)
     {
-    	cov_function_t *fn = *iter;
+	cov_function_t *fn = *iter;
 
 	if (fn->is_suppressed())
 	    continue;
@@ -368,12 +354,10 @@ save_global_function_list(DB *db)
 	label.append_string(fn->name());
 
     	/* see if we need to present some more scope to uniquify the name */
-	list_iterator_t<cov_function_t> niter = iter.peek_next();
-	list_iterator_t<cov_function_t> piter = iter.peek_prev();
-	if ((niter != (cov_function_t *)0 &&
-	     !strcmp((*niter)->name(), fn->name())) ||
-	    (piter != (cov_function_t *)0 &&
-	     !strcmp((*piter)->name(), fn->name())))
+	list_iterator_t<cov_function_t> next = iter.peek_next();
+	list_iterator_t<cov_function_t> prev = iter.peek_prev();
+	if ((*next && !strcmp((*next)->name(), fn->name())) ||
+	    (*prev && !strcmp((*prev)->name(), fn->name())))
 	{
 	    label.append_string(" [");
 	    label.append_string(fn->file()->minimal_name());
@@ -396,9 +380,7 @@ save_global_function_list(DB *db)
 static void
 save_file_function_indexes(DB *db)
 {
-    list_iterator_t<cov_file_t> iter;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
     	cov_file_t *f = *iter;
 	unsigned int fnidx;
@@ -434,9 +416,7 @@ serlineno(php_serializer_t *ser, const cov_location_t *loc)
 static void
 save_functions(DB *db)
 {
-    list_iterator_t<cov_function_t> iter;
-    
-    for (iter = all_functions->first() ; iter != (cov_function_t *)0 ; ++iter)
+    for (list_iterator_t<cov_function_t> iter = all_functions->first() ; *iter ; ++iter)
     {
 	cov_function_t *fn = *iter;
 	php_serializer_t ser;
@@ -518,8 +498,7 @@ save_summaries(DB *db)
     delete sc;
 
     // Save a file scope object for each file
-    list_iterator_t<cov_file_t> fiter;
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
 	cov_file_t *f = *fiter;
 	sc = new cov_file_scope_t(f);
@@ -529,8 +508,7 @@ save_summaries(DB *db)
     }
 
     // Save a function scope object for each function
-    list_iterator_t<cov_function_t> fniter;
-    for (fniter = all_functions->first() ; fniter != (cov_function_t *)0 ; ++fniter)
+    for (list_iterator_t<cov_function_t> fniter = all_functions->first() ; *fniter ; ++fniter)
     {
     	cov_function_t *fn = *fniter;
 	sc = new cov_function_scope_t(fn);
@@ -564,7 +542,6 @@ static void
 save_callnode_index(DB *db)
 {
     list_t<cov_callnode_t> all;
-    list_iterator_t<cov_callnode_t> iter;
     php_serializer_t ser;
     int ret;
 
@@ -575,7 +552,7 @@ save_callnode_index(DB *db)
 
     // PHP-serialise the callnode index
     ser.begin_array(callnode_index->size());
-    for (iter = all.first() ; iter != (cov_callnode_t *)0 ; ++iter)
+    for (list_iterator_t<cov_callnode_t> iter = all.first() ; *iter ; ++iter)
     {
 	cov_callnode_t *cn = *iter;
 
@@ -867,9 +844,7 @@ save_diagrams(DB *db)
 static void
 create_source_symlinks(const char *tempdir)
 {
-    list_iterator_t<cov_file_t> iter;
-
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
 	cov_file_t *f = *iter;
 	string_var link = g_strconcat(tempdir, "/", f->minimal_name(), (char *)0);

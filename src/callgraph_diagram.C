@@ -231,8 +231,7 @@ callgraph_diagram_t::find_roots()
 	find_roots_1(*cnitr);
     callnode_roots_.sort(compare_root_nodes);
     
-    list_iterator_t<cov_callnode_t> iter;
-    for (iter = callnode_roots_.first() ; iter != (cov_callnode_t *)0 ; ++iter)
+    for (list_iterator_t<cov_callnode_t> iter = callnode_roots_.first() ; *iter ; ++iter)
     {
     	cov_callnode_t *cn = (*iter);
 	dprintf1(D_DCALLGRAPH, "building nodes for \"%s\"\n", cn->name.data());
@@ -525,8 +524,7 @@ callgraph_diagram_t::calc_spread(int pass, int rank)
     if (r == 0)
     	return;
 
-    list_iterator_t<node_t> iter;
-    for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
+    for (list_iterator_t<node_t> iter = r->nodes_.first() ; *iter ; ++iter)
     {
 	node_t *n = (*iter);
 	double d = 1.0 - n->spread_;
@@ -547,11 +545,9 @@ callgraph_diagram_t::calc_spread(int pass, int rank)
 gboolean
 callgraph_diagram_t::any_self_arcs(rank_t *r)
 {
-    list_iterator_t<node_t> iter;
-    for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
+    for (list_iterator_t<node_t> iter = r->nodes_.first() ; *iter ; ++iter)
     {
-	node_t *n = (*iter);
-	if (n->any_self())
+	if ((*iter)->any_self())
 	    return TRUE;
     }
     return FALSE;
@@ -578,13 +574,12 @@ callgraph_diagram_t::assign_geometry()
     for (i = 0 ; i < ranks_->length() ; i++)
     {
 	rank_t *r = ranks_->nth(i);
-	list_iterator_t<node_t> iter;
 
     	if (r == 0)
 	    continue;
 
 	r->total_spread_ = 0.0;
-	for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
+	for (list_iterator_t<node_t> iter = r->nodes_.first() ; *iter ; ++iter)
 	{
 	    node_t *n = (*iter);
 	    r->total_spread_ += n->spread_;
@@ -604,14 +599,13 @@ callgraph_diagram_t::assign_geometry()
     for (i = 0 ; i < ranks_->length() ; i++)
     {
 	rank_t *r = ranks_->nth(i);
-	list_iterator_t<node_t> iter;
 
     	if (r == 0)
 	    continue;
 
 	double yperspread = height / r->total_spread_;
 	double sy = 0.0;
-	for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
+	for (list_iterator_t<node_t> iter = r->nodes_.first() ; *iter ; ++iter)
 	{
 	    node_t *n = (*iter);
 	    cov_callnode_t *cn = n->callnode_;
@@ -657,13 +651,12 @@ callgraph_diagram_t::dump_ranks()
     for (i = 0 ; i < ranks_->length() ; i++)
     {
 	rank_t *r = ranks_->nth(i);
-	list_iterator_t<node_t> iter;
 
 	if (r == 0)
 	    continue;
 	duprintf1("    [%u]:\n", i);
 
-	for (iter = r->nodes_.first() ; iter != (node_t *)0 ; ++iter)
+	for (list_iterator_t<node_t> iter = r->nodes_.first() ; *iter ; ++iter)
 	{
 	    node_t *n = (*iter);
 	    duprintf2("        %g \"%s\"\n",
@@ -727,11 +720,11 @@ callgraph_diagram_t::prepare()
 
     find_roots();
 
-    for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
+    for (iter = roots_.first() ; *iter ; ++iter)
         prepare_ranks(*iter, 1);
-    for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
+    for (iter = roots_.first() ; *iter ; ++iter)
         push_false_root(*iter);
-    for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
+    for (iter = roots_.first() ; *iter ; ++iter)
         balance_ranks(*iter);
 
     if (roots_.head() == 0)
@@ -742,7 +735,7 @@ callgraph_diagram_t::prepare()
 
     bounds_.initialise();
 
-    for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
+    for (iter = roots_.first() ; *iter ; ++iter)
 	build_ranks((*iter));
 
     for (i = ranks_->length() - 1 ; i >= 0 ; --i)
@@ -861,8 +854,6 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 void
 callgraph_diagram_t::render(scenegen_t *sg)
 {
-    list_iterator_t<node_t> iter;
-
     if (debug_enabled(D_DCALLGRAPH))
     {
 	/* draw a light blue background behind the whole diagram */
@@ -876,11 +867,8 @@ callgraph_diagram_t::render(scenegen_t *sg)
 
     shown_++;
 
-    for (iter = roots_.first() ; iter != (node_t *)0 ; ++iter)
-    {
-	node_t *n = *iter;
-	show_node(n, sg);
-    }
+    for (list_iterator_t<node_t> iter = roots_.first() ; *iter ; ++iter)
+	show_node(*iter, sg);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

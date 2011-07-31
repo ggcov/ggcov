@@ -187,12 +187,10 @@ summarywin_t::show_lines(
 void
 summarywin_t::populate_filename_combo(GtkCombo *combo)
 {
-    list_iterator_t<cov_file_t> iter;
-    
     ui_combo_clear(GTK_COMBO(combo));    /* stupid glade2 */
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
-    	cov_file_t *f = *iter;
+	cov_file_t *f = *iter;
 
     	if (file_ == 0)
 	    file_ = f;

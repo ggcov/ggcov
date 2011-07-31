@@ -96,8 +96,7 @@ cov_block_t::set_count(count_t count)
     assert(out_ncalls_ == 0 || out_ncalls_ == 1);
     if (out_ncalls_)
     {
-	list_iterator_t<cov_arc_t> aiter;
-	for (aiter = out_arcs_.first() ; aiter != (cov_arc_t *)0 ; ++aiter)
+	for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
 	{
 	    cov_arc_t *a = (*aiter);
 	    if (a->call_)
@@ -168,19 +167,16 @@ cov_block_t::pop_call()
 void
 cov_block_t::suppress()
 {
-    list_iterator_t<cov_arc_t> aiter;
-    list_iterator_t<cov_location_t> liter;
-
     suppressed_ = TRUE;
 
     /* suppress all outbound arcs */
-    for (aiter = out_arcs_.first() ; aiter != (cov_arc_t *)0 ; ++aiter)
+    for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
 	(*aiter)->suppress();
     
     /* TODO: should we suppress inbound arcs also!?? */
     
     /* suppress all lines */
-    for (liter = locations_.first() ; liter != (cov_location_t *)0 ; ++liter)
+    for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
 	cov_line_t::find(*liter)->suppress();
 }
 
@@ -189,9 +185,7 @@ cov_block_t::suppress()
 void
 cov_block_t::finalise()
 {
-    list_iterator_t<cov_arc_t> aiter;
-
-    for (aiter = out_arcs_.first() ; aiter != (cov_arc_t *)0 ; ++aiter)
+    for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
 	(*aiter)->finalise();
 }
 
@@ -205,8 +199,6 @@ cov_block_t::finalise()
 cov::status_t
 cov_block_t::calc_stats(cov_stats_t *stats) const
 {
-    list_iterator_t<cov_arc_t> aiter;
-    list_iterator_t<cov_location_t> liter;
     unsigned int bits = 0;
     cov::status_t st;
 
@@ -215,7 +207,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
     /*
      * Calculate call and branches coverage.
      */
-    for (aiter = out_arcs_.first() ; aiter != (cov_arc_t *)0 ; ++aiter)
+    for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
     {
 	cov_arc_t *a = *aiter;
 
@@ -231,7 +223,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
     /*
      * Calculate line coverage.
      */
-    for (liter = locations_.first() ; liter != (cov_location_t *)0 ; ++liter)
+    for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
     {
 	cov_line_t *ln = cov_line_t::find(*liter);
 	const GList *blocks = ln->blocks();

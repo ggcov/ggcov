@@ -287,33 +287,28 @@ static void
 dump_file_tree(file_rec_t *fr, int indent)
 {
     int i;
-    list_iterator_t<file_rec_t> friter;
-    
+
     for (i = 0 ; i < indent ; i++)
     	fputc(' ', stderr);
     fprintf(stderr, "%s\n", fr->name.data());
 
-    for (friter = fr->children.first() ;
-	 friter != (file_rec_t *)0 ;
-	 ++friter)
-    	dump_file_tree((*friter), indent+4);
+    for (list_iterator_t<file_rec_t> friter = fr->children.first() ; *friter ; ++friter)
+	dump_file_tree((*friter), indent+4);
 }
 
 void
 fileswin_t::populate()
 {
-    list_iterator_t<cov_file_t> iter;
-
     dprintf0(D_FILESWIN, "fileswin_t::populate\n");
 
     if (root_ != 0)
     	delete root_;
     root_ = new file_rec_t(cov_file_t::common_path(), 0);
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
-    	cov::status_t st = (*iter)->status();
-	
+	cov::status_t st = (*iter)->status();
+
 	if (st == cov::SUPPRESSED || st == cov::UNINSTRUMENTED)
 	    continue;
 
@@ -333,20 +328,17 @@ fileswin_t::populate()
 	    }
 	    else
 	    {
-	    	list_iterator_t<file_rec_t> friter;
-
-	    	for (friter = parent->children.first() ;
-		     friter != (file_rec_t *)0 ;
-		     ++friter)
+		fr = 0;
+		for (list_iterator_t<file_rec_t> friter = parent->children.first() ; *friter ; ++friter)
 		{
 		    if (!strcmp((*friter)->name, part))
-		    	break;
+		    {
+			fr = *friter;
+			break;
+		    }
 		}
-		
-		if ((*friter) != 0)
-		    fr = (*friter);
-		else
-	    	    parent->add_child(fr = new file_rec_t(part, 0));
+		if (!fr)
+		    parent->add_child(fr = new file_rec_t(part, 0));
 	    }
 	    parent = fr;
 	}
@@ -391,7 +383,6 @@ fileswin_t::add_node(
     char calls_pc_buf[16];
     char branches_pc_buf[16];
     gboolean is_leaf;
-    list_iterator_t<file_rec_t> friter;
 
     is_leaf = (fr->children.head() == 0);
     if (tree_flag || is_leaf)
@@ -453,9 +444,9 @@ fileswin_t::add_node(
 	    -1);
 #endif
     }
-    
-    for (friter = fr->children.first() ; friter != (file_rec_t *)0 ; ++friter)
-    	add_node((*friter), fr, percent_flag, tree_flag);
+
+    for (list_iterator_t<file_rec_t> friter = fr->children.first() ; *friter ; ++friter)
+	add_node((*friter), fr, percent_flag, tree_flag);
 }
 
 

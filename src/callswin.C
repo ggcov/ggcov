@@ -328,13 +328,9 @@ callswin_t::update()
     }
     else
     {
-    	/* all functions */
-	list_iterator_t<cov_function_t> iter;
-	
-	for (iter = functions_->first() ; iter != (cov_function_t *)0 ; ++iter)
-	{
+	/* all functions */
+	for (list_iterator_t<cov_function_t> iter = functions_->first() ; *iter ; ++iter)
 	    update_for_func(*iter, to_fn);
-	}
     }
     
 #if !GTK2

@@ -1270,8 +1270,7 @@ cov_file_t::read_old_da_file(covio_t *io)
     gnb_u64_t ent;
     unsigned int fnidx;
     unsigned int bidx;
-    list_iterator_t<cov_arc_t> aiter;
-    
+
     io->set_format(covio_t::FORMAT_OLD);
     io->read_u64(nents);
     
@@ -1283,7 +1282,7 @@ cov_file_t::read_old_da_file(covio_t *io)
 	{
     	    cov_block_t *b = fn->nth_block(bidx);
 	
-	    for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+	    for (list_iterator_t<cov_arc_t> aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
 	    {
 	    	cov_arc_t *a = *aiter;
 		
@@ -1346,8 +1345,7 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
     unsigned int fnidx;
     unsigned int bidx;
     unsigned int actual_narcs;
-    list_iterator_t<cov_arc_t> aiter;
-    
+
     io->set_format(covio_t::FORMAT_OLD);
     
     /*
@@ -1384,7 +1382,7 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
 	{
     	    cov_block_t *b = fn->nth_block(bidx);
 	
-	    for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+	    for (list_iterator_t<cov_arc_t> aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
 	    {
 	    	cov_arc_t *a = *aiter;
 		
@@ -1442,7 +1440,6 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
     gnb_u64_t count;
     gnb_u32_t tmp;
     unsigned int bidx;
-    list_iterator_t<cov_arc_t> aiter;
     unsigned int len_unit = 1;
 
     io->set_format(ioformat);
@@ -1510,7 +1507,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 	    {
     		cov_block_t *b = fn->nth_block(bidx);
 
-		for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+		for (list_iterator_t<cov_arc_t> aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
 		{
 	    	    cov_arc_t *a = *aiter;
 
@@ -1893,7 +1890,6 @@ covio_t *
 cov_file_t::find_file(const char *ext, gboolean quiet,
 		      const char *prefix) const
 {
-    list_iterator_t<char> iter;
     covio_t *io;
     
     dprintf2(D_FILES|D_VERBOSE,
@@ -1919,7 +1915,7 @@ cov_file_t::find_file(const char *ext, gboolean quiet,
     /*
      * Now look in the search path.
      */
-    for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
+    for (list_iterator_t<char> iter = search_path_.first() ; *iter ; ++iter)
     {
 	string_var fn = g_strconcat(*iter, "/", file_basename_c(name()), (char *)0);
 	if ((io = try_file(fn, ext)) != 0)
@@ -1939,7 +1935,6 @@ cov_file_t::find_file(const char *ext, gboolean quiet,
 void
 cov_file_t::file_missing(const char *ext, const char *ext2) const
 {
-    list_iterator_t<char> iter;
     string_var dir = file_dirname(name());
     string_var which = (ext2 == 0 ? g_strdup("") :
     	    	    	    g_strdup_printf(" or %s", ext2));
@@ -1947,7 +1942,7 @@ cov_file_t::file_missing(const char *ext, const char *ext2) const
     fprintf(stderr, "Couldn't find %s%s file for %s in path:\n",
 	    	ext, which.data(), file_basename_c(name()));
     fprintf(stderr, "   %s\n", dir.data());
-    for (iter = search_path_.first() ; iter != (char *)0 ; ++iter)
+    for (list_iterator_t<char> iter = search_path_.first() ; *iter ; ++iter)
 	fprintf(stderr, "   %s\n", *iter);
 }
 

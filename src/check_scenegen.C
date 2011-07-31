@@ -154,15 +154,13 @@ check_scenegen_t::check()
 gboolean
 check_scenegen_t::check_box_intersections()
 {
-    list_iterator_t<box_t> aiter;
-    list_iterator_t<box_t> biter;
     unsigned int n_box_intersect = 0;
 
-    for (aiter = boxes_.first() ; aiter != (box_t *)0 ;  ++aiter)
+    for (list_iterator_t<box_t> aiter = boxes_.first() ; *aiter ;  ++aiter)
     {
 	box_t *a = (*aiter);
 
-	for (biter = boxes_.first() ; biter != (box_t *)0 ; ++biter)
+	for (list_iterator_t<box_t> biter = boxes_.first() ; *biter ; ++biter)
 	{
 	    box_t *b = (*biter);
 

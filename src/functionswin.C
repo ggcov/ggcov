@@ -236,14 +236,13 @@ functionswin_t::~functionswin_t()
 void
 functionswin_t::populate()
 {
-    list_iterator_t<cov_file_t> iter;
     unsigned int fnidx;
 
     dprintf0(D_FUNCSWIN, "functionswin_t::populate\n");
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
-    	cov_file_t *f = *iter;
+	cov_file_t *f = *iter;
 
 	for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
 	{
@@ -280,7 +279,6 @@ format_stat(
 void
 functionswin_t::update()
 {
-    list_iterator_t<cov_function_scope_t> iter;
     gboolean percent_flag;
     GdkColor *color;
     char *text[NUM_COLS];
@@ -300,7 +298,7 @@ functionswin_t::update()
     gtk_list_store_clear(store_);
 #endif
     
-    for (iter = functions_.first() ; iter != (cov_function_scope_t *)0 ; ++iter)
+    for (list_iterator_t<cov_function_scope_t> iter = functions_.first() ; *iter ; ++iter)
     {
 	const cov_stats_t *stats = (*iter)->get_stats();
 #if !GTK2

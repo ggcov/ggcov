@@ -79,10 +79,8 @@ cov_overall_scope_t::describe() const
 cov::status_t
 cov_overall_scope_t::calc_stats(cov_stats_t *stats)
 {
-    list_iterator_t<cov_file_t> iter;
-    
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	(*iter)->calc_stats(stats);
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
+	(*iter)->calc_stats(stats);
 
     return stats->status_by_blocks();
 }
@@ -308,10 +306,9 @@ cov_compound_scope_t::describe() const
 cov::status_t
 cov_compound_scope_t::calc_stats(cov_stats_t *stats)
 {
-    list_iterator_t<cov_scope_t> iter;
     const cov_stats_t *cstats;
-    
-    for (iter = children_.first() ; iter != (cov_scope_t *)0 ; ++iter)
+
+    for (list_iterator_t<cov_scope_t> iter = children_.first() ; *iter ; ++iter)
     {
     	// accumulate stats with caching
     	if ((cstats = (*iter)->get_stats()) != 0)

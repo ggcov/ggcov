@@ -89,7 +89,6 @@ report_summary_per_directory(FILE *fp)
 {
     hashtable_t<char, cov_stats_t> *ht;
     cov_stats_t *st;
-    list_iterator_t<cov_file_t> fiter;
     unsigned int ndirs = 0;
     list_t<char> keys;
     char *key;
@@ -97,7 +96,7 @@ report_summary_per_directory(FILE *fp)
     
     ht = new hashtable_t<char, cov_stats_t>;
     
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
     	dprintf1(D_REPORT, "report_summary_per_directory: [1] \"%s\"\n",
 	    	(*fiter)->minimal_name());
@@ -143,11 +142,10 @@ report_summary_per_directory(FILE *fp)
 static int
 report_untested_functions_per_file(FILE *fp)
 {
-    list_iterator_t<cov_file_t> fiter;
     gboolean did_head1 = FALSE;
     int nlines = 0;
     
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
     	cov_file_t *f = (*fiter);
 	unsigned int i;
@@ -193,12 +191,11 @@ global_fraction_covered(void)
 static int
 report_poorly_covered_functions_per_file(FILE *fp)
 {
-    list_iterator_t<cov_file_t> fiter;
     double global_avg = global_fraction_covered();
     gboolean did_head1 = FALSE;
     int nlines = 0;
 
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
     	cov_file_t *f = (*fiter);
 	unsigned int i;
@@ -242,11 +239,10 @@ report_poorly_covered_functions_per_file(FILE *fp)
 static int
 report_incompletely_covered_functions_per_file(FILE *fp)
 {
-    list_iterator_t<cov_file_t> fiter;
     gboolean did_head1 = FALSE;
     int nlines = 0;
 
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
     	cov_file_t *f = (*fiter);
 	unsigned int i;
@@ -551,8 +547,7 @@ cob_report_t::post_add_package(xml_node_t *xpackages, package_t *pkg)
     xpkg->add_prop("name", pkg->name_);
     xml_node_t *xclasses = xpkg->new_child("classes");
 
-    list_iterator_t<cov_file_t> fiter;
-    for (fiter = pkg->files_.first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (list_iterator_t<cov_file_t> fiter = pkg->files_.first() ; *fiter ; ++fiter)
 	post_add_class(xclasses, pkg, *fiter);
 
     post_add_coverage_props(xpkg, &pkg->stats_, 1);
@@ -583,8 +578,7 @@ report_cobertura(FILE *fp)
 {
     cob_report_t report;
 
-    list_iterator_t<cov_file_t> fiter;
-    for (fiter = cov_file_t::first() ; fiter != (cov_file_t *)0 ; ++fiter)
+    for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
 	report.add(*fiter);
 
     report.post_add();

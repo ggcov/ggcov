@@ -31,7 +31,6 @@ populate_function_combo(
     gboolean add_all_item,
     const cov_function_t **currentp)
 {
-    list_iterator_t<cov_function_t> iter;
     estring label;
     static const char all_functions[] = N_("All Functions");
 
@@ -39,9 +38,9 @@ populate_function_combo(
     if (add_all_item)
 	ui_combo_add_data(combo, _(all_functions), 0);
 
-    for (iter = list->first() ; iter != (cov_function_t *)0 ; ++iter)
+    for (list_iterator_t<cov_function_t> iter = list->first() ; *iter ; ++iter)
     {
-    	cov_function_t *fn = *iter;
+	cov_function_t *fn = *iter;
 
 	if (currentp != 0 && *currentp == 0)
 	    *currentp = fn;
@@ -50,12 +49,10 @@ populate_function_combo(
 	label.append_string(fn->name());
 
     	/* see if we need to present some more scope to uniquify the name */
-	list_iterator_t<cov_function_t> niter = iter.peek_next();
-	list_iterator_t<cov_function_t> piter = iter.peek_prev();
-	if ((niter != (cov_function_t *)0 &&
-	     !strcmp((*niter)->name(), fn->name())) ||
-	    (piter != (cov_function_t *)0 &&
-	     !strcmp((*piter)->name(), fn->name())))
+	list_iterator_t<cov_function_t> next = iter.peek_next();
+	list_iterator_t<cov_function_t> prev = iter.peek_prev();
+	if ((*next && !strcmp((*next)->name(), fn->name())) ||
+	    (*prev && !strcmp((*prev)->name(), fn->name())))
 	{
 	    label.append_string(" (");
 	    label.append_string(fn->file()->minimal_name());

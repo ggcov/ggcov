@@ -149,9 +149,9 @@ cov_post_read(void)
 
     /* Build the callgraph */
     /* TODO: only do this to newly read files */
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_file_t::first() ; *iter ; ++iter)
     	cov_add_callnodes(*iter);
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (iter = cov_file_t::first() ; *iter ; ++iter)
     	cov_add_callarcs(*iter);
 
     /* emit an MVC notification */
@@ -633,8 +633,6 @@ void
 dump_block(FILE *fp, cov_block_t *b)
 {
     list_iterator_t<cov_arc_t> aiter;
-    list_iterator_t<cov_location_t>liter;
-    list_iterator_t<cov_block_t::call_t>citer;
     estring desc = b->describe();
     
     fprintf(fp, "            BLOCK {\n");
@@ -643,17 +641,17 @@ dump_block(FILE *fp, cov_block_t *b)
     fprintf(fp, "                STATUS=%s\n", status_names[b->status()]);
 
     fprintf(fp, "                OUT_ARCS {\n");
-    for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+    for (aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
     	dump_arc(fp, *aiter);
     fprintf(fp, "                }\n");
 
     fprintf(fp, "                IN_ARCS {\n");
-    for (aiter = b->in_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+    for (aiter = b->in_arc_iterator() ; *aiter ; ++aiter)
     	dump_arc(fp, *aiter);
     fprintf(fp, "                }\n");
     
     fprintf(fp, "                LOCATIONS {\n");
-    for (liter = b->location_iterator() ; liter != (cov_location_t *)0 ; ++liter)
+    for (list_iterator_t<cov_location_t> liter = b->location_iterator() ; *liter ; ++liter)
     {
     	cov_location_t *loc = *liter;
 	cov_line_t *ln = cov_line_t::find(loc);
@@ -665,7 +663,7 @@ dump_block(FILE *fp, cov_block_t *b)
     fprintf(fp, "                }\n");
 
     fprintf(fp, "                PURE_CALLS {\n");
-    for (citer = b->pure_calls_.first() ; citer != (cov_block_t::call_t *)0 ; ++citer)
+    for (list_iterator_t<cov_block_t::call_t> citer = b->pure_calls_.first() ; *citer ; ++citer)
     {
     	cov_block_t::call_t *call = *citer;
 	fprintf(fp, "                    %s @ %s\n",
@@ -708,13 +706,11 @@ cov_dump(FILE *fp)
 {
     if (debug_enabled(D_DUMP))
     {
-	list_iterator_t<cov_file_t> iter;
-
 	if (fp == 0)
     	    fp = stderr;
 
-	for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
-    	    dump_file(fp, *iter);
+	for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
+	    dump_file(fp, *iter);
 
 	for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
 	    dump_callnode(*cnitr, fp);

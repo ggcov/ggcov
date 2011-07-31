@@ -303,13 +303,12 @@ gboolean
 cpp_parser_t::depends(const char *var) const
 {
     unsigned int count[3];
-    list_iterator_t<depend_t> iter;
     gboolean ret;
-    
+
     memset(count, 0, sizeof(count));
-    for (iter = depend_stack_.first() ; *iter ; ++iter)
+    for (list_iterator_t<depend_t> iter = depend_stack_.first() ; *iter ; ++iter)
     {
-    	depend_t *dep = *iter;
+	depend_t *dep = *iter;
 	int *dd = dep->deltas_->lookup(var);
 	if (dd != 0)
 	    count[(*dd)+1]++;
@@ -322,12 +321,10 @@ cpp_parser_t::depends(const char *var) const
 void
 cpp_parser_t::dump() const
 {
-    list_iterator_t<depend_t> iter;
-    
     fprintf(stderr, "Depend stack dump:\n");
-    for (iter = depend_stack_.last() ; *iter ; --iter)
+    for (list_iterator_t<depend_t> iter = depend_stack_.last() ; *iter ; --iter)
     {
-    	fprintf(stderr, "    [%ld]", (*iter)->lineno_);
+	fprintf(stderr, "    [%ld]", (*iter)->lineno_);
 
 	for (hashtable_iter_t<const char, int> ditr = (*iter)->deltas_->first() ; *ditr ; ++ditr)
 	    fprintf(stderr, " %s=%d", ditr.key(), ditr.value());

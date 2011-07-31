@@ -161,10 +161,7 @@ cov_function_t::get_first_location() const
     
     for (bidx = 0 ; bidx < num_blocks() ; bidx++)
     {
-	list_iterator_t<cov_location_t> liter;
-	for (liter = nth_block(bidx)->location_iterator() ;
-	     liter != (cov_location_t *)0 ;
-	     ++liter)
+	for (list_iterator_t<cov_location_t> liter = nth_block(bidx)->location_iterator() ; *liter ; ++liter)
 	{
 	    loc = *liter;
 
@@ -190,10 +187,7 @@ cov_function_t::get_last_location() const
     
     for (bidx = num_blocks()-1 ; bidx >= 0 ; bidx--)
     {
-	list_iterator_t<cov_location_t> liter;
-	for (liter = nth_block(bidx)->location_reverse_iterator() ;
-	     liter != (cov_location_t *)0 ;
-	     --liter)
+	for (list_iterator_t<cov_location_t> liter = nth_block(bidx)->location_reverse_iterator() ; *liter ; --liter)
 	{
 	    loc = *liter;
 
@@ -251,7 +245,6 @@ gboolean
 cov_function_t::reconcile_calls()
 {
     unsigned int bidx;
-    list_iterator_t<cov_arc_t> aiter;
     gboolean ret = TRUE;
 
     if (is_self_suppressed())
@@ -295,7 +288,7 @@ cov_function_t::reconcile_calls()
 	    continue;
 	}
 
-	for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+	for (list_iterator_t<cov_arc_t> aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
 	{
 	    cov_arc_t *a = *aiter;
 
@@ -500,10 +493,9 @@ list_t<cov_function_t> *
 cov_function_t::list_all()
 {
     list_t<cov_function_t> *list = new list_t<cov_function_t>;
-    list_iterator_t<cov_file_t> iter;
     unsigned int fnidx;
     
-    for (iter = cov_file_t::first() ; iter != (cov_file_t *)0 ; ++iter)
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
     	cov_file_t *f = *iter;
 
@@ -525,13 +517,12 @@ void
 cov_function_t::zero_arc_counts()
 {
     unsigned int bidx;
-    list_iterator_t<cov_arc_t> aiter;
 
     for (bidx = 0 ; bidx < num_blocks() ; bidx++)
     {
 	cov_block_t *b = nth_block(bidx);
 
-	for (aiter = b->out_arc_iterator() ; aiter != (cov_arc_t *)0 ; ++aiter)
+	for (list_iterator_t<cov_arc_t> aiter = b->out_arc_iterator() ; *aiter ; ++aiter)
 	{
 	    cov_arc_t *a = *aiter;
 

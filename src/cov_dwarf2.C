@@ -481,11 +481,9 @@ cov_dwarf2_filename_scanner_t::get_abbrevs()
 dwarf_abbrev_t *
 cov_dwarf2_filename_scanner_t::find_abbrev(unsigned long num) const
 {
-    list_iterator_t<dwarf_abbrev_t> iter;
-    
-    for (iter = abbrevs_.first() ; iter != (dwarf_abbrev_t *)0 ; ++iter)
+    for (list_iterator_t<dwarf_abbrev_t> iter = abbrevs_.first() ; *iter ; ++iter)
     {
-    	dwarf_abbrev_t *abbrev = (*iter);
+	dwarf_abbrev_t *abbrev = (*iter);
 	if (abbrev->entry_ == num)
 	    return abbrev;
     }

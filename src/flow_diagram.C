@@ -146,8 +146,7 @@ flow_diagram_t::generate_nodes()
 	nodes_by_bindex_->set(b->bindex(), node);
 	num_nodes++;
 
-	list_iterator_t<cov_location_t> liter;
-	for (liter = b->location_iterator() ; liter != (cov_location_t *)0 ; ++liter)
+	for (list_iterator_t<cov_location_t> liter = b->location_iterator() ; *liter ; ++liter)
 	{
 	    cov_location_t *loc = *liter;
 
@@ -199,9 +198,8 @@ int
 flow_diagram_t::max_rank_of_line(unsigned int idx)
 {
     int lrank = -1;
-    list_iterator_t<node_t> niter;
 
-    for (niter = nodes_by_line_[idx].first() ; niter != (node_t *)0 ; ++niter)
+    for (list_iterator_t<node_t> niter = nodes_by_line_[idx].first() ; *niter ; ++niter)
     {
 	node_t *node = (*niter)->first_;
 
@@ -221,8 +219,7 @@ flow_diagram_t::assign_ranks()
     {
 	int lrank = max_rank_of_line(i);
 	/* allocate ranks for unranked nodes on this line */
-	list_iterator_t<node_t> niter;
-	for (niter = nodes_by_line_[i].first() ; niter != (node_t *)0 ; ++niter)
+	for (list_iterator_t<node_t> niter = nodes_by_line_[i].first() ; *niter ; ++niter)
 	{
 	    node_t *node = (*niter)->first_;
 
@@ -314,8 +311,7 @@ flow_diagram_t::generate_arcs()
 {
     arcs_ = new ptrarray_t<arc_t>();
 
-    list_iterator_t<node_t> niter;
-    for (niter = nodes_.first() ; niter != (node_t *)0 ; ++niter)
+    for (list_iterator_t<node_t> niter = nodes_.first() ; *niter ; ++niter)
     {
 	node_t *node = *niter;
 
@@ -326,10 +322,7 @@ flow_diagram_t::generate_arcs()
 	{
 	    /* last node for this block, show outgoing arcs */
 
-	    list_iterator_t<cov_arc_t> aiter;
-	    for (aiter = node->block_->out_arc_iterator() ;
-		 aiter != (cov_arc_t *)0 ;
-		 ++aiter)
+	    for (list_iterator_t<cov_arc_t> aiter = node->block_->out_arc_iterator() ; *aiter ; ++aiter)
 	    {
 		cov_arc_t *a = *aiter;
 		node_t *tonode = nodes_by_bindex_->nth(a->to()->bindex());
@@ -357,10 +350,7 @@ flow_diagram_t::slot_distance(node_t *node, int idx, int *distances) const
 {
     gboolean side = 0;
 
-    list_iterator_t<node_t> niter;
-    for (niter = nodes_by_line_[idx].first() ;
-	 niter != (node_t *)0 ;
-	 ++niter)
+    for (list_iterator_t<node_t> niter = nodes_by_line_[idx].first() ; *niter ; ++niter)
     {
 	if (*niter == node)
 	    side = 1;
@@ -508,8 +498,7 @@ flow_diagram_t::assign_geometry()
 	duprintf0("flow_diagram_t::}\n");
     }
 
-    list_iterator_t<node_t> niter;
-    for (niter = nodes_.first() ; niter != (node_t *)0 ; ++niter)
+    for (list_iterator_t<node_t> niter = nodes_.first() ; *niter ; ++niter)
     {
 	node_t *node = *niter;
 
@@ -921,8 +910,7 @@ flow_diagram_t::render(scenegen_t *sg)
      * Draw nodes last, so their black border
      * is visible even if arrows overlap it
      */
-    list_iterator_t<node_t> niter;
-    for (niter = nodes_.first() ; niter != (node_t *)0 ; ++niter)
+    for (list_iterator_t<node_t> niter = nodes_.first() ; *niter ; ++niter)
 	show_node(*niter, sg);
 }
 
