@@ -327,7 +327,7 @@ cpp_parser_t::dump() const
 	fprintf(stderr, "    [%ld]", (*iter)->lineno_);
 
 	for (hashtable_iter_t<const char, int> ditr = (*iter)->deltas_->first() ; *ditr ; ++ditr)
-	    fprintf(stderr, " %s=%d", ditr.key(), ditr.value());
+	    fprintf(stderr, " %s=%d", ditr.key(), *ditr.value());
 	fputc('\n', stderr);
     }
 }
