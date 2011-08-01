@@ -671,13 +671,11 @@ dump_block(FILE *fp, cov_block_t *b)
 static void
 dump_function(FILE *fp, cov_function_t *fn)
 {
-    unsigned int i;
-    
     fprintf(fp, "        FUNCTION {\n");
     fprintf(fp, "            NAME=\"%s\"\n", fn->name());
     fprintf(fp, "            STATUS=%s\n", status_names[fn->status()]);
-    for (i = 0 ; i < fn->num_blocks() ; i++)
-    	dump_block(fp, fn->nth_block(i));
+    for (ptrarray_iterator_t<cov_block_t> itr = fn->blocks().first() ; *itr ; ++itr)
+	dump_block(fp, *itr);
     fprintf(fp, "    }\n");
 }
 

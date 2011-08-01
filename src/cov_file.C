@@ -1269,7 +1269,6 @@ cov_file_t::read_old_da_file(covio_t *io)
     gnb_u64_t nents;
     gnb_u64_t ent;
     unsigned int fnidx;
-    unsigned int bidx;
 
     io->set_format(covio_t::FORMAT_OLD);
     io->read_u64(nents);
@@ -1278,10 +1277,10 @@ cov_file_t::read_old_da_file(covio_t *io)
     {
     	cov_function_t *fn = nth_function(fnidx);
 
-	for (bidx = 0 ; bidx < fn->num_blocks() ; bidx++)
+	for (ptrarray_iterator_t<cov_block_t> bitr = fn->blocks().first() ; *bitr ; ++bitr)
 	{
-    	    cov_block_t *b = fn->nth_block(bidx);
-	
+	    cov_block_t *b = *bitr;
+
 	    for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
 	    {
 	    	cov_arc_t *a = *aiter;
@@ -1343,7 +1342,6 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
     gnb_u32_t file_narcs;
     gnb_u64_t ent;
     unsigned int fnidx;
-    unsigned int bidx;
     unsigned int actual_narcs;
 
     io->set_format(covio_t::FORMAT_OLD);
@@ -1378,10 +1376,10 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
     	    da_failed0("short file");
 	actual_narcs = 0;
 
-	for (bidx = 0 ; bidx < fn->num_blocks() ; bidx++)
+	for (ptrarray_iterator_t<cov_block_t> bitr = fn->blocks().first() ; *bitr ; ++bitr)
 	{
-    	    cov_block_t *b = fn->nth_block(bidx);
-	
+	    cov_block_t *b = *bitr;
+
 	    for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
 	    {
 	    	cov_arc_t *a = *aiter;
@@ -1502,10 +1500,10 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 
     	case GCOV_TAG_COUNTER_BASE:
 	    if (fn == 0)
-	    	da_failed0("missing FUNCTION or duplicate COUNTER_BASE tags");
-	    for (bidx = 0 ; bidx < fn->num_blocks() ; bidx++)
+		da_failed0("missing FUNCTION or duplicate COUNTER_BASE tags");
+	    for (ptrarray_iterator_t<cov_block_t> bitr = fn->blocks().first() ; *bitr ; ++bitr)
 	    {
-    		cov_block_t *b = fn->nth_block(bidx);
+		cov_block_t *b = *bitr;
 
 		for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
 		{

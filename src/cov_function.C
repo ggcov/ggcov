@@ -110,8 +110,6 @@ cov_function_t::is_self_suppressed() const
 void
 cov_function_t::suppress()
 {
-    unsigned int bidx;
-    
     /*
      * If it weren't for the case of compiler-generated functions
      * which have no corresponding source lines, we could just rely
@@ -121,20 +119,18 @@ cov_function_t::suppress()
      */
     suppressed_ = TRUE;
 
-    for (bidx = 0 ; bidx < num_blocks() ; bidx++)
-	nth_block(bidx)->suppress();
+    for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
+	(*bitr)->suppress();
 }
 
 void
 cov_function_t::finalise()
 {
-    unsigned int bidx;
-
     if (is_self_suppressed())
-    	suppress();
-	
-    for (bidx = 0 ; bidx < num_blocks() ; bidx++)
-	nth_block(bidx)->finalise();
+	suppress();
+
+    for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
+	(*bitr)->finalise();
 }
 
 /*
@@ -156,14 +152,11 @@ cov_function_t::finalise()
 const cov_location_t *
 cov_function_t::get_first_location() const
 {
-    unsigned int bidx;
-    const cov_location_t *loc;
-    
-    for (bidx = 0 ; bidx < num_blocks() ; bidx++)
+    for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
     {
-	for (list_iterator_t<cov_location_t> liter = nth_block(bidx)->locations().first() ; *liter ; ++liter)
+	for (list_iterator_t<cov_location_t> liter = (*bitr)->locations().first() ; *liter ; ++liter)
 	{
-	    loc = *liter;
+	    const cov_location_t *loc = *liter;
 
 	    /*
 	     * We can get away with a pointer comparison here,
@@ -182,14 +175,11 @@ cov_function_t::get_first_location() const
 const cov_location_t *
 cov_function_t::get_last_location() const
 {
-    int bidx;
-    const cov_location_t *loc;
-    
-    for (bidx = num_blocks()-1 ; bidx >= 0 ; bidx--)
+    for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->last() ; *bitr ; --bitr)
     {
-	for (list_iterator_t<cov_location_t> liter = nth_block(bidx)->locations().last(); *liter ; --liter)
+	for (list_iterator_t<cov_location_t> liter = (*bitr)->locations().last(); *liter ; --liter)
 	{
-	    loc = *liter;
+	    const cov_location_t *loc = *liter;
 
 	    /*
 	     * We can get away with a pointer comparison here,
@@ -320,7 +310,6 @@ gboolean
 cov_function_t::solve()
 {
     int passes, changes;
-    int i;
     cov_arc_t *a;
     cov_block_t *b;
 
@@ -353,13 +342,13 @@ cov_function_t::solve()
      * counts.
      */
     assert(num_blocks() >= 2);
-    if ((b = nth_block(0))->in_arcs_.head() == 0)
+    if ((b = blocks_->head())->in_arcs_.head() == 0)
     {
     	assert(file_->format_version_ > 0);
 	b->in_ninvalid_ = ~0U;
 	dprintf0(D_SOLVE, "entry block tweaked\n");
     }
-    if ((b = nth_block(num_blocks()-1))->out_arcs_.head() == 0)
+    if ((b = blocks_->tail())->out_arcs_.head() == 0)
     {
     	assert(file_->format_version_ > 0);
 	b->out_ninvalid_ = ~0U;
@@ -375,9 +364,9 @@ cov_function_t::solve()
 
     	dprintf1(D_SOLVE, "pass %d\n", passes);
 
-	for (i = num_blocks() - 1; i >= 0; i--)
+	for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->last() ; *bitr ; --bitr)
 	{
-	    b = nth_block(i);
+	    b = *bitr;
     	    dprintf1(D_SOLVE, "[%d]\n", b->bindex());
 	    
 	    if (!b->count_valid_)
@@ -466,9 +455,9 @@ cov_function_t::solve()
      * have a valid count and all its inbound and outbounds arcs
      * will also have valid counts.
      */
-    for (i = 0 ; i < (int)num_blocks() ; i++)
+    for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
     {
-    	b = nth_block(i);
+	b = *bitr;
 	if (!b->count_valid_)
 	    return FALSE;
 	if (b->out_ninvalid_ > 0 && b->out_ninvalid_ < ~0U)
@@ -516,13 +505,9 @@ cov_function_t::list_all()
 void
 cov_function_t::zero_arc_counts()
 {
-    unsigned int bidx;
-
-    for (bidx = 0 ; bidx < num_blocks() ; bidx++)
+    for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
     {
-	cov_block_t *b = nth_block(bidx);
-
-	for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
+	for (list_iterator_t<cov_arc_t> aiter = (*bitr)->first_arc() ; *aiter ; ++aiter)
 	{
 	    cov_arc_t *a = *aiter;
 

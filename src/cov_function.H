@@ -66,6 +66,11 @@ public:
     {
     	return blocks_->nth(n);
     }
+    ptrarray_t<cov_block_t> &
+    blocks() const
+    {
+	return *blocks_;
+    }
 
     const cov_location_t *get_first_location() const;
     const cov_location_t *get_last_location() const;

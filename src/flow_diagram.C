@@ -135,10 +135,9 @@ flow_diagram_t::generate_nodes()
     nodes_by_bindex_ = new ptrarray_t<node_t>();
     nodes_by_bindex_->resize(function_->num_blocks());
 
-    unsigned int i;
-    for (i = 0 ; i < function_->num_blocks() ; i++)
+    for (ptrarray_iterator_t<cov_block_t> bitr = function_->blocks().first() ; *bitr ; ++bitr)
     {
-	cov_block_t *b = function_->nth_block(i);
+	cov_block_t *b = *bitr;
 
 	node_t *node = new node_t(b);
 	node->first_ = node->next_ = node->prev_ = node;
