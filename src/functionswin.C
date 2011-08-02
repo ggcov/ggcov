@@ -236,17 +236,13 @@ functionswin_t::~functionswin_t()
 void
 functionswin_t::populate()
 {
-    unsigned int fnidx;
-
     dprintf0(D_FUNCSWIN, "functionswin_t::populate\n");
 
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
-	cov_file_t *f = *iter;
-
-	for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
+	for (ptrarray_iterator_t<cov_function_t> fnitr = (*iter)->functions().first() ; *fnitr ; ++fnitr)
 	{
-    	    cov_function_t *fn = f->nth_function(fnidx);
+	    cov_function_t *fn = *fnitr;
 	    cov::status_t st = fn->status();
 
 	    if (st != cov::SUPPRESSED && st != cov::UNINSTRUMENTED)

@@ -682,14 +682,12 @@ dump_function(FILE *fp, cov_function_t *fn)
 static void
 dump_file(FILE *fp, cov_file_t *f)
 {
-    unsigned int i;
-    
     fprintf(fp, "FILE {\n");
     fprintf(fp, "    NAME=\"%s\"\n", f->name());
     fprintf(fp, "    MINIMAL_NAME=\"%s\"\n", f->minimal_name());
     fprintf(fp, "    STATUS=%s\n", status_names[f->status()]);
-    for (i = 0 ; i < f->num_functions() ; i++)
-    	dump_function(fp, f->nth_function(i));
+    for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
+	dump_function(fp, *fnitr);
     fprintf(fp, "}\n");
 }
 

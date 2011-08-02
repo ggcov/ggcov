@@ -482,15 +482,12 @@ list_t<cov_function_t> *
 cov_function_t::list_all()
 {
     list_t<cov_function_t> *list = new list_t<cov_function_t>;
-    unsigned int fnidx;
-    
+
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
-    	cov_file_t *f = *iter;
-
-	for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
+	for (ptrarray_iterator_t<cov_function_t> fnitr = (*iter)->functions().first() ; *fnitr ; ++fnitr)
 	{
-    	    cov_function_t *fn = f->nth_function(fnidx);
+	    cov_function_t *fn = *fnitr;
 
 	    if (fn->status() != cov::SUPPRESSED)
 		list->prepend(fn);

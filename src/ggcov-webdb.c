@@ -232,15 +232,8 @@ really_list_all_functions(void)
 
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
-    	cov_file_t *f = *iter;
-	unsigned int fnidx;
-
-	for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
-	{
-    	    cov_function_t *fn = f->nth_function(fnidx);
-
-	    all->append(fn);
-	}
+	for (ptrarray_iterator_t<cov_function_t> fnitr = (*iter)->functions().first() ; *fnitr ; ++fnitr)
+	    all->append(*fnitr);
     }
 
     all->sort(cov_function_t::compare);
@@ -383,14 +376,13 @@ save_file_function_indexes(DB *db)
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
     	cov_file_t *f = *iter;
-	unsigned int fnidx;
 	php_serializer_t ser;
 	int ret;
 
 	ser.begin_array(f->num_functions());
-	for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
+	for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
 	{
-    	    cov_function_t *fn = f->nth_function(fnidx);
+	    cov_function_t *fn = *fnitr;
 
 	    ser.string(fn->name());
 	    ser.integer(fntag(fn));

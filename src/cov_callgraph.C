@@ -128,12 +128,11 @@ cov_callarc_t::add_count(count_t ccount)
 void
 cov_add_callnodes(cov_file_t *f)
 {
-    unsigned int fnidx;
     cov_callnode_t *cn;
 
-    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
+    for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
     {
-    	cov_function_t *fn = f->nth_function(fnidx);
+	cov_function_t *fn = *fnitr;
 
     	if (fn->is_suppressed())
 	    continue;
@@ -153,14 +152,13 @@ cov_add_callnodes(cov_file_t *f)
 void
 cov_add_callarcs(cov_file_t *f)
 {
-    unsigned int fnidx;
     cov_callnode_t *from;
     cov_callnode_t *to;
     cov_callarc_t *ca;
 
-    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
+    for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
     {
-    	cov_function_t *fn = f->nth_function(fnidx);
+	cov_function_t *fn = *fnitr;
 
 	if (fn->is_suppressed())
 	    continue;

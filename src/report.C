@@ -148,13 +148,12 @@ report_untested_functions_per_file(FILE *fp)
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
     	cov_file_t *f = (*fiter);
-	unsigned int i;
 	gboolean did_head2 = FALSE;
-	
-    	for (i = 0 ; i < f->num_functions() ; i++)
+
+	for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
 	{
-	    cov_function_t *fn = f->nth_function(i);
-	    
+	    cov_function_t *fn = *fnitr;
+
 	    if (fn->status() != cov::UNCOVERED)
 	    	continue;
 
@@ -198,12 +197,11 @@ report_poorly_covered_functions_per_file(FILE *fp)
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
     	cov_file_t *f = (*fiter);
-	unsigned int i;
 	gboolean did_head2 = FALSE;
-	
-    	for (i = 0 ; i < f->num_functions() ; i++)
+
+	for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
 	{
-	    const cov_function_t *fn = f->nth_function(i);
+	    const cov_function_t *fn = *fnitr;
     	    cov_function_scope_t fnscope(fn);
 	    double fraction;
 	    
@@ -245,12 +243,11 @@ report_incompletely_covered_functions_per_file(FILE *fp)
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
     	cov_file_t *f = (*fiter);
-	unsigned int i;
 	gboolean did_head2 = FALSE;
-	
-    	for (i = 0 ; i < f->num_functions() ; i++)
+
+	for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
 	{
-	    const cov_function_t *fn = f->nth_function(i);
+	    const cov_function_t *fn = *fnitr;
     	    cov_function_scope_t fnscope(fn);
 	    const cov_stats_t *st = fnscope.get_stats();
 	    
@@ -533,9 +530,8 @@ cob_report_t::post_add_class(
     post_add_coverage_props(xclass, stats, 1);
 
     xml_node_t *xmethods = xclass->new_child("methods");
-    unsigned int i;
-    for (i = 0 ; i < f->num_functions() ; i++)
-	post_add_method(xmethods, f->nth_function(i));
+    for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
+	post_add_method(xmethods, *fnitr);
 
     post_add_lines(xclass, f, 1, f->num_lines());
 }

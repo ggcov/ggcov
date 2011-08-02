@@ -465,14 +465,13 @@ cov_file_t::find_function(const char *fnname) const
 cov::status_t
 cov_file_t::calc_stats(cov_stats_t *stats) const
 {
-    unsigned int fnidx;
     cov_stats_t mine;
     
     assert(finalised_);
-    
-    for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
-	nth_function(fnidx)->calc_stats(&mine);
-    
+
+    for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
+	(*fnitr)->calc_stats(&mine);
+
     stats->accumulate(&mine);
     return mine.status_by_blocks();
 }
@@ -482,10 +481,8 @@ cov_file_t::calc_stats(cov_stats_t *stats) const
 void
 cov_file_t::zero_arc_counts()
 {
-    unsigned int fnidx;
-
-    for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
-	nth_function(fnidx)->zero_arc_counts();
+    for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
+	(*fnitr)->zero_arc_counts();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -493,14 +490,13 @@ cov_file_t::zero_arc_counts()
 gboolean
 cov_file_t::solve()
 {
-    unsigned int fnidx;
-    
-    for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
+    for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
     {
-    	if (!nth_function(fnidx)->solve())
+	cov_function_t *fn = *fnitr;
+	if (!fn->solve())
 	{
 	    fprintf(stderr, "ERROR: could not solve flow graph for %s\n",
-	    	    nth_function(fnidx)->name());
+		    fn->name());
 	    return FALSE;
 	}
     }
@@ -1268,16 +1264,13 @@ cov_file_t::read_old_da_file(covio_t *io)
 {
     gnb_u64_t nents;
     gnb_u64_t ent;
-    unsigned int fnidx;
 
     io->set_format(covio_t::FORMAT_OLD);
     io->read_u64(nents);
-    
-    for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
-    {
-    	cov_function_t *fn = nth_function(fnidx);
 
-	for (ptrarray_iterator_t<cov_block_t> bitr = fn->blocks().first() ; *bitr ; ++bitr)
+    for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
+    {
+	for (ptrarray_iterator_t<cov_block_t> bitr = (*fnitr)->blocks().first() ; *bitr ; ++bitr)
 	{
 	    cov_block_t *b = *bitr;
 
@@ -1341,7 +1334,6 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
     gnb_u32_t crud;
     gnb_u32_t file_narcs;
     gnb_u64_t ent;
-    unsigned int fnidx;
     unsigned int actual_narcs;
 
     io->set_format(covio_t::FORMAT_OLD);
@@ -1365,10 +1357,10 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
     if (!io->read_u32(crud) || !io->skip(crud))
     	da_failed0("short file");
 
-    for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
+    for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
     {
-    	cov_function_t *fn = nth_function(fnidx);
-	
+	cov_function_t *fn = *fnitr;
+
     	if (!skip_oldplus_func_header(io, "DA "))
 	    return FALSE;
 
@@ -1702,8 +1694,6 @@ cov_file_t::scan_o_file_calls(covio_t *io)
 gboolean
 cov_file_t::read_o_file(covio_t *io)
 {
-    unsigned int fnidx;
-
     if (!scan_o_file_calls(io))
 	return TRUE;	    /* this info is optional */
     
@@ -1713,9 +1703,9 @@ cov_file_t::read_o_file(covio_t *io)
      * fail if reconciliation fails.
      * TODO: record the failure in the cov_function_t.
      */
-    for (fnidx = 0 ; fnidx < num_functions() ; fnidx++)
-    	nth_function(fnidx)->reconcile_calls();
-    
+    for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
+	(*fnitr)->reconcile_calls();
+
     return TRUE;
 }
 

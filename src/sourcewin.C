@@ -530,17 +530,16 @@ void
 sourcewin_t::populate_functions()
 {
     list_t<cov_function_t> functions;
-    unsigned fnidx;
     cov_file_t *f;
     cov_function_t *fn;
     
     /* build an alphabetically sorted list of functions in the file */
     f = cov_file_t::find(filename_);
     assert(f != 0);
-    for (fnidx = 0 ; fnidx < f->num_functions() ; fnidx++)
+    for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
     {
-    	fn = f->nth_function(fnidx);
-	
+	fn = *fnitr;
+
 	if (fn->is_suppressed() ||
 	    fn->get_first_location() == 0)
 	    continue;

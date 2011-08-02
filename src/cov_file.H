@@ -99,6 +99,11 @@ public:
     {
     	return functions_->nth(n);
     }
+    const ptrarray_t<cov_function_t> &
+    functions() const
+    {
+	return *functions_;
+    }
     cov_function_t *find_function(const char *name) const;
 
     /*
