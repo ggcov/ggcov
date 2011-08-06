@@ -21,6 +21,7 @@
 #define _ggcov_cov_line_H_ 1
 
 #include "string_var.H"
+#include "list.H"
 
 class cov_file_t;
 class cov_function_t;
@@ -48,9 +49,9 @@ public:
     	return (count_valid_ && status_ == cov::SUPPRESSED);
     }
 
-    const GList *blocks() const
+    const list_t<cov_block_t> &blocks() const
     {
-    	return blocks_;
+	return blocks_;
     }
     cov_function_t *function() const;
     
@@ -75,7 +76,7 @@ private:
 	status_ = cov::SUPPRESSED;
     }
 
-    GList *blocks_;
+    list_t<cov_block_t> blocks_;
     boolean count_valid_;  /* covers status_, count_ */
     cov::status_t status_;
     count_t count_;

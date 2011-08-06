@@ -126,7 +126,7 @@ cov_range_call_iterator_t::cov_range_call_iterator_t(
 	location_ = *first;
 	cov_line_t *ln = cov_line_t::find(&location_);
 	if (ln != 0)
-	    blocks_ = ln->blocks();
+	    biter_ = ln->blocks().first();
     }
 }
 
@@ -147,10 +147,10 @@ cov_range_call_iterator_t::next()
 		return TRUE;
 	    continue;
 	}
-	if (blocks_ != 0)
+	if (*biter_)
 	{
-	    block_start((cov_block_t *)blocks_->data);
-	    blocks_ = blocks_->next;
+	    block_start(*biter_);
+	    ++biter_;
 	    continue;
 	}
 	for (;;)
@@ -159,7 +159,7 @@ cov_range_call_iterator_t::next()
 		return FALSE;
 	    ++location_;
 	    cov_line_t *ln = cov_line_t::find(&location_);
-	    if (ln != 0 && (blocks_ = ln->blocks()) != 0)
+	    if (ln != 0 && (biter_ = ln->blocks().first()) != 0)
 		break;
 	}
     }

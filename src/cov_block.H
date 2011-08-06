@@ -102,7 +102,7 @@ private:
     cov_block_t();
     ~cov_block_t();
     
-    static count_t total(const GList *list);
+    static count_t total(const list_t<cov_block_t> &list);
     
     void set_count(count_t);
     void add_location(const char *filename, unsigned lineno);

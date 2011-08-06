@@ -226,7 +226,6 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
     for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
     {
 	cov_line_t *ln = cov_line_t::find(*liter);
-	const GList *blocks = ln->blocks();
 
     	st = ln->status();
 
@@ -237,7 +236,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
 	 * multiple functions on the same line, but code
 	 * like that *deserves* anomalies.
 	 */
-	if (blocks->data != this)
+	if (ln->blocks().head() != this)
 	{
 	    if (st == cov::SUPPRESSED)
 		bits |= (1<<st);    /* handle middle block on suppressed line */
@@ -271,16 +270,12 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
 }
 
 count_t
-cov_block_t::total(const GList *list)
+cov_block_t::total(const list_t<cov_block_t> &list)
 {
     count_t total = 0;
 
-    for ( ; list != 0 ; list = list->next)
-    {
-    	cov_block_t *b = (cov_block_t *)list->data;
-	
-	total += b->count_;
-    }
+    for (list_iterator_t<cov_block_t> itr = list.first() ; *itr ; ++itr)
+	total += (*itr)->count_;
     return total;
 }
 

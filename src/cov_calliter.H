@@ -23,6 +23,7 @@
 #include "common.h"
 #include "cov_block.H"
 #include "cov_arc.H"
+#include "list.H"
 
 class cov_function_t;
 
@@ -112,7 +113,7 @@ public:
 private:
     const cov_location_t *first_, *last_;
     cov_location_t location_;
-    const GList *blocks_;
+    list_iterator_t<cov_block_t> biter_;
 };
 
 #endif /* _ggcov_cov_calliter_H_ */

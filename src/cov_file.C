@@ -413,7 +413,7 @@ cov_file_t::add_location(
      * This tweak suppresses the line entry for the epilogue block if
      * another block already has the line.
      */
-    if (ln->blocks_ != 0 && b->is_epilogue())
+    if (ln->blocks_.head() && b->is_epilogue())
     {
     	if (debug_enabled(D_BB))
 	{
@@ -429,12 +429,12 @@ cov_file_t::add_location(
 	string_var desc = b->describe();
 	duprintf3("Block %s adding location %s:%lu\n",
     		  desc.data(), filename, lineno);
-	if (ln->blocks_ != 0)
+	if (ln->blocks_.head())
     	    duprintf3("%s:%lu: this line belongs to %d blocks\n",
-	    	      filename, lineno, g_list_length(ln->blocks_)+1);
+	    	      filename, lineno, ln->blocks_.length()+1);
     }
 
-    ln->blocks_ = g_list_append(ln->blocks_, b);
+    ln->blocks_.append(b);
     b->add_location(f->name_, lineno);
     f->has_locations_ = TRUE;
 }
@@ -1573,7 +1573,6 @@ cov_file_t::o_file_add_call(
     const char *callname_dem)
 {
     cov_line_t *ln;
-    const GList *iter;
     cov_block_t *pure_candidate = 0;
 
     if ((ln = cov_line_t::find(loc)) == 0)
@@ -1583,9 +1582,9 @@ cov_file_t::o_file_add_call(
 	return FALSE;
     }
 
-    for (iter = ln->blocks() ; iter != 0 ; iter = iter->next)
+    for (list_iterator_t<cov_block_t> itr = ln->blocks().first() ; *itr ; ++itr)
     {
-	cov_block_t *b = (cov_block_t *)iter->data;
+	cov_block_t *b = *itr;
 
     	/*
 	 * Multiple blocks on the same line, the first doesn't

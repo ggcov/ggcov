@@ -29,8 +29,7 @@ cov_line_t::cov_line_t()
 
 cov_line_t::~cov_line_t()
 {
-    while (blocks_ != 0)
-    	blocks_ = g_list_remove_link(blocks_, blocks_);
+    blocks_.remove_all();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -38,10 +37,9 @@ cov_line_t::~cov_line_t()
 cov_function_t *
 cov_line_t::function() const
 {
-    if (blocks_ == 0)
+    if (!blocks_.head())
 	return 0;
-    cov_block_t *b = (cov_block_t *)blocks_->data;
-    return b->function();
+    return blocks_.head()->function();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -50,7 +48,6 @@ void
 cov_line_t::calculate_count()
 {
     count_t minc = COV_COUNT_MAX, maxc = 0;
-    GList *iter;
     int len = 0;
 
     assert(!count_valid_);
@@ -59,9 +56,9 @@ cov_line_t::calculate_count()
     /*
      * TODO: implement the new smarter algorithm from gcov 3.3 here
      */
-    for (iter = blocks_ ; iter != 0 ; iter = iter->next)
+    for (list_iterator_t<cov_block_t> itr = blocks_.first() ; *itr ; ++itr)
     {
-    	cov_block_t *b = (cov_block_t *)iter->data;
+	cov_block_t *b = *itr;
 
 	if (b->count() > maxc)
 	    maxc = b->count();
@@ -102,10 +99,8 @@ cov_line_t::remove(const cov_location_t *loc, cov_block_t *b)
 {
     cov_line_t *ln = find(loc);
 
-    if (ln != 0)
-    {
-	ln->blocks_ = g_list_remove(ln->blocks_, b);
-    }
+    if (ln)
+	ln->blocks_.remove(b);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -113,16 +108,15 @@ cov_line_t::remove(const cov_location_t *loc, cov_block_t *b)
 unsigned int
 cov_line_t::format_blocks(char *buf, unsigned int maxlen)
 {
-    GList *iter;
     unsigned int len;
     unsigned int start = 0, end = 0;
     char *base = buf;
-    
-    for (iter = blocks_ ; 
-    	 iter != 0 && maxlen > 0 ;
-	 iter = iter->next)
+
+    for (list_iterator_t<cov_block_t> itr = blocks_.first() ;
+	 *itr && maxlen > 0 ;
+	 ++itr)
     {
-    	cov_block_t *b = (cov_block_t *)iter->data;
+	cov_block_t *b = *itr;
 
 	assert(b->bindex() != 0);
 	if (start > 0 && b->bindex() == end+1)

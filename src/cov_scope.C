@@ -224,22 +224,22 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
     do
     {
     	startln = cov_line_t::find(&start);
-    } while ((startln == 0 || startln->blocks() == 0) &&
+    } while ((startln == 0 || !startln->blocks().head()) &&
              ++start.lineno <= end.lineno);
     
-    if (startln == 0 || startln->blocks() == 0)
+    if (startln == 0 || !startln->blocks().head())
     	return cov::SUPPRESSED;     	/* no executable lines in the given range */
     assert(startln != 0);
-    assert(startln->blocks() != 0);
+    assert(startln->blocks().head());
 
     do
     {
     	endln = cov_line_t::find(&end);
-    } while ((endln == 0 || endln->blocks() == 0) &&
+    } while ((endln == 0 || !endln->blocks().head()) &&
     	     --end.lineno > start.lineno-1);
     
     assert(endln != 0);
-    assert(endln->blocks() != 0);
+    assert(endln->blocks().head());
     assert(start.lineno <= end.lineno);
     
 
@@ -248,7 +248,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
      * gathering stats as we go.  Note that this can
      * span functions.
      */    
-    b = (cov_block_t *)startln->blocks()->data;
+    b = startln->blocks().head();
     bidx = b->bindex();
     fnidx = b->function()->findex();
     
@@ -261,7 +261,7 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
 	    bidx = 0;
 	    ++fnidx;
 	}
-    } while (b != (cov_block_t *)endln->blocks()->data);
+    } while (b != endln->blocks().head());
 
     return stats->status_by_blocks();
 }
