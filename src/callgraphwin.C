@@ -190,15 +190,13 @@ callgraphwin_t::~callgraphwin_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
-compare_callnodes(const void *a, const void *b)
+compare_callnodes(const cov_callnode_t *cna, const cov_callnode_t *cnb)
 {
-    const cov_callnode_t *cna = (const cov_callnode_t *)a;
-    const cov_callnode_t *cnb = (const cov_callnode_t *)b;
     int ret;
-    
+
     ret = strcmp(cna->name, cnb->name);
     if (ret == 0 && cna->function != 0 && cnb->function != 0)
-    	ret = strcmp(cna->function->file()->name(), cnb->function->file()->name());
+	ret = strcmp(cna->function->file()->name(), cnb->function->file()->name());
     return ret;
 }
 
@@ -209,27 +207,27 @@ compare_callnodes(const void *a, const void *b)
 void
 callgraphwin_t::populate_function_combo(GtkCombo *combo)
 {
-    GList *list = 0, *iter;
+    list_t<cov_callnode_t> list;
     estring label;
     
     ui_combo_clear(combo);    /* stupid glade2 */
 
     for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
-	list = g_list_prepend(list, *cnitr);
-    list = g_list_sort(list, compare_callnodes);
-    
-    for (iter = list ; iter != 0 ; iter = iter->next)
+	list.prepend(*cnitr);
+    list.sort(compare_callnodes);
+
+    for (list_iterator_t<cov_callnode_t> itr = list.first() ; *itr ; ++itr)
     {
-    	cov_callnode_t *cn = (cov_callnode_t *)iter->data;
+	cov_callnode_t *cn = *itr;
 
     	label.truncate();
 	label.append_string(cn->name);
 
     	/* see if we need to present some more scope to uniquify the name */
-	if ((iter->next != 0 &&
-	     !strcmp(((cov_callnode_t *)iter->next->data)->name, cn->name)) ||
-	    (iter->prev != 0 &&
-	     !strcmp(((cov_callnode_t *)iter->prev->data)->name, cn->name)))
+	list_iterator_t<cov_callnode_t> next = itr.peek_next();
+	list_iterator_t<cov_callnode_t> prev = itr.peek_prev();
+	if ((*next && !strcmp((*next)->name, cn->name)) ||
+	    (*prev && !strcmp((*prev)->name, cn->name)))
 	{
 	    label.append_string(" (");
 	    if (cn->function != 0)
@@ -241,9 +239,8 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
 	
     	ui_combo_add_data(combo, label.data(), cn);
     }
-    
-    while (list != 0)
-	list = g_list_remove_link(list, list);
+
+    list.remove_all();
 }
 
 void
