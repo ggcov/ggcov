@@ -566,10 +566,8 @@ save_callnode_index(DB *db)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
-compare_in_arc_by_count(gconstpointer a, gconstpointer b)
+compare_in_arc_by_count(const cov_callarc_t *ca1, const cov_callarc_t *ca2)
 {
-    const cov_callarc_t *ca1 = (const cov_callarc_t *)a;
-    const cov_callarc_t *ca2 = (const cov_callarc_t *)b;
     int r;
 
     r = -u64cmp(ca1->count, ca2->count);
@@ -579,10 +577,8 @@ compare_in_arc_by_count(gconstpointer a, gconstpointer b)
 }
 
 static int
-compare_out_arc_by_count(gconstpointer a, gconstpointer b)
+compare_out_arc_by_count(const cov_callarc_t *ca1, const cov_callarc_t *ca2)
 {
-    const cov_callarc_t *ca1 = (const cov_callarc_t *)a;
-    const cov_callarc_t *ca2 = (const cov_callarc_t *)b;
     int r;
 
     r = -u64cmp(ca1->count, ca2->count);
@@ -592,16 +588,15 @@ compare_out_arc_by_count(gconstpointer a, gconstpointer b)
 }
 
 static void
-serialize_arc_list(php_serializer_t *ser, GList *arcs, gboolean out)
+serialize_arc_list(php_serializer_t *ser, list_t<cov_callarc_t> &arcs, gboolean out)
 {
-    GList *copy = g_list_sort(g_list_copy(arcs),
-		    (out ? compare_out_arc_by_count : compare_in_arc_by_count));
-    GList *iter;
+    list_t<cov_callarc_t> copy = arcs.copy();
+    copy.sort(out ? compare_out_arc_by_count : compare_in_arc_by_count);
 
-    ser->begin_array(g_list_length(copy));
-    for (iter = copy ; iter != NULL ; iter = iter->next)
+    ser->begin_array(copy.length());
+    for (list_iterator_t<cov_callarc_t> itr = copy.first() ; *itr ; ++itr)
     {
-	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
+	cov_callarc_t *ca = *itr;
 	cov_callnode_t *peer;
 
 	ser->next_key();
@@ -612,9 +607,8 @@ serialize_arc_list(php_serializer_t *ser, GList *arcs, gboolean out)
 	ser->next_key(); ser->integer(ca->count);
 	ser->end_array();
     }
+    copy.remove_all();
     ser->end_array();
-
-    listclear(copy);
 }
 
 static void

@@ -308,11 +308,10 @@ dump_callgraph(void)
 	    cn->name.data(),
 	    (cn->function != 0 ? cn->function->file()->minimal_name() : "-"));
 
-    	GList *iter;
-	for (iter = cn->out_arcs ; iter != NULL ; iter = iter->next)
+	for (list_iterator_t<cov_callarc_t> caitr = cn->out_arcs.first() ; *caitr ; ++caitr)
 	{
-	    cov_callarc_t *ca = (cov_callarc_t *)iter->data;
-	    
+	    cov_callarc_t *ca = *caitr;
+
 	    fprintf(fp, "\tcallarc %s\n\t\tcount %llu\n",
 	    	ca->to->name.data(),
 		(unsigned long long)ca->count);

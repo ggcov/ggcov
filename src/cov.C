@@ -571,12 +571,12 @@ static const char *status_names[cov::NUM_STATUS] =
 };
 
 static void
-dump_callarcs(FILE *fp, GList *arcs)
+dump_callarcs(FILE *fp, list_t<cov_callarc_t> &arcs)
 {
-    for ( ; arcs != 0 ; arcs = arcs->next)
+    for (list_iterator_t<cov_callarc_t> itr = arcs.first() ; *itr ; ++itr)
     {
-    	cov_callarc_t *ca = (cov_callarc_t *)arcs->data;
-	
+	cov_callarc_t *ca = *itr;
+
 	fprintf(fp, "        ARC {\n");
 	fprintf(fp, "            FROM=%s\n", ca->from->name.data());
 	fprintf(fp, "            TO=%s\n", ca->to->name.data());

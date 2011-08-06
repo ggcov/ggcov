@@ -22,8 +22,10 @@
 
 #include "string_var.H"
 #include "hashtable.H"
+#include "list.H"
 
 class cov_function_t;
+struct cov_callarc_t;
 
 extern void cov_add_callnodes(cov_file_t*);
 extern void cov_add_callarcs(cov_file_t*);
@@ -40,9 +42,9 @@ struct cov_callnode_t
     string_var name;
     cov_function_t *function;	/* may be NULL */
     count_t count;
-    GList *in_arcs, *out_arcs;
+    list_t<cov_callarc_t> in_arcs, out_arcs;
     void *userdata;
-    
+
     static cov_callnode_t *find(const char *name);
     static cov_callnode_iter_t first()
     {

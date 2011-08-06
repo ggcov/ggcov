@@ -82,11 +82,9 @@ cov_callnode_t::delete_all(void)
 cov_callarc_t *
 cov_callnode_t::find_arc_to(cov_callnode_t *to) const
 {
-    GList *iter;
-
-    for (iter = out_arcs ; iter != 0 ; iter = iter->next)
+    for (list_iterator_t<cov_callarc_t> itr = out_arcs.first() ; *itr ; ++itr)
     {
-    	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
+	cov_callarc_t *ca = *itr;
 
 	if (ca->to == to)
 	    return ca;
@@ -100,10 +98,10 @@ cov_callnode_t::find_arc_to(cov_callnode_t *to) const
 cov_callarc_t::cov_callarc_t(cov_callnode_t *ffrom, cov_callnode_t *tto)
 {
     from = ffrom;
-    from->out_arcs = g_list_append(from->out_arcs, this);
+    from->out_arcs.prepend(this);
 
     to = tto;
-    to->in_arcs = g_list_append(to->in_arcs, this);
+    to->in_arcs.append(this);
 }
 
 cov_callarc_t::~cov_callarc_t()

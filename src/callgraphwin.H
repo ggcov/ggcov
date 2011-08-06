@@ -47,7 +47,7 @@ private:
 #else
     static void init_tree_view(GtkTreeView *tv);
 #endif
-    static void update_clist(GtkWidget *clist, GList *arcs, gboolean isin);
+    static void update_clist(GtkWidget *clist, list_t<cov_callarc_t> &arcs, gboolean isin);
     static void on_callgraph_show(GtkWidget *w, gpointer data);
     void update();
     static callgraphwin_t *from_widget(GtkWidget *w)

@@ -260,13 +260,13 @@ callgraphwin_t::populate()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static count_t
-cov_callarcs_total(GList *list)
+cov_callarcs_total(list_t<cov_callarc_t> &arcs)
 {
     count_t total = 0;
-    
-    for ( ; list != 0 ; list = list->next)
-    	total += ((cov_callarc_t *)list->data)->count;
-    
+
+    for (list_iterator_t<cov_callarc_t> itr = arcs.first() ; *itr ; ++itr)
+	total += (*itr)->count;
+
     return total;
 }
 
@@ -288,9 +288,8 @@ format_stat(
 }
 
 void
-callgraphwin_t::update_clist(GtkWidget *clist, GList *arcs, gboolean isin)
+callgraphwin_t::update_clist(GtkWidget *clist, list_t<cov_callarc_t> &arcs, gboolean isin)
 {
-    GList *iter;
 #if !GTK2    
     int row;
 #else
@@ -311,9 +310,9 @@ callgraphwin_t::update_clist(GtkWidget *clist, GList *arcs, gboolean isin)
     gtk_list_store_clear(store);
 #endif
 
-    for (iter = arcs ; iter != 0 ; iter = iter->next)
+    for (list_iterator_t<cov_callarc_t> itr = arcs.first() ; *itr ; ++itr)
     {
-	cov_callarc_t *ca = (cov_callarc_t *)iter->data;
+	cov_callarc_t *ca = *itr;
 
     	format_stat(countbuf, sizeof(countbuf), /*percent*/FALSE,
 	    	    /*numerator*/ca->count, /*denominator*/total);
