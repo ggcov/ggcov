@@ -128,6 +128,13 @@ private:
     GList *tail_;
 
     friend class list_iterator_t<T>;
+
+    /* ctor */
+    list_t(GList *gl)
+     :  head_(gl),
+        tail_(0)
+    {
+    }
     
 public:
     /* ctor */
@@ -261,6 +268,11 @@ public:
     	head_ = g_list_concat(head_, list->head_);
 	tail_ = list->tail_;
 	list->head_ = list->tail_ = 0;
+    }
+
+    list_t<T> copy() const
+    {
+	return list_t<T>(g_list_copy(head_));
     }
     
     void take(list_t<T> *list)
