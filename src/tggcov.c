@@ -42,7 +42,7 @@
 CVSID("$Id: tggcov.c,v 1.24 2010-05-09 05:37:15 gnb Exp $");
 
 char *argv0;
-static GList *files;	    /* incoming specification from commandline */
+static list_t<const char> files;	    /* incoming specification from commandline */
 
 static int header_flag = FALSE;
 static int blocks_flag = FALSE;
@@ -479,8 +479,8 @@ parse_args(int argc, char **argv)
     }
     
     while ((file = poptGetArg(popt_context)) != 0)
-	files = g_list_append(files, (gpointer)file);
-	
+	files.append(file);
+
     poptFreeContext(popt_context);
     
     cov_post_args();

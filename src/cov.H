@@ -73,6 +73,6 @@ extern const struct poptOption cov_popt_options[];
     },
 
 extern void cov_post_args(void);
-extern void cov_read_files(GList *files);
+extern void cov_read_files(const list_t<const char> &files);
 
 #endif /* _ggcov_cov_H_ */

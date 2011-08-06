@@ -48,7 +48,7 @@ CVSID("$Id: ggcov-webdb.c,v 1.11 2010-05-09 05:37:15 gnb Exp $");
 #endif
 
 char *argv0;
-static GList *files;	    /* incoming specification from commandline */
+static list_t<const char> files;	    /* incoming specification from commandline */
 
 static char *dump_mode = NULL;
 static const char *output_tarball = "ggcov.webdb.tgz";
@@ -901,10 +901,10 @@ parse_args(int argc, char **argv)
 	    poptBadOption(popt_context, POPT_BADOPTION_NOALIAS));
     	exit(1);
     }
-    
+
     while ((file = poptGetArg(popt_context)) != 0)
-	files = g_list_append(files, (gpointer)file);
-	
+	files.append(file);
+
     poptFreeContext(popt_context);
 
     cov_post_args();
@@ -1024,12 +1024,12 @@ dump_database(const char *mode)
     gboolean key_flag = FALSE;
     gboolean value_flag = FALSE;
 
-    if (g_list_length(files) != 1)
+    if (files.length() != 1)
     {
 	fprintf(stderr, "dump_database: must provide a .webdb filename\n");
 	exit(1);
     }
-    webdb_file = (char *)files->data;
+    webdb_file = (char *)files.head();
 
     for ( ; *mode ; mode++)
     {

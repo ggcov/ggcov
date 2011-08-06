@@ -456,18 +456,15 @@ cov_post_args(void)
 
 
 void
-cov_read_files(GList *files)
+cov_read_files(const list_t<const char> &files)
 {
-    GList *iter;
     unsigned int successes = 0;
 
     if (debug_enabled(D_DUMP|D_VERBOSE))
     {
-    	GList *iter;
-
 	duprintf0("cov_post_args: files = ");
-	for (iter = files ; iter != 0 ; iter = iter->next)
-	    duprintf1(" \"%s\"", (char *)iter->data);
+	for (list_iterator_t<const char> itr = files.first() ; *itr ; ++itr)
+	    duprintf1(" \"%s\"", *itr);
 	duprintf0(" }\n");
     }
 
@@ -514,24 +511,24 @@ cov_read_files(GList *files)
     if (gcda_prefix)
 	cov_file_t::set_gcda_prefix(gcda_prefix);
 
-    if (files == 0)
+    if (!files.head())
     {
 	successes += cov_read_directory(".", recursive);
     }
     else
     {
-	for (iter = files ; iter != 0 ; iter = iter->next)
+	for (list_iterator_t<const char> itr = files.first() ; *itr ; ++itr)
 	{
-	    const char *filename = (const char *)iter->data;
-	    
+	    const char *filename = *itr;
+
 	    if (file_is_directory(filename) == 0)
 	    	cov_add_search_directory(filename);
     	}
 
-	for (iter = files ; iter != 0 ; iter = iter->next)
+	for (list_iterator_t<const char> itr = files.first() ; *itr ; ++itr)
 	{
-	    const char *filename = (const char *)iter->data;
-	    
+	    const char *filename = *itr;
+
 	    if (file_is_directory(filename) == 0)
 	    {
 		successes += cov_read_directory(filename, recursive);

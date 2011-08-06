@@ -42,7 +42,7 @@ CVSID("$Id: ggcov.c,v 1.53 2010-05-09 05:37:15 gnb Exp $");
 #define DEBUG_GTK 1
 
 char *argv0;
-static GList *files;	    /* incoming specification from commandline */
+static list_t<const char> files;	    /* incoming specification from commandline */
 
 static const char ** debug_argv;
 static const char *initial_windows = "summary";
@@ -313,7 +313,7 @@ ui_create(const char *full_argv0)
 
     prefs.load();
 
-    if (files == 0)
+    if (!files.head())
     {
     	/* Nothing on commandline...show the File->Open dialog to get some */
     	on_file_open_activate(0, 0);
@@ -416,7 +416,7 @@ parse_args(int argc, char **argv)
     	/* transparently handle file: URLs for Nautilus integration */
     	if (!strncmp(file, "file://", 7))
 	    file += 7;
-	files = g_list_append(files, (gpointer)file);
+	files.append(file);
     }
 	
     poptFreeContext(popt_context);

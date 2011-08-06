@@ -252,7 +252,7 @@ private:
     unsigned num_expected_fake_;
 
     friend void cov_add_search_directory(const char *fname);
-    friend void cov_read_files(GList *files);
+    friend void cov_read_files(const list_t<const char> &files);
     friend gboolean cov_read_source_file_2(const char *fname, gboolean quiet);
     friend void cov_init(void);
     friend void cov_post_read(void);
