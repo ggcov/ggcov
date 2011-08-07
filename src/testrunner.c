@@ -18,17 +18,17 @@ int
 main(int argc, char **argv)
 {
     int i;
+    testrunner_t runner;
 
-    testfw_init();
     while ((i = getopt(argc, argv, "vl")) >= 0)
     {
 	switch (i)
 	{
 	case 'v':
-	    testfw_set_verbose(1);
+	    runner.set_verbose(1);
 	    break;
 	case 'l':
-	    testfw_list();
+	    runner.list();
 	    exit(0);
 	default:
 	    usage();
@@ -37,11 +37,11 @@ main(int argc, char **argv)
 
     for (i = optind ; i < argc ; i++)
     {
-	if (!testfw_schedule(argv[i]))
+	if (!runner.schedule(argv[i]))
 	    fprintf(stderr, "Unknown suite or name: %s\n", argv[i]);
     }
 
-    testfw_run();
+    runner.run();
 
     return 0;
 }

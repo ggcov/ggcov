@@ -24,8 +24,6 @@
 #include <malloc.h>
 #include "testfw.h"
 
-static int verbose = 0;
-
 testfn_t *testfn_t::head_, **testfn_t::tailp_ = &head_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -75,63 +73,42 @@ _testfw_strdup(const char *s)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-__testfw_check(int pass, const char *file, int line, const char *fmt, ...)
-{
-    va_list args;
-    char buf[2048];
-
-    va_start(args, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, args);
-    va_end(args);
-
-    if (!pass || verbose)
-	fprintf(stderr, "%s:%d: %s: %s\n",
-	        file, line, (pass ? "passed" : "FAILED"), buf);
-
-    if (!pass)
-    {
-	fflush(stderr);
-	abort();
-	/*NOTREACHED*/
-    }
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
-testfn_t::run(void)
+testfn_t::run()
 {
     if (role_ == RTEST)
     {
-	if (verbose)
-	    fprintf(stderr, "Test %s:%s\n", suite_, name_);
+	if (testrunner_t::current_->verbose_)
+	    fprintf(stderr, "Test %s:%s\n", suite(), name_);
 	function_();
     }
     else
     {
 	int (*fixture)(void) = (int(*)(void))function_;
-	if (verbose)
-	    fprintf(stderr, "Fixture %s:%s\n", suite_, name_);
+	if (testrunner_t::current_->verbose_)
+	    fprintf(stderr, "Fixture %s:%s\n", suite(), name_);
 	if (fixture())
 	{
-	    fprintf(stderr, "%s:%s: fixture failed\n", suite_, name_);
+	    fprintf(stderr, "%s:%s: fixture failed\n", suite(), name_);
 	    exit(1);
 	}
     }
 }
 
-void
-testfn_t::init(void)
+const char *
+testfn_t::suite()
 {
+    if (suite_)
+	return suite_;	/* cached */
+
     /* convert the .suite_ string from a filenames
      * to a suite name */
 
     /* find the pathname tail */
-    const char *b = strrchr(suite_, '/');
+    const char *b = strrchr(filename_, '/');
     if (b)
 	b++;
     else
-	b = suite_;
+	b = filename_;
 
     /* find filename suffix - e points to the char
      * after the last one we want to keep */
@@ -153,22 +130,27 @@ testfn_t::init(void)
 
     /* make a copy */
     suite_ = _testfw_strndup(b, e-b);
-}
-
-void
-testfn_t::uninit()
-{
-    /* free the .suite_ string */
-    free((char *)suite_);
+    return suite_;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static testfn_t **scheduled;
-static unsigned int nscheduled;
+testrunner_t *testrunner_t::current_ = 0;
 
-static void
-schedule(testfn_t *fn)
+testrunner_t::testrunner_t()
+ :  verbose_(0),
+    scheduled_(0),
+    nscheduled_(0)
+{
+}
+
+testrunner_t::~testrunner_t()
+{
+    free(scheduled_);
+}
+
+void
+testrunner_t::schedule(testfn_t *fn)
 {
     testfn_t *setup = 0, *teardown = 0;
     int n;
@@ -178,7 +160,7 @@ schedule(testfn_t *fn)
 
     for (testfn_t *ff = testfn_t::head_ ; ff ; ff = ff->next_)
     {
-	if (strcmp(ff->suite_, fn->suite_))
+	if (strcmp(ff->suite(), fn->suite()))
 	    continue;
 	if (ff->role_ == testfn_t::RSETUP)
 	    setup = ff;
@@ -192,40 +174,34 @@ schedule(testfn_t *fn)
     if (teardown)
 	n++;
 
-    scheduled = (testfn_t **)_testfw_realloc(scheduled, sizeof(testfn_t *) * (nscheduled+n));
+    scheduled_ = (testfn_t **)_testfw_realloc(scheduled_,
+					      sizeof(testfn_t *) * (nscheduled_+n));
 
     if (setup)
-	scheduled[nscheduled++] = setup;
-    scheduled[nscheduled++] = fn;
+	scheduled_[nscheduled_++] = setup;
+    scheduled_[nscheduled_++] = fn;
     if (teardown)
-	scheduled[nscheduled++] = teardown;
+	scheduled_[nscheduled_++] = teardown;
 }
 
 void
-testfw_init(void)
+testrunner_t::set_verbose(int v)
 {
-    for (testfn_t *fn = testfn_t::head_ ; fn ; fn = fn->next_)
-	fn->init();
+    verbose_ = v;
 }
 
 void
-testfw_set_verbose(int v)
-{
-    verbose = 1;
-}
-
-void
-testfw_list(void)
+testrunner_t::list()
 {
     for (testfn_t *fn = testfn_t::head_ ; fn ; fn = fn->next_)
     {
 	if (fn->role_ == testfn_t::RTEST)
-	    printf("%s:%s\n", fn->suite_, fn->name_);
+	    printf("%s:%s\n", fn->suite(), fn->name_);
     }
 }
 
-static int
-_testfw_schedule_matching(const char *suite, const char *name)
+int
+testrunner_t::schedule_matching(const char *suite, const char *name)
 {
     int nmatches = 0;
 
@@ -233,7 +209,7 @@ _testfw_schedule_matching(const char *suite, const char *name)
     {
 	if (fn->role_ != testfn_t::RTEST)
 	    continue;
-	if (suite && strcmp(suite, fn->suite_))
+	if (suite && strcmp(suite, fn->suite()))
 	    continue;
 	if (name && strcmp(name, fn->name_))
 	    continue;
@@ -244,7 +220,7 @@ _testfw_schedule_matching(const char *suite, const char *name)
 }
 
 int
-testfw_schedule(const char *arg)
+testrunner_t::schedule(const char *arg)
 {
     char *name = 0;
     char *suite = _testfw_strdup(arg);
@@ -254,22 +230,43 @@ testfw_schedule(const char *arg)
 	*p++ = '\0';
 	name = p;
     }
-    int r = _testfw_schedule_matching(suite, name);
+    int r = schedule_matching(suite, name);
     free(suite);
     return r;
 }
 
 void
-testfw_run(void)
+testrunner_t::run()
 {
-    if (!nscheduled)
-	_testfw_schedule_matching(0, 0);
+    if (!nscheduled_)
+	schedule_matching(0, 0);
 
-    for (unsigned int i = 0 ; i < nscheduled ; i++)
-	scheduled[i]->run();
+    current_ = this;
+    for (unsigned int i = 0 ; i < nscheduled_ ; i++)
+	scheduled_[i]->run();
+    current_ = 0;
+}
 
-    for (testfn_t *fn = testfn_t::head_ ; fn ; fn = fn->next_)
-	fn->uninit();
+void
+testrunner_t::_check(int pass, const char *file, int line, const char *fmt, ...)
+{
+    va_list args;
+    char buf[2048];
+
+    va_start(args, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+
+    if (!pass || current_->verbose_)
+	fprintf(stderr, "%s:%d: %s: %s\n",
+	        file, line, (pass ? "passed" : "FAILED"), buf);
+
+    if (!pass)
+    {
+	fflush(stderr);
+	abort();
+	/*NOTREACHED*/
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

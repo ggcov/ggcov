@@ -23,12 +23,8 @@
 #include <sys/types.h>
 #include <stdarg.h>
 
-extern int _testfw_verbose;
-
-extern void __testfw_check(int pass, const char *file, int line, const char *fmt, ...);
-
 #define check(expr) \
-    __testfw_check((expr), __FILE__, __LINE__, "check(%s)", #expr)
+    testrunner_t::_check((expr), __FILE__, __LINE__, "check(%s)", #expr)
 
 #define check_str_equals(a, b) \
 { \
@@ -36,20 +32,33 @@ extern void __testfw_check(int pass, const char *file, int line, const char *fmt
     const char *_b = (b); \
     const char *_sa = (_a) ? (_a) : ""; \
     const char *_sb = (_b) ? (_b) : ""; \
-    __testfw_check(!strcmp(_sa, _sb), \
+    testrunner_t::_check(!strcmp(_sa, _sb), \
 		   __FILE__, __LINE__, \
 		   "check_str_equals(%s=\"%s\", %s=\"%s\")", \
 		    #a, _sa, #b, _sb); \
 }
 
-struct testfn_t
+class testrunner_t;
+
+class testfn_t
 {
+public:
+    enum role_t { RSETUP, RTEARDOWN, RTEST };
+
+private:
     const char *name_;
-    const char *suite_;
+    const char *filename_;
+    char *suite_;
     void (*function_)(void);
-    enum role_t { RSETUP, RTEARDOWN, RTEST } role_;
+    enum role_t role_;
     testfn_t *next_;
     static testfn_t *head_, **tailp_;
+
+    void run();
+
+    friend class testrunner_t;
+
+public:
 
     // c'tor
     testfn_t(const char *name,
@@ -57,7 +66,8 @@ struct testfn_t
 	     void (*function)(void),
 	     role_t role)
      :  name_(name),
-	suite_(filename),   // will be tweaked in testfw_init()
+	filename_(filename),
+	suite_(0),
 	function_(function),
 	role_(role),
 	next_(0)
@@ -65,10 +75,14 @@ struct testfn_t
 	*tailp_ = this;
 	tailp_ = &next_;
     }
+    // d'tor
+    ~testfn_t()
+    {
+	free(suite_);
+    }
 
-    void init();
-    void uninit();
-    void run();
+    const char *suite();
+    const char *name();
 };
 
 #define _PASTE(a,b)	a##b
@@ -83,10 +97,29 @@ struct testfn_t
 #define SETUP	    _TESTFN(int, setup, testfn_t::RSETUP)
 #define TEARDOWN    _TESTFN(int, teardown, testfn_t::RTEARDOWN)
 
-extern void testfw_init(void);
-extern void testfw_set_verbose(int);
-extern void testfw_list(void);
-extern int testfw_schedule(const char *arg);
-extern void testfw_run(void);
+class testrunner_t
+{
+private:
+    int verbose_;
+    testfn_t **scheduled_;
+    unsigned int nscheduled_;
+    static testrunner_t *current_;
+
+    void schedule(testfn_t *fn);
+    int schedule_matching(const char *suite, const char *name);
+
+    friend class testfn_t;
+
+public:
+    testrunner_t();
+    ~testrunner_t();
+
+    static void _check(int pass, const char *file, int line, const char *fmt, ...);
+
+    void set_verbose(int v);
+    void list();
+    int schedule(const char *arg);
+    void run();
+};
 
 #endif /* __GGCOV_TESTFW_H__ */
