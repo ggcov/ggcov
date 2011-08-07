@@ -240,6 +240,11 @@ testrunner_t::run()
 {
     if (!nscheduled_)
 	schedule_matching(0, 0);
+    if (!nscheduled_)
+    {
+	fprintf(stderr, "testfw: no tests found.  This can't be right.\n");
+	exit(1);
+    }
 
     current_ = this;
     for (unsigned int i = 0 ; i < nscheduled_ ; i++)
