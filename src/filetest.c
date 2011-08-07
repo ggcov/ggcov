@@ -1,53 +1,123 @@
+#include <unistd.h>
+#include <stdlib.h>
 #include "filename.h"
+#include "testfw.h"
 
-char *argv0;
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-int
-main(int argc, char **argv)
+#define BASEDIR	"/tmp"
+#define TESTDIR	BASEDIR"/ggcov.filename.test"
+
+static char oldcwd[PATH_MAX];
+
+SETUP
 {
-    int i;
-    char *in, *out, *expected;
-    
-    argv0 = argv[0];
+    struct stat sb;
+    int r;
 
-    for (i = 1 ; i < argc ; i++)
-    {
-    	if (!strcmp(argv[i], "make_absolute"))
-	{
-	    in = argv[++i];
-	    expected = argv[++i];
+    r = system("rm -rf "TESTDIR);
+    if (r)
+	return -1;
+    r = stat(TESTDIR, &sb);
+    if (r == 0 || errno != ENOENT)
+	return -1;
+    mkdir(TESTDIR, 0777);
+    mkdir(TESTDIR"/dir3", 0777);
+    mkdir(TESTDIR"/dir3/dir4", 0777);
+    r = stat(TESTDIR, &sb);
+    if (r != 0)
+	return -1;
 
-    	    out = file_make_absolute(in);
-	    fprintf(stderr, "file_make_absolute(\"%s\") => \"%s\"\n", in, out);
-	    if (strcmp(out, expected))
-	    {
-	    	fprintf(stderr, "ERROR: expected \"%s\" got \"%s\"\n",
-		    	    expected, out);
-	    	exit(1);
-	    }
-	    g_free(out);
-	}
-	else if (!strcmp(argv[i], "normalise"))
-	{
-	    in = argv[++i];
-	    expected = argv[++i];
+    if (getcwd(oldcwd, sizeof(oldcwd)) == NULL)
+	return -1;
+    if (chdir(TESTDIR"/dir3/dir4") < 0)
+	return -1;
 
-	    out = file_normalise(in);
-	    fprintf(stderr, "file_normalise(\"%s\") => \"%s\"\n", in, out);
-	    if (strcmp(out, expected))
-	    {
-		fprintf(stderr, "ERROR: expected \"%s\" got \"%s\"\n",
-			    expected, out);
-		exit(1);
-	    }
-	    g_free(out);
-	}
-	else
-	{
-	    fprintf(stderr, "Unknown function to test: %s\n", argv[i]);
-	}
-    }
-    
     return 0;
 }
 
+TEARDOWN
+{
+    int r;
+
+    if (oldcwd[0])
+	chdir(oldcwd);
+
+    r = system("rm -rf "TESTDIR);
+    if (r)
+	return -1;
+    return 0;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#define TESTCASE(in, expected) \
+{ \
+    char *out = file_make_absolute(in); \
+    check_str_equals(expected, out); \
+    g_free(out); \
+}
+
+TEST(make_absolute)
+{
+    TESTCASE("/foo/bar", "/foo/bar");
+    TESTCASE("/foo", "/foo");
+    TESTCASE("/", "/");
+    TESTCASE("foo", TESTDIR"/dir3/dir4/foo");
+    TESTCASE("foo/bar", TESTDIR"/dir3/dir4/foo/bar");
+    TESTCASE(".", TESTDIR"/dir3/dir4");
+    TESTCASE("./foo", TESTDIR"/dir3/dir4/foo");
+    TESTCASE("./foo/bar", TESTDIR"/dir3/dir4/foo/bar");
+    TESTCASE("./foo/./bar", TESTDIR"/dir3/dir4/foo/bar");
+    TESTCASE("./././foo/./bar", TESTDIR"/dir3/dir4/foo/bar");
+    TESTCASE("..", TESTDIR"/dir3");
+    TESTCASE("../foo", TESTDIR"/dir3/foo");
+    TESTCASE("../foo/bar", TESTDIR"/dir3/foo/bar");
+    TESTCASE("../../foo", TESTDIR"/foo");
+    TESTCASE("../../../foo/bar", BASEDIR"/foo/bar");
+    TESTCASE("./../.././../foo/bar", BASEDIR"/foo/bar");
+}
+
+#undef TESTCASE
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#define TESTCASE(in, expected) \
+{ \
+    char *out = file_normalise(in); \
+    check_str_equals(expected, out); \
+    g_free(out); \
+}
+
+TEST(normalise)
+{
+    TESTCASE("/foo/bar", "/foo/bar");
+    TESTCASE("//foo////bar", "/foo/bar");
+    TESTCASE("/", "/");
+    TESTCASE("foo", "foo");
+    TESTCASE("./foo", "foo");
+    TESTCASE("./././foo", "foo");
+    TESTCASE("./foo/./", "foo");
+    TESTCASE("foo/bar", "foo/bar");
+    TESTCASE("foo////bar", "foo/bar");
+    TESTCASE("./foo", "foo");
+    TESTCASE("./foo/bar", "foo/bar");
+    TESTCASE("./foo///bar", "foo/bar");
+    TESTCASE(".//foo/bar", "foo/bar");
+    TESTCASE("././././foo/bar", "foo/bar");
+    TESTCASE(".", ".");
+    TESTCASE("../foo", "../foo");
+    TESTCASE("../foo/bar", "../foo/bar");
+    TESTCASE("../foo//bar", "../foo/bar");
+    TESTCASE("foo/..", ".");
+    TESTCASE("foo///..", ".");
+    TESTCASE("foo/../bar/..", ".");
+    TESTCASE("foo//.././bar/.//..", ".");
+    TESTCASE("../../../foo/bar", "../../../foo/bar");
+    TESTCASE("./../.././../foo/bar", "../../../foo/bar");
+}
+
+#undef TESTCASE
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+/*END*/

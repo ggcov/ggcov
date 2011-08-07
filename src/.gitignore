@@ -3,7 +3,7 @@ Makefile
 ggcov
 licence.c
 bbdump
-filetest
+testrunner
 mangletest
 newbbgdump
 phptest

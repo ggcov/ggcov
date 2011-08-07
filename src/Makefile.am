@@ -146,15 +146,16 @@ EXTRA_DIST=		gencallbacks.pl
 
 EXTRA_CLEAN=		licence.c glade_callbacks.c
 
-noinst_PROGRAMS=	bbdump filetest mangletest \
+noinst_PROGRAMS=	bbdump testrunner mangletest \
 			newbbgdump phptest popttest \
 			toktest estringtest hashtabletest
 
 bbdump_SOURCES= 	bbdump.c
 bbdump_LDADD=		$(CLI_LIBS)
 
-filetest_SOURCES=	filetest.c
-filetest_LDADD= 	$(CLI_LIBS)
+testrunner_SOURCES=	testrunner.c testfw.c \
+			filetest.c
+testrunner_LDADD= 	$(CLI_LIBS)
 
 mangletest_SOURCES=	mangletest.c
 mangletest_LDADD=	$(CLI_LIBS)
