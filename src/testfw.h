@@ -26,6 +26,44 @@
 #define check(expr) \
     testrunner_t::_check((expr), __FILE__, __LINE__, "check(%s)", #expr)
 
+#define check_num_equals(a, b) \
+{ \
+    long long _a = (a); \
+    long long _b = (b); \
+    testrunner_t::_check(_a == _b, \
+		   __FILE__, __LINE__, \
+		   "check_num_equals(%s=%lld, %s=%lld)", \
+		    #a, _a, #b, _b); \
+}
+
+#define check_null(p) \
+{ \
+    void *_p = (void *)(p); \
+    testrunner_t::_check(_p == 0, \
+		   __FILE__, __LINE__, \
+		   "check_null(%s=%p)", \
+		    #p, _p); \
+}
+
+#define check_not_null(p) \
+{ \
+    void *_p = (void *)(p); \
+    testrunner_t::_check(_p != 0, \
+		   __FILE__, __LINE__, \
+		   "check_not_null(%s=%p)", \
+		    #p, _p); \
+}
+
+#define check_ptr_equals(a, b) \
+{ \
+    void *_a = (void *)(a); \
+    void *_b = (void *)(b); \
+    testrunner_t::_check(_a == _b, \
+		   __FILE__, __LINE__, \
+		   "check_ptr_equals(%s=%p, %s=%p)", \
+		    #a, _a, #b, _b); \
+}
+
 #define check_str_equals(a, b) \
 { \
     const char *_a = (a); \
