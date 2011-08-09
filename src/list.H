@@ -166,7 +166,9 @@ public:
         
     void prepend(T *item)
     {
-    	head_ = g_list_append(head_, (gpointer)item);
+    	head_ = g_list_prepend(head_, (gpointer)item);
+	if (tail_ == 0)
+	    tail_ = head_;
     }
     
     void insert_sorted(T *item, gint (*compare)(const T*, const T*))
