@@ -157,7 +157,8 @@ testrunner_SOURCES=	testrunner.c testfw.c \
 			phptest.C php_serializer.C \
 			estringtest.c \
 			toktest.c \
-			hashtabletest.c
+			hashtabletest.c \
+			listtest.c
 testrunner_LDADD= 	$(CLI_LIBS)
 
 mangletest_SOURCES=	mangletest.c
