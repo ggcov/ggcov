@@ -147,14 +147,17 @@ EXTRA_DIST=		gencallbacks.pl
 EXTRA_CLEAN=		licence.c glade_callbacks.c
 
 noinst_PROGRAMS=	bbdump testrunner mangletest \
-			newbbgdump phptest popttest \
-			toktest estringtest hashtabletest
+			newbbgdump popttest
 
 bbdump_SOURCES= 	bbdump.c
 bbdump_LDADD=		$(CLI_LIBS)
 
 testrunner_SOURCES=	testrunner.c testfw.c \
-			filetest.c
+			filetest.c \
+			phptest.C php_serializer.C \
+			estringtest.c \
+			toktest.c \
+			hashtabletest.c
 testrunner_LDADD= 	$(CLI_LIBS)
 
 mangletest_SOURCES=	mangletest.c
@@ -163,20 +166,8 @@ mangletest_LDADD=	$(CLI_LIBS)
 newbbgdump_SOURCES=	newbbgdump.c
 newbbgdump_LDADD=	$(CLI_LIBS)
 
-phptest_SOURCES=	phptest.C php_serializer.C
-phptest_LDADD=		$(CLI_LIBS)
-
 popttest_SOURCES=	popttest.c
 popttest_LDADD= 	$(GGCOV_CLI_LIBS)
-
-toktest_SOURCES=	toktest.c
-toktest_LDADD=		$(CLI_LIBS)
-
-estringtest_SOURCES=	estringtest.c
-estringtest_LDADD=	$(CLI_LIBS)
-
-hashtabletest_SOURCES=	hashtabletest.c
-hashtabletest_LDADD=	$(CLI_LIBS)
 
 COVFLAGS=		-fprofile-arcs -ftest-coverage
 coverage: covered-all

@@ -1,67 +1,44 @@
 #include "common.h"
 #include "php_serializer.H"
+#include "testfw.h"
 
-typedef int (*testfunc_t)(int, char **);
-
-static int
-test0(int argc, char **argv)
+TEST(integer)
 {
     php_serializer_t ser;
-
     ser.integer(42);
-
-    printf("test0: %s\n", ser.data().data());
-
-    return 0;
+    check_str_equals("i:42;", ser.data().data());
 }
 
-static int
-test1(int argc, char **argv)
+TEST(string)
 {
     php_serializer_t ser;
-
     ser.string("foobar");
-
-    printf("test1: %s\n", ser.data().data());
-
-    return 0;
+    check_str_equals("s:6:\"foobar\";", ser.data().data());
 }
 
-static int
-test2(int argc, char **argv)
+TEST(presized_array)
 {
     php_serializer_t ser;
-
     ser.begin_array(2);
     ser.next_key(); ser.integer(37);
     ser.next_key(); ser.string("smurf");
     ser.end_array();
-
-    printf("test2: %s\n", ser.data().data());
-
-    return 0;
+    check_str_equals("a:2:{i:0;i:37;i:1;s:5:\"smurf\";}", ser.data().data());
 }
 
-static int
-test3(int argc, char **argv)
+TEST(unpresized_array)
 {
     php_serializer_t ser;
-
     ser.begin_array();
     ser.next_key(); ser.integer(25);
     ser.next_key(); ser.string("fnoogle");
     ser.end_array();
-
-    printf("test3: %s\n", ser.data().data());
-
-    return 0;
+    check_str_equals("a:2:{i:0;i:25;i:1;s:7:\"fnoogle\";}", ser.data().data());
 }
 
-static int
-test4(int argc, char **argv)
+TEST(nested_arrays)
 {
     php_serializer_t ser;
-
     ser.begin_array();
 	ser.next_key(); ser.integer(25);
 	ser.next_key(); ser.begin_array();
@@ -72,74 +49,20 @@ test4(int argc, char **argv)
 	ser.end_array();
 	ser.next_key(); ser.string("fnarp");
     ser.end_array();
-
-    printf("test4: %s\n", ser.data().data());
-
-    return 0;
+    check_str_equals("a:3:{i:0;i:25;i:1;a:2:{i:0;i:12;i:1;a:1:{i:0;i:123;}}i:2;s:5:\"fnarp\";}", ser.data().data());
 }
 
-static int
-test5(int argc, char **argv)
+TEST(floating)
 {
     php_serializer_t ser;
-
     ser.floating(3.1415926535);
-
-    printf("test5: %s\n", ser.data().data());
-
-    return 0;
+    check_str_equals("d:3.141593;", ser.data().data());
 }
 
-static int
-test6(int argc, char **argv)
+TEST(null)
 {
     php_serializer_t ser;
-
     ser.null();
-
-    printf("test6: %s\n", ser.data().data());
-
-    return 0;
+    check_str_equals("N;", ser.data().data());
 }
 
-
-static testfunc_t tests[] = 
-{
-    test0,
-    test1,
-    test2,
-    test3,
-    test4,
-    test5,
-    test6
-};
-static int num_tests = (sizeof(tests)/sizeof(tests[0]));
-
-int
-main(int argc, char **argv)
-{
-    int testn;
-
-    if (argc > 1)
-    {
-	testn = atoi(argv[1]);
-
-	if (testn < 0 || testn >= num_tests)
-	{
-	    fprintf(stderr, "phptest: unknown test number %d\n", testn);
-	    exit(1);
-	}
-
-	return tests[testn](argc-2, argv+2);
-    }
-    else
-    {
-	for (testn = 0 ; testn < num_tests ; testn++)
-	{
-	    if (tests[testn](0, NULL))
-		exit(1);
-	}
-    }
-
-    return 0;
-}

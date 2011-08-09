@@ -1,6 +1,7 @@
 #include "filename.h"
 #include "string_var.H"
 #include "hashtable.H"
+#include "testfw.h"
 
 struct pairx
 {
@@ -10,39 +11,7 @@ struct pairx
     pairx(const char *name, int x) :  name_(name), x_(x) { }
 };
 
-const char *argv0;
-extern int end;
-int verbose = 0;
-
-// static int
-// is_heap(const void *x)
-// {
-//     return (x > (void *)&end);
-// }
-
-static inline void
-__check(int res, const char *expr, const char *file, int line)
-{
-    if (verbose)
-	fprintf(stderr, "%s:%d: checking %s\n", file, line, expr);
-    if (!res)
-    {
-	fprintf(stderr, "%s:%d: check FAILED: %s\n", file, line, expr);
-	abort();
-    }
-}
-
-#define check(expr)	__check(!!(expr), #expr, __FILE__, __LINE__)
-
-static inline void
-subtest(const char *desc)
-{
-    if (verbose)
-	fprintf(stderr, "=== %s ===\n", desc);
-}
-
-static void
-test_ctors(void)
+TEST(ctors)
 {
     hashtable_t<const char, pairx> *ht =
 	    new hashtable_t<const char, pairx>;
@@ -52,8 +21,7 @@ test_ctors(void)
     delete ht;
 }
 
-static void
-test_insert_remove(void)
+TEST(insert_remove)
 {
     hashtable_t<const char, pairx> *ht =
 	    new hashtable_t<const char, pairx>;
@@ -109,8 +77,7 @@ test_insert_remove(void)
     delete ht;
 }
 
-static void
-test_keys(void)
+TEST(keys)
 {
     hashtable_t<const char, pairx> *ht =
 	    new hashtable_t<const char, pairx>;
@@ -156,8 +123,7 @@ test_keys(void)
     delete ht;
 }
 
-static void
-test_iterator(void)
+TEST(iterator)
 {
     hashtable_t<const char, pairx> *ht =
 	    new hashtable_t<const char, pairx>;
@@ -217,20 +183,5 @@ test_iterator(void)
     delete bar;
     delete baz;
     delete ht;
-}
-
-int
-main(int argc, char **argv)
-{
-    argv0 = file_basename_c(argv[0]);
-
-    if (argc > 1 && !strcmp(argv[1], "--verbose"))
-	verbose++;
-
-    test_ctors();
-    test_insert_remove();
-    test_keys();
-    test_iterator();
-    return 0;
 }
 

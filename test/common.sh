@@ -528,6 +528,21 @@ run_tggcov ()
     fi
 }
 
+run_testrunner ()
+{
+    vcmd "run_testrunner $*"
+    local pwd=$(/bin/pwd)
+
+    if vcapdo $TMP1 $_VALGRIND $top_builddir/${_DUP}src/testrunner -v $* ; then
+	cat $TMP1
+	pass
+    else
+	cat $TMP1
+	fatal "testrunner failed, see log"
+    fi
+}
+
+
 _filter ()
 {
     local filter=$1

@@ -20,10 +20,6 @@
 
 . ../common.sh
 
-init "hashtable unit test"
+init "unit tests"
 
-if vdo $top_builddir/src/hashtabletest --verbose ; then
-    pass
-else
-    fail "hashtabletest $args"
-fi
+run_testrunner

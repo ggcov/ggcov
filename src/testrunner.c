@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include "testfw.h"
 
+/* some of the code needs this to exist */
+const char *argv0;
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void usage(void) __attribute__((noreturn));
