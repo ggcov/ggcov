@@ -117,6 +117,7 @@ private:
     {
     	suppressed_ = true;
     }
+    gboolean is_call_suppressed() const;
 
     void set_count(count_t count);
     static count_t total(const list_t<cov_arc_t> &list);

@@ -56,6 +56,32 @@ cov_arc_t::~cov_arc_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+gboolean
+cov_arc_t::is_call_suppressed() const
+{
+    static const char * const names[] =
+    {
+	/* externs in glibc's <assert.h> */
+	"__assert_fail",
+	"__assert_perror_fail",
+	"__assert",
+	0
+    };
+    const char * const *n;
+
+    if (!name_)
+	return FALSE;
+
+    for (n = names ; *n ; n++)
+    {
+	if (!strcmp(name_, *n))
+	    return TRUE;
+    }
+    return FALSE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 boolean
 cov_arc_t::is_suppressed() const
 {

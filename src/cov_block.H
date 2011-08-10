@@ -37,6 +37,10 @@ public:
 	cov_stats_t stats;
 	return calc_stats(&stats);
     }
+    gboolean is_self_suppressed() const
+    {
+	return suppressed_;
+    }
     gboolean is_suppressed() const
     {
     	return (status() == cov::SUPPRESSED);

@@ -175,9 +175,20 @@ cov_block_t::suppress()
     
     /* TODO: should we suppress inbound arcs also!?? */
     
-    /* suppress all lines */
+    /* suppress all lines, where all the blocks
+     * on the line are suppressed */
     for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
-	cov_line_t::find(*liter)->suppress();
+    {
+	cov_line_t *l = cov_line_t::find(*liter);
+	unsigned int nunsuppressed = 0;
+	for (list_iterator_t<cov_block_t> biter = l->blocks().first() ; *biter ; ++biter)
+	{
+	    if (!(*biter)->suppressed_)
+		nunsuppressed++;
+	}
+	if (!nunsuppressed)
+	    l->suppress();
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

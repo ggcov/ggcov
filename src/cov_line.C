@@ -48,7 +48,8 @@ void
 cov_line_t::calculate_count()
 {
     count_t minc = COV_COUNT_MAX, maxc = 0;
-    int len = 0;
+    unsigned int nsupp = 0;
+    unsigned int len = 0;
 
     assert(!count_valid_);
     count_valid_ = true;
@@ -60,19 +61,26 @@ cov_line_t::calculate_count()
     {
 	cov_block_t *b = *itr;
 
+	len++;
+	if (b->is_self_suppressed())
+	{
+	    nsupp++;
+	    continue;
+	}
 	if (b->count() > maxc)
 	    maxc = b->count();
 	if (b->count() < minc)
 	    minc = b->count();
-	len++;
     }
 
     count_ = maxc;
 
     if (len == 0)
-    	status_ = cov::UNINSTRUMENTED;
+	status_ = cov::UNINSTRUMENTED;
+    else if (nsupp == len)
+	status_ = cov::SUPPRESSED;
     else if (maxc == 0)
-    	status_ = cov::UNCOVERED;
+	status_ = cov::UNCOVERED;
     else
 	status_ = (minc == 0 ? cov::PARTCOVERED : cov::COVERED);
 }

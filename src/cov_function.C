@@ -107,6 +107,7 @@ cov_function_t::is_self_suppressed() const
     return FALSE;
 }
 
+
 void
 cov_function_t::suppress()
 {
@@ -287,6 +288,11 @@ cov_function_t::reconcile_calls()
 	    	a->name_ = b->pop_call();
 	    	dprintf2(D_CGRAPH|D_VERBOSE, "    block %s calls %s\n",
 		    	    	    desc.data(), a->name_.data());
+		if (a->is_call_suppressed())
+		{
+		    dprintf0(D_CGRAPH|D_VERBOSE, "    suppressing\n");
+		    b->suppress();
+		}
 	    }
     	}
 	dprintf2(D_CGRAPH, "Reconciled %d calls for block %s\n",
