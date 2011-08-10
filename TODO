@@ -23,17 +23,11 @@ x  Test both cases in test030
    tggcov bar.c bar.y
    tggcov bar.y bar.c
 
-x  Merge all the unit tests into a single executable and use a
-   half-decent attempt at a unit test framework.
-
 x  Need a decent string array class.
 
 x  Reimplement file_normalise and file_make_absolute using
    a string array class.  Possibly wrap those up in a pathname
    class.
-
-x  Remove uses of hashtable_t::foreach() and replace them with
-   hashtable_iter_t which can only make for more readable code.
 
 x  Make the --disable-crash-dialog commandline option work
 
@@ -72,16 +66,6 @@ x  New gcc 3.3 code is much smarter (or at least more complex)
 x  Split out the i386 and DWARF specific code into separate source
    files chosen from configure.in so that multiple targets can be
    supported.  Use the full autoconf magic to allow for cross-ggcov.
-
-x  This is pretty ambitious: detect branches & lines which constitute
-   memory allocation failure handling, and optionally don't count
-   them in line coverage stats.  Heuristic would be: call to memory
-   allocator, followed by branch to bb that optionally calls error
-   handler, then branches or falls through to return.  "memory
-   allocator" defined recursively as malloc() et al, strdup() et
-   al, C++ op new et al, and trivial wrappers.  gnb_xmalloc() is a
-   *non* trivial wrapper as it handles error conditions internally.
-   Error handlers...fprintf, syslog.
 
 x  Annotate source with per-function coverage summaries.  The challenge
    is that this breaks the identity between source code line and text
@@ -347,3 +331,10 @@ x  git-history-coverage needs the --gcda-prefix option too
 
 x  git-history-coverage needs to use Getopt or equivalent
    so --foo=bar form works
+
+x  Merge all the unit tests into a single executable and use a
+   half-decent attempt at a unit test framework.
+
+x  Remove uses of hashtable_t::foreach() and replace them with
+   hashtable_iter_t which can only make for more readable code.
+
