@@ -2,10 +2,8 @@ Makefile.in
 Makefile
 ggcov
 licence.c
-bbdump
 testrunner
 mangletest
-newbbgdump
 popttest
 ggcov-webdb
 tggcov
