@@ -48,11 +48,21 @@ static int header_flag = FALSE;
 static int blocks_flag = FALSE;
 static int lines_flag = FALSE;
 static int new_format_flag = FALSE;
+static int status_flag = FALSE;
 static int annotate_flag = FALSE;
 static int check_callgraph_flag = FALSE;
 static int dump_callgraph_flag = FALSE;
 static const char *reports = 0;
 static char *output_filename;
+
+static const char *status_short_names[cov::NUM_STATUS] =
+{
+    "CO",
+    "PC",
+    "UN",
+    "UI",
+    "SU"
+};
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -110,12 +120,16 @@ annotate_file(cov_file_t *f)
     	    fprintf(outfp, "Block(s)");
 	if (lines_flag)
     	    fprintf(outfp, " Line   ");
+	if (status_flag)
+    	    fprintf(outfp, " Status ");
     	fprintf(outfp, " Source\n");
 
     	fprintf(outfp, "============    ");
 	if (blocks_flag)
     	    fprintf(outfp, "======= ");
 	if (lines_flag)
+    	    fprintf(outfp, "======= ");
+	if (status_flag)
     	    fprintf(outfp, "======= ");
     	fprintf(outfp, "=======\n");
     }
@@ -161,6 +175,10 @@ annotate_file(cov_file_t *f)
 	if (lines_flag)
 	{
 	    fprintf(outfp, "%7lu ", lineno);
+	}
+	if (status_flag)
+	{
+	    fprintf(outfp, "%7s ", status_short_names[ln->status()]);
 	}
 	fputs(buf, outfp);
     }
@@ -411,6 +429,15 @@ static struct poptOption popt_options[] =
 	&lines_flag,     	    	    	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"in annotated source, display line numbers", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+	"status",	    	    	    	/* longname */
+	'S',  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&status_flag,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"in annotated source, display line status", /* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {

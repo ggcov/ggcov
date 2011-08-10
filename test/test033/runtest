@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+. ../common.sh
+
+init "Suppression of assert() failure blocks"
+
+compile_c foo.c
+link foo foo.o
+
+run foo 1 2
+
+run_gcov foo.c
+run_tggcov -S foo.c
+compare_status foo.c

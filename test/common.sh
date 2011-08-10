@@ -502,7 +502,7 @@ run_tggcov ()
     	case "$1" in
 	-a|-G) mode="$1" ;;
 	-N) nflag="$1" ;;
-	-P) flags="$flags $1" ;;
+	-P|-S) flags="$flags $1" ;;
 	-D|-X|-Y|-Z) flags="$flags $1 $2" ; shift ;;
 	-*) fatal "run_tggcov: unknown option \"$1\"" ;;
 	*)
@@ -577,6 +577,16 @@ compare_counts ()
 
     _filter expected $1 $TF.ex
     _filter expected $TF
+    _diff $TF.ex $TF.filt
+}
+
+compare_status ()
+{
+    vcmd "compare_status $*"
+    local TF=$(_tggcov_file $1)
+
+    _filter status $1 $TF.ex
+    _filter status $TF
     _diff $TF.ex $TF.filt
 }
 
