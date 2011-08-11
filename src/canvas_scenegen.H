@@ -52,6 +52,9 @@ private:
 	return (border_flag_ ? border_buf_ : (const char *)0);
     }
     void handle_object(GnomeCanvasItem*);
+    static gboolean on_query_tooltip(GtkWidget *, gint, gint,
+				    gboolean, GtkTooltip *, gpointer);
+    static void format_tooltip(estring &, cov_block_t *);
 
     GnomeCanvas *canvas_;
     GnomeCanvasGroup *root_;
@@ -65,6 +68,9 @@ private:
     gboolean first_arrow_flag_;
     GnomeCanvasPoints points_;
     unsigned int points_size_;
+
+    /* state for delayed object handling */
+    gboolean registered_tooltip_;
 };
 
 #endif /* _ggcov_canvas_scenegen_H_ */

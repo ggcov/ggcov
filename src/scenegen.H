@@ -78,16 +78,19 @@ public:
 
     virtual void object(cov_function_t *);
     virtual void object(cov_file_t *);
+    virtual void object(cov_block_t *);
 
 protected:
     enum object_type_t
     {
     	OT_NONE=0,
 	OT_FUNCTION,
-	OT_FILE
+	OT_FILE,
+	OT_BLOCK
     };
     cov_file_t *get_file();
     cov_function_t *get_function();
+    cov_block_t *get_block();
 
     double arrow_size_;
     double arrow_shape_[3];

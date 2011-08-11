@@ -27,6 +27,8 @@ CVSID("$Id: canvas_scenegen.C,v 1.4 2010-05-09 05:37:14 gnb Exp $");
     snprintf((b), sizeof((b)), "#%02x%02x%02x", \
 		((rgb)>>16)&0xff, ((rgb)>>8)&0xff, (rgb)&0xff)
 
+static const char BLOCK_KEY[] = "ggcov-canvas-scenegen-block";
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 canvas_scenegen_t::canvas_scenegen_t(GnomeCanvas *can)
@@ -38,6 +40,7 @@ canvas_scenegen_t::canvas_scenegen_t(GnomeCanvas *can)
     points_.num_points = 0;
     points_.ref_count = 1;
     points_size_ = 0;
+    registered_tooltip_ = FALSE;
 }
 
 canvas_scenegen_t::~canvas_scenegen_t()
@@ -79,13 +82,30 @@ canvas_scenegen_t::fill(unsigned int rgb)
 void
 canvas_scenegen_t::handle_object(GnomeCanvasItem *item)
 {
-    cov_function_t *fn;
-
-    if ((fn = get_function()) != 0)
+    cov_function_t *fn = get_function();
+    if (fn)
     {
     	canvas_function_popup_t *fpop = new canvas_function_popup_t(item, fn);
     	fpop->set_foreground(border_color());
     	fpop->set_background(fill_color());
+	return;
+    }
+
+    cov_block_t *b = get_block();
+    if (b)
+    {
+	if (!registered_tooltip_)
+	{
+	    GnomeCanvas *canvas = GNOME_CANVAS_ITEM(item)->canvas;
+	    gtk_widget_set(GTK_WIDGET(canvas),
+			   "has-tooltip", TRUE,
+			   (char *)0);
+	    gtk_signal_connect(GTK_OBJECT(canvas), "query-tooltip",
+		    GTK_SIGNAL_FUNC(on_query_tooltip), NULL);
+	    registered_tooltip_ = TRUE;
+	}
+	gtk_object_set_data(GTK_OBJECT(item), BLOCK_KEY, (gpointer)b);
+	return;
     }
 }
 
@@ -182,6 +202,87 @@ canvas_scenegen_t::polyline_end(gboolean arrow)
 		/* setting width_pixels screws up the arrow heads !?!? */
 		(char *)0);
     handle_object(item);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void describe_status(estring &txt, cov::status_t status, count_t count)
+{
+    switch (status)
+    {
+    case cov::SUPPRESSED:
+	txt.append_printf("(suppressed)\n");
+	break;
+    case cov::UNCOVERED:
+	txt.append_printf("never executed\n");
+	break;
+    default:
+	txt.append_printf("executed "GNB_U64_DFMT" times\n", count);
+	break;
+    }
+}
+
+void
+canvas_scenegen_t::format_tooltip(estring &txt, cov_block_t *b)
+{
+    txt.append_printf("Block %d\n", b->bindex());
+    txt.append_printf("of %s\n", b->function()->name());
+
+    describe_status(txt, b->status(), b->count());
+    for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
+    {
+	cov_arc_t *a = *aiter;
+	txt.append_printf("arc %u: ", a->aindex());
+	if (a->is_call())
+	{
+	    const char *n = a->call_name();
+	    txt.append_printf("call to %s", (n ? n : "unknown function"));
+	}
+	else if (a->is_return())
+	{
+	    txt.append_printf("return from function");
+	}
+	else if (a->is_fall_through())
+	{
+	    txt.append_printf("fall through to block %u", a->to()->bindex());
+	}
+	else
+	{
+	    txt.append_printf("branch to block %u", a->to()->bindex());
+	}
+	txt.append_string(", ");
+	describe_status(txt, a->status(), a->count());
+    }
+}
+
+gboolean
+canvas_scenegen_t::on_query_tooltip(GtkWidget *w, gint x, gint y,
+				    gboolean keyboard_mode, GtkTooltip *tooltip,
+				    gpointer closure)
+{
+    GnomeCanvas *canvas = GNOME_CANVAS(w);
+
+    double wx, wy;
+    gnome_canvas_c2w(canvas, x, y, &wx, &wy);
+
+    GnomeCanvasItem *item = gnome_canvas_get_item_at(canvas, wx, wy);
+    if (!item)
+	return FALSE;
+
+    estring txt;
+
+    cov_block_t *b = (cov_block_t *)gtk_object_get_data(GTK_OBJECT(item), BLOCK_KEY);
+    if (b)
+	format_tooltip(txt, b);
+
+    while (txt.length() && txt.data()[txt.length()-1] == '\n')
+	txt.truncate_to(txt.length()-1);
+    if (txt.length())
+    {
+	gtk_tooltip_set_text(tooltip, txt.data());
+	return TRUE;
+    }
+    return FALSE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

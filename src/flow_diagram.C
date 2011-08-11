@@ -871,7 +871,7 @@ flow_diagram_t::show_node(node_t *node, scenegen_t *sg)
 
     sg->fill(bg_rgb_by_status_[node->block_->status()]);
     sg->border(RGB(0,0,0));
-//     sg->object(node->block_);
+    sg->object(node->block_);
     sg->box(node->x_, node->y_, node->w_, node->h_);
 
 #if 0

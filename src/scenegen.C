@@ -72,6 +72,12 @@ scenegen_t::object(cov_file_t *f)
     set_object(OT_FILE, f);
 }
 
+void
+scenegen_t::object(cov_block_t *b)
+{
+    set_object(OT_BLOCK, b);
+}
+
 void *
 scenegen_t::get_object(object_type_t type)
 {
@@ -97,6 +103,12 @@ cov_file_t *
 scenegen_t::get_file()
 {
     return (cov_file_t *)get_object(OT_FILE);
+}
+
+cov_block_t *
+scenegen_t::get_block()
+{
+    return (cov_block_t *)get_object(OT_BLOCK);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

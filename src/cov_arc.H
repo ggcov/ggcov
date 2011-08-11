@@ -55,6 +55,12 @@ public:
     {
     	return fall_through_;
     }
+    boolean
+    is_return() const
+    {
+	cov_block_t *epilogue = to_->function()->blocks().tail();
+	return to_ == epilogue;
+    }
     const char *call_name() const
     {
     	return name_;
