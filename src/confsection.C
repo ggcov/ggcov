@@ -66,6 +66,20 @@ confsection_t::get(const char *name)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+#if HAVE_LIBGCONF
+static void
+handle_error(const char *name, GError *e)
+{
+    if (e)
+    {
+	fprintf(stderr, "ERROR: confsection(%s): %s\n", name, e->message);
+	g_error_free(e);
+    }
+}
+#endif
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 char *
 confsection_t::make_key(const char *name) const
 {
@@ -84,13 +98,14 @@ confsection_t::get_string(const char *name, const char *deflt)
 {
     char *val;
     string_var key = make_key(name);
-    
+
 #if HAVE_LIBGCONF
-    GConfValue *gcv = gconf_client_get(gconf_client_get_default(),
-    	    	    	    	       key, (GError **)0);
+    GError *e = 0;
+    GConfValue *gcv = gconf_client_get(gconf_client_get_default(), key, &e);
+    handle_error(secname_, e);
     if (gcv == 0)
     {
-    	val = (deflt == 0 ? 0 : g_strdup(deflt));
+	val = (deflt == 0 ? 0 : g_strdup(deflt));
     }
     else
     {
@@ -113,8 +128,10 @@ confsection_t::set_string(const char *name, const char *value)
     string_var key = make_key(name);
 
 #if HAVE_LIBGCONF
+    GError *e = 0;
     gconf_client_set_string(gconf_client_get_default(),
-    	    	    	    key.data(), value, (GError **)0);
+			    key.data(), value, &e);
+    handle_error(secname_, e);
 #else
     gnome_config_set_string(key.data(), value);
 #endif
@@ -171,13 +188,14 @@ confsection_t::get_bool(const char *name, gboolean deflt)
 {
     gboolean val;
     string_var key = make_key(name);
-    
+
 #if HAVE_LIBGCONF
-    GConfValue *gcv = gconf_client_get(gconf_client_get_default(),
-    	    	    	    	       key, (GError **)0);
+    GError *e = 0;
+    GConfValue *gcv = gconf_client_get(gconf_client_get_default(), key, &e);
+    handle_error(secname_, e);
     if (gcv == 0)
     {
-    	val = deflt;
+	val = deflt;
     }
     else
     {
@@ -199,8 +217,9 @@ confsection_t::set_bool(const char *name, gboolean value)
     string_var key = make_key(name);
 
 #if HAVE_LIBGCONF
+    GError *e = 0;
     gconf_client_set_bool(gconf_client_get_default(),
-    	    	    	  key, value, (GError **)0);
+			  key, value, &e);
 #else
     gnome_config_set_bool(key.data(), value);
 #endif
@@ -213,13 +232,14 @@ confsection_t::get_int(const char *name, int deflt)
 {
     int val;
     string_var key = make_key(name);
-    
+
 #if HAVE_LIBGCONF
-    GConfValue *gcv = gconf_client_get(gconf_client_get_default(),
-    	    	    	    	       key, (GError **)0);
+    GError *e = 0;
+    GConfValue *gcv = gconf_client_get(gconf_client_get_default(), key, &e);
+    handle_error(secname_, e);
     if (gcv == 0)
     {
-    	val = deflt;
+	val = deflt;
     }
     else
     {
@@ -241,8 +261,10 @@ confsection_t::set_int(const char *name, int value)
     string_var key = make_key(name);
 
 #if HAVE_LIBGCONF
+    GError *e = 0;
     gconf_client_set_int(gconf_client_get_default(),
-    	    	    	 key, value, (GError **)0);
+			 key, value, &e);
+    handle_error(secname_, e);
 #else
     gnome_config_set_int(key.data(), value);
 #endif
@@ -255,13 +277,14 @@ confsection_t::get_float(const char *name, float deflt)
 {
     float val;
     string_var key = make_key(name);
-    
+
 #if HAVE_LIBGCONF
-    GConfValue *gcv = gconf_client_get(gconf_client_get_default(),
-    	    	    	    	       key, (GError **)0);
+    GError *e = 0;
+    GConfValue *gcv = gconf_client_get(gconf_client_get_default(), key, &e);
+    handle_error(secname_, e);
     if (gcv == 0)
     {
-    	val = deflt;
+	val = deflt;
     }
     else
     {
@@ -283,8 +306,9 @@ confsection_t::set_float(const char *name, float value)
     string_var key = make_key(name);
 
 #if HAVE_LIBGCONF
-    gconf_client_set_float(gconf_client_get_default(),
-    	    	    	   key, value, (GError **)0);
+    GError *e = 0;
+    gconf_client_set_float(gconf_client_get_default(), key, value, &e);
+    handle_error(secname_, e);
 #else
     gnome_config_set_float(key.data(), value);
 #endif
