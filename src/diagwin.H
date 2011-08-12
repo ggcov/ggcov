@@ -39,6 +39,7 @@ private:
     void populate();
     void zoom_all();
     void zoom_to(double factor);
+    const char *name() const;
     static diagwin_t *from_widget(GtkWidget *w)
     {
     	return (diagwin_t *)window_t::from_widget(w);

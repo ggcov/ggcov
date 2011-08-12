@@ -6,7 +6,6 @@ x  Convert to using stdtypes.h and uint64_t.  Also stdbool.h and bool.
 x  For the Blocks column in the Source window, colourise each block
    number according to its coverage status, not the whole line.
 
-x  Remember in prefs the size of the Source window.
 x  Remember in prefs the set of visible columns in the Source window.
 
 x  test solving a function in which a signal was delivered which
@@ -350,3 +349,4 @@ x  On the flow diagrams in the Source window, add a tooltip on each
    block with the block's number, count & status, arcs and their counts,
    and any discovered call.
 
+x  Remember in prefs the size of the Source window.

@@ -125,6 +125,14 @@ diagwin_t::populate()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+const char *
+diagwin_t::name() const
+{
+    return diagram_->name();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 GLADE_CALLBACK void
 on_diag_zoom_in_activate(GtkWidget *w, gpointer data)
 {

@@ -47,11 +47,19 @@ protected:
     void attach(GtkWidget *);
     void set_window(GtkWidget *);
     void set_title(const char *);
+    virtual const char *name() const;
 
     GtkWidget *window_;
     boolean deleting_:1;    /* handle possible GUI recursion crap */
-    boolean shown_:1;	     /* has been shown()n at least once */
+    boolean shown_:1;	    /* has been shown()n at least once */
+    boolean geom_dirty_:1;  /* geometry needs to be saved */
 
+private:
+    void load_geometry();
+    void save_geometry();
+    struct { int x, y, w, h; } geom_;
+
+    static gboolean on_configure_event(GtkWidget *, GdkEventConfigure *, gpointer);
     friend void on_window_close_activate(GtkWidget *w, gpointer data);
     friend void on_window_exit_activate(GtkWidget *w, gpointer data);
 };

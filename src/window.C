@@ -22,17 +22,21 @@
 #include "mvc.h"
 #include "tok.H"
 #include "string_var.H"
+#include "confsection.H"
 #include "prefs.H"
 
 CVSID("$Id: window.C,v 1.17 2010-05-09 05:37:15 gnb Exp $");
 
 static const char window_key[] = "ggcov_window_key";
 
+static list_t<window_t> all;
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 window_t::window_t()
 {
     mvc_listen(cov_file_t::files_model(), ~0, files_changed, this);
+    all.prepend(this);
 }
 
 window_t::~window_t()
@@ -43,8 +47,9 @@ window_t::~window_t()
 
     mvc_unlisten(cov_file_t::files_model(), ~0, files_changed, this);
     
-    assert(window_ != 0);
+    assert(window_);
     gtk_widget_destroy(window_);
+    all.remove(this);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -199,6 +204,9 @@ void
 window_t::attach(GtkWidget *w)
 {
     gtk_object_set_data(GTK_OBJECT(w), window_key, this);
+
+    gtk_signal_connect(GTK_OBJECT(w), "configure-event",
+		       GTK_SIGNAL_FUNC(on_configure_event), this);
 }
 
 void
@@ -215,6 +223,14 @@ void
 window_t::set_title(const char *file)
 {
     ui_window_set_title(window_, file);
+}
+
+const char *
+window_t::name() const
+{
+    if (window_)
+	return GTK_WIDGET(window_)->name;
+    return 0;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -251,10 +267,41 @@ window_t::files_changed(void *obj, unsigned int features, void *closure)
 }
 
 void
+window_t::load_geometry()
+{
+    assert(window_);
+    confsection_t *cs = confsection_t::get("window-geometry");
+    const char *geom = cs->get_string(name(), 0);
+    if (!geom)
+	return;
+    gtk_window_parse_geometry(GTK_WINDOW(window_), geom);
+}
+
+void
+window_t::save_geometry()
+{
+    if (!geom_dirty_)
+	return;
+    assert(window_);
+    int x, y, w, h;
+    gtk_window_get_size(GTK_WINDOW(window_), &w, &h);
+    gtk_window_get_position(GTK_WINDOW(window_), &x, &y);
+    estring geom;
+    geom.append_printf("=%dx%d+%d+%d", w, h, x, y);
+    confsection_t *cs = confsection_t::get("window-geometry");
+    cs->set_string(name(), geom.data());
+    confsection_t::sync();
+    geom_dirty_ = FALSE;
+}
+
+void
 window_t::show()
 {
     if (!shown_)
+    {
 	populate();
+	load_geometry();
+    }
     gtk_widget_show(window_);
     if (shown_)
     	gdk_window_raise(window_->window);
@@ -271,13 +318,35 @@ on_window_close_activate(GtkWidget *w, gpointer data)
     window_t *win = window_t::from_widget(w);
     
     assert(win != 0);
+    win->save_geometry();
     delete win;
 }
 
 GLADE_CALLBACK void
 on_window_exit_activate(GtkWidget *w, gpointer data)
 {
+    for (list_iterator_t<window_t> itr = all.first() ; *itr ; ++itr)
+	(*itr)->save_geometry();
     gtk_main_quit();
+}
+
+gboolean
+window_t::on_configure_event(GtkWidget *w,
+			     GdkEventConfigure *ev, gpointer closure)
+{
+    window_t *win = (window_t *)closure;
+
+    if (win->geom_.w &&
+	(win->geom_.x != ev->x ||
+	 win->geom_.y != ev->y ||
+	 win->geom_.w != ev->width ||
+	 win->geom_.h != ev->height))
+	win->geom_dirty_ = TRUE;
+    win->geom_.x = ev->x;
+    win->geom_.y = ev->y;
+    win->geom_.w = ev->width;
+    win->geom_.h = ev->height;
+    return FALSE;	/* propagate the event please */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
