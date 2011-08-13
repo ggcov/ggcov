@@ -411,6 +411,8 @@ sourcewin_t::sourcewin_t()
     column_checks_[COL_COUNT] = glade_xml_get_widget(xml, "source_count_check");
     column_checks_[COL_SOURCE] = glade_xml_get_widget(xml, "source_source_check");
     colors_check_ = glade_xml_get_widget(xml, "source_colors_check");
+    toolbar_check_ = glade_xml_get_widget(xml, "source_toolbar_check");
+    titles_check_ = glade_xml_get_widget(xml, "source_titles_check");
     flow_diagram_item_ = glade_xml_get_widget(xml, "source_flow_diagram");
     toolbar_ = glade_xml_get_widget(xml, "source_toolbar");
     filenames_combo_ = glade_xml_get_widget(xml, "source_filenames_combo");
@@ -445,8 +447,6 @@ sourcewin_t::sourcewin_t()
     xml = ui_load_tree("source_saveas");
     saveas_dialog_ = glade_xml_get_widget(xml, "source_saveas");
     attach(saveas_dialog_);
-
-    load_toggles();
 
     instances_.append(this);
 }
@@ -923,33 +923,44 @@ sourcewin_t::show_filename(const char *filename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-/* Load initial settings of column checkboxes from config */
 void
-sourcewin_t::load_toggles()
+sourcewin_t::apply_toggles()
+{
+    if (GTK_CHECK_MENU_ITEM(toolbar_check_)->active)
+	gtk_widget_show(toolbar_);
+    else
+	gtk_widget_hide(toolbar_);
+
+    if (GTK_CHECK_MENU_ITEM(titles_check_)->active)
+    {
+	update_title_buttons();
+	gtk_widget_show(titles_hbox_);
+    }
+    else
+	gtk_widget_hide(titles_hbox_);
+}
+
+void
+sourcewin_t::load_state()
 {
     populating_ = TRUE; /* suppress check menu item callback */
-    confsection_t *cs = confsection_t::get("gtk-toggles");
     for (unsigned int i = 0 ; i < NUM_COLS ; i++)
-    {
-	GtkWidget *w = column_checks_[i];
-	boolean b = cs->get_bool(GTK_WIDGET(w)->name,
-			         GTK_CHECK_MENU_ITEM(w)->active);
-	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(w), b);
-    }
+	load(GTK_CHECK_MENU_ITEM(column_checks_[i]));
+    load(GTK_CHECK_MENU_ITEM(colors_check_));
+    load(GTK_CHECK_MENU_ITEM(toolbar_check_));
+    load(GTK_CHECK_MENU_ITEM(titles_check_));
+    apply_toggles();
     populating_ = FALSE;
 }
 
-/* Save toggle settings back to config */
 void
-sourcewin_t::save_toggles()
+sourcewin_t::save_state()
 {
-    confsection_t *cs = confsection_t::get("gtk-toggles");
     for (unsigned int i = 0 ; i < NUM_COLS ; i++)
-    {
-	GtkWidget *w = column_checks_[i];
-	boolean b = !!GTK_CHECK_MENU_ITEM(column_checks_[i])->active;
-	cs->set_bool(GTK_WIDGET(w)->name, b);
-    }
+	save(GTK_CHECK_MENU_ITEM(column_checks_[i]));
+    save(GTK_CHECK_MENU_ITEM(colors_check_));
+    save(GTK_CHECK_MENU_ITEM(toolbar_check_));
+    save(GTK_CHECK_MENU_ITEM(titles_check_));
     confsection_t::sync();
 }
 
@@ -964,40 +975,40 @@ on_source_column_check_activate(GtkWidget *w, gpointer data)
     if (sw->populating_)
 	return;
     sw->update();
-    sw->save_toggles();
+    sw->save_state();
 }
 
 GLADE_CALLBACK void
 on_source_colors_check_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
-    
+
+    if (sw->populating_)
+	return;
     sw->update();
+    sw->save_state();
 }
 
 GLADE_CALLBACK void
 on_source_toolbar_check_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
-    
-    if (GTK_CHECK_MENU_ITEM(w)->active)
-    	gtk_widget_show(sw->toolbar_);
-    else
-    	gtk_widget_hide(sw->toolbar_);
+
+    if (sw->populating_)
+	return;
+    sw->apply_toggles();
+    sw->save_state();
 }
 
 GLADE_CALLBACK void
 on_source_titles_check_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
-    
-    if (GTK_CHECK_MENU_ITEM(w)->active)
-    {
-    	sw->update_title_buttons();
-    	gtk_widget_show(sw->titles_hbox_);
-    }
-    else
-    	gtk_widget_hide(sw->titles_hbox_);
+
+    if (sw->populating_)
+	return;
+    sw->apply_toggles();
+    sw->save_state();
 }
 
 GLADE_CALLBACK void

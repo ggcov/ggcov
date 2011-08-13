@@ -22,6 +22,7 @@
 #include "sourcewin.H"
 #include "cov.H"
 #include "prefs.H"
+#include "confsection.H"
 
 CVSID("$Id: functionswin.C,v 1.19 2010-05-09 05:37:15 gnb Exp $");
 
@@ -350,13 +351,54 @@ functionswin_t::update()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+void
+functionswin_t::load_state()
+{
+    populating_ = TRUE; /* suppress check menu item callback */
+    load(GTK_CHECK_MENU_ITEM(blocks_check_));
+    load(GTK_CHECK_MENU_ITEM(lines_check_));
+    load(GTK_CHECK_MENU_ITEM(calls_check_));
+    load(GTK_CHECK_MENU_ITEM(branches_check_));
+    load(GTK_CHECK_MENU_ITEM(percent_check_));
+    apply_toggles();
+    populating_ = FALSE;
+}
+
+void
+functionswin_t::save_state()
+{
+    save(GTK_CHECK_MENU_ITEM(blocks_check_));
+    save(GTK_CHECK_MENU_ITEM(lines_check_));
+    save(GTK_CHECK_MENU_ITEM(calls_check_));
+    save(GTK_CHECK_MENU_ITEM(branches_check_));
+    save(GTK_CHECK_MENU_ITEM(percent_check_));
+    confsection_t::sync();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+functionswin_t::apply_toggles()
+{
+    ui_list_set_column_visibility(clist_, COL_BLOCKS,
+		    GTK_CHECK_MENU_ITEM(blocks_check_)->active);
+    ui_list_set_column_visibility(clist_, COL_LINES,
+		    GTK_CHECK_MENU_ITEM(lines_check_)->active);
+    ui_list_set_column_visibility(clist_, COL_CALLS,
+		    GTK_CHECK_MENU_ITEM(calls_check_)->active);
+    ui_list_set_column_visibility(clist_, COL_BRANCHES,
+		    GTK_CHECK_MENU_ITEM(branches_check_)->active);
+}
+
 GLADE_CALLBACK void
 on_functions_blocks_check_activate(GtkWidget *w, gpointer data)
 {
     functionswin_t *fw = functionswin_t::from_widget(w);
 
-    ui_list_set_column_visibility(fw->clist_, COL_BLOCKS,
-    	    	    GTK_CHECK_MENU_ITEM(fw->blocks_check_)->active);
+    if (fw->populating_)
+	return;
+    fw->apply_toggles();
+    fw->save_state();
 }
 
 GLADE_CALLBACK void
@@ -364,8 +406,10 @@ on_functions_lines_check_activate(GtkWidget *w, gpointer data)
 {
     functionswin_t *fw = functionswin_t::from_widget(w);
 
-    ui_list_set_column_visibility(fw->clist_, COL_LINES,
-    	    	    GTK_CHECK_MENU_ITEM(fw->lines_check_)->active);
+    if (fw->populating_)
+	return;
+    fw->apply_toggles();
+    fw->save_state();
 }
 
 GLADE_CALLBACK void
@@ -373,8 +417,10 @@ on_functions_calls_check_activate(GtkWidget *w, gpointer data)
 {
     functionswin_t *fw = functionswin_t::from_widget(w);
 
-    ui_list_set_column_visibility(fw->clist_, COL_CALLS,
-    	    	    GTK_CHECK_MENU_ITEM(fw->calls_check_)->active);
+    if (fw->populating_)
+	return;
+    fw->apply_toggles();
+    fw->save_state();
 }
 
 GLADE_CALLBACK void
@@ -382,8 +428,10 @@ on_functions_branches_check_activate(GtkWidget *w, gpointer data)
 {
     functionswin_t *fw = functionswin_t::from_widget(w);
 
-    ui_list_set_column_visibility(fw->clist_, COL_BRANCHES,
-    	    	    GTK_CHECK_MENU_ITEM(fw->branches_check_)->active);
+    if (fw->populating_)
+	return;
+    fw->apply_toggles();
+    fw->save_state();
 }
 
 GLADE_CALLBACK void
@@ -391,7 +439,10 @@ on_functions_percent_check_activate(GtkWidget *w, gpointer data)
 {
     functionswin_t *fw = functionswin_t::from_widget(w);
 
+    if (fw->populating_)
+	return;
     fw->update();
+    fw->save_state();
 }
 
 GLADE_CALLBACK gboolean

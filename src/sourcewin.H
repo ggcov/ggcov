@@ -107,8 +107,9 @@ private:
     static void on_vadjustment_value_changed(GtkAdjustment *, gpointer);
     void adjust_text_size(int dirn);
 #endif
-    void load_toggles();
-    void save_toggles();
+    void apply_toggles();
+    void load_state();
+    void save_state();
 
     static sourcewin_t *from_widget(GtkWidget *w)
     {
@@ -125,6 +126,8 @@ private:
     ui_text_tag *text_tags_[cov::NUM_STATUS];
     GtkWidget *column_checks_[NUM_COLS];
     GtkWidget *colors_check_;
+    GtkWidget *toolbar_check_;
+    GtkWidget *titles_check_;
     GtkWidget *flow_diagram_item_;
     GtkWidget *toolbar_;
     GtkWidget *filenames_combo_;

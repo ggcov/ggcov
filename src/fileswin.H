@@ -47,6 +47,9 @@ private:
     void update();
     void grey_items();
     void add_node(file_rec_t*, file_rec_t*, gboolean, gboolean);
+    void load_state();
+    void save_state();
+    void apply_toggles();
     static fileswin_t *from_widget(GtkWidget *w)
     {
     	return (fileswin_t *)window_t::from_widget(w);
@@ -67,6 +70,7 @@ private:
 #if GTK2
     GtkTreeStore *store_;
 #endif
+    gboolean populating_;
 
     friend void on_files_blocks_check_activate(GtkWidget *w, gpointer data);
     friend void on_files_lines_check_activate(GtkWidget *w, gpointer data);

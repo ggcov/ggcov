@@ -299,6 +299,7 @@ window_t::show()
 {
     if (!shown_)
     {
+	load_state();
 	populate();
 	load_geometry();
     }
@@ -347,6 +348,34 @@ window_t::on_configure_event(GtkWidget *w,
     win->geom_.w = ev->width;
     win->geom_.h = ev->height;
     return FALSE;	/* propagate the event please */
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+window_t::load_state()
+{
+}
+
+void
+window_t::save_state()
+{
+}
+
+void
+load(GtkCheckMenuItem *cmi)
+{
+    confsection_t *cs = confsection_t::get("gtk-toggles");
+    boolean b = cs->get_bool(GTK_WIDGET(cmi)->name, cmi->active);
+    gtk_check_menu_item_set_active(cmi, b);
+}
+
+void
+save(GtkCheckMenuItem *cmi)
+{
+    confsection_t *cs = confsection_t::get("gtk-toggles");
+    boolean b = !!cmi->active;
+    cs->set_bool(GTK_WIDGET(cmi)->name, b);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -39,6 +39,9 @@ public:
 private:
     void populate();
     void update();
+    void load_state();
+    void save_state();
+    void apply_toggles();
     static functionswin_t *from_widget(GtkWidget *w)
     {
     	return (functionswin_t *)window_t::from_widget(w);
@@ -56,6 +59,7 @@ private:
 #if GTK2
     GtkListStore *store_;
 #endif
+    gboolean populating_;
 
     friend void on_functions_blocks_check_activate(GtkWidget *w, gpointer data);
     friend void on_functions_lines_check_activate(GtkWidget *w, gpointer data);

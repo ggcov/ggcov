@@ -49,6 +49,9 @@ protected:
     void set_title(const char *);
     virtual const char *name() const;
 
+    virtual void load_state();
+    virtual void save_state();
+
     GtkWidget *window_;
     boolean deleting_:1;    /* handle possible GUI recursion crap */
     boolean shown_:1;	    /* has been shown()n at least once */
@@ -63,5 +66,8 @@ private:
     friend void on_window_close_activate(GtkWidget *w, gpointer data);
     friend void on_window_exit_activate(GtkWidget *w, gpointer data);
 };
+
+void load(GtkCheckMenuItem *);
+void save(GtkCheckMenuItem *);
 
 #endif /* _ggcov_window_H_ */
