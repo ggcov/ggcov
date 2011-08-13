@@ -477,28 +477,6 @@
 		<widget class="GtkList" id="list2">
 		  <property name="visible">True</property>
 		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-
-		  <child>
-		    <widget class="GtkListItem" id="listitem2">
-		      <property name="visible">True</property>
-
-		      <child>
-			<widget class="GtkLabel" id="label75">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes"></property>
-			  <property name="use_underline">False</property>
-			  <property name="use_markup">False</property>
-			  <property name="justify">GTK_JUSTIFY_LEFT</property>
-			  <property name="wrap">False</property>
-			  <property name="selectable">False</property>
-			  <property name="xalign">0</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
 		</widget>
 	      </child>
 	    </widget>
@@ -539,28 +517,6 @@
 		<widget class="GtkList" id="list3">
 		  <property name="visible">True</property>
 		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-
-		  <child>
-		    <widget class="GtkListItem" id="listitem3">
-		      <property name="visible">True</property>
-
-		      <child>
-			<widget class="GtkLabel" id="label76">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes"></property>
-			  <property name="use_underline">False</property>
-			  <property name="use_markup">False</property>
-			  <property name="justify">GTK_JUSTIFY_LEFT</property>
-			  <property name="wrap">False</property>
-			  <property name="selectable">False</property>
-			  <property name="xalign">0</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
 		</widget>
 	      </child>
 	    </widget>
@@ -1063,28 +1019,6 @@
 		<widget class="GtkList" id="convertwidget9">
 		  <property name="visible">True</property>
 		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-
-		  <child>
-		    <widget class="GtkListItem" id="convertwidget10">
-		      <property name="visible">True</property>
-
-		      <child>
-			<widget class="GtkLabel" id="convertwidget11">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes"></property>
-			  <property name="use_underline">False</property>
-			  <property name="use_markup">False</property>
-			  <property name="justify">GTK_JUSTIFY_LEFT</property>
-			  <property name="wrap">False</property>
-			  <property name="selectable">False</property>
-			  <property name="xalign">0</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
 		</widget>
 	      </child>
 	    </widget>
@@ -1125,28 +1059,6 @@
 		<widget class="GtkList" id="convertwidget12">
 		  <property name="visible">True</property>
 		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-
-		  <child>
-		    <widget class="GtkListItem" id="convertwidget13">
-		      <property name="visible">True</property>
-
-		      <child>
-			<widget class="GtkLabel" id="convertwidget14">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes"></property>
-			  <property name="use_underline">False</property>
-			  <property name="use_markup">False</property>
-			  <property name="justify">GTK_JUSTIFY_LEFT</property>
-			  <property name="wrap">False</property>
-			  <property name="selectable">False</property>
-			  <property name="xalign">0</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
 		</widget>
 	      </child>
 	    </widget>
@@ -1187,28 +1099,6 @@
 		<widget class="GtkList" id="convertwidget15">
 		  <property name="visible">True</property>
 		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-
-		  <child>
-		    <widget class="GtkListItem" id="convertwidget16">
-		      <property name="visible">True</property>
-
-		      <child>
-			<widget class="GtkLabel" id="convertwidget17">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes"></property>
-			  <property name="use_underline">False</property>
-			  <property name="use_markup">False</property>
-			  <property name="justify">GTK_JUSTIFY_LEFT</property>
-			  <property name="wrap">False</property>
-			  <property name="selectable">False</property>
-			  <property name="xalign">0</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
 		</widget>
 	      </child>
 	    </widget>
@@ -2519,28 +2409,6 @@
 		<widget class="GtkList" id="convertwidget22">
 		  <property name="visible">True</property>
 		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-
-		  <child>
-		    <widget class="GtkListItem" id="convertwidget23">
-		      <property name="visible">True</property>
-
-		      <child>
-			<widget class="GtkLabel" id="convertwidget24">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes"></property>
-			  <property name="use_underline">False</property>
-			  <property name="use_markup">False</property>
-			  <property name="justify">GTK_JUSTIFY_LEFT</property>
-			  <property name="wrap">False</property>
-			  <property name="selectable">False</property>
-			  <property name="xalign">0</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
 		</widget>
 	      </child>
 	    </widget>
@@ -2645,28 +2513,6 @@
 		<widget class="GtkList" id="convertwidget25">
 		  <property name="visible">True</property>
 		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-
-		  <child>
-		    <widget class="GtkListItem" id="convertwidget26">
-		      <property name="visible">True</property>
-
-		      <child>
-			<widget class="GtkLabel" id="convertwidget27">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes"></property>
-			  <property name="use_underline">False</property>
-			  <property name="use_markup">False</property>
-			  <property name="justify">GTK_JUSTIFY_LEFT</property>
-			  <property name="wrap">False</property>
-			  <property name="selectable">False</property>
-			  <property name="xalign">0</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
 		</widget>
 	      </child>
 	    </widget>
@@ -2913,28 +2759,6 @@
 		<widget class="GtkList" id="convertwidget30">
 		  <property name="visible">True</property>
 		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-
-		  <child>
-		    <widget class="GtkListItem" id="convertwidget31">
-		      <property name="visible">True</property>
-
-		      <child>
-			<widget class="GtkLabel" id="convertwidget32">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes"></property>
-			  <property name="use_underline">False</property>
-			  <property name="use_markup">False</property>
-			  <property name="justify">GTK_JUSTIFY_LEFT</property>
-			  <property name="wrap">False</property>
-			  <property name="selectable">False</property>
-			  <property name="xalign">0</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
 		</widget>
 	      </child>
 	    </widget>
@@ -4377,28 +4201,6 @@ C and C++ programs built with the GNU compiler.
 		<widget class="GtkList" id="convertwidget41">
 		  <property name="visible">True</property>
 		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-
-		  <child>
-		    <widget class="GtkListItem" id="convertwidget42">
-		      <property name="visible">True</property>
-
-		      <child>
-			<widget class="GtkLabel" id="convertwidget43">
-			  <property name="visible">True</property>
-			  <property name="label" translatable="yes"></property>
-			  <property name="use_underline">False</property>
-			  <property name="use_markup">False</property>
-			  <property name="justify">GTK_JUSTIFY_LEFT</property>
-			  <property name="wrap">False</property>
-			  <property name="selectable">False</property>
-			  <property name="xalign">0</property>
-			  <property name="yalign">0.5</property>
-			  <property name="xpad">0</property>
-			  <property name="ypad">0</property>
-			</widget>
-		      </child>
-		    </widget>
-		  </child>
 		</widget>
 	      </child>
 	    </widget>
