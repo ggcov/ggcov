@@ -107,6 +107,8 @@ private:
     static void on_vadjustment_value_changed(GtkAdjustment *, gpointer);
     void adjust_text_size(int dirn);
 #endif
+    void load_toggles();
+    void save_toggles();
 
     static sourcewin_t *from_widget(GtkWidget *w)
     {

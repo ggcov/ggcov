@@ -25,6 +25,7 @@
 #include "cov.H"
 #include "estring.H"
 #include "prefs.H"
+#include "confsection.H"
 
 CVSID("$Id: sourcewin.C,v 1.35 2010-05-09 05:37:15 gnb Exp $");
 
@@ -444,6 +445,8 @@ sourcewin_t::sourcewin_t()
     xml = ui_load_tree("source_saveas");
     saveas_dialog_ = glade_xml_get_widget(xml, "source_saveas");
     attach(saveas_dialog_);
+
+    load_toggles();
 
     instances_.append(this);
 }
@@ -920,13 +923,48 @@ sourcewin_t::show_filename(const char *filename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+/* Load initial settings of column checkboxes from config */
+void
+sourcewin_t::load_toggles()
+{
+    populating_ = TRUE; /* suppress check menu item callback */
+    confsection_t *cs = confsection_t::get("gtk-toggles");
+    for (unsigned int i = 0 ; i < NUM_COLS ; i++)
+    {
+	GtkWidget *w = column_checks_[i];
+	boolean b = cs->get_bool(GTK_WIDGET(w)->name,
+			         GTK_CHECK_MENU_ITEM(w)->active);
+	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(w), b);
+    }
+    populating_ = FALSE;
+}
+
+/* Save toggle settings back to config */
+void
+sourcewin_t::save_toggles()
+{
+    confsection_t *cs = confsection_t::get("gtk-toggles");
+    for (unsigned int i = 0 ; i < NUM_COLS ; i++)
+    {
+	GtkWidget *w = column_checks_[i];
+	boolean b = !!GTK_CHECK_MENU_ITEM(column_checks_[i])->active;
+	cs->set_bool(GTK_WIDGET(w)->name, b);
+    }
+    confsection_t::sync();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 
 GLADE_CALLBACK void
 on_source_column_check_activate(GtkWidget *w, gpointer data)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
-    
+
+    if (sw->populating_)
+	return;
     sw->update();
+    sw->save_toggles();
 }
 
 GLADE_CALLBACK void
