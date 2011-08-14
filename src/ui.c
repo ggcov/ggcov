@@ -148,10 +148,9 @@ set_active(GtkComboBox *cbox, gpointer data)
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
     GtkTreeIter treeitr;
 
-    if (!gtk_tree_model_get_iter_first(model, &treeitr))
-	return;
+    gboolean valid = gtk_tree_model_get_iter_first(model, &treeitr);
 
-    for ( ; gtk_tree_model_iter_next(model, &treeitr) ; )
+    while (valid)
     {
 	void *dd = 0;
 	gtk_tree_model_get(model, &treeitr, COL_DATA, &dd, -1);
@@ -160,6 +159,7 @@ set_active(GtkComboBox *cbox, gpointer data)
 	    gtk_combo_box_set_active_iter(cbox, &treeitr);
 	    return;
 	}
+	valid = gtk_tree_model_iter_next(model, &treeitr);
     }
 }
 
