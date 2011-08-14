@@ -28,8 +28,8 @@ GLADE_CALLBACK void on_calls_call_to_check_activate(GtkWidget *w, gpointer data)
 GLADE_CALLBACK void on_calls_line_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_arc_check_activate(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_count_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_from_function_entry_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_to_function_entry_changed(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_calls_from_function_combo_changed(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_calls_to_function_combo_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_from_function_view_clicked(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_calls_to_function_view_clicked(GtkWidget *w, gpointer data);
 GLADE_CALLBACK gboolean on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
@@ -67,8 +67,8 @@ private:
     friend void on_calls_line_check_activate(GtkWidget *w, gpointer data);
     friend void on_calls_arc_check_activate(GtkWidget *w, gpointer data);
     friend void on_calls_count_check_activate(GtkWidget *w, gpointer data);
-    friend void on_calls_from_function_entry_changed(GtkWidget *w, gpointer data);
-    friend void on_calls_to_function_entry_changed(GtkWidget *w, gpointer data);
+    friend void on_calls_from_function_combo_changed(GtkWidget *w, gpointer data);
+    friend void on_calls_to_function_combo_changed(GtkWidget *w, gpointer data);
     friend void on_calls_from_function_view_clicked(GtkWidget *w, gpointer data);
     friend void on_calls_to_function_view_clicked(GtkWidget *w, gpointer data);
     friend gboolean on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
