@@ -417,6 +417,10 @@ sourcewin_t::sourcewin_t()
     toolbar_ = glade_xml_get_widget(xml, "source_toolbar");
     filenames_combo_ = glade_xml_get_widget(xml, "source_filenames_combo");
     functions_combo_ = glade_xml_get_widget(xml, "source_functions_combo");
+#if GTK2
+    init(GTK_COMBO_BOX(filenames_combo_));
+    init(GTK_COMBO_BOX(functions_combo_));
+#endif
     titles_hbox_ = glade_xml_get_widget(xml, "source_titles_hbox");
     left_pad_label_ = glade_xml_get_widget(xml, "source_left_pad_label");
     title_buttons_[COL_FLOW] = glade_xml_get_widget(xml, "source_col_flow_button");
@@ -465,9 +469,12 @@ GLADE_CALLBACK void
 on_source_filenames_entry_changed(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
+#if GTK2
+    cov_file_t *f = (cov_file_t *)get_active(GTK_COMBO_BOX(sw->filenames_combo_));
+#else
     cov_file_t *f = (cov_file_t *)ui_combo_get_current_data(
-    	    	    	    	    GTK_COMBO(sw->filenames_combo_));
-    
+				    GTK_COMBO(sw->filenames_combo_));
+#endif
     if (sw->populating_ || !sw->shown_ || f == 0/*stupid gtk2*/)
     	return;
     sw->set_filename(f->name(), f->minimal_name());
@@ -478,13 +485,23 @@ void
 sourcewin_t::populate_filenames()
 {
     populating_ = TRUE; /* suppress combo entry callback */
+#if GTK2
+    GtkComboBox *cbox = GTK_COMBO_BOX(filenames_combo_);
+    clear(cbox);
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
+    {
+	cov_file_t *f = *iter;
+	add(cbox, f->minimal_name(), f);
+    }
+#else
     ui_combo_clear(GTK_COMBO(filenames_combo_));    /* stupid glade2 */
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
 	cov_file_t *f = *iter;
 
-    	ui_combo_add_data(GTK_COMBO(filenames_combo_), f->minimal_name(), f);
+	ui_combo_add_data(GTK_COMBO(filenames_combo_), f->minimal_name(), f);
     }
+#endif
     populating_ = FALSE;
 }
 
@@ -494,8 +511,12 @@ GLADE_CALLBACK void
 on_source_functions_entry_changed(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
+#if GTK2
+    cov_function_t *fn = (cov_function_t *)get_active(GTK_COMBO_BOX(sw->functions_combo_));
+#else
     cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
-    	    	    	    	    	    GTK_COMBO(sw->functions_combo_));
+					    GTK_COMBO(sw->functions_combo_));
+#endif
     const cov_location_t *first;
     const cov_location_t *last;
     
@@ -535,7 +556,7 @@ sourcewin_t::populate_functions()
     list_t<cov_function_t> functions;
     cov_file_t *f;
     cov_function_t *fn;
-    
+
     /* build an alphabetically sorted list of functions in the file */
     f = cov_file_t::find(filename_);
     assert(f != 0);
@@ -549,14 +570,20 @@ sourcewin_t::populate_functions()
 	functions.prepend(fn);
     }
     functions.sort(cov_function_t::compare);
-    
+
     /* now build the menu */
 
-    ui_combo_clear(GTK_COMBO(functions_combo_));
     populating_ = TRUE; /* suppress combo entry callback */
-    
+#if GTK2
+    GtkComboBox *cbox = GTK_COMBO_BOX(functions_combo_);
+    clear(cbox);
+    while ((fn = functions.remove_head()) != 0)
+	add(cbox, fn->name(), fn);
+#else
+    ui_combo_clear(GTK_COMBO(functions_combo_));
     while ((fn = functions.remove_head()) != 0)
 	ui_combo_add_data(GTK_COMBO(functions_combo_), fn->name(), fn);
+#endif
     populating_ = FALSE;
 }
 
