@@ -23,9 +23,15 @@
 #include "ui.h"
 #include "cov.H"
 
+#if GTK2
+void populate_function_combo(GtkComboBox *combo,
+			     const list_t<cov_function_t> *,
+			     gboolean add_all_item,
+			     const cov_function_t **currentp);
+#endif
 void populate_function_combo(GtkCombo *combo,
-    	    	    	     const list_t<cov_function_t> *,
-    	    	    	     gboolean add_all_item,
+			     const list_t<cov_function_t> *,
+			     gboolean add_all_item,
 			     const cov_function_t **currentp);
 
 #endif /* _ggcov_utils_H_ */

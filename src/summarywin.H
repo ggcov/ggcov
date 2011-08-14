@@ -25,13 +25,13 @@
 
 GLADE_CALLBACK void on_summary_overall_radio_toggled(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_filename_radio_toggled(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_filename_entry_changed(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_summary_filename_combo_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_filename_view_clicked(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_function_radio_toggled(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_function_entry_changed(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_summary_function_combo_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_function_view_clicked(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_range_radio_toggled(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_range_entry_changed(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_summary_range_combo_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_range_start_spin_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_range_end_spin_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_summary_range_view_clicked(GtkWidget *w, gpointer data);
@@ -60,8 +60,13 @@ public:
     
 private:
     static summarywin_t *instance();
+#if GTK2
+    void populate_filename_combo(GtkComboBox *);
+    void populate_function_combo(GtkComboBox *);
+#else
     void populate_filename_combo(GtkCombo *combo);
     void populate_function_combo(GtkCombo *combo);
+#endif
     void populate();
     void spin_update();
     void update();
@@ -108,13 +113,13 @@ private:
 
     friend void on_summary_overall_radio_toggled(GtkWidget *w, gpointer data);
     friend void on_summary_filename_radio_toggled(GtkWidget *w, gpointer data);
-    friend void on_summary_filename_entry_changed(GtkWidget *w, gpointer data);
+    friend void on_summary_filename_combo_changed(GtkWidget *w, gpointer data);
     friend void on_summary_filename_view_clicked(GtkWidget *w, gpointer data);
     friend void on_summary_function_radio_toggled(GtkWidget *w, gpointer data);
-    friend void on_summary_function_entry_changed(GtkWidget *w, gpointer data);
+    friend void on_summary_function_combo_changed(GtkWidget *w, gpointer data);
     friend void on_summary_function_view_clicked(GtkWidget *w, gpointer data);
     friend void on_summary_range_radio_toggled(GtkWidget *w, gpointer data);
-    friend void on_summary_range_entry_changed(GtkWidget *w, gpointer data);
+    friend void on_summary_range_combo_changed(GtkWidget *w, gpointer data);
     friend void on_summary_range_start_spin_changed(GtkWidget *w, gpointer data);
     friend void on_summary_range_end_spin_changed(GtkWidget *w, gpointer data);
     friend void on_summary_range_view_clicked(GtkWidget *w, gpointer data);

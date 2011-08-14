@@ -940,35 +940,9 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkCombo" id="summary_range_combo">
+	    <widget class="GtkComboBox" id="summary_range_combo">
 	      <property name="visible">True</property>
-	      <property name="value_in_list">True</property>
-	      <property name="allow_empty">False</property>
-	      <property name="case_sensitive">False</property>
-	      <property name="enable_arrow_keys">True</property>
-	      <property name="enable_arrows_always">False</property>
-
-	      <child internal-child="entry">
-		<widget class="GtkEntry" id="summary_range_entry">
-		  <property name="visible">True</property>
-		  <property name="can_focus">True</property>
-		  <property name="editable">False</property>
-		  <property name="visibility">True</property>
-		  <property name="max_length">0</property>
-		  <property name="text" translatable="yes"></property>
-		  <property name="has_frame">True</property>
-		  <property name="invisible_char" translatable="yes">*</property>
-		  <property name="activates_default">False</property>
-		  <signal name="changed" handler="on_summary_range_entry_changed"/>
-		</widget>
-	      </child>
-
-	      <child internal-child="list">
-		<widget class="GtkList" id="convertwidget9">
-		  <property name="visible">True</property>
-		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-		</widget>
-	      </child>
+	      <signal name="changed" handler="on_summary_range_combo_changed"/>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
@@ -980,35 +954,9 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkCombo" id="summary_function_combo">
+	    <widget class="GtkComboBox" id="summary_function_combo">
 	      <property name="visible">True</property>
-	      <property name="value_in_list">True</property>
-	      <property name="allow_empty">False</property>
-	      <property name="case_sensitive">False</property>
-	      <property name="enable_arrow_keys">True</property>
-	      <property name="enable_arrows_always">False</property>
-
-	      <child internal-child="entry">
-		<widget class="GtkEntry" id="summary_function_entry">
-		  <property name="visible">True</property>
-		  <property name="can_focus">True</property>
-		  <property name="editable">False</property>
-		  <property name="visibility">True</property>
-		  <property name="max_length">0</property>
-		  <property name="text" translatable="yes"></property>
-		  <property name="has_frame">True</property>
-		  <property name="invisible_char" translatable="yes">*</property>
-		  <property name="activates_default">False</property>
-		  <signal name="changed" handler="on_summary_function_entry_changed"/>
-		</widget>
-	      </child>
-
-	      <child internal-child="list">
-		<widget class="GtkList" id="convertwidget12">
-		  <property name="visible">True</property>
-		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-		</widget>
-	      </child>
+	      <signal name="changed" handler="on_summary_function_combo_changed"/>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
@@ -1020,35 +968,9 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkCombo" id="summary_filename_combo">
+	    <widget class="GtkComboBox" id="summary_filename_combo">
 	      <property name="visible">True</property>
-	      <property name="value_in_list">True</property>
-	      <property name="allow_empty">False</property>
-	      <property name="case_sensitive">False</property>
-	      <property name="enable_arrow_keys">True</property>
-	      <property name="enable_arrows_always">False</property>
-
-	      <child internal-child="entry">
-		<widget class="GtkEntry" id="summary_filename_entry">
-		  <property name="visible">True</property>
-		  <property name="can_focus">True</property>
-		  <property name="editable">False</property>
-		  <property name="visibility">True</property>
-		  <property name="max_length">0</property>
-		  <property name="text" translatable="yes"></property>
-		  <property name="has_frame">True</property>
-		  <property name="invisible_char" translatable="yes">*</property>
-		  <property name="activates_default">False</property>
-		  <signal name="changed" handler="on_summary_filename_entry_changed"/>
-		</widget>
-	      </child>
-
-	      <child internal-child="list">
-		<widget class="GtkList" id="convertwidget15">
-		  <property name="visible">True</property>
-		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-		</widget>
-	      </child>
+	      <signal name="changed" handler="on_summary_filename_combo_changed"/>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
