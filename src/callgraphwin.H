@@ -23,7 +23,7 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_callgraph_function_entry_changed(GtkWidget *w, gpointer data);
+GLADE_CALLBACK void on_callgraph_function_combo_changed(GtkWidget *w, gpointer data);
 GLADE_CALLBACK void on_callgraph_function_view_clicked(GtkWidget *w, gpointer data);
 GLADE_CALLBACK gboolean on_callgraph_ancestors_clist_button_press_event(
 			  GtkWidget *w, GdkEvent *event, gpointer data);
@@ -39,7 +39,11 @@ public:
     void set_node(cov_callnode_t *);
 
 private:
+#if GTK2
+    void populate_function_combo(GtkComboBox *combo);
+#else
     void populate_function_combo(GtkCombo *combo);
+#endif
     void populate();
 #if !GTK2
     static void init_clist(GtkCList *clist,
@@ -69,7 +73,7 @@ private:
 
     GtkWidget *hpaned_;
 
-    friend void on_callgraph_function_entry_changed(GtkWidget *w, gpointer data);
+    friend void on_callgraph_function_combo_changed(GtkWidget *w, gpointer data);
     friend void on_callgraph_function_view_clicked(GtkWidget *w, gpointer data);
     friend gboolean on_callgraph_ancestors_clist_button_press_event(
 			      GtkWidget *w, GdkEvent *event, gpointer data);

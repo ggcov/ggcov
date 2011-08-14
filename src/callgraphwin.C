@@ -157,6 +157,9 @@ callgraphwin_t::callgraphwin_t()
     set_window(glade_xml_get_widget(xml, "callgraph"));
     
     function_combo_ = glade_xml_get_widget(xml, "callgraph_function_combo");
+#if GTK2
+    init(GTK_COMBO_BOX(function_combo_));
+#endif
     function_view_ = glade_xml_get_widget(xml, "callgraph_function_view");
 
     ancestors_clist_ = glade_xml_get_widget(xml, "callgraph_ancestors_clist");
@@ -204,6 +207,46 @@ compare_callnodes(const cov_callnode_t *cna, const cov_callnode_t *cnb)
  * TODO: invert this function and make the loop with the unambiguous
  * label building a library function which calls a callback.
  */
+#if GTK2
+void
+callgraphwin_t::populate_function_combo(GtkComboBox *combo)
+{
+    list_t<cov_callnode_t> list;
+    estring label;
+
+    clear(combo);
+
+    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
+	list.prepend(*cnitr);
+    list.sort(compare_callnodes);
+
+    for (list_iterator_t<cov_callnode_t> itr = list.first() ; *itr ; ++itr)
+    {
+	cov_callnode_t *cn = *itr;
+
+	label.truncate();
+	label.append_string(cn->name);
+
+	/* see if we need to present some more scope to uniquify the name */
+	list_iterator_t<cov_callnode_t> next = itr.peek_next();
+	list_iterator_t<cov_callnode_t> prev = itr.peek_prev();
+	if ((*next && !strcmp((*next)->name, cn->name)) ||
+	    (*prev && !strcmp((*prev)->name, cn->name)))
+	{
+	    label.append_string(" (");
+	    if (cn->function != 0)
+		label.append_string(cn->function->file()->minimal_name());
+	    else
+		label.append_string("library");
+	    label.append_string(")");
+	}
+
+	add(combo, label.data(), cn);
+    }
+
+    list.remove_all();
+}
+#else
 void
 callgraphwin_t::populate_function_combo(GtkCombo *combo)
 {
@@ -242,15 +285,20 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
 
     list.remove_all();
 }
+#endif
 
 void
 callgraphwin_t::populate()
 {
     dprintf0(D_GRAPHWIN, "callgraphwin_t::populate\n");
     
-    populate_function_combo(GTK_COMBO(function_combo_));
+    populate_function_combo(GTK_COMBO_BOX(function_combo_));
 
+#if GTK2
+    set_active(GTK_COMBO_BOX(function_combo_), callnode_);
+#else
     ui_combo_set_current_data(GTK_COMBO(function_combo_), callnode_);
+#endif
     update();
 }
 
@@ -362,13 +410,17 @@ callgraphwin_t::set_node(cov_callnode_t *cn)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
-on_callgraph_function_entry_changed(GtkWidget *w, gpointer data)
+on_callgraph_function_combo_changed(GtkWidget *w, gpointer data)
 {
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
     cov_callnode_t *cn;
 
+#if GTK2
+    cn = (cov_callnode_t *)get_active(GTK_COMBO_BOX(cw->function_combo_));
+#else
     cn = (cov_callnode_t *)ui_combo_get_current_data(
-    	    	    	    	    	GTK_COMBO(cw->function_combo_));
+					GTK_COMBO(cw->function_combo_));
+#endif
     if (cn != 0)
     {
     	/* stupid gtk2 */
