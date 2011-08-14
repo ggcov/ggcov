@@ -41,6 +41,14 @@ void ui_combo_set_current_data(GtkCombo *combo, gpointer data);
 
 void ui_combo_clear(GtkCombo *combo);
 
+#if GTK2
+void init(GtkComboBox *);
+void clear(GtkComboBox *);
+void add(GtkComboBox *, const char *label, gpointer data);
+gpointer get_active(GtkComboBox *);
+void set_active(GtkComboBox *, gpointer data);
+#endif
+
 /* Get the nearest enclosing dialog or toplevel window */
 GtkWidget *ui_get_window(GtkWidget *w);
 

@@ -95,6 +95,76 @@ ui_combo_clear(GtkCombo *combo)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+#if GTK2
+
+#define COL_LABEL   0
+#define COL_DATA    1
+
+void
+init(GtkComboBox *cbox)
+{
+    GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_POINTER);
+    gtk_combo_box_set_model(cbox, GTK_TREE_MODEL(store));
+    GtkCellRenderer *rend = gtk_cell_renderer_text_new();
+    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cbox), rend, TRUE);
+    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cbox), rend, "text", COL_LABEL, (char *)0);
+}
+
+void
+clear(GtkComboBox *cbox)
+{
+    GtkTreeModel *model = gtk_combo_box_get_model(cbox);
+    GtkTreeIter treeitr;
+    if (!gtk_tree_model_get_iter_first(model, &treeitr))
+	return;
+    while (gtk_list_store_remove(GTK_LIST_STORE(model), &treeitr))
+	;
+}
+
+void
+add(GtkComboBox *cbox, const char *label, gpointer data)
+{
+    GtkTreeModel *model = gtk_combo_box_get_model(cbox);
+    GtkListStore *store = GTK_LIST_STORE(model);
+    GtkTreeIter treeitr;
+    gtk_list_store_append(store, &treeitr);
+    gtk_list_store_set(store, &treeitr, COL_LABEL, label, COL_DATA, data, -1);
+}
+
+gpointer
+get_active(GtkComboBox *cbox)
+{
+    GtkTreeModel *model = gtk_combo_box_get_model(cbox);
+    GtkTreeIter treeitr;
+    void *data = 0;
+    if (gtk_combo_box_get_active_iter(cbox, &treeitr))
+	gtk_tree_model_get(model, &treeitr, COL_DATA, &data, -1);
+    return data;
+}
+
+void
+set_active(GtkComboBox *cbox, gpointer data)
+{
+    GtkTreeModel *model = gtk_combo_box_get_model(cbox);
+    GtkTreeIter treeitr;
+
+    if (!gtk_tree_model_get_iter_first(model, &treeitr))
+	return;
+
+    for ( ; gtk_tree_model_iter_next(model, &treeitr) ; )
+    {
+	void *dd = 0;
+	gtk_tree_model_get(model, &treeitr, COL_DATA, &dd, -1);
+	if (data == dd)
+	{
+	    gtk_combo_box_set_active_iter(cbox, &treeitr);
+	    return;
+	}
+    }
+}
+
+#endif /* GTK2 */
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #ifndef UI_DEBUG
 #define UI_DEBUG 0
