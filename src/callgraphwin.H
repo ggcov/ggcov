@@ -39,11 +39,7 @@ public:
     void set_node(cov_callnode_t *);
 
 private:
-#if GTK2
-    void populate_function_combo(GtkComboBox *combo);
-#else
-    void populate_function_combo(GtkCombo *combo);
-#endif
+    void populate_function_combo(ui_combo_t *combo);
     void populate();
 #if !GTK2
     static void init_clist(GtkCList *clist,
@@ -61,7 +57,7 @@ private:
     
     cov_callnode_t *callnode_;
 
-    GtkWidget *function_combo_;
+    ui_combo_t *function_combo_;
     GtkWidget *function_view_;
 
     GtkWidget *ancestors_clist_;

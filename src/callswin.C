@@ -142,22 +142,19 @@ callswin_t::callswin_t()
     GtkTreeViewColumn *col;
     GtkCellRenderer *rend;
 #endif
-    
+    GtkWidget *w;
+
     /* load the interface & connect signals */
     xml = ui_load_tree("calls");
     
     set_window(glade_xml_get_widget(xml, "calls"));
     
-    from_function_combo_ = glade_xml_get_widget(xml, "calls_from_function_combo");
-#if GTK2
-    init(GTK_COMBO_BOX(from_function_combo_));
-#endif
+    w = glade_xml_get_widget(xml, "calls_from_function_combo");
+    from_function_combo_ = init(UI_COMBO(w));
     from_function_view_ = glade_xml_get_widget(xml, "calls_from_function_view");
 
-    to_function_combo_ = glade_xml_get_widget(xml, "calls_to_function_combo");
-#if GTK2
-    init(GTK_COMBO_BOX(to_function_combo_));
-#endif
+    w = glade_xml_get_widget(xml, "calls_to_function_combo");
+    to_function_combo_ = init(UI_COMBO(w));
     to_function_view_ = glade_xml_get_widget(xml, "calls_to_function_view");
 
     clist_ = glade_xml_get_widget(xml, "calls_clist");
@@ -228,14 +225,12 @@ callswin_t::populate()
 {
     dprintf0(D_CALLSWIN, "callswin_t::populate\n");
     functions_ = cov_function_t::list_all();
-    ::populate_function_combo(GTK_COMBO_BOX(from_function_combo_), functions_,
+    ::populate_function_combo(from_function_combo_, functions_,
 			      /*add_all_item*/TRUE, /*currentp*/0);
-    ::populate_function_combo(GTK_COMBO_BOX(to_function_combo_), functions_,
+    ::populate_function_combo(to_function_combo_, functions_,
 			      /*add_all_item*/TRUE, /*currentp*/0);
-#if GTK2
-    set_active(GTK_COMBO_BOX(from_function_combo_), 0);
-    set_active(GTK_COMBO_BOX(to_function_combo_), 0);
-#endif
+    set_active(from_function_combo_, 0);
+    set_active(to_function_combo_, 0);
     update();
 }
 
@@ -298,15 +293,8 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 void
 callswin_t::update()
 {
-#if GTK2
-    cov_function_t *from_fn = (cov_function_t *)get_active(GTK_COMBO_BOX(from_function_combo_));
-    cov_function_t *to_fn = (cov_function_t *)get_active(GTK_COMBO_BOX(to_function_combo_));
-#else
-    cov_function_t *from_fn = (cov_function_t *)ui_combo_get_current_data(
-				GTK_COMBO(from_function_combo_));
-    cov_function_t *to_fn = (cov_function_t *)ui_combo_get_current_data(
-				GTK_COMBO(to_function_combo_));
-#endif
+    cov_function_t *from_fn = (cov_function_t *)get_active(from_function_combo_);
+    cov_function_t *to_fn = (cov_function_t *)get_active(to_function_combo_);
     estring title;
     
     dprintf0(D_CALLSWIN, "callswin_t::update\n");
@@ -412,12 +400,7 @@ GLADE_CALLBACK void
 on_calls_from_function_view_clicked(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
-#if GTK2
-    cov_function_t *fn = (cov_function_t *)get_active(GTK_COMBO_BOX(cw->from_function_combo_));
-#else
-    cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
-				GTK_COMBO(cw->from_function_combo_));
-#endif
+    cov_function_t *fn = (cov_function_t *)get_active(cw->from_function_combo_);
     g_return_if_fail(fn != 0);
     sourcewin_t::show_function(fn);
 }
@@ -426,12 +409,7 @@ GLADE_CALLBACK void
 on_calls_to_function_view_clicked(GtkWidget *w, gpointer data)
 {
     callswin_t *cw = callswin_t::from_widget(w);
-#if GTK2
-    cov_function_t *fn = (cov_function_t *)get_active(GTK_COMBO_BOX(cw->to_function_combo_));
-#else
-    cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
-				GTK_COMBO(cw->to_function_combo_));
-#endif
+    cov_function_t *fn = (cov_function_t *)get_active(cw->to_function_combo_);
     g_return_if_fail(fn != 0);
     sourcewin_t::show_function(fn);
 }

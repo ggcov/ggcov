@@ -130,8 +130,8 @@ private:
     GtkWidget *titles_check_;
     GtkWidget *flow_diagram_item_;
     GtkWidget *toolbar_;
-    GtkWidget *filenames_combo_;
-    GtkWidget *functions_combo_;
+    ui_combo_t *filenames_combo_;
+    ui_combo_t *functions_combo_;
     gboolean populating_;
     string_var filename_;
 

@@ -29,25 +29,20 @@ GladeXML *ui_load_tree(const char *root);
 void ui_prepend_glade_path(const char *dir);
 GtkWidget *ui_get_dummy_menu(GladeXML *xml, const char *name);
 
-
-/* combobox get/set current item using index */
-int gtk_combo_get_current(GtkCombo *combo);
-void gtk_combo_set_current(GtkCombo *combo, int n);
+#if GTK2
+#define ui_combo_t  GtkComboBox
+#define UI_COMBO(w) GTK_COMBO_BOX(w)
+#else
+#define ui_combo_t  GtkCombo
+#define UI_COMBO(w) GTK_COMBO(w)
+#endif
 
 /* combobox add/get current item using data */
-void ui_combo_add_data(GtkCombo *combo, const char *label, gpointer data);
-gpointer ui_combo_get_current_data(GtkCombo *combo);
-void ui_combo_set_current_data(GtkCombo *combo, gpointer data);
-
-void ui_combo_clear(GtkCombo *combo);
-
-#if GTK2
-void init(GtkComboBox *);
-void clear(GtkComboBox *);
-void add(GtkComboBox *, const char *label, gpointer data);
-gpointer get_active(GtkComboBox *);
-void set_active(GtkComboBox *, gpointer data);
-#endif
+ui_combo_t *init(ui_combo_t *);
+void clear(ui_combo_t *);
+void add(ui_combo_t *, const char *label, gpointer data);
+gpointer get_active(ui_combo_t *);
+void set_active(ui_combo_t *, gpointer data);
 
 /* Get the nearest enclosing dialog or toplevel window */
 GtkWidget *ui_get_window(GtkWidget *w);

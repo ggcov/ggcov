@@ -44,7 +44,7 @@ private:
 
     const report_t *report_;
 
-    GtkWidget *report_combo_;
+    ui_combo_t *report_combo_;
     GtkWidget *text_;
     gboolean populating_;
 

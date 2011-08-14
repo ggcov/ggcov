@@ -50,10 +50,10 @@ private:
     }
 
 
-    GtkWidget *from_function_combo_;
+    ui_combo_t *from_function_combo_;
     GtkWidget *from_function_view_;
 
-    GtkWidget *to_function_combo_;
+    ui_combo_t *to_function_combo_;
     GtkWidget *to_function_view_;
 
     GtkWidget *clist_;

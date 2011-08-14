@@ -27,124 +27,84 @@
 CVSID("$Id: ui.c,v 1.38 2010-05-09 05:37:15 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-int
-gtk_combo_get_current(GtkCombo *combo)
-{
-    GtkList *listw = GTK_LIST(combo->list);
-    
-    if (listw->selection == 0)
-    	return 0;
-    return gtk_list_child_position(listw, (GtkWidget*)listw->selection->data);
-}
-
-void
-gtk_combo_set_current(GtkCombo *combo, int n)
-{
-    gtk_list_select_item(GTK_LIST(combo->list), n);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static const char ui_combo_item_key[] = "ui_combo_item_key";
-
-void
-ui_combo_add_data(GtkCombo *combo, const char *label, gpointer data)
-{
-    GtkWidget *item;
-    
-    item = gtk_list_item_new_with_label(label);
-    gtk_object_set_data(GTK_OBJECT(item), ui_combo_item_key, data);
-    gtk_widget_show(item);
-    gtk_container_add(GTK_CONTAINER(combo->list), item);
-}
-
-gpointer
-ui_combo_get_current_data(GtkCombo *combo)
-{
-    GtkList *listw = GTK_LIST(combo->list);
-
-    if (listw->selection == 0)
-    	return 0;
-    return gtk_object_get_data(GTK_OBJECT(listw->selection->data),
-    	    	    	       ui_combo_item_key);
-}
-
-void
-ui_combo_set_current_data(GtkCombo *combo, gpointer data)
-{
-    GtkList *listw = GTK_LIST(combo->list);
-    GList *iter;
-    
-    for (iter = listw->children ; iter != 0 ; iter = iter->next)
-    {
-    	GtkWidget *item = (GtkWidget *)iter->data;
-	
-	if (gtk_object_get_data(GTK_OBJECT(item), ui_combo_item_key) == data)
-	{
-	    gtk_list_select_child(listw, item);
-	    return;
-	}
-    }
-}
-
-void
-ui_combo_clear(GtkCombo *combo)
-{
-    gtk_list_clear_items(GTK_LIST(combo->list), 0, -1);
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 #if GTK2
-
 #define COL_LABEL   0
 #define COL_DATA    1
+#else
+static const char ui_combo_item_key[] = "ui_combo_item_key";
+#endif
 
-void
-init(GtkComboBox *cbox)
+ui_combo_t *
+init(ui_combo_t *cbox)
 {
+#if GTK2
     GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_POINTER);
     gtk_combo_box_set_model(cbox, GTK_TREE_MODEL(store));
     GtkCellRenderer *rend = gtk_cell_renderer_text_new();
     gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cbox), rend, TRUE);
     gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cbox), rend, "text", COL_LABEL, (char *)0);
+#endif
+    return cbox;
 }
 
 void
-clear(GtkComboBox *cbox)
+clear(ui_combo_t *cbox)
 {
+#if GTK2
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
     GtkTreeIter treeitr;
     if (!gtk_tree_model_get_iter_first(model, &treeitr))
 	return;
     while (gtk_list_store_remove(GTK_LIST_STORE(model), &treeitr))
 	;
+#else
+    gtk_list_clear_items(GTK_LIST(cbox->list), 0, -1);
+#endif
 }
 
 void
-add(GtkComboBox *cbox, const char *label, gpointer data)
+add(ui_combo_t *cbox, const char *label, gpointer data)
 {
+#if GTK2
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
     GtkListStore *store = GTK_LIST_STORE(model);
     GtkTreeIter treeitr;
     gtk_list_store_append(store, &treeitr);
     gtk_list_store_set(store, &treeitr, COL_LABEL, label, COL_DATA, data, -1);
+#else
+    GtkWidget *item;
+    
+    item = gtk_list_item_new_with_label(label);
+    gtk_object_set_data(GTK_OBJECT(item), ui_combo_item_key, data);
+    gtk_widget_show(item);
+    gtk_container_add(GTK_CONTAINER(cbox->list), item);
+#endif
 }
 
 gpointer
-get_active(GtkComboBox *cbox)
+get_active(ui_combo_t *cbox)
 {
+#if GTK2
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
     GtkTreeIter treeitr;
     void *data = 0;
     if (gtk_combo_box_get_active_iter(cbox, &treeitr))
 	gtk_tree_model_get(model, &treeitr, COL_DATA, &data, -1);
     return data;
+#else
+    GtkList *listw = GTK_LIST(cbox->list);
+
+    if (listw->selection == 0)
+    	return 0;
+    return gtk_object_get_data(GTK_OBJECT(listw->selection->data),
+    	    	    	       ui_combo_item_key);
+#endif
 }
 
 void
-set_active(GtkComboBox *cbox, gpointer data)
+set_active(ui_combo_t *cbox, gpointer data)
 {
+#if GTK2
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
     GtkTreeIter treeitr;
 
@@ -161,9 +121,23 @@ set_active(GtkComboBox *cbox, gpointer data)
 	}
 	valid = gtk_tree_model_iter_next(model, &treeitr);
     }
+#else
+    GtkList *listw = GTK_LIST(cbox->list);
+    GList *iter;
+    
+    for (iter = listw->children ; iter != 0 ; iter = iter->next)
+    {
+    	GtkWidget *item = (GtkWidget *)iter->data;
+	
+	if (gtk_object_get_data(GTK_OBJECT(item), ui_combo_item_key) == data)
+	{
+	    gtk_list_select_child(listw, item);
+	    return;
+	}
+    }
+#endif
 }
 
-#endif /* GTK2 */
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #ifndef UI_DEBUG

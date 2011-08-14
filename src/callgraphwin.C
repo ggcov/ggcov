@@ -150,16 +150,15 @@ callgraphwin_t::init_tree_view(GtkTreeView *tv)
 callgraphwin_t::callgraphwin_t()
 {
     GladeXML *xml;
-    
+    GtkWidget *w;
+
     /* load the interface & connect signals */
     xml = ui_load_tree("callgraph");
     
     set_window(glade_xml_get_widget(xml, "callgraph"));
     
-    function_combo_ = glade_xml_get_widget(xml, "callgraph_function_combo");
-#if GTK2
-    init(GTK_COMBO_BOX(function_combo_));
-#endif
+    w = glade_xml_get_widget(xml, "callgraph_function_combo");
+    function_combo_ = init(UI_COMBO(w));
     function_view_ = glade_xml_get_widget(xml, "callgraph_function_view");
 
     ancestors_clist_ = glade_xml_get_widget(xml, "callgraph_ancestors_clist");
@@ -291,14 +290,10 @@ void
 callgraphwin_t::populate()
 {
     dprintf0(D_GRAPHWIN, "callgraphwin_t::populate\n");
-    
-    populate_function_combo(GTK_COMBO_BOX(function_combo_));
 
-#if GTK2
-    set_active(GTK_COMBO_BOX(function_combo_), callnode_);
-#else
-    ui_combo_set_current_data(GTK_COMBO(function_combo_), callnode_);
-#endif
+    populate_function_combo(function_combo_);
+
+    set_active(function_combo_, callnode_);
     update();
 }
 
@@ -415,12 +410,7 @@ on_callgraph_function_combo_changed(GtkWidget *w, gpointer data)
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
     cov_callnode_t *cn;
 
-#if GTK2
-    cn = (cov_callnode_t *)get_active(GTK_COMBO_BOX(cw->function_combo_));
-#else
-    cn = (cov_callnode_t *)ui_combo_get_current_data(
-					GTK_COMBO(cw->function_combo_));
-#endif
+    cn = (cov_callnode_t *)get_active(cw->function_combo_);
     if (cn != 0)
     {
     	/* stupid gtk2 */

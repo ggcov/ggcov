@@ -36,7 +36,8 @@ list_t<summarywin_t> summarywin_t::instances_;
 summarywin_t::summarywin_t()
 {
     GladeXML *xml;
-    
+    GtkWidget *w;
+
     /* load the interface & connect signals */
     xml = ui_load_tree("summary");
     
@@ -51,16 +52,14 @@ summarywin_t::summarywin_t()
     scope_radio_[SU_RANGE] = glade_xml_get_widget(xml,
     	    	    	    	    	    	    "summary_range_radio");
     
-    filename_combo_ = glade_xml_get_widget(xml, "summary_filename_combo");
+    w = glade_xml_get_widget(xml, "summary_filename_combo");
+    filename_combo_ = init(UI_COMBO(w));
     filename_view_ = glade_xml_get_widget(xml, "summary_filename_view");
-    function_combo_ = glade_xml_get_widget(xml, "summary_function_combo");
+    w = glade_xml_get_widget(xml, "summary_function_combo");
+    function_combo_ = init(UI_COMBO(w));
     function_view_ = glade_xml_get_widget(xml, "summary_function_view");
-    range_combo_ = glade_xml_get_widget(xml, "summary_range_combo");
-#if GTK2
-    init(GTK_COMBO_BOX(filename_combo_));
-    init(GTK_COMBO_BOX(function_combo_));
-    init(GTK_COMBO_BOX(range_combo_));
-#endif
+    w = glade_xml_get_widget(xml, "summary_range_combo");
+    range_combo_ = init(UI_COMBO(w));
     range_start_spin_ = glade_xml_get_widget(xml, "summary_range_start_spin");
     range_end_spin_ = glade_xml_get_widget(xml, "summary_range_end_spin");
     range_view_ = glade_xml_get_widget(xml, "summary_range_view");
@@ -189,10 +188,8 @@ summarywin_t::show_lines(
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if GTK2
-
 void
-summarywin_t::populate_filename_combo(GtkComboBox *cbox)
+summarywin_t::populate_filename_combo(ui_combo_t *cbox)
 {
     clear(cbox);
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
@@ -208,7 +205,7 @@ summarywin_t::populate_filename_combo(GtkComboBox *cbox)
 }
 
 void
-summarywin_t::populate_function_combo(GtkComboBox *cbox)
+summarywin_t::populate_function_combo(ui_combo_t *cbox)
 {
     list_t<cov_function_t> *list;
 
@@ -220,54 +217,15 @@ summarywin_t::populate_function_combo(GtkComboBox *cbox)
     delete list;
 }
 
-#else /* !GTK2 */
-
-void
-summarywin_t::populate_filename_combo(GtkCombo *combo)
-{
-    ui_combo_clear(GTK_COMBO(combo));    /* stupid glade2 */
-    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
-    {
-	cov_file_t *f = *iter;
-
-	if (file_ == 0)
-	    file_ = f;
-
-	ui_combo_add_data(combo, f->minimal_name(), (gpointer)f);
-    }
-    ui_combo_set_current_data(combo, (gpointer)file_);
-}
-
-void
-summarywin_t::populate_function_combo(GtkCombo *combo)
-{
-    list_t<cov_function_t> *list;
-
-    list = cov_function_t::list_all();
-
-    ::populate_function_combo(combo, list, /*add_all_item*/FALSE, &function_);
-
-    list->remove_all();
-    delete list;
-}
-
-#endif /* !GTK2 */
-
 void
 summarywin_t::populate()
 {
     dprintf0(D_SUMMARYWIN, "summarywin_t::populate\n");
 
     populating_ = TRUE;     /* suppress combo entry callbacks */
-#if GTK2
-    populate_filename_combo(GTK_COMBO_BOX(filename_combo_));
-    populate_function_combo(GTK_COMBO_BOX(function_combo_));
-    populate_filename_combo(GTK_COMBO_BOX(range_combo_));
-#else
-    populate_filename_combo(GTK_COMBO(filename_combo_));
-    populate_function_combo(GTK_COMBO(function_combo_));
-    populate_filename_combo(GTK_COMBO(range_combo_));
-#endif
+    populate_filename_combo(filename_combo_);
+    populate_function_combo(function_combo_);
+    populate_filename_combo(range_combo_);
     populating_ = FALSE;
 
     spin_update();
@@ -312,11 +270,11 @@ summarywin_t::spin_update()
 void
 summarywin_t::grey_items()
 {
-    gtk_widget_set_sensitive(filename_combo_, (scope_ == SU_FILENAME));
+    gtk_widget_set_sensitive(GTK_WIDGET(filename_combo_), (scope_ == SU_FILENAME));
     gtk_widget_set_sensitive(filename_view_, (scope_ == SU_FILENAME));
-    gtk_widget_set_sensitive(function_combo_, (scope_ == SU_FUNCTION));
+    gtk_widget_set_sensitive(GTK_WIDGET(function_combo_), (scope_ == SU_FUNCTION));
     gtk_widget_set_sensitive(function_view_, (scope_ == SU_FUNCTION));
-    gtk_widget_set_sensitive(range_combo_, (scope_ == SU_RANGE));
+    gtk_widget_set_sensitive(GTK_WIDGET(range_combo_), (scope_ == SU_RANGE));
     gtk_widget_set_sensitive(range_start_spin_, (scope_ == SU_RANGE));
     gtk_widget_set_sensitive(range_end_spin_, (scope_ == SU_RANGE));
     gtk_widget_set_sensitive(range_view_, (scope_ == SU_RANGE));
@@ -400,15 +358,9 @@ summarywin_t::update()
     populating_ = TRUE;
     assert(file_ != 0);
     assert(function_ != 0);
-#if GTK2
-    set_active(GTK_COMBO_BOX(filename_combo_), (gpointer)file_);
-    set_active(GTK_COMBO_BOX(range_combo_), (gpointer)file_);
-    set_active(GTK_COMBO_BOX(function_combo_), (gpointer)function_);
-#else
-    ui_combo_set_current_data(GTK_COMBO(filename_combo_), (gpointer)file_);
-    ui_combo_set_current_data(GTK_COMBO(range_combo_), (gpointer)file_);
-    ui_combo_set_current_data(GTK_COMBO(function_combo_), (gpointer)function_);
-#endif
+    set_active(filename_combo_, (gpointer)file_);
+    set_active(range_combo_, (gpointer)file_);
+    set_active(function_combo_, (gpointer)function_);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(scope_radio_[scope_]), TRUE);
     if (start_ > 0)
     	gtk_spin_button_set_value(GTK_SPIN_BUTTON(range_start_spin_),
@@ -502,12 +454,7 @@ on_summary_filename_combo_changed(GtkWidget *w, gpointer data)
     if (sw->populating_ || !sw->shown_)
     	return;
     assert(sw->scope_ == summarywin_t::SU_FILENAME);
-#if GTK2
-    f = (cov_file_t *)get_active(GTK_COMBO_BOX(sw->filename_combo_));
-#else
-    f = (cov_file_t *)ui_combo_get_current_data(
-				    GTK_COMBO(sw->filename_combo_));
-#endif
+    f = (cov_file_t *)get_active(sw->filename_combo_);
     if (f != 0)
     {
     	/* stupid gtk2 */
@@ -547,12 +494,7 @@ on_summary_function_combo_changed(GtkWidget *w, gpointer data)
     if (sw->populating_ || !sw->shown_)
     	return;
     assert(sw->scope_ == summarywin_t::SU_FUNCTION);
-#if GTK2
-    fn = (cov_function_t *)get_active(GTK_COMBO_BOX(sw->function_combo_));
-#else
-    fn = (cov_function_t *)ui_combo_get_current_data(
-					GTK_COMBO(sw->function_combo_));
-#endif
+    fn = (cov_function_t *)get_active(sw->function_combo_);
     if (fn != 0)
     {
     	/* stupid gtk2 */
@@ -592,12 +534,7 @@ on_summary_range_combo_changed(GtkWidget *w, gpointer data)
     if (sw->populating_ || !sw->shown_)
     	return;
     assert(sw->scope_ == summarywin_t::SU_RANGE);
-#if GTK2
-    f = (cov_file_t *)get_active(GTK_COMBO_BOX(sw->range_combo_));
-#else
-    f = (cov_file_t *)ui_combo_get_current_data(
-					GTK_COMBO(sw->range_combo_));
-#endif
+    f = (cov_file_t *)get_active(sw->range_combo_);
     if (f != 0)
     {
     	/* stupid gtk2 */

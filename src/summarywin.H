@@ -60,13 +60,8 @@ public:
     
 private:
     static summarywin_t *instance();
-#if GTK2
-    void populate_filename_combo(GtkComboBox *);
-    void populate_function_combo(GtkComboBox *);
-#else
-    void populate_filename_combo(GtkCombo *combo);
-    void populate_function_combo(GtkCombo *combo);
-#endif
+    void populate_filename_combo(ui_combo_t *);
+    void populate_function_combo(ui_combo_t *);
     void populate();
     void spin_update();
     void update();
@@ -85,11 +80,11 @@ private:
     
     GtkWidget *scope_radio_[SU_NSCOPES];
     
-    GtkWidget *filename_combo_;
+    ui_combo_t *filename_combo_;
     GtkWidget *filename_view_;
-    GtkWidget *function_combo_;
+    ui_combo_t *function_combo_;
     GtkWidget *function_view_;
-    GtkWidget *range_combo_;
+    ui_combo_t *range_combo_;
     GtkWidget *range_start_spin_;
     GtkWidget *range_end_spin_;
     GtkWidget *range_view_;

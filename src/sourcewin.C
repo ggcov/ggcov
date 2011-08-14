@@ -397,6 +397,7 @@ sourcewin_t::setup_text()
 sourcewin_t::sourcewin_t()
 {
     GladeXML *xml;
+    GtkWidget *w;
     
     /* load the interface & connect signals */
     xml = ui_load_tree("source");
@@ -415,12 +416,10 @@ sourcewin_t::sourcewin_t()
     titles_check_ = glade_xml_get_widget(xml, "source_titles_check");
     flow_diagram_item_ = glade_xml_get_widget(xml, "source_flow_diagram");
     toolbar_ = glade_xml_get_widget(xml, "source_toolbar");
-    filenames_combo_ = glade_xml_get_widget(xml, "source_filenames_combo");
-    functions_combo_ = glade_xml_get_widget(xml, "source_functions_combo");
-#if GTK2
-    init(GTK_COMBO_BOX(filenames_combo_));
-    init(GTK_COMBO_BOX(functions_combo_));
-#endif
+    w = glade_xml_get_widget(xml, "source_filenames_combo");
+    filenames_combo_ = init(UI_COMBO(w));
+    w = glade_xml_get_widget(xml, "source_functions_combo");
+    functions_combo_ = init(UI_COMBO(w));
     titles_hbox_ = glade_xml_get_widget(xml, "source_titles_hbox");
     left_pad_label_ = glade_xml_get_widget(xml, "source_left_pad_label");
     title_buttons_[COL_FLOW] = glade_xml_get_widget(xml, "source_col_flow_button");
@@ -440,7 +439,7 @@ sourcewin_t::sourcewin_t()
      * understand to press Shift.  So we hack around the problem
      * by registering a second accelerator for Ctrl+=.
      */
-    GtkWidget *w = glade_xml_get_widget(xml, "source_text_size_increase");
+    w = glade_xml_get_widget(xml, "source_text_size_increase");
     const GSList *groups = gtk_accel_groups_from_object(G_OBJECT(window_));
     gtk_widget_add_accelerator(w, "activate",
 			       GTK_ACCEL_GROUP(groups->data),
@@ -469,12 +468,7 @@ GLADE_CALLBACK void
 on_source_filenames_entry_changed(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
-#if GTK2
-    cov_file_t *f = (cov_file_t *)get_active(GTK_COMBO_BOX(sw->filenames_combo_));
-#else
-    cov_file_t *f = (cov_file_t *)ui_combo_get_current_data(
-				    GTK_COMBO(sw->filenames_combo_));
-#endif
+    cov_file_t *f = (cov_file_t *)get_active(sw->filenames_combo_);
     if (sw->populating_ || !sw->shown_ || f == 0/*stupid gtk2*/)
     	return;
     sw->set_filename(f->name(), f->minimal_name());
@@ -485,23 +479,12 @@ void
 sourcewin_t::populate_filenames()
 {
     populating_ = TRUE; /* suppress combo entry callback */
-#if GTK2
-    GtkComboBox *cbox = GTK_COMBO_BOX(filenames_combo_);
-    clear(cbox);
+    clear(filenames_combo_);
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
 	cov_file_t *f = *iter;
-	add(cbox, f->minimal_name(), f);
+	add(filenames_combo_, f->minimal_name(), f);
     }
-#else
-    ui_combo_clear(GTK_COMBO(filenames_combo_));    /* stupid glade2 */
-    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
-    {
-	cov_file_t *f = *iter;
-
-	ui_combo_add_data(GTK_COMBO(filenames_combo_), f->minimal_name(), f);
-    }
-#endif
     populating_ = FALSE;
 }
 
@@ -511,12 +494,7 @@ GLADE_CALLBACK void
 on_source_functions_entry_changed(GtkWidget *w, gpointer userdata)
 {
     sourcewin_t *sw = sourcewin_t::from_widget(w);
-#if GTK2
-    cov_function_t *fn = (cov_function_t *)get_active(GTK_COMBO_BOX(sw->functions_combo_));
-#else
-    cov_function_t *fn = (cov_function_t *)ui_combo_get_current_data(
-					    GTK_COMBO(sw->functions_combo_));
-#endif
+    cov_function_t *fn = (cov_function_t *)get_active(sw->functions_combo_);
     const cov_location_t *first;
     const cov_location_t *last;
     
@@ -574,16 +552,9 @@ sourcewin_t::populate_functions()
     /* now build the menu */
 
     populating_ = TRUE; /* suppress combo entry callback */
-#if GTK2
-    GtkComboBox *cbox = GTK_COMBO_BOX(functions_combo_);
-    clear(cbox);
+    clear(functions_combo_);
     while ((fn = functions.remove_head()) != 0)
-	add(cbox, fn->name(), fn);
-#else
-    ui_combo_clear(GTK_COMBO(functions_combo_));
-    while ((fn = functions.remove_head()) != 0)
-	ui_combo_add_data(GTK_COMBO(functions_combo_), fn->name(), fn);
-#endif
+	add(functions_combo_, fn->name(), fn);
     populating_ = FALSE;
 }
 

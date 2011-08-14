@@ -23,11 +23,10 @@
 CVSID("$Id: utils.C,v 1.2 2010-05-09 05:37:15 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-#if GTK2
 
 void
 populate_function_combo(
-    GtkComboBox *cbox,
+    ui_combo_t *cbox,
     const list_t<cov_function_t> *list,
     gboolean add_all_item,
     const cov_function_t **currentp)
@@ -65,52 +64,6 @@ populate_function_combo(
 
     if (currentp != 0)
 	set_active(cbox, (gpointer)(*currentp));
-}
-
-#endif
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
-populate_function_combo(
-    GtkCombo *combo,
-    const list_t<cov_function_t> *list,
-    gboolean add_all_item,
-    const cov_function_t **currentp)
-{
-    estring label;
-    static const char all_functions[] = N_("All Functions");
-
-    ui_combo_clear(combo);    /* stupid glade2 */
-    if (add_all_item)
-	ui_combo_add_data(combo, _(all_functions), 0);
-
-    for (list_iterator_t<cov_function_t> iter = list->first() ; *iter ; ++iter)
-    {
-	cov_function_t *fn = *iter;
-
-	if (currentp != 0 && *currentp == 0)
-	    *currentp = fn;
-
-	label.truncate();
-	label.append_string(fn->name());
-
-	/* see if we need to present some more scope to uniquify the name */
-	list_iterator_t<cov_function_t> next = iter.peek_next();
-	list_iterator_t<cov_function_t> prev = iter.peek_prev();
-	if ((*next && !strcmp((*next)->name(), fn->name())) ||
-	    (*prev && !strcmp((*prev)->name(), fn->name())))
-	{
-	    label.append_string(" (");
-	    label.append_string(fn->file()->minimal_name());
-	    label.append_string(")");
-	}
-
-	ui_combo_add_data(combo, label.data(), fn);
-    }
-
-    if (currentp != 0)
-	ui_combo_set_current_data(combo, (gpointer)(*currentp));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
