@@ -4044,35 +4044,9 @@ C and C++ programs built with the GNU compiler.
 	  </child>
 
 	  <child>
-	    <widget class="GtkCombo" id="report_report_combo">
+	    <widget class="GtkComboBox" id="report_report_combo">
 	      <property name="visible">True</property>
-	      <property name="value_in_list">False</property>
-	      <property name="allow_empty">True</property>
-	      <property name="case_sensitive">False</property>
-	      <property name="enable_arrow_keys">True</property>
-	      <property name="enable_arrows_always">False</property>
-
-	      <child internal-child="entry">
-		<widget class="GtkEntry" id="report_report_entry">
-		  <property name="visible">True</property>
-		  <property name="can_focus">True</property>
-		  <property name="editable">False</property>
-		  <property name="visibility">True</property>
-		  <property name="max_length">0</property>
-		  <property name="text" translatable="yes"></property>
-		  <property name="has_frame">True</property>
-		  <property name="invisible_char" translatable="yes">*</property>
-		  <property name="activates_default">False</property>
-		  <signal name="changed" handler="on_report_report_entry_changed"/>
-		</widget>
-	      </child>
-
-	      <child internal-child="list">
-		<widget class="GtkList" id="convertwidget41">
-		  <property name="visible">True</property>
-		  <property name="selection_mode">GTK_SELECTION_BROWSE</property>
-		</widget>
-	      </child>
+	      <signal name="changed" handler="on_report_report_entry_changed"/>
 	    </widget>
 	    <packing>
 	      <property name="padding">0</property>

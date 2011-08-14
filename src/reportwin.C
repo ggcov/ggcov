@@ -50,6 +50,9 @@ reportwin_t::reportwin_t()
     set_window(glade_xml_get_widget(xml, "report"));
     
     report_combo_ = glade_xml_get_widget(xml, "report_report_combo");
+#if GTK2
+    init(GTK_COMBO_BOX(report_combo_));
+#endif
     text_ = glade_xml_get_widget(xml, "report_text");
     ui_text_setup(text_);
 
@@ -69,13 +72,23 @@ void
 reportwin_t::populate_report_combo()
 {
     const report_t *rep;
+#if GTK2
+    GtkComboBox *cbox = GTK_COMBO_BOX(report_combo_);
+
+    clear(cbox);
+    add(cbox, _(null_report.label), (gpointer)&null_report);
+    for (rep = all_reports ; rep->name != 0 ; rep++)
+	add(cbox, _(rep->label), (gpointer)rep);
+    set_active(cbox, (gpointer)report_);
+#else
     GtkCombo *combo = GTK_COMBO(report_combo_);
-    
+
     ui_combo_clear(combo);    /* stupid glade2 */
     ui_combo_add_data(combo, _(null_report.label), (gpointer)&null_report);
     for (rep = all_reports ; rep->name != 0 ; rep++)
-    	ui_combo_add_data(combo, _(rep->label), (gpointer)rep);
+	ui_combo_add_data(combo, _(rep->label), (gpointer)rep);
     ui_combo_set_current_data(combo, (gpointer)report_);
+#endif
 }
 
 void
@@ -135,7 +148,11 @@ reportwin_t::update()
 
     populating_ = TRUE;
     assert(report_ != 0);
+#if GTK2
+    set_active(GTK_COMBO_BOX(report_combo_), (gpointer)report_);
+#else
     ui_combo_set_current_data(GTK_COMBO(report_combo_), (gpointer)report_);
+#endif
     populating_ = FALSE;
 
     set_title(_(report_->label));
@@ -165,8 +182,12 @@ on_report_report_entry_changed(GtkWidget *w, gpointer data)
 
     if (rw->populating_ || !rw->shown_)
     	return;
+#if GTK2
+    rep = (const report_t *)get_active(GTK_COMBO_BOX(rw->report_combo_));
+#else
     rep = (const report_t *)ui_combo_get_current_data(
-	    	    	    	    GTK_COMBO(rw->report_combo_));
+				    GTK_COMBO(rw->report_combo_));
+#endif
     if (rep != 0)
     {
     	/* stupid gtk2 */
