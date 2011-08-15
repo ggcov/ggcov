@@ -23,19 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_summary_overall_radio_toggled(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_filename_radio_toggled(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_filename_combo_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_filename_view_clicked(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_function_radio_toggled(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_function_combo_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_function_view_clicked(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_range_radio_toggled(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_range_combo_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_range_start_spin_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_range_end_spin_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_summary_range_view_clicked(GtkWidget *w, gpointer data);
-
 class summarywin_t : public window_t
 {
 public:
@@ -65,11 +52,19 @@ private:
     void populate();
     void spin_update();
     void update();
-    static summarywin_t *from_widget(GtkWidget *w)
-    {
-    	return (summarywin_t *)window_t::from_widget(w);
-    }
     void grey_items();
+    void on_overall_radio_toggled();
+    void on_filename_radio_toggled();
+    void on_filename_combo_changed();
+    void on_filename_view_clicked();
+    void on_function_radio_toggled();
+    void on_function_combo_changed();
+    void on_function_view_clicked();
+    void on_range_radio_toggled();
+    void on_range_combo_changed();
+    void on_range_start_spin_changed();
+    void on_range_end_spin_changed();
+    void on_range_view_clicked();
 
     static list_t<summarywin_t> instances_;
 
@@ -105,19 +100,6 @@ private:
     GtkWidget *blocks_label_;
     GtkWidget *blocks_pc_label_;
     GtkWidget *blocks_bar_;
-
-    friend void on_summary_overall_radio_toggled(GtkWidget *w, gpointer data);
-    friend void on_summary_filename_radio_toggled(GtkWidget *w, gpointer data);
-    friend void on_summary_filename_combo_changed(GtkWidget *w, gpointer data);
-    friend void on_summary_filename_view_clicked(GtkWidget *w, gpointer data);
-    friend void on_summary_function_radio_toggled(GtkWidget *w, gpointer data);
-    friend void on_summary_function_combo_changed(GtkWidget *w, gpointer data);
-    friend void on_summary_function_view_clicked(GtkWidget *w, gpointer data);
-    friend void on_summary_range_radio_toggled(GtkWidget *w, gpointer data);
-    friend void on_summary_range_combo_changed(GtkWidget *w, gpointer data);
-    friend void on_summary_range_start_spin_changed(GtkWidget *w, gpointer data);
-    friend void on_summary_range_end_spin_changed(GtkWidget *w, gpointer data);
-    friend void on_summary_range_view_clicked(GtkWidget *w, gpointer data);
 };
 
 #endif /* _ggcov_summarywin_H_ */

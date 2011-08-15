@@ -424,161 +424,134 @@ summarywin_t::update()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
-on_summary_overall_radio_toggled(GtkWidget *w, gpointer data)
+summarywin_t::on_overall_radio_toggled()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-
-    if (sw->populating_ || !sw->shown_)
-    	return;
-    sw->scope_ = summarywin_t::SU_OVERALL;
-    sw->update();   
+    if (populating_ || !shown_)
+	return;
+    scope_ = summarywin_t::SU_OVERALL;
+    update();
 }
 
 GLADE_CALLBACK void
-on_summary_filename_radio_toggled(GtkWidget *w, gpointer data)
+summarywin_t::on_filename_radio_toggled()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-
-    if (sw->populating_ || !sw->shown_)
-    	return;
-    sw->scope_ = summarywin_t::SU_FILENAME;
-    sw->update();   
+    if (populating_ || !shown_)
+	return;
+    scope_ = summarywin_t::SU_FILENAME;
+    update();
 }
 
 GLADE_CALLBACK void
-on_summary_filename_combo_changed(GtkWidget *w, gpointer data)
+summarywin_t::on_filename_combo_changed()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-    cov_file_t *f;
-
-    if (sw->populating_ || !sw->shown_)
-    	return;
-    assert(sw->scope_ == summarywin_t::SU_FILENAME);
-    f = (cov_file_t *)get_active(sw->filename_combo_);
+    if (populating_ || !shown_)
+	return;
+    assert(scope_ == summarywin_t::SU_FILENAME);
+    cov_file_t *f = (cov_file_t *)get_active(filename_combo_);
     if (f != 0)
     {
-    	/* stupid gtk2 */
-    	sw->file_ = f;
-	sw->update();
+	/* stupid gtk2 */
+	file_ = f;
+	update();
     }
 }
 
 GLADE_CALLBACK void
-on_summary_filename_view_clicked(GtkWidget *w, gpointer data)
+summarywin_t::on_filename_view_clicked()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-
-    assert(sw->scope_ == summarywin_t::SU_FILENAME);
-    assert(sw->file_ != 0);
-    assert(!sw->populating_);
-    sourcewin_t::show_file(sw->file_);
+    assert(scope_ == summarywin_t::SU_FILENAME);
+    assert(file_ != 0);
+    assert(!populating_);
+    sourcewin_t::show_file(file_);
 }
 
 GLADE_CALLBACK void
-on_summary_function_radio_toggled(GtkWidget *w, gpointer data)
+summarywin_t::on_function_radio_toggled()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-
-    if (sw->populating_ || !sw->shown_)
-    	return;
-    sw->scope_ = summarywin_t::SU_FUNCTION;
-    sw->update();   
+    if (populating_ || !shown_)
+	return;
+    scope_ = summarywin_t::SU_FUNCTION;
+    update();
 }
 
 GLADE_CALLBACK void
-on_summary_function_combo_changed(GtkWidget *w, gpointer data)
+summarywin_t::on_function_combo_changed()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-    cov_function_t *fn;
-
-    if (sw->populating_ || !sw->shown_)
-    	return;
-    assert(sw->scope_ == summarywin_t::SU_FUNCTION);
-    fn = (cov_function_t *)get_active(sw->function_combo_);
+    if (populating_ || !shown_)
+	return;
+    assert(scope_ == summarywin_t::SU_FUNCTION);
+    cov_function_t *fn = (cov_function_t *)get_active(function_combo_);
     if (fn != 0)
     {
-    	/* stupid gtk2 */
-	sw->function_ = fn;
-	sw->update();
+	/* stupid gtk2 */
+	function_ = fn;
+	update();
     }
 }
 
 GLADE_CALLBACK void
-on_summary_function_view_clicked(GtkWidget *w, gpointer data)
+summarywin_t::on_function_view_clicked()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-
-    assert(sw->scope_ == summarywin_t::SU_FUNCTION);
-    assert(sw->function_ != 0);
-    assert(!sw->populating_);
-    sourcewin_t::show_function(sw->function_);
+    assert(scope_ == summarywin_t::SU_FUNCTION);
+    assert(function_ != 0);
+    assert(!populating_);
+    sourcewin_t::show_function(function_);
 }
 
 GLADE_CALLBACK void
-on_summary_range_radio_toggled(GtkWidget *w, gpointer data)
+summarywin_t::on_range_radio_toggled()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-
-    if (sw->populating_ || !sw->shown_)
-    	return;
-    sw->scope_ = summarywin_t::SU_RANGE;
-    sw->update();   
+    if (populating_ || !shown_)
+	return;
+    scope_ = summarywin_t::SU_RANGE;
+    update();
 }
 
 GLADE_CALLBACK void
-on_summary_range_combo_changed(GtkWidget *w, gpointer data)
+summarywin_t::on_range_combo_changed()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-    cov_file_t *f;
-    
-    if (sw->populating_ || !sw->shown_)
-    	return;
-    assert(sw->scope_ == summarywin_t::SU_RANGE);
-    f = (cov_file_t *)get_active(sw->range_combo_);
+    if (populating_ || !shown_)
+	return;
+    assert(scope_ == summarywin_t::SU_RANGE);
+    cov_file_t *f = (cov_file_t *)get_active(range_combo_);
     if (f != 0)
     {
-    	/* stupid gtk2 */
-	sw->file_ = f;
-	sw->spin_update();
-	sw->update();   
+	/* stupid gtk2 */
+	file_ = f;
+	spin_update();
+	update();
     }
 }
 
 GLADE_CALLBACK void
-on_summary_range_start_spin_changed(GtkWidget *w, gpointer data)
+summarywin_t::on_range_start_spin_changed()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-
-    if (sw->populating_ || !sw->shown_)
-    	return;
-    assert(sw->scope_ == summarywin_t::SU_RANGE);
-    sw->start_ = gtk_spin_button_get_value_as_int(
-	    	    	    GTK_SPIN_BUTTON(sw->range_start_spin_));
-    sw->update();   
+    if (populating_ || !shown_)
+	return;
+    assert(scope_ == summarywin_t::SU_RANGE);
+    start_ = gtk_spin_button_get_value_as_int(
+			    GTK_SPIN_BUTTON(range_start_spin_));
+    update();
 }
 
 GLADE_CALLBACK void
-on_summary_range_end_spin_changed(GtkWidget *w, gpointer data)
+summarywin_t::on_range_end_spin_changed()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-
-    if (sw->populating_ || !sw->shown_)
-    	return;
-    assert(sw->scope_ == summarywin_t::SU_RANGE);
-    sw->end_ = gtk_spin_button_get_value_as_int(
-	    	    	    GTK_SPIN_BUTTON(sw->range_end_spin_));
-    sw->update();   
+    if (populating_ || !shown_)
+	return;
+    assert(scope_ == summarywin_t::SU_RANGE);
+    end_ = gtk_spin_button_get_value_as_int(
+			    GTK_SPIN_BUTTON(range_end_spin_));
+    update();
 }
 
 GLADE_CALLBACK void
-on_summary_range_view_clicked(GtkWidget *w, gpointer data)
+summarywin_t::on_range_view_clicked()
 {
-    summarywin_t *sw = summarywin_t::from_widget(w);
-    
-    assert(sw->scope_ == summarywin_t::SU_RANGE);
-    assert(sw->file_ != 0);
-    assert(!sw->populating_);
-    sourcewin_t::show_lines(sw->file_->name(), sw->start_, sw->end_);
+    assert(scope_ == summarywin_t::SU_RANGE);
+    assert(file_ != 0);
+    assert(!populating_);
+    sourcewin_t::show_lines(file_->name(), start_, end_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
