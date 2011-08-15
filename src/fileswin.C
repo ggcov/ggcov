@@ -534,114 +534,96 @@ fileswin_t::apply_toggles()
 }
 
 GLADE_CALLBACK void
-on_files_blocks_check_activate(GtkWidget *w, gpointer data)
+fileswin_t::on_blocks_check_activate()
 {
-    fileswin_t *fw = fileswin_t::from_widget(w);
+    dprintf0(D_FILESWIN, "fileswin_t::on_blocks_check_activate\n");
 
-    dprintf0(D_FILESWIN, "on_files_blocks_check_activate\n");
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->apply_toggles();
-    fw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_files_lines_check_activate(GtkWidget *w, gpointer data)
+fileswin_t::on_lines_check_activate()
 {
-    fileswin_t *fw = fileswin_t::from_widget(w);
+    dprintf0(D_FILESWIN, "fileswin_t::on_lines_check_activate\n");
 
-    dprintf0(D_FILESWIN, "on_files_lines_check_activate\n");
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->apply_toggles();
-    fw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_files_functions_check_activate(GtkWidget *w, gpointer data)
+fileswin_t::on_functions_check_activate()
 {
-    fileswin_t *fw = fileswin_t::from_widget(w);
+    dprintf0(D_FILESWIN, "fileswin_t::on_functions_check_activate\n");
 
-    dprintf0(D_FILESWIN, "on_files_functions_check_activate\n");
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->apply_toggles();
-    fw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_files_calls_check_activate(GtkWidget *w, gpointer data)
+fileswin_t::on_calls_check_activate()
 {
-    fileswin_t *fw = fileswin_t::from_widget(w);
+    dprintf0(D_FILESWIN, "fileswin_t::on_calls_check_activate\n");
 
-    dprintf0(D_FILESWIN, "on_files_calls_check_activate\n");
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->apply_toggles();
-    fw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_files_branches_check_activate(GtkWidget *w, gpointer data)
+fileswin_t::on_branches_check_activate()
 {
-    fileswin_t *fw = fileswin_t::from_widget(w);
+    dprintf0(D_FILESWIN, "fileswin_t::on_branches_check_activate\n");
 
-    dprintf0(D_FILESWIN, "on_files_branches_check_activate\n");
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->apply_toggles();
-    fw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_files_percent_check_activate(GtkWidget *w, gpointer data)
+fileswin_t::on_percent_check_activate()
 {
-    fileswin_t *fw = fileswin_t::from_widget(w);
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->update();
-    fw->save_state();
+    update();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_files_tree_check_activate(GtkWidget *w, gpointer data)
+fileswin_t::on_tree_check_activate()
 {
-    fileswin_t *fw = fileswin_t::from_widget(w);
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->update();
-    fw->save_state();
+    update();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_files_collapse_all_activate(GtkWidget *w, gpointer data)
+fileswin_t::on_collapse_all_activate()
 {
-    fileswin_t *fw = fileswin_t::from_widget(w);
-
 #if !GTK2
-    gtk_ctree_collapse_recursive(GTK_CTREE(fw->ctree_), fw->root_->node);
-    gtk_ctree_expand(GTK_CTREE(fw->ctree_), fw->root_->node);
+    gtk_ctree_collapse_recursive(GTK_CTREE(ctree_), root_->node);
+    gtk_ctree_expand(GTK_CTREE(ctree_), root_->node);
 #else
-    gtk_tree_view_collapse_all(GTK_TREE_VIEW(fw->ctree_));
+    gtk_tree_view_collapse_all(GTK_TREE_VIEW(ctree_));
 #endif
 }
 
 GLADE_CALLBACK void
-on_files_expand_all_activate(GtkWidget *w, gpointer data)
+fileswin_t::on_expand_all_activate()
 {
-    fileswin_t *fw = fileswin_t::from_widget(w);
-
 #if !GTK2
-    gtk_ctree_expand_recursive(GTK_CTREE(fw->ctree_), fw->root_->node);
+    gtk_ctree_expand_recursive(GTK_CTREE(ctree_), root_->node);
 #else
-    gtk_tree_view_expand_all(GTK_TREE_VIEW(fw->ctree_));
+    gtk_tree_view_expand_all(GTK_TREE_VIEW(ctree_));
 #endif
 }
 

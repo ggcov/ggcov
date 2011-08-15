@@ -23,17 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_files_blocks_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_files_lines_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_files_functions_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_files_calls_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_files_branches_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_files_percent_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_files_tree_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_files_collapse_all_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_files_expand_all_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_files_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
-
 struct file_rec_t;
 
 class fileswin_t : public window_t
@@ -50,10 +39,15 @@ private:
     void load_state();
     void save_state();
     void apply_toggles();
-    static fileswin_t *from_widget(GtkWidget *w)
-    {
-    	return (fileswin_t *)window_t::from_widget(w);
-    }
+    void on_blocks_check_activate();
+    void on_lines_check_activate();
+    void on_functions_check_activate();
+    void on_calls_check_activate();
+    void on_branches_check_activate();
+    void on_percent_check_activate();
+    void on_tree_check_activate();
+    void on_collapse_all_activate();
+    void on_expand_all_activate();
 
     file_rec_t *root_;
     
@@ -71,17 +65,6 @@ private:
     GtkTreeStore *store_;
 #endif
     gboolean populating_;
-
-    friend void on_files_blocks_check_activate(GtkWidget *w, gpointer data);
-    friend void on_files_lines_check_activate(GtkWidget *w, gpointer data);
-    friend void on_files_functions_check_activate(GtkWidget *w, gpointer data);
-    friend void on_files_calls_check_activate(GtkWidget *w, gpointer data);
-    friend void on_files_branches_check_activate(GtkWidget *w, gpointer data);
-    friend void on_files_percent_check_activate(GtkWidget *w, gpointer data);
-    friend void on_files_tree_check_activate(GtkWidget *w, gpointer data);
-    friend void on_files_collapse_all_activate(GtkWidget *w, gpointer data);
-    friend void on_files_expand_all_activate(GtkWidget *w, gpointer data);
-    friend void on_files_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
 };
 
 #endif /* _ggcov_fileswin_H_ */
