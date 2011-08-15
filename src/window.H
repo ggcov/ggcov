@@ -65,6 +65,8 @@ private:
     static gboolean on_configure_event(GtkWidget *, GdkEventConfigure *, gpointer);
     friend void on_window_close_activate(GtkWidget *w, gpointer data);
     friend void on_window_exit_activate(GtkWidget *w, gpointer data);
+    static void callback_tramp(GtkWidget *w, gpointer data);
+    friend void ui_register_callbacks(GladeXML *xml);
 };
 
 void load(GtkCheckMenuItem *);

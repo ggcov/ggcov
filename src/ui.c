@@ -22,6 +22,7 @@
 #include "estring.H"
 #include "string_var.H"
 #include "tok.H"
+#include "window.H"
 #include "confsection.H"
 
 CVSID("$Id: ui.c,v 1.38 2010-05-09 05:37:15 gnb Exp $");
@@ -237,18 +238,26 @@ ui_prepend_glade_path(const char *dir)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-extern ui_named_callback_t ui_callbacks[];   /* in glade_callbacks.c */
+extern ui_class_callback_t ui_class_callbacks[];    /* in glade_callbacks.c */
+extern ui_simple_callback_t ui_simple_callbacks[];  /* in glade_callbacks.c */
 
 /*
  * Connect up named functions for signal handlers.
  */
-static void
+void
 ui_register_callbacks(GladeXML *xml)
 {
     int i;
 
-    for (i = 0 ; ui_callbacks[i].name ; i++)
-	glade_xml_signal_connect(xml, ui_callbacks[i].name, ui_callbacks[i].func);
+    for (i = 0 ; ui_simple_callbacks[i].name ; i++)
+	glade_xml_signal_connect(xml,
+				 ui_simple_callbacks[i].name,
+			         ui_simple_callbacks[i].func);
+    for (i = 0 ; ui_class_callbacks[i].name ; i++)
+	glade_xml_signal_connect_data(xml,
+				      ui_class_callbacks[i].name,
+				      (GCallback)window_t::callback_tramp,
+				      &ui_class_callbacks[i]);
 }
 
 /*
@@ -269,12 +278,12 @@ ui_custom_widget_handler(
 {
     int i;
 
-    for (i = 0 ; ui_callbacks[i].name ; i++)
+    for (i = 0 ; ui_simple_callbacks[i].name ; i++)
     {
-	if (!strcmp(func_name, ui_callbacks[i].name))
+	if (!strcmp(func_name, ui_simple_callbacks[i].name))
 	{
 	    /* TODO: pass down some of the string1 et al arguments */
-	    return ((GtkWidget *(*)(void))ui_callbacks[i].func)();
+	    return ((GtkWidget *(*)(void))ui_simple_callbacks[i].func)();
 	}
     }
     return 0;

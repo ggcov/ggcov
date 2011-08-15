@@ -140,6 +140,13 @@ typedef struct
 {
     const char *name;
     GCallback func;
-} ui_named_callback_t;
+} ui_simple_callback_t;
+
+class window_t;
+typedef struct
+{
+    const char *name;
+    void (window_t::*func)();
+} ui_class_callback_t;
 
 #endif /* _ggcov_ui_h_ */
