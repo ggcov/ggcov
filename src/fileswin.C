@@ -40,10 +40,12 @@ CVSID("$Id: fileswin.C,v 1.27 2010-05-09 05:37:15 gnb Exp $");
 #else
 #define COL_CLOSURE	6
 #define COL_FG_GDK	7
-#define NUM_COLS    	8
+#define COL_ICON	8
+#define NUM_COLS    	9
 #define COL_TYPES \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
-    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, GDK_TYPE_COLOR
+    G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, GDK_TYPE_COLOR, \
+    G_TYPE_STRING
 #endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -229,13 +231,24 @@ fileswin_t::fileswin_t()
 
     rend = gtk_cell_renderer_text_new();
 
-    col = gtk_tree_view_column_new_with_attributes(_("File"), rend,
-    	    	"text", COL_FILE,
+    col = gtk_tree_view_column_new();
+    gtk_tree_view_column_set_title(col, _("File"));
+
+    GtkCellRenderer *pixrend = gtk_cell_renderer_pixbuf_new();
+    gtk_tree_view_column_pack_start(col, pixrend, FALSE);
+    gtk_tree_view_column_set_attributes(col, pixrend,
+		"stock-id", COL_ICON,
+		(char *)0);
+    GtkCellRenderer *textrend = gtk_cell_renderer_text_new();
+    gtk_object_set(GTK_OBJECT(textrend), "xalign", 0.0, (char *)0);
+    gtk_tree_view_column_pack_start(col, textrend, TRUE);
+    gtk_tree_view_column_set_attributes(col, textrend,
+		"text", COL_FILE,
 		"foreground-gdk", COL_FG_GDK,/* only needed on 1st column */
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_FILE);
     gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
-    
+
     col = gtk_tree_view_column_new_with_attributes(_("Blocks"), rend,
     	    	"text", COL_BLOCKS,
 		(char *)0);
@@ -442,6 +455,7 @@ fileswin_t::add_node(
 	    COL_BRANCHES, text[COL_BRANCHES],
 	    COL_CLOSURE, fr,
 	    COL_FG_GDK, color,
+	    COL_ICON, (is_leaf ? GTK_STOCK_FILE : GTK_STOCK_DIRECTORY),
 	    -1);
 #endif
     }
