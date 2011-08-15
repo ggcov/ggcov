@@ -38,7 +38,7 @@ GtkWidget *ui_get_dummy_menu(GladeXML *xml, const char *name);
 #endif
 
 /* combobox add/get current item using data */
-ui_combo_t *init(ui_combo_t *);
+ui_combo_t *init(ui_combo_t *, const char *sep = 0);
 void clear(ui_combo_t *);
 void add(ui_combo_t *, const char *label, gpointer data);
 gpointer get_active(ui_combo_t *);

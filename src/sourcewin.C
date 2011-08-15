@@ -417,7 +417,7 @@ sourcewin_t::sourcewin_t()
     flow_diagram_item_ = glade_xml_get_widget(xml, "source_flow_diagram");
     toolbar_ = glade_xml_get_widget(xml, "source_toolbar");
     w = glade_xml_get_widget(xml, "source_filenames_combo");
-    filenames_combo_ = init(UI_COMBO(w));
+    filenames_combo_ = init(UI_COMBO(w), "/");
     w = glade_xml_get_widget(xml, "source_functions_combo");
     functions_combo_ = init(UI_COMBO(w));
     titles_hbox_ = glade_xml_get_widget(xml, "source_titles_hbox");

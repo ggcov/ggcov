@@ -53,13 +53,13 @@ summarywin_t::summarywin_t()
     	    	    	    	    	    	    "summary_range_radio");
     
     w = glade_xml_get_widget(xml, "summary_filename_combo");
-    filename_combo_ = init(UI_COMBO(w));
+    filename_combo_ = init(UI_COMBO(w), "/");
     filename_view_ = glade_xml_get_widget(xml, "summary_filename_view");
     w = glade_xml_get_widget(xml, "summary_function_combo");
     function_combo_ = init(UI_COMBO(w));
     function_view_ = glade_xml_get_widget(xml, "summary_function_view");
     w = glade_xml_get_widget(xml, "summary_range_combo");
-    range_combo_ = init(UI_COMBO(w));
+    range_combo_ = init(UI_COMBO(w), "/");
     range_start_spin_ = glade_xml_get_widget(xml, "summary_range_start_spin");
     range_end_spin_ = glade_xml_get_widget(xml, "summary_range_end_spin");
     range_view_ = glade_xml_get_widget(xml, "summary_range_view");

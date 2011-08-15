@@ -30,19 +30,43 @@ CVSID("$Id: ui.c,v 1.38 2010-05-09 05:37:15 gnb Exp $");
 #if GTK2
 #define COL_LABEL   0
 #define COL_DATA    1
+#define COL_ICON    2
+#define COLUMN_TYPES \
+    3, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_STRING
+static const char ui_combo_sep_key[] = "ui_combo_sep_key";
 #else
 static const char ui_combo_item_key[] = "ui_combo_item_key";
 #endif
 
 ui_combo_t *
-init(ui_combo_t *cbox)
+init(ui_combo_t *cbox, const char *sep)
 {
 #if GTK2
-    GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_POINTER);
-    gtk_combo_box_set_model(cbox, GTK_TREE_MODEL(store));
-    GtkCellRenderer *rend = gtk_cell_renderer_text_new();
-    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cbox), rend, TRUE);
-    gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cbox), rend, "text", COL_LABEL, (char *)0);
+    GtkCellRenderer *rend;
+    if (sep)
+    {
+	gtk_object_set_data(GTK_OBJECT(cbox), ui_combo_sep_key, (gpointer)sep);
+	GtkTreeStore *store = gtk_tree_store_new(COLUMN_TYPES);
+	gtk_combo_box_set_model(cbox, GTK_TREE_MODEL(store));
+
+	rend = gtk_cell_renderer_pixbuf_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cbox), rend, FALSE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cbox), rend, "stock-id", COL_ICON, (char *)0);
+
+	rend = gtk_cell_renderer_text_new();
+	gtk_object_set(GTK_OBJECT(rend), "xalign", 0.0, (char *)0);
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cbox), rend, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cbox), rend, "text", COL_LABEL, (char *)0);
+    }
+    else
+    {
+	GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_POINTER);
+	gtk_combo_box_set_model(cbox, GTK_TREE_MODEL(store));
+
+	GtkCellRenderer *rend = gtk_cell_renderer_text_new();
+	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cbox), rend, TRUE);
+	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cbox), rend, "text", COL_LABEL, (char *)0);
+    }
 #endif
     return cbox;
 }
@@ -52,11 +76,10 @@ clear(ui_combo_t *cbox)
 {
 #if GTK2
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
-    GtkTreeIter treeitr;
-    if (!gtk_tree_model_get_iter_first(model, &treeitr))
-	return;
-    while (gtk_list_store_remove(GTK_LIST_STORE(model), &treeitr))
-	;
+    if (GTK_IS_TREE_STORE(model))
+	gtk_tree_store_clear(GTK_TREE_STORE(model));
+    else
+	gtk_list_store_clear(GTK_LIST_STORE(model));
 #else
     gtk_list_clear_items(GTK_LIST(cbox->list), 0, -1);
 #endif
@@ -67,10 +90,51 @@ add(ui_combo_t *cbox, const char *label, gpointer data)
 {
 #if GTK2
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
-    GtkListStore *store = GTK_LIST_STORE(model);
-    GtkTreeIter treeitr;
-    gtk_list_store_append(store, &treeitr);
-    gtk_list_store_set(store, &treeitr, COL_LABEL, label, COL_DATA, data, -1);
+    if (GTK_IS_TREE_STORE(model))
+    {
+	const char *sep = (const char *)
+		    gtk_object_get_data(GTK_OBJECT(cbox), ui_combo_sep_key);
+	tok_t tok(label, sep);
+	GtkTreeIter itr;
+	gboolean itr_valid = gtk_tree_model_get_iter_first(model, &itr);
+	GtkTreeIter parent;
+	gboolean parent_valid = FALSE;
+	while (const char *comp = tok.next())
+	{
+	    while (itr_valid)
+	    {
+		const char *ilabel = 0;
+		gtk_tree_model_get(model, &itr, COL_LABEL, &ilabel, -1);
+		assert(ilabel);
+		if (!strcmp(ilabel, comp))
+		    break;
+		itr_valid = gtk_tree_model_iter_next(model, &itr);
+	    }
+	    if (!itr_valid)
+	    {
+		gtk_tree_store_append(GTK_TREE_STORE(model), &itr,
+				      (parent_valid ? &parent : 0));
+		gtk_tree_store_set(GTK_TREE_STORE(model), &itr,
+				   COL_LABEL, comp,
+				   COL_ICON, GTK_STOCK_DIRECTORY,
+				   -1);
+		itr_valid = TRUE;
+	    }
+	    parent = itr;
+	    parent_valid = itr_valid;	// always TRUE
+	}
+	gtk_tree_store_set(GTK_TREE_STORE(model), &itr,
+			   COL_DATA, data,
+			   COL_ICON, GTK_STOCK_FILE,
+			   -1);
+    }
+    else
+    {
+	GtkListStore *store = GTK_LIST_STORE(model);
+	GtkTreeIter treeitr;
+	gtk_list_store_append(store, &treeitr);
+	gtk_list_store_set(store, &treeitr, COL_LABEL, label, COL_DATA, data, -1);
+    }
 #else
     GtkWidget *item;
     
