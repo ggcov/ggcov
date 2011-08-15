@@ -163,28 +163,22 @@ prefswin_t::apply()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
-on_preferences_ok_clicked(GtkWidget *w, gpointer data)
+prefswin_t::on_ok_clicked()
 {
-    prefswin_t *pw = prefswin_t::from_widget(w);
-
-    pw->apply();    
-    delete pw;
+    apply();
+    delete this;
 }
 
 GLADE_CALLBACK void
-on_preferences_apply_clicked(GtkWidget *w, gpointer data)
+prefswin_t::on_apply_clicked()
 {
-    prefswin_t *pw = prefswin_t::from_widget(w);
-
-    pw->apply();    
+    apply();
 }
 
 GLADE_CALLBACK void
-on_preferences_cancel_clicked(GtkWidget *w, gpointer data)
+prefswin_t::on_cancel_clicked()
 {
-    prefswin_t *pw = prefswin_t::from_widget(w);
-
-    delete pw;
+    delete this;
 }
 
 GLADE_CALLBACK void

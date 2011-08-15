@@ -3689,7 +3689,7 @@ C and C++ programs built with the GNU compiler.
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="on_preferences_ok_clicked"/>
+	      <signal name="clicked" handler="prefswin_t::on_ok_clicked"/>
 	    </widget>
 	  </child>
 
@@ -3702,7 +3702,7 @@ C and C++ programs built with the GNU compiler.
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="on_preferences_apply_clicked"/>
+	      <signal name="clicked" handler="prefswin_t::on_apply_clicked"/>
 	    </widget>
 	  </child>
 
@@ -3715,7 +3715,7 @@ C and C++ programs built with the GNU compiler.
 	      <property name="use_stock">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="on_preferences_cancel_clicked"/>
+	      <signal name="clicked" handler="prefswin_t::on_cancel_clicked"/>
 	    </widget>
 	  </child>
 	</widget>

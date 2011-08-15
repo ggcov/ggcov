@@ -22,10 +22,6 @@
 
 #include "window.H"
 
-GLADE_CALLBACK void on_preferences_ok_clicked(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_preferences_apply_clicked(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_preferences_cancel_clicked(GtkWidget *w, gpointer data);
-
 class prefswin_t : public window_t
 {
 public:
@@ -37,26 +33,21 @@ private:
     prefswin_t();
 
     void populate();
-    static prefswin_t *from_widget(GtkWidget *w)
-    {
-    	return (prefswin_t *)window_t::from_widget(w);
-    }
     void update_picker(int i, const GdkColor *);
     void update();
     void grey_items();
     void apply_picker(int i, GdkColor *);
     void apply();
-    
+    void on_ok_clicked();
+    void on_apply_clicked();
+    void on_cancel_clicked();
+
     static prefswin_t *instance_;
 
     GtkWidget *reuse_srcwin_check_;
     GtkWidget *reuse_summwin_check_;
 
     GtkWidget *color_pickers_[10];
-
-    friend void on_preferences_ok_clicked(GtkWidget *w, gpointer data);
-    friend void on_preferences_apply_clicked(GtkWidget *w, gpointer data);
-    friend void on_preferences_cancel_clicked(GtkWidget *w, gpointer data);
 };
 
 #endif /* _ggcov_prefswin_H_ */
