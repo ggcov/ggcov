@@ -51,7 +51,7 @@ reportwin_t::reportwin_t()
     set_window(glade_xml_get_widget(xml, "report"));
 
     w = glade_xml_get_widget(xml, "report_report_combo");
-    report_combo_ = init(UI_COMBO(report_combo_));
+    report_combo_ = init(UI_COMBO(w));
     text_ = glade_xml_get_widget(xml, "report_text");
     ui_text_setup(text_);
 
