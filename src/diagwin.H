@@ -25,10 +25,6 @@
 #include "cov.H"
 #include "diagram.H"
 
-GLADE_CALLBACK void on_diag_zoom_in_activate(GtkWidget*, gpointer);
-GLADE_CALLBACK void on_diag_zoom_out_activate(GtkWidget*, gpointer);
-GLADE_CALLBACK void on_diag_show_all_activate(GtkWidget*, gpointer);
-
 class diagwin_t : public window_t
 {
 public:
@@ -40,18 +36,14 @@ private:
     void zoom_all();
     void zoom_to(double factor);
     const char *name() const;
-    static diagwin_t *from_widget(GtkWidget *w)
-    {
-    	return (diagwin_t *)window_t::from_widget(w);
-    }
-    
+    void on_zoom_in_activate();
+    void on_zoom_out_activate();
+    void on_show_all_activate();
+
     diagram_t *diagram_;
     GtkWidget *canvas_;
     double zoom_;
 
-    friend void on_diag_zoom_in_activate(GtkWidget*, gpointer);
-    friend void on_diag_zoom_out_activate(GtkWidget*, gpointer);
-    friend void on_diag_show_all_activate(GtkWidget*, gpointer);
 };
 
 #endif /* _ggcov_diagwin_H_ */

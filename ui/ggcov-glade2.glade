@@ -3010,7 +3010,7 @@ C and C++ programs built with the GNU compiler.
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">Zoom _In</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_diag_zoom_in_activate"/>
+			  <signal name="activate" handler="diagwin_t::on_zoom_in_activate"/>
 			</widget>
 		      </child>
 
@@ -3019,7 +3019,7 @@ C and C++ programs built with the GNU compiler.
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">Zoom _Out</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_diag_zoom_out_activate"/>
+			  <signal name="activate" handler="diagwin_t::on_zoom_out_activate"/>
 			</widget>
 		      </child>
 
@@ -3028,7 +3028,7 @@ C and C++ programs built with the GNU compiler.
 			  <property name="visible">True</property>
 			  <property name="label" translatable="yes">Show _All</property>
 			  <property name="use_underline">True</property>
-			  <signal name="activate" handler="on_diag_show_all_activate"/>
+			  <signal name="activate" handler="diagwin_t::on_show_all_activate"/>
 			</widget>
 		      </child>
 		    </widget>

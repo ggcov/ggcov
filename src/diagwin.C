@@ -134,35 +134,26 @@ diagwin_t::name() const
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
-on_diag_zoom_in_activate(GtkWidget *w, gpointer data)
+diagwin_t::on_zoom_in_activate()
 {
-    diagwin_t *cw = diagwin_t::from_widget(w);
-
-    dprintf0(D_DIAGWIN, "on_diag_zoom_in_activate\n");
-
-    cw->zoom_to(cw->zoom_*2.0);
+    dprintf0(D_DIAGWIN, "diagwin_t::on_zoom_in_activate\n");
+    zoom_to(zoom_*2.0);
 }
 
 
 GLADE_CALLBACK void
-on_diag_zoom_out_activate(GtkWidget *w, gpointer data)
+diagwin_t::on_zoom_out_activate()
 {
-    diagwin_t *cw = diagwin_t::from_widget(w);
-
-    dprintf0(D_DIAGWIN, "on_diag_zoom_out_activate\n");
-
-    cw->zoom_to(cw->zoom_/2.0);
+    dprintf0(D_DIAGWIN, "diagwin_t::on_zoom_out_activate\n");
+    zoom_to(zoom_/2.0);
 }
 
 
 GLADE_CALLBACK void
-on_diag_show_all_activate(GtkWidget *w, gpointer data)
+diagwin_t::on_show_all_activate()
 {
-    diagwin_t *cw = diagwin_t::from_widget(w);
-
-    dprintf0(D_DIAGWIN, "on_diag_show_all_activate\n");
-
-    cw->zoom_all();
+    dprintf0(D_DIAGWIN, "diagwin_t::on_show_all_activate\n");
+    zoom_all();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
