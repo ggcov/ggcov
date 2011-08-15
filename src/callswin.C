@@ -157,6 +157,11 @@ callswin_t::callswin_t()
     to_function_combo_ = init(UI_COMBO(w));
     to_function_view_ = glade_xml_get_widget(xml, "calls_to_function_view");
 
+    from_check_ = glade_xml_get_widget(xml, "calls_call_from_check");
+    to_check_ = glade_xml_get_widget(xml, "calls_call_to_check");
+    line_check_ = glade_xml_get_widget(xml, "calls_line_check");
+    count_check_ = glade_xml_get_widget(xml, "calls_count_check");
+
     clist_ = glade_xml_get_widget(xml, "calls_clist");
 #if !GTK2
     gtk_clist_column_titles_passive(GTK_CLIST(clist_));
@@ -344,74 +349,69 @@ callswin_t::update()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-GLADE_CALLBACK void
-on_calls_call_from_check_activate(GtkWidget *w, gpointer data)
+void
+callswin_t::apply_toggles()
 {
-    callswin_t *cw = callswin_t::from_widget(w);
-    
-    ui_list_set_column_visibility(cw->clist_, COL_FROM,
-    	    	    	          GTK_CHECK_MENU_ITEM(w)->active);
+    ui_list_set_column_visibility(clist_, COL_FROM,
+				  GTK_CHECK_MENU_ITEM(from_check_)->active);
+    ui_list_set_column_visibility(clist_, COL_TO,
+				  GTK_CHECK_MENU_ITEM(to_check_)->active);
+    ui_list_set_column_visibility(clist_, COL_LINE,
+				  GTK_CHECK_MENU_ITEM(line_check_)->active);
+    ui_list_set_column_visibility(clist_, COL_COUNT,
+				  GTK_CHECK_MENU_ITEM(count_check_)->active);
 }
 
 GLADE_CALLBACK void
-on_calls_call_to_check_activate(GtkWidget *w, gpointer data)
+callswin_t::on_call_from_check_activate()
 {
-    callswin_t *cw = callswin_t::from_widget(w);
-    
-    ui_list_set_column_visibility(cw->clist_, COL_TO,
-    	    	    	          GTK_CHECK_MENU_ITEM(w)->active);
+    apply_toggles();
 }
 
 GLADE_CALLBACK void
-on_calls_line_check_activate(GtkWidget *w, gpointer data)
+callswin_t::on_call_to_check_activate()
 {
-    callswin_t *cw = callswin_t::from_widget(w);
-    
-    ui_list_set_column_visibility(cw->clist_, COL_LINE,
-    	    	    	          GTK_CHECK_MENU_ITEM(w)->active);
+    apply_toggles();
 }
 
 GLADE_CALLBACK void
-on_calls_count_check_activate(GtkWidget *w, gpointer data)
+callswin_t::on_line_check_activate()
 {
-    callswin_t *cw = callswin_t::from_widget(w);
-    
-    ui_list_set_column_visibility(cw->clist_, COL_COUNT,
-    	    	    	          GTK_CHECK_MENU_ITEM(w)->active);
+    apply_toggles();
 }
 
 GLADE_CALLBACK void
-on_calls_from_function_combo_changed(GtkWidget *w, gpointer data)
+callswin_t::on_count_check_activate()
 {
-    callswin_t *cw = callswin_t::from_widget(w);
-
-    cw->update();
+    apply_toggles();
 }
 
 GLADE_CALLBACK void
-on_calls_to_function_combo_changed(GtkWidget *w, gpointer data)
+callswin_t::on_from_function_combo_changed()
 {
-    callswin_t *cw = callswin_t::from_widget(w);
-
-    cw->update();
+    update();
 }
 
 GLADE_CALLBACK void
-on_calls_from_function_view_clicked(GtkWidget *w, gpointer data)
+callswin_t::on_to_function_combo_changed()
 {
-    callswin_t *cw = callswin_t::from_widget(w);
-    cov_function_t *fn = (cov_function_t *)get_active(cw->from_function_combo_);
-    g_return_if_fail(fn != 0);
-    sourcewin_t::show_function(fn);
+    update();
 }
 
 GLADE_CALLBACK void
-on_calls_to_function_view_clicked(GtkWidget *w, gpointer data)
+callswin_t::on_from_function_view_clicked()
 {
-    callswin_t *cw = callswin_t::from_widget(w);
-    cov_function_t *fn = (cov_function_t *)get_active(cw->to_function_combo_);
-    g_return_if_fail(fn != 0);
-    sourcewin_t::show_function(fn);
+    cov_function_t *fn = (cov_function_t *)get_active(from_function_combo_);
+    if (fn)
+	sourcewin_t::show_function(fn);
+}
+
+GLADE_CALLBACK void
+callswin_t::on_to_function_view_clicked()
+{
+    cov_function_t *fn = (cov_function_t *)get_active(to_function_combo_);
+    if (fn)
+	sourcewin_t::show_function(fn);
 }
 
 GLADE_CALLBACK gboolean

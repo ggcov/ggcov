@@ -23,17 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_calls_call_from_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_call_to_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_line_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_arc_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_count_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_from_function_combo_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_to_function_combo_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_from_function_view_clicked(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_calls_to_function_view_clicked(GtkWidget *w, gpointer data);
-GLADE_CALLBACK gboolean on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
-
 class callswin_t : public window_t
 {
 public:
@@ -44,11 +33,16 @@ private:
     void populate();
     void update();
     void update_for_func(cov_function_t *from_fn, cov_function_t *to_fn);
-    static callswin_t *from_widget(GtkWidget *w)
-    {
-    	return (callswin_t *)window_t::from_widget(w);
-    }
-
+    void apply_toggles();
+    void on_call_from_check_activate();
+    void on_call_to_check_activate();
+    void on_line_check_activate();
+    void on_arc_check_activate();
+    void on_count_check_activate();
+    void on_from_function_combo_changed();
+    void on_to_function_combo_changed();
+    void on_from_function_view_clicked();
+    void on_to_function_view_clicked();
 
     ui_combo_t *from_function_combo_;
     GtkWidget *from_function_view_;
@@ -56,22 +50,16 @@ private:
     ui_combo_t *to_function_combo_;
     GtkWidget *to_function_view_;
 
+    GtkWidget *from_check_;
+    GtkWidget *to_check_;
+    GtkWidget *line_check_;
+    GtkWidget *count_check_;
+
     GtkWidget *clist_;
 #if GTK2
     GtkListStore *store_;
 #endif
     list_t<cov_function_t> *functions_;
-
-    friend void on_calls_call_from_check_activate(GtkWidget *w, gpointer data);
-    friend void on_calls_call_to_check_activate(GtkWidget *w, gpointer data);
-    friend void on_calls_line_check_activate(GtkWidget *w, gpointer data);
-    friend void on_calls_arc_check_activate(GtkWidget *w, gpointer data);
-    friend void on_calls_count_check_activate(GtkWidget *w, gpointer data);
-    friend void on_calls_from_function_combo_changed(GtkWidget *w, gpointer data);
-    friend void on_calls_to_function_combo_changed(GtkWidget *w, gpointer data);
-    friend void on_calls_from_function_view_clicked(GtkWidget *w, gpointer data);
-    friend void on_calls_to_function_view_clicked(GtkWidget *w, gpointer data);
-    friend gboolean on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
 };
 
 #endif /* _ggcov_callswin_H_ */

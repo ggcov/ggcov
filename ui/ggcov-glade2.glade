@@ -2109,7 +2109,7 @@
 		      <property name="label" translatable="yes">Call _From</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_calls_call_from_check_activate"/>
+		      <signal name="activate" handler="callswin_t::on_call_from_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -2119,7 +2119,7 @@
 		      <property name="label" translatable="yes">Call _To</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_calls_call_to_check_activate"/>
+		      <signal name="activate" handler="callswin_t::on_call_to_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -2129,7 +2129,7 @@
 		      <property name="label" translatable="yes">_Line</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_calls_line_check_activate"/>
+		      <signal name="activate" handler="callswin_t::on_line_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -2139,7 +2139,7 @@
 		      <property name="label" translatable="yes">_Count</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_calls_count_check_activate"/>
+		      <signal name="activate" handler="callswin_t::on_count_check_activate"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -2254,7 +2254,7 @@
 	  <child>
 	    <widget class="GtkComboBox" id="calls_from_function_combo">
 	      <property name="visible">True</property>
-	      <signal name="changed" handler="on_calls_from_function_combo_changed"/>
+	      <signal name="changed" handler="callswin_t::on_from_function_combo_changed"/>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
@@ -2273,7 +2273,7 @@
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="on_calls_from_function_view_clicked"/>
+	      <signal name="clicked" handler="callswin_t::on_from_function_view_clicked"/>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">4</property>
@@ -2317,7 +2317,7 @@
 	      <property name="use_underline">True</property>
 	      <property name="relief">GTK_RELIEF_NORMAL</property>
 	      <property name="focus_on_click">True</property>
-	      <signal name="clicked" handler="on_calls_to_function_view_clicked"/>
+	      <signal name="clicked" handler="callswin_t::on_to_function_view_clicked"/>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">4</property>
@@ -2332,7 +2332,7 @@
 	  <child>
 	    <widget class="GtkComboBox" id="calls_to_function_combo">
 	      <property name="visible">True</property>
-	      <signal name="changed" handler="on_calls_to_function_combo_changed"/>
+	      <signal name="changed" handler="callswin_t::on_to_function_combo_changed"/>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
