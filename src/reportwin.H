@@ -24,8 +24,6 @@
 #include "cov.H"
 #include "report.H"
 
-GLADE_CALLBACK void on_report_report_entry_changed(GtkWidget *w, gpointer data);
-
 class reportwin_t : public window_t
 {
 public:
@@ -36,19 +34,14 @@ private:
     void populate_report_combo();
     void populate();
     void update();
-    static reportwin_t *from_widget(GtkWidget *w)
-    {
-    	return (reportwin_t *)window_t::from_widget(w);
-    }
     void grey_items();
+    void on_report_combo_changed();
 
     const report_t *report_;
 
     ui_combo_t *report_combo_;
     GtkWidget *text_;
     gboolean populating_;
-
-    friend void on_report_report_entry_changed(GtkWidget *w, gpointer data);
 };
 
 #endif /* _ggcov_reportwin_H_ */

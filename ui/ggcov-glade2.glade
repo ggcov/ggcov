@@ -3968,7 +3968,7 @@ C and C++ programs built with the GNU compiler.
 	  <child>
 	    <widget class="GtkComboBox" id="report_report_combo">
 	      <property name="visible">True</property>
-	      <signal name="changed" handler="on_report_report_entry_changed"/>
+	      <signal name="changed" handler="reportwin_t::on_report_combo_changed"/>
 	    </widget>
 	    <packing>
 	      <property name="padding">0</property>

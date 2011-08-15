@@ -158,19 +158,18 @@ reportwin_t::update()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
-on_report_report_entry_changed(GtkWidget *w, gpointer data)
+reportwin_t::on_report_combo_changed()
 {
-    reportwin_t *rw = reportwin_t::from_widget(w);
     const report_t *rep;
 
-    if (rw->populating_ || !rw->shown_)
-    	return;
-    rep = (const report_t *)get_active(rw->report_combo_);
+    if (populating_ || !shown_)
+	return;
+    rep = (const report_t *)get_active(report_combo_);
     if (rep != 0)
     {
-    	/* stupid gtk2 */
-    	rw->report_ = rep;
-	rw->update();
+	/* stupid gtk2 */
+	report_ = rep;
+	update();
     }
 }
 
