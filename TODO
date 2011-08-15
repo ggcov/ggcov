@@ -1,6 +1,8 @@
 
 --- OPEN ---
 
+x  Suppress the Cobertura report from the Report window.
+
 x  Convert to using stdtypes.h and uint64_t.  Also stdbool.h and bool.
 
 x  For the Blocks column in the Source window, colourise each block
