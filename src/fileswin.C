@@ -21,6 +21,7 @@
 #include <math.h>
 #include "sourcewin.H"
 #include "cov.H"
+#include "filename.h"
 #include "list.H"
 #include "prefs.H"
 #include "tok.H"
@@ -317,7 +318,12 @@ fileswin_t::populate()
 
     if (root_ != 0)
     	delete root_;
-    root_ = new file_rec_t(cov_file_t::common_path(), 0);
+    // common_path() includes a trailing /, we just
+    // want the last directory component
+    estring rootname = cov_file_t::common_path();
+    rootname.truncate_to(rootname.length()-1);
+    rootname.remove(0, rootname.find_last_char('/')+1);
+    root_ = new file_rec_t(rootname, 0);
 
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
