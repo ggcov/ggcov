@@ -465,13 +465,12 @@ sourcewin_t::~sourcewin_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
-on_source_filenames_entry_changed(GtkWidget *w, gpointer userdata)
+sourcewin_t::on_filenames_entry_changed()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    cov_file_t *f = (cov_file_t *)get_active(sw->filenames_combo_);
-    if (sw->populating_ || !sw->shown_ || f == 0/*stupid gtk2*/)
-    	return;
-    sw->set_filename(f->name(), f->minimal_name());
+    cov_file_t *f = (cov_file_t *)get_active(filenames_combo_);
+    if (populating_ || !shown_ || f == 0/*stupid gtk2*/)
+	return;
+    set_filename(f->name(), f->minimal_name());
 }
 
 
@@ -491,41 +490,40 @@ sourcewin_t::populate_filenames()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
-on_source_functions_entry_changed(GtkWidget *w, gpointer userdata)
+sourcewin_t::on_functions_entry_changed()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    cov_function_t *fn = (cov_function_t *)get_active(sw->functions_combo_);
+    cov_function_t *fn = (cov_function_t *)get_active(functions_combo_);
     const cov_location_t *first;
     const cov_location_t *last;
-    
-    if (sw->populating_ || !sw->shown_ || fn == 0 /*stupid gtk2*/)
-    	return;
-    
+
+    if (populating_ || !shown_ || fn == 0 /*stupid gtk2*/)
+	return;
+
     first = fn->get_first_location();
     last = fn->get_last_location();
     dprintf5(D_SOURCEWIN, "Function %s -> %s:%ld to %s:%ld\n",
-    	    	    	fn->name(),
+			fn->name(),
 			first->filename, first->lineno,
 			last->filename, last->lineno);
-    
+
     /* Check for weirdness like functions spanning files */
-    if (strcmp(first->filename, sw->filename_))
+    if (strcmp(first->filename, filename_))
     {
-    	fprintf(stderr, "WTF?  Wrong filename for first loc: %s vs %s\n",
-	    	    	first->filename, sw->filename_.data());
+	fprintf(stderr, "WTF?  Wrong filename for first loc: %s vs %s\n",
+			first->filename, filename_.data());
 	return;
     }
-    if (strcmp(last->filename, sw->filename_))
+    if (strcmp(last->filename, filename_))
     {
-    	fprintf(stderr, "WTF?  Wrong filename for last loc: %s vs %s\n",
-	    	    	last->filename, sw->filename_.data());
+	fprintf(stderr, "WTF?  Wrong filename for last loc: %s vs %s\n",
+			last->filename, filename_.data());
 	return;
     }
 
-    sw->ensure_visible(first->lineno);
+    ensure_visible(first->lineno);
 
-    /* This only selects the span of the lines which contain executable code */		    
-    sw->select_region(first->lineno, last->lineno);
+    /* This only selects the span of the lines which contain executable code */
+    select_region(first->lineno, last->lineno);
 }
 
 void
@@ -884,8 +882,8 @@ sourcewin_t::show_lines(
     estring displayname = cov_file_t::minimise_name(fullname.data());
 
     dprintf4(D_SOURCEWIN, "sourcewin_t::show_lines(\"%s\", %lu, %lu) => \"%s\"\n",
-    	    	filename, startline, endline, fullname.data());
-    
+		filename, startline, endline, fullname.data());
+
     sw->set_filename(fullname.data(), displayname.data());
     sw->show();
     if (startline > 0)
@@ -966,85 +964,72 @@ sourcewin_t::save_state()
 
 
 GLADE_CALLBACK void
-on_source_column_check_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_column_check_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-
-    if (sw->populating_)
+    if (populating_)
 	return;
-    sw->update();
-    sw->save_state();
+    update();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_source_colors_check_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_colors_check_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-
-    if (sw->populating_)
+    if (populating_)
 	return;
-    sw->update();
-    sw->save_state();
+    update();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_source_toolbar_check_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_toolbar_check_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-
-    if (sw->populating_)
+    if (populating_)
 	return;
-    sw->apply_toggles();
-    sw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_source_titles_check_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_titles_check_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-
-    if (sw->populating_)
+    if (populating_)
 	return;
-    sw->apply_toggles();
-    sw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_source_summarise_file_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_summarise_file_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    
-    summarywin_t::show_file(cov_file_t::find(sw->filename_));
+    summarywin_t::show_file(cov_file_t::find(filename_));
 }
 
 GLADE_CALLBACK void
-on_source_summarise_function_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_summarise_function_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    cov_function_t *fn = sw->selected_function();
+    cov_function_t *fn = selected_function();
 
     if (fn != 0)
 	summarywin_t::show_function(fn);
 }
 
 GLADE_CALLBACK void
-on_source_summarise_range_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_summarise_range_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
     unsigned long start, end;
-    
-    ui_text_get_selected_lines(sw->text_, &start, &end);
+
+    ui_text_get_selected_lines(text_, &start, &end);
     if (start != 0)
-	summarywin_t::show_lines(sw->filename_, start, end);
+	summarywin_t::show_lines(filename_, start, end);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
-on_source_flow_diagram_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_flow_diagram_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    cov_function_t *fn = sw->selected_function();
+    cov_function_t *fn = selected_function();
 
     if (fn != 0)
     {
@@ -1123,38 +1108,26 @@ sourcewin_t::save_with_annotations(const char *filename)
 }
 
 GLADE_CALLBACK void
-on_source_saveas_ok_button_clicked(GtkWidget *w, gpointer data)
+sourcewin_t::on_saveas_ok_button_clicked()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    const char *filename;
-
-    filename = gtk_file_selection_get_filename(
-    	    	    GTK_FILE_SELECTION(sw->saveas_dialog_));
-
-    sw->save_with_annotations(filename);
-    gtk_widget_hide(sw->saveas_dialog_);
+    const char *filename = gtk_file_selection_get_filename(
+				GTK_FILE_SELECTION(saveas_dialog_));
+    save_with_annotations(filename);
+    gtk_widget_hide(saveas_dialog_);
 }
 
 GLADE_CALLBACK void
-on_source_saveas_cancel_button_clicked(GtkWidget *w, gpointer data)
+sourcewin_t::on_saveas_cancel_button_clicked()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-
-    gtk_widget_hide(sw->saveas_dialog_);
+    gtk_widget_hide(saveas_dialog_);
 }
 
 GLADE_CALLBACK void
-on_source_save_as_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_save_as_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    char *txt_filename;
-    
-    txt_filename = g_strconcat(sw->filename_.data(), ".cov.txt", (char *)0);
-    gtk_file_selection_set_filename(GTK_FILE_SELECTION(sw->saveas_dialog_),
-    	    	    	    	    txt_filename);
-    g_free(txt_filename);
-    
-    gtk_widget_show(sw->saveas_dialog_);
+    string_var filename = g_strconcat(filename_.data(), ".cov.txt", (char *)0);
+    gtk_file_selection_set_filename(GTK_FILE_SELECTION(saveas_dialog_), filename);
+    gtk_widget_show(saveas_dialog_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1171,27 +1144,24 @@ sourcewin_t::adjust_text_size(int dirn)
 }
 
 GLADE_CALLBACK void
-on_source_text_size_increase_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_text_size_increase_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    dprintf0(D_SOURCEWIN, "on_source_text_size_increase_activate\n");
-    sw->adjust_text_size(1);
+    dprintf0(D_SOURCEWIN, "sourcewin_t::on_text_size_increase_activate\n");
+    adjust_text_size(1);
 }
 
 GLADE_CALLBACK void
-on_source_text_size_normal_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_text_size_normal_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    dprintf0(D_SOURCEWIN, "on_source_text_size_normal_activate\n");
-    sw->adjust_text_size(0);
+    dprintf0(D_SOURCEWIN, "sourcewin_t::on_text_size_normal_activate\n");
+    adjust_text_size(0);
 }
 
 GLADE_CALLBACK void
-on_source_text_size_decrease_activate(GtkWidget *w, gpointer data)
+sourcewin_t::on_text_size_decrease_activate()
 {
-    sourcewin_t *sw = sourcewin_t::from_widget(w);
-    dprintf0(D_SOURCEWIN, "on_source_text_size_decrease_activate\n");
-    sw->adjust_text_size(-1);
+    dprintf0(D_SOURCEWIN, "sourcewin_t::on_text_size_decrease_activate\n");
+    adjust_text_size(-1);
 }
 
 #endif

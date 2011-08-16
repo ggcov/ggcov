@@ -24,23 +24,6 @@
 #include "cov.H"
 #include "string_var.H"
 
-GLADE_CALLBACK void on_source_saveas_ok_button_clicked(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_saveas_cancel_button_clicked(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_save_as_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_column_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_colors_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_toolbar_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_titles_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_summarise_file_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_summarise_function_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_summarise_range_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_flow_diagram_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_filenames_entry_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_functions_entry_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_text_size_increase_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_text_size_decrease_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_source_text_size_normal_activate(GtkWidget *w, gpointer data);
-
 class sourcewin_t : public window_t
 {
 public:
@@ -111,10 +94,22 @@ private:
     void load_state();
     void save_state();
 
-    static sourcewin_t *from_widget(GtkWidget *w)
-    {
-    	return (sourcewin_t *)window_t::from_widget(w);
-    }
+    void on_saveas_ok_button_clicked();
+    void on_saveas_cancel_button_clicked();
+    void on_save_as_activate();
+    void on_column_check_activate();
+    void on_colors_check_activate();
+    void on_toolbar_check_activate();
+    void on_titles_check_activate();
+    void on_summarise_file_activate();
+    void on_summarise_function_activate();
+    void on_summarise_range_activate();
+    void on_flow_diagram_activate();
+    void on_filenames_entry_changed();
+    void on_functions_entry_changed();
+    void on_text_size_increase_activate();
+    void on_text_size_decrease_activate();
+    void on_text_size_normal_activate();
 
     static gboolean initialised_;
     int font_width_;
@@ -149,23 +144,6 @@ private:
     unsigned int flow_width_;
     gboolean flow_width_dirty_;
 #endif
-
-    friend void on_source_saveas_ok_button_clicked(GtkWidget *w, gpointer data);
-    friend void on_source_saveas_cancel_button_clicked(GtkWidget *w, gpointer data);
-    friend void on_source_save_as_activate(GtkWidget *w, gpointer data);
-    friend void on_source_column_check_activate(GtkWidget *w, gpointer data);
-    friend void on_source_colors_check_activate(GtkWidget *w, gpointer data);
-    friend void on_source_toolbar_check_activate(GtkWidget *w, gpointer data);
-    friend void on_source_titles_check_activate(GtkWidget *w, gpointer data);
-    friend void on_source_summarise_file_activate(GtkWidget *w, gpointer data);
-    friend void on_source_summarise_function_activate(GtkWidget *w, gpointer data);
-    friend void on_source_summarise_range_activate(GtkWidget *w, gpointer data);
-    friend void on_source_flow_diagram_activate(GtkWidget *w, gpointer data);
-    friend void on_source_filenames_entry_changed(GtkWidget *w, gpointer data);
-    friend void on_source_functions_entry_changed(GtkWidget *w, gpointer data);
-    friend void on_source_text_size_increase_activate(GtkWidget *w, gpointer data);
-    friend void on_source_text_size_decrease_activate(GtkWidget *w, gpointer data);
-    friend void on_source_text_size_normal_activate(GtkWidget *w, gpointer data);
 };
 
 #endif /* _ggcov_sourcewin_H_ */

@@ -52,7 +52,7 @@
 		    <widget class="GtkImageMenuItem" id="source_save_as">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_SAVE_AS_ITEM</property>
-		      <signal name="activate" handler="on_source_save_as_activate"/>
+		      <signal name="activate" handler="sourcewin_t::on_save_as_activate"/>
 		    </widget>
 		  </child>
 
@@ -97,7 +97,7 @@
 		      <property name="label" translatable="yes">_Flow</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">False</property>
-		      <signal name="activate" handler="on_source_column_check_activate" last_modification_time="Mon, 03 Jul 2006 16:03:03 GMT"/>
+		      <signal name="activate" handler="sourcewin_t::on_column_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -107,7 +107,7 @@
 		      <property name="label" translatable="yes">_Line</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_source_column_check_activate"/>
+		      <signal name="activate" handler="sourcewin_t::on_column_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -117,7 +117,7 @@
 		      <property name="label" translatable="yes">_Block</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">False</property>
-		      <signal name="activate" handler="on_source_column_check_activate"/>
+		      <signal name="activate" handler="sourcewin_t::on_column_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -127,7 +127,7 @@
 		      <property name="label" translatable="yes">_Count</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_source_column_check_activate"/>
+		      <signal name="activate" handler="sourcewin_t::on_column_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -137,7 +137,7 @@
 		      <property name="label" translatable="yes">_Source</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_source_column_check_activate"/>
+		      <signal name="activate" handler="sourcewin_t::on_column_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -153,7 +153,7 @@
 		      <property name="label" translatable="yes">Co_lors</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_source_colors_check_activate"/>
+		      <signal name="activate" handler="sourcewin_t::on_colors_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -163,7 +163,7 @@
 		      <property name="label" translatable="yes">_Toolbar</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_source_toolbar_check_activate"/>
+		      <signal name="activate" handler="sourcewin_t::on_toolbar_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -173,7 +173,7 @@
 		      <property name="label" translatable="yes">T_itles</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_source_titles_check_activate"/>
+		      <signal name="activate" handler="sourcewin_t::on_titles_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -191,7 +191,7 @@
 			      <property name="visible">True</property>
 			      <property name="label" translatable="yes">_Increase</property>
 			      <property name="use_underline">True</property>
-			      <signal name="activate" handler="on_source_text_size_increase_activate" last_modification_time="Sat, 05 Aug 2006 13:03:56 GMT"/>
+			      <signal name="activate" handler="sourcewin_t::on_text_size_increase_activate"/>
 			      <accelerator key="plus" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 			      <child internal-child="image">
@@ -213,7 +213,7 @@
 			      <property name="visible">True</property>
 			      <property name="label" translatable="yes">_Decrease</property>
 			      <property name="use_underline">True</property>
-			      <signal name="activate" handler="on_source_text_size_decrease_activate" last_modification_time="Sat, 05 Aug 2006 13:03:56 GMT"/>
+			      <signal name="activate" handler="sourcewin_t::on_text_size_decrease_activate"/>
 			      <accelerator key="minus" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 			      <child internal-child="image">
@@ -241,7 +241,7 @@
 			      <property name="visible">True</property>
 			      <property name="label" translatable="yes">_Normal</property>
 			      <property name="use_underline">True</property>
-			      <signal name="activate" handler="on_source_text_size_normal_activate" last_modification_time="Sat, 05 Aug 2006 05:22:19 GMT"/>
+			      <signal name="activate" handler="sourcewin_t::on_text_size_normal_activate"/>
 			      <accelerator key="0" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 			      <child internal-child="image">
@@ -282,7 +282,7 @@
 			      <property name="visible">True</property>
 			      <property name="label" translatable="yes">_File</property>
 			      <property name="use_underline">True</property>
-			      <signal name="activate" handler="on_source_summarise_file_activate"/>
+			      <signal name="activate" handler="sourcewin_t::on_summarise_file_activate"/>
 			    </widget>
 			  </child>
 
@@ -291,7 +291,7 @@
 			      <property name="visible">True</property>
 			      <property name="label" translatable="yes">F_unction</property>
 			      <property name="use_underline">True</property>
-			      <signal name="activate" handler="on_source_summarise_function_activate"/>
+			      <signal name="activate" handler="sourcewin_t::on_summarise_function_activate"/>
 			    </widget>
 			  </child>
 
@@ -300,7 +300,7 @@
 			      <property name="visible">True</property>
 			      <property name="label" translatable="yes">_Range</property>
 			      <property name="use_underline">True</property>
-			      <signal name="activate" handler="on_source_summarise_range_activate"/>
+			      <signal name="activate" handler="sourcewin_t::on_summarise_range_activate"/>
 			    </widget>
 			  </child>
 			</widget>
@@ -313,7 +313,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">Block _Diagram...</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_source_flow_diagram_activate" last_modification_time="Sat, 24 Jun 2006 01:10:23 GMT"/>
+		      <signal name="activate" handler="sourcewin_t::on_flow_diagram_activate"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -452,7 +452,7 @@
 	  <child>
 	    <widget class="GtkComboBox" id="source_functions_combo">
 	      <property name="visible">True</property>
-	      <signal name="changed" handler="on_source_functions_entry_changed"/>
+	      <signal name="changed" handler="sourcewin_t::on_functions_entry_changed"/>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">3</property>
@@ -466,7 +466,7 @@
 	  <child>
 	    <widget class="GtkComboBox" id="source_filenames_combo">
 	      <property name="visible">True</property>
-	      <signal name="changed" handler="on_source_filenames_entry_changed"/>
+	      <signal name="changed" handler="sourcewin_t::on_filenames_entry_changed"/>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
@@ -3751,7 +3751,7 @@ C and C++ programs built with the GNU compiler.
       <property name="can_focus">True</property>
       <property name="relief">GTK_RELIEF_NORMAL</property>
       <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="on_source_saveas_cancel_button_clicked"/>
+      <signal name="clicked" handler="sourcewin_t::on_saveas_cancel_button_clicked"/>
     </widget>
   </child>
 
@@ -3762,7 +3762,7 @@ C and C++ programs built with the GNU compiler.
       <property name="can_focus">True</property>
       <property name="relief">GTK_RELIEF_NORMAL</property>
       <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="on_source_saveas_ok_button_clicked"/>
+      <signal name="clicked" handler="sourcewin_t::on_saveas_ok_button_clicked"/>
     </widget>
   </child>
 </widget>
