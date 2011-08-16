@@ -22,9 +22,6 @@
 
 #include "ui.h"
 
-GLADE_CALLBACK void on_window_close_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_window_exit_activate(GtkWidget *w, gpointer data);
-
 class window_t
 {
 protected:
@@ -58,13 +55,13 @@ protected:
     boolean geom_dirty_:1;  /* geometry needs to be saved */
 
 private:
+    void on_close_activate();
+    void on_exit_activate();
     void load_geometry();
     void save_geometry();
     struct { int x, y, w, h; } geom_;
 
     static gboolean on_configure_event(GtkWidget *, GdkEventConfigure *, gpointer);
-    friend void on_window_close_activate(GtkWidget *w, gpointer data);
-    friend void on_window_exit_activate(GtkWidget *w, gpointer data);
     static void callback_tramp(GtkWidget *w, gpointer data);
     friend void ui_register_callbacks(GladeXML *xml);
 };

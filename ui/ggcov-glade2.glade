@@ -19,7 +19,7 @@
   <property name="skip_pager_hint">False</property>
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-  <signal name="delete_event" handler="on_window_close_activate"/>
+  <signal name="delete_event" handler="window_t::on_close_activate"/>
 
   <child>
     <widget class="GtkVBox" id="vbox1">
@@ -66,7 +66,7 @@
 		    <widget class="GtkImageMenuItem" id="source_close">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
-		      <signal name="activate" handler="on_window_close_activate"/>
+		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
 
@@ -74,7 +74,7 @@
 		    <widget class="GtkImageMenuItem" id="source_exit">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
-		      <signal name="activate" handler="on_window_exit_activate"/>
+		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -671,7 +671,7 @@
   <property name="skip_pager_hint">False</property>
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-  <signal name="delete_event" handler="on_window_close_activate"/>
+  <signal name="delete_event" handler="window_t::on_close_activate"/>
 
   <child>
     <widget class="GtkVBox" id="vbox2">
@@ -704,7 +704,7 @@
 		    <widget class="GtkImageMenuItem" id="summary_close">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
-		      <signal name="activate" handler="on_window_close_activate"/>
+		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
 
@@ -712,7 +712,7 @@
 		    <widget class="GtkImageMenuItem" id="summary_exit">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
-		      <signal name="activate" handler="on_window_exit_activate"/>
+		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -1547,7 +1547,7 @@
   <property name="skip_pager_hint">False</property>
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-  <signal name="delete_event" handler="on_window_close_activate"/>
+  <signal name="delete_event" handler="window_t::on_close_activate"/>
 
   <child>
     <widget class="GtkVBox" id="vbox3">
@@ -1580,7 +1580,7 @@
 		    <widget class="GtkImageMenuItem" id="functions_close">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
-		      <signal name="activate" handler="on_window_close_activate"/>
+		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
 
@@ -1588,7 +1588,7 @@
 		    <widget class="GtkImageMenuItem" id="functions_exit">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
-		      <signal name="activate" handler="on_window_exit_activate"/>
+		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -1775,7 +1775,7 @@
   <property name="skip_pager_hint">False</property>
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-  <signal name="delete_event" handler="on_window_close_activate"/>
+  <signal name="delete_event" handler="window_t::on_close_activate"/>
 
   <child>
     <widget class="GtkVBox" id="vbox4">
@@ -1808,7 +1808,7 @@
 		    <widget class="GtkImageMenuItem" id="files_close">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
-		      <signal name="activate" handler="on_window_close_activate"/>
+		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
 
@@ -1816,7 +1816,7 @@
 		    <widget class="GtkImageMenuItem" id="files_exit">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
-		      <signal name="activate" handler="on_window_exit_activate"/>
+		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -2045,7 +2045,7 @@
   <property name="skip_pager_hint">False</property>
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-  <signal name="delete_event" handler="on_window_close_activate"/>
+  <signal name="delete_event" handler="window_t::on_close_activate"/>
 
   <child>
     <widget class="GtkVBox" id="vbox5">
@@ -2078,7 +2078,7 @@
 		    <widget class="GtkImageMenuItem" id="calls_close">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
-		      <signal name="activate" handler="on_window_close_activate"/>
+		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
 
@@ -2086,7 +2086,7 @@
 		    <widget class="GtkImageMenuItem" id="calls_exit">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
-		      <signal name="activate" handler="on_window_exit_activate"/>
+		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -2396,7 +2396,7 @@
   <property name="skip_pager_hint">False</property>
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-  <signal name="delete_event" handler="on_window_close_activate"/>
+  <signal name="delete_event" handler="window_t::on_close_activate"/>
 
   <child>
     <widget class="GtkVBox" id="vbox6">
@@ -2429,7 +2429,7 @@
 		    <widget class="GtkImageMenuItem" id="callgraph_close">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
-		      <signal name="activate" handler="on_window_close_activate"/>
+		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
 
@@ -2437,7 +2437,7 @@
 		    <widget class="GtkImageMenuItem" id="callgraph_exit">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
-		      <signal name="activate" handler="on_window_exit_activate"/>
+		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -2980,7 +2980,7 @@ C and C++ programs built with the GNU compiler.
 			<widget class="GtkImageMenuItem" id="close1">
 			  <property name="visible">True</property>
 			  <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
-			  <signal name="activate" handler="on_window_close_activate"/>
+			  <signal name="activate" handler="window_t::on_close_activate"/>
 			</widget>
 		      </child>
 
@@ -2988,7 +2988,7 @@ C and C++ programs built with the GNU compiler.
 			<widget class="GtkImageMenuItem" id="exit1">
 			  <property name="visible">True</property>
 			  <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
-			  <signal name="activate" handler="on_window_exit_activate"/>
+			  <signal name="activate" handler="window_t::on_exit_activate"/>
 			</widget>
 		      </child>
 		    </widget>
@@ -3851,7 +3851,7 @@ C and C++ programs built with the GNU compiler.
 		    <widget class="GtkImageMenuItem" id="summary_close">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
-		      <signal name="activate" handler="on_window_close_activate"/>
+		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
 
@@ -3859,7 +3859,7 @@ C and C++ programs built with the GNU compiler.
 		    <widget class="GtkImageMenuItem" id="summary_exit">
 		      <property name="visible">True</property>
 		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
-		      <signal name="activate" handler="on_window_exit_activate"/>
+		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
 		</widget>

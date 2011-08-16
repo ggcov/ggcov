@@ -325,17 +325,14 @@ window_t::show()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
-on_window_close_activate(GtkWidget *w, gpointer data)
+window_t::on_close_activate()
 {
-    window_t *win = window_t::from_widget(w);
-    
-    assert(win != 0);
-    win->save_geometry();
-    delete win;
+    save_geometry();
+    delete this;
 }
 
 GLADE_CALLBACK void
-on_window_exit_activate(GtkWidget *w, gpointer data)
+window_t::on_exit_activate()
 {
     for (list_iterator_t<window_t> itr = all.first() ; *itr ; ++itr)
 	(*itr)->save_geometry();
