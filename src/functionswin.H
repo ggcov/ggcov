@@ -23,13 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_functions_blocks_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_functions_lines_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_functions_calls_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_functions_branches_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_functions_percent_check_activate(GtkWidget *w, gpointer data);
-GLADE_CALLBACK gboolean on_functions_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
-
 class functionswin_t : public window_t
 {
 public:
@@ -42,11 +35,11 @@ private:
     void load_state();
     void save_state();
     void apply_toggles();
-    static functionswin_t *from_widget(GtkWidget *w)
-    {
-    	return (functionswin_t *)window_t::from_widget(w);
-    }
-
+    void on_blocks_check_activate();
+    void on_lines_check_activate();
+    void on_calls_check_activate();
+    void on_branches_check_activate();
+    void on_percent_check_activate();
 
     list_t<cov_function_scope_t> functions_;
     
@@ -60,13 +53,6 @@ private:
     GtkListStore *store_;
 #endif
     gboolean populating_;
-
-    friend void on_functions_blocks_check_activate(GtkWidget *w, gpointer data);
-    friend void on_functions_lines_check_activate(GtkWidget *w, gpointer data);
-    friend void on_functions_calls_check_activate(GtkWidget *w, gpointer data);
-    friend void on_functions_branches_check_activate(GtkWidget *w, gpointer data);
-    friend void on_functions_percent_check_activate(GtkWidget *w, gpointer data);
-    friend gboolean on_functions_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data);
 };
 
 #endif /* _ggcov_functionswin_H_ */

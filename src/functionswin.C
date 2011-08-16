@@ -391,58 +391,48 @@ functionswin_t::apply_toggles()
 }
 
 GLADE_CALLBACK void
-on_functions_blocks_check_activate(GtkWidget *w, gpointer data)
+functionswin_t::on_blocks_check_activate()
 {
-    functionswin_t *fw = functionswin_t::from_widget(w);
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->apply_toggles();
-    fw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_functions_lines_check_activate(GtkWidget *w, gpointer data)
+functionswin_t::on_lines_check_activate()
 {
-    functionswin_t *fw = functionswin_t::from_widget(w);
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->apply_toggles();
-    fw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_functions_calls_check_activate(GtkWidget *w, gpointer data)
+functionswin_t::on_calls_check_activate()
 {
-    functionswin_t *fw = functionswin_t::from_widget(w);
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->apply_toggles();
-    fw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_functions_branches_check_activate(GtkWidget *w, gpointer data)
+functionswin_t::on_branches_check_activate()
 {
-    functionswin_t *fw = functionswin_t::from_widget(w);
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->apply_toggles();
-    fw->save_state();
+    apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
-on_functions_percent_check_activate(GtkWidget *w, gpointer data)
+functionswin_t::on_percent_check_activate()
 {
-    functionswin_t *fw = functionswin_t::from_widget(w);
-
-    if (fw->populating_)
+    if (populating_)
 	return;
-    fw->update();
-    fw->save_state();
+    update();
+    save_state();
 }
 
 GLADE_CALLBACK gboolean

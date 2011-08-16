@@ -1611,7 +1611,7 @@
 		      <property name="label" translatable="yes">_Blocks</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_functions_blocks_check_activate" last_modification_time="Sun, 14 Mar 2004 10:23:56 GMT"/>
+		      <signal name="activate" handler="functionswin_t::on_blocks_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -1621,7 +1621,7 @@
 		      <property name="label" translatable="yes">_Lines</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_functions_lines_check_activate"/>
+		      <signal name="activate" handler="functionswin_t::on_lines_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -1631,7 +1631,7 @@
 		      <property name="label" translatable="yes">_Calls</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_functions_calls_check_activate"/>
+		      <signal name="activate" handler="functionswin_t::on_calls_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -1641,7 +1641,7 @@
 		      <property name="label" translatable="yes">_Branches</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_functions_branches_check_activate"/>
+		      <signal name="activate" handler="functionswin_t::on_branches_check_activate"/>
 		    </widget>
 		  </child>
 
@@ -1651,7 +1651,7 @@
 		      <property name="label" translatable="yes">_Percentages</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="on_functions_percent_check_activate"/>
+		      <signal name="activate" handler="functionswin_t::on_percent_check_activate"/>
 		    </widget>
 		  </child>
 		</widget>
