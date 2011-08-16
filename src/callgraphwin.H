@@ -23,8 +23,6 @@
 #include "window.H"
 #include "cov.H"
 
-GLADE_CALLBACK void on_callgraph_function_combo_changed(GtkWidget *w, gpointer data);
-GLADE_CALLBACK void on_callgraph_function_view_clicked(GtkWidget *w, gpointer data);
 GLADE_CALLBACK gboolean on_callgraph_ancestors_clist_button_press_event(
 			  GtkWidget *w, GdkEvent *event, gpointer data);
 GLADE_CALLBACK gboolean on_callgraph_descendants_clist_button_press_event(
@@ -52,9 +50,11 @@ private:
     void update();
     static callgraphwin_t *from_widget(GtkWidget *w)
     {
-    	return (callgraphwin_t *)window_t::from_widget(w);
+	return (callgraphwin_t *)window_t::from_widget(w);
     }
-    
+    void on_function_combo_changed();
+    void on_function_view_clicked();
+
     cov_callnode_t *callnode_;
 
     ui_combo_t *function_combo_;
@@ -69,8 +69,6 @@ private:
 
     GtkWidget *hpaned_;
 
-    friend void on_callgraph_function_combo_changed(GtkWidget *w, gpointer data);
-    friend void on_callgraph_function_view_clicked(GtkWidget *w, gpointer data);
     friend gboolean on_callgraph_ancestors_clist_button_press_event(
 			      GtkWidget *w, GdkEvent *event, gpointer data);
     friend gboolean on_callgraph_descendants_clist_button_press_event(

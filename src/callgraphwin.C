@@ -405,25 +405,17 @@ callgraphwin_t::set_node(cov_callnode_t *cn)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
-on_callgraph_function_combo_changed(GtkWidget *w, gpointer data)
+callgraphwin_t::on_function_combo_changed()
 {
-    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    cov_callnode_t *cn;
-
-    cn = (cov_callnode_t *)get_active(cw->function_combo_);
-    if (cn != 0)
-    {
-    	/* stupid gtk2 */
-	cw->set_node(cn);
-    }
+    cov_callnode_t *cn  = (cov_callnode_t *)get_active(function_combo_);
+    if (cn)
+	set_node(cn);
 }
 
 GLADE_CALLBACK void
-on_callgraph_function_view_clicked(GtkWidget *w, gpointer data)
+callgraphwin_t::on_function_view_clicked()
 {
-    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-
-    sourcewin_t::show_function(cw->callnode_->function);
+    sourcewin_t::show_function(callnode_->function);
 }
 
 GLADE_CALLBACK gboolean
