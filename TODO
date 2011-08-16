@@ -1,6 +1,14 @@
 
 --- OPEN ---
 
+x  Grey out the View->Block Diagram... menu item in the Source
+   window unless a function is selected.
+x  Make persistent the state of the check menu items in the Calls
+   window.
+x  Calculate the CCN complexity metric as part of cov_stats_t
+   and display it in the Summary window, Functions window,
+   Files window.
+
 x  Suppress the Cobertura report from the Report window.
 
 x  Convert to using stdtypes.h and uint64_t.  Also stdbool.h and bool.
