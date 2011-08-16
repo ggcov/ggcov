@@ -12,6 +12,8 @@ function_one(int x)
     else
 	x += 13;			    /* S(CO) */
     assert(x & 1);			    /* S(CO) */
+    if (x > 100000)			    /* S(CO) */
+	abort();			    /* S(SU) */
     return x;				    /* S(CO) */
 }
 

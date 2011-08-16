@@ -65,6 +65,7 @@ cov_arc_t::is_call_suppressed() const
 	"__assert_fail",
 	"__assert_perror_fail",
 	"__assert",
+	"abort",
 	0
     };
     const char * const *n;
