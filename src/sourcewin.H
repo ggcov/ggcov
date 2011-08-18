@@ -73,6 +73,7 @@ private:
     void populate();
     void update();
     void update_title_buttons();
+    void grey_items();
 #if GTK2
     void delete_flows();
     void update_flow_window();
@@ -89,6 +90,7 @@ private:
 #if GTK2
     static void on_vadjustment_value_changed(GtkAdjustment *, gpointer);
     void adjust_text_size(int dirn);
+    static void on_buffer_mark_set(GtkTextBuffer *, GtkTextIter *, GtkTextMark *, gpointer);
 #endif
     void apply_toggles();
     void load_state();
@@ -124,6 +126,9 @@ private:
     GtkWidget *toolbar_check_;
     GtkWidget *titles_check_;
     GtkWidget *flow_diagram_item_;
+    GtkWidget *summarise_file_item_;
+    GtkWidget *summarise_function_item_;
+    GtkWidget *summarise_range_item_;
     GtkWidget *toolbar_;
     ui_combo_t *filenames_combo_;
     ui_combo_t *functions_combo_;

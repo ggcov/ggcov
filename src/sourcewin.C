@@ -388,6 +388,16 @@ sourcewin_t::setup_text()
 			   "value-changed",
 			   G_CALLBACK(on_vadjustment_value_changed),
 			   (gpointer)this);
+
+    /*
+     * Handle the end-user-action signal to grey out menu items
+     * which work on the presence of a selection.
+     */
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(tv);
+    g_signal_connect_after(G_OBJECT(buffer),
+			   "mark-set",
+			   G_CALLBACK(on_buffer_mark_set),
+			   (gpointer)this);
 #endif
 }
 
@@ -415,6 +425,9 @@ sourcewin_t::sourcewin_t()
     toolbar_check_ = glade_xml_get_widget(xml, "source_toolbar_check");
     titles_check_ = glade_xml_get_widget(xml, "source_titles_check");
     flow_diagram_item_ = glade_xml_get_widget(xml, "source_flow_diagram");
+    summarise_file_item_ = glade_xml_get_widget(xml, "source_summarise_file");
+    summarise_function_item_ = glade_xml_get_widget(xml, "source_summarise_function");
+    summarise_range_item_ = glade_xml_get_widget(xml, "source_summarise_range");
     toolbar_ = glade_xml_get_widget(xml, "source_toolbar");
     w = glade_xml_get_widget(xml, "source_filenames_combo");
     filenames_combo_ = init(UI_COMBO(w), "/");
@@ -562,6 +575,7 @@ sourcewin_t::populate()
     populate_filenames();
     populate_functions();
     update();
+    grey_items();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -801,6 +815,34 @@ sourcewin_t::update_title_buttons()
 	    gtk_widget_hide(title_buttons_[i]);
     }
 }
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+sourcewin_t::grey_items()
+{
+    unsigned long start = 0;
+    ui_text_get_selected_lines(text_, &start, 0);
+    gboolean selfn = !!selected_function();
+
+    gtk_widget_set_sensitive(flow_diagram_item_, selfn);
+    gtk_widget_set_sensitive(summarise_function_item_, selfn);
+    gtk_widget_set_sensitive(summarise_range_item_, (start > 0));
+    window_t::grey_items();
+}
+
+#if GTK2
+void
+sourcewin_t::on_buffer_mark_set(GtkTextBuffer *buffer, GtkTextIter *iter,
+				GtkTextMark *mark, gpointer closure)
+{
+    sourcewin_t *sw = (sourcewin_t *)closure;
+    const char *nm = gtk_text_mark_get_name(mark);
+
+    if (nm && (!strcmp(nm, "insert") || !strcmp(nm, "selection_bound")))
+	sw->grey_items();
+}
+#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
