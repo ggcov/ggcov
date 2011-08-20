@@ -34,6 +34,8 @@ private:
     void update();
     void update_for_func(cov_function_t *from_fn, cov_function_t *to_fn);
     void apply_toggles();
+    void load_state();
+    void save_state();
     void on_call_from_check_activate();
     void on_call_to_check_activate();
     void on_line_check_activate();
@@ -54,6 +56,7 @@ private:
     GtkWidget *to_check_;
     GtkWidget *line_check_;
     GtkWidget *count_check_;
+    gboolean populating_;
 
     GtkWidget *clist_;
 #if GTK2

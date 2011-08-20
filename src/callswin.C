@@ -23,6 +23,7 @@
 #include "filename.h"
 #include "cov.H"
 #include "estring.H"
+#include "confsection.H"
 
 CVSID("$Id: callswin.C,v 1.24 2010-05-09 05:37:14 gnb Exp $");
 
@@ -362,28 +363,56 @@ callswin_t::apply_toggles()
 				  GTK_CHECK_MENU_ITEM(count_check_)->active);
 }
 
+void
+callswin_t::load_state()
+{
+    populating_ = TRUE; /* suppress check menu item callback */
+    load(GTK_CHECK_MENU_ITEM(from_check_));
+    load(GTK_CHECK_MENU_ITEM(to_check_));
+    load(GTK_CHECK_MENU_ITEM(line_check_));
+    load(GTK_CHECK_MENU_ITEM(count_check_));
+    apply_toggles();
+    populating_ = FALSE;
+}
+
+void
+callswin_t::save_state()
+{
+    save(GTK_CHECK_MENU_ITEM(from_check_));
+    save(GTK_CHECK_MENU_ITEM(to_check_));
+    save(GTK_CHECK_MENU_ITEM(line_check_));
+    save(GTK_CHECK_MENU_ITEM(count_check_));
+    confsection_t::sync();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 GLADE_CALLBACK void
 callswin_t::on_call_from_check_activate()
 {
     apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
 callswin_t::on_call_to_check_activate()
 {
     apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
 callswin_t::on_line_check_activate()
 {
     apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
 callswin_t::on_count_check_activate()
 {
     apply_toggles();
+    save_state();
 }
 
 GLADE_CALLBACK void
