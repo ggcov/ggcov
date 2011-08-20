@@ -54,17 +54,6 @@ window_t::~window_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
-window_t::callback_tramp(GtkWidget *w, gpointer data)
-{
-    ui_class_callback_t *cb = (ui_class_callback_t *)data;
-    window_t *win = window_t::from_widget(w);
-    void (window_t::*handler)() = cb->func;
-    (win->*handler)();
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 static char *
 dnd_data_as_text(void *data, unsigned int length)
 {

@@ -444,14 +444,13 @@ callswin_t::on_to_function_view_clicked()
 }
 
 GLADE_CALLBACK gboolean
-on_calls_clist_button_press_event(GtkWidget *w, GdkEvent *event, gpointer data)
+callswin_t::on_clist_button_press_event(GdkEvent *event)
 {
-    callswin_call_t *call;
+    callswin_call_t *call = (callswin_call_t *)
+	ui_list_double_click_data(clist_, event, COL_CLOSURE);
     const cov_location_t *loc;
 
-    call = (callswin_call_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
-
-    if (call != 0 && (loc = call->location_) != 0)
+    if (call && (loc = call->location_))
 	sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);
     return FALSE;
 }

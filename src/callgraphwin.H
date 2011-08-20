@@ -54,6 +54,8 @@ private:
     }
     void on_function_combo_changed();
     void on_function_view_clicked();
+    gboolean on_ancestors_clist_button_press_event(GdkEvent *event);
+    gboolean on_descendants_clist_button_press_event(GdkEvent *event);
 
     cov_callnode_t *callnode_;
 
@@ -68,11 +70,6 @@ private:
 #endif
 
     GtkWidget *hpaned_;
-
-    friend gboolean on_callgraph_ancestors_clist_button_press_event(
-			      GtkWidget *w, GdkEvent *event, gpointer data);
-    friend gboolean on_callgraph_descendants_clist_button_press_event(
-			      GtkWidget *w, GdkEvent *event, gpointer data);
 };
 
 #endif /* _ggcov_callgraphwin_H_ */

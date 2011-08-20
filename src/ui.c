@@ -256,7 +256,7 @@ ui_register_callbacks(GladeXML *xml)
     for (i = 0 ; ui_class_callbacks[i].name ; i++)
 	glade_xml_signal_connect_data(xml,
 				      ui_class_callbacks[i].name,
-				      (GCallback)window_t::callback_tramp,
+				      ui_class_callbacks[i].tramp,
 				      &ui_class_callbacks[i]);
 }
 

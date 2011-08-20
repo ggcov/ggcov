@@ -419,34 +419,22 @@ callgraphwin_t::on_function_view_clicked()
 }
 
 GLADE_CALLBACK gboolean
-on_callgraph_ancestors_clist_button_press_event(
-    GtkWidget *w,
-    GdkEvent *event,
-    gpointer data)
+callgraphwin_t::on_ancestors_clist_button_press_event(GdkEvent *event)
 {
-    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    cov_callarc_t *ca;
-
-    ca = (cov_callarc_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
-
-    if (ca != 0)
-	cw->set_node(ca->from);
+    cov_callarc_t *ca = (cov_callarc_t *)
+	ui_list_double_click_data(ancestors_clist_, event, COL_CLOSURE);
+    if (ca)
+	set_node(ca->from);
     return FALSE;
 }
 
 GLADE_CALLBACK gboolean
-on_callgraph_descendants_clist_button_press_event(
-    GtkWidget *w,
-    GdkEvent *event,
-    gpointer data)
+callgraphwin_t::on_descendants_clist_button_press_event(GdkEvent *event)
 {
-    callgraphwin_t *cw = callgraphwin_t::from_widget(w);
-    cov_callarc_t *ca;
-
-    ca = (cov_callarc_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
-
-    if (ca != 0)	
-	cw->set_node(ca->to);
+    cov_callarc_t *ca = (cov_callarc_t *)
+	    ui_list_double_click_data(descendants_clist_, event, COL_CLOSURE);
+    if (ca)
+	set_node(ca->to);
     return FALSE;
 }
 

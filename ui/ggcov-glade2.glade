@@ -1746,7 +1746,7 @@
 	      <property name="rules_hint">False</property>
 	      <property name="reorderable">False</property>
 	      <property name="enable_search">True</property>
-	      <signal name="button_press_event" handler="on_functions_clist_button_press_event"/>
+	      <signal name="button_press_event" handler="functionswin_t::on_clist_button_press_event"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -2018,7 +2018,7 @@
 	      <property name="rules_hint">False</property>
 	      <property name="reorderable">False</property>
 	      <property name="enable_search">True</property>
-	      <signal name="button_press_event" handler="on_files_ctree_button_press_event"/>
+	      <signal name="button_press_event" handler="fileswin_t::on_ctree_button_press_event"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -2367,7 +2367,7 @@
 	      <property name="rules_hint">False</property>
 	      <property name="reorderable">False</property>
 	      <property name="enable_search">True</property>
-	      <signal name="button_press_event" handler="on_calls_clist_button_press_event"/>
+	      <signal name="button_press_event" handler="callswin_t::on_clist_button_press_event"/>
 	    </widget>
 	  </child>
 	</widget>
@@ -2619,7 +2619,7 @@
 		      <property name="rules_hint">False</property>
 		      <property name="reorderable">False</property>
 		      <property name="enable_search">True</property>
-		      <signal name="button_press_event" handler="on_callgraph_ancestors_clist_button_press_event"/>
+		      <signal name="button_press_event" handler="callgraphwin_t::on_ancestors_clist_button_press_event"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -2674,7 +2674,7 @@
 		      <property name="rules_hint">False</property>
 		      <property name="reorderable">False</property>
 		      <property name="enable_search">True</property>
-		      <signal name="button_press_event" handler="on_callgraph_descendants_clist_button_press_event"/>
+		      <signal name="button_press_event" handler="callgraphwin_t::on_descendants_clist_button_press_event"/>
 		    </widget>
 		  </child>
 		</widget>

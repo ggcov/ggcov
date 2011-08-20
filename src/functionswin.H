@@ -40,6 +40,7 @@ private:
     void on_calls_check_activate();
     void on_branches_check_activate();
     void on_percent_check_activate();
+    gboolean on_clist_button_press_event(GdkEvent *event);
 
     list_t<cov_function_scope_t> functions_;
     

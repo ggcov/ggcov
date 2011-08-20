@@ -436,16 +436,12 @@ functionswin_t::on_percent_check_activate()
 }
 
 GLADE_CALLBACK gboolean
-on_functions_clist_button_press_event(
-    GtkWidget *w,
-    GdkEvent *event,
-    gpointer data)
+functionswin_t::on_clist_button_press_event(GdkEvent *event)
 {
-    cov_function_scope_t *fs;
+    cov_function_scope_t *fs = (cov_function_scope_t *)
+	ui_list_double_click_data(clist_, event, COL_CLOSURE);
 
-    fs = (cov_function_scope_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
-
-    if (fs != 0)	
+    if (fs)
 	sourcewin_t::show_function(fs->function());
     return FALSE;
 }

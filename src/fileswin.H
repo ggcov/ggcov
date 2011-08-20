@@ -48,6 +48,7 @@ private:
     void on_tree_check_activate();
     void on_collapse_all_activate();
     void on_expand_all_activate();
+    gboolean on_ctree_button_press_event(GdkEvent *event);
 
     file_rec_t *root_;
     

@@ -62,8 +62,6 @@ private:
     struct { int x, y, w, h; } geom_;
 
     static gboolean on_configure_event(GtkWidget *, GdkEventConfigure *, gpointer);
-    static void callback_tramp(GtkWidget *w, gpointer data);
-    friend void ui_register_callbacks(GladeXML *xml);
 };
 
 void load(GtkCheckMenuItem *);

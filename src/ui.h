@@ -147,6 +147,7 @@ typedef struct
 {
     const char *name;
     void (window_t::*func)();
+    GCallback tramp;
 } ui_class_callback_t;
 
 #endif /* _ggcov_ui_h_ */

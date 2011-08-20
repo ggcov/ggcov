@@ -628,14 +628,10 @@ fileswin_t::on_expand_all_activate()
 }
 
 GLADE_CALLBACK gboolean
-on_files_ctree_button_press_event(
-    GtkWidget *w,
-    GdkEvent *event,
-    gpointer data)
+fileswin_t::on_ctree_button_press_event(GdkEvent *event)
 {
-    file_rec_t *fr;
-    
-    fr = (file_rec_t *)ui_list_double_click_data(w, event, COL_CLOSURE);
+    file_rec_t *fr = (file_rec_t *)
+	ui_list_double_click_data(ctree_, event, COL_CLOSURE);
 
     if (fr != 0 && fr->file != 0)
 	sourcewin_t::show_file(fr->file);

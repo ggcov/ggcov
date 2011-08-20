@@ -45,6 +45,7 @@ private:
     void on_to_function_combo_changed();
     void on_from_function_view_clicked();
     void on_to_function_view_clicked();
+    gboolean on_clist_button_press_event(GdkEvent *event);
 
     ui_combo_t *from_function_combo_;
     GtkWidget *from_function_view_;
