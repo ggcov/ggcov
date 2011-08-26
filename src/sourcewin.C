@@ -736,10 +736,10 @@ sourcewin_t::update()
 
     ui_text_end(text_);
     /* scroll back to the line we were at before futzing with the text */
+    ui_text_vscroll_restore(text_, scrollval);
 #if GTK2
     wait_for_text_validation();
 #endif
-    ui_text_vscroll_restore(text_, scrollval);
 
 #if GTK2
     delete_flows();
