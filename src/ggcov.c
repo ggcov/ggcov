@@ -264,6 +264,26 @@ on_windows_new_reportwin_activated(GtkWidget *w, gpointer userdata)
 
 #include "ui/ggcov32.xpm"
 
+static const struct window
+{
+    const char *name;
+    const char *label;
+    void (*create)(GtkWidget*, gpointer);
+}
+windows[] =
+{
+    {"summary", N_("New Summary..."), on_windows_new_summarywin_activated},
+    {"files", N_("New File List..."), on_windows_new_fileswin_activated},
+    {"functions", N_("New Function List..."), on_windows_new_functionswin_activated},
+    {"calls", N_("New Calls List..."), on_windows_new_callswin_activated},
+    {"callbutterfly", N_("New Call Butterfly..."), on_windows_new_callgraphwin_activated},
+    {"callgraph", N_("New Call Graph..."), on_windows_new_callgraph2win_activated},
+    {"lego", N_("New Lego Diagram..."), on_windows_new_legowin_activated},
+    {"source", N_("New Source..."), on_windows_new_sourcewin_activated},
+    {"reports", N_("New Report..."), on_windows_new_reportwin_activated},
+    {0, 0, 0}
+};
+
 static void
 ui_create(const char *full_argv0)
 {
@@ -290,24 +310,9 @@ ui_create(const char *full_argv0)
 	}
     }
 
-    ui_register_windows_entry("New Summary...",
-    			      on_windows_new_summarywin_activated, 0);
-    ui_register_windows_entry("New File List...",
-    			      on_windows_new_fileswin_activated, 0);
-    ui_register_windows_entry("New Function List...",
-    			      on_windows_new_functionswin_activated, 0);
-    ui_register_windows_entry("New Calls List...",
-    			      on_windows_new_callswin_activated, 0);
-    ui_register_windows_entry("New Call Butterfly...",
-    			      on_windows_new_callgraphwin_activated, 0);
-    ui_register_windows_entry("New Call Graph...",
-    			      on_windows_new_callgraph2win_activated, 0);
-    ui_register_windows_entry("New Lego Diagram...",
-    			      on_windows_new_legowin_activated, 0);
-    ui_register_windows_entry("New Source...",
-    			      on_windows_new_sourcewin_activated, 0);
-    ui_register_windows_entry("New Report...",
-    			      on_windows_new_reportwin_activated, 0);
+    const struct window *wp;
+    for (wp = windows ; wp->name ; wp++)
+	ui_register_windows_entry(_(wp->label), wp->create, 0);
 
     ui_set_default_icon(ggcov32_xpm);
 
@@ -327,30 +332,17 @@ ui_create(const char *full_argv0)
     int nwindows = 0;
     while ((name = tok.next()) != 0)
     {
-	nwindows++;
-	if (!strcmp(name, "summary"))
-	    on_windows_new_summarywin_activated(0, 0);
-	else if (!strcmp(name, "files"))
-	    on_windows_new_fileswin_activated(0, 0);
-	else if (!strcmp(name, "functions"))
-	    on_windows_new_functionswin_activated(0, 0);
-	else if (!strcmp(name, "calls"))
-	    on_windows_new_callswin_activated(0, 0);
-	else if (!strcmp(name, "callbutterfly"))
-	    on_windows_new_callgraphwin_activated(0, 0);
-	else if (!strcmp(name, "callgraph"))
-	    on_windows_new_callgraph2win_activated(0, 0);
-	else if (!strcmp(name, "lego"))
-	    on_windows_new_legowin_activated(0, 0);
-	else if (!strcmp(name, "source"))
-	    on_windows_new_sourcewin_activated(0, 0);
-	else if (!strcmp(name, "reports"))
-	    on_windows_new_reportwin_activated(0, 0);
-	else
+	for (wp = windows ; wp->name ; wp++)
 	{
-	    fprintf(stderr, "%s: unknown window name \"%s\"\n", argv0, name);
-	    nwindows--;
+	    if (!strcmp(name, wp->name))
+	    {
+		wp->create(0, 0);
+		nwindows++;
+		break;
+	    }
 	}
+	if (!wp->name)
+	    fprintf(stderr, "%s: unknown window name \"%s\"\n", argv0, name);
     }
 
     if (!nwindows)
