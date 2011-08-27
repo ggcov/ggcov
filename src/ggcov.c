@@ -46,6 +46,7 @@ static list_t<const char> files;	    /* incoming specification from commandline 
 
 static const char ** debug_argv;
 static const char *initial_windows = "summary";
+static int profile_mode = FALSE;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
@@ -347,6 +348,13 @@ ui_create(const char *full_argv0)
 
     if (!nwindows)
 	on_windows_new_summarywin_activated(0, 0);
+
+    if (profile_mode)
+    {
+	while (g_main_context_iteration(NULL, FALSE))
+	    ;
+	exit(0);
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -371,6 +379,15 @@ static const struct poptOption popt_options[] =
 	&initial_windows,     	    	    	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"list of windows to open initially",	/* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+	"profile",				/* longname */
+	0,  	    	    	    	    	/* shortname */
+	POPT_ARG_NONE,  	    	    	/* argInfo */
+	&profile_mode,     	    	    	/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	0,					/* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     COV_POPT_OPTIONS
