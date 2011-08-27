@@ -270,6 +270,17 @@ cov_read_one_object_file(const char *exefilename, int depth)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static boolean
+directory_is_ignored(const char *dirname, const char *child)
+{
+    if (strcmp(dirname, "."))
+	return FALSE;
+    if (!strcmp(child, "debian") ||
+	!strcmp(child, ".git"))
+	return TRUE;
+    return FALSE;
+}
+
 static unsigned int
 cov_read_directory_2(
     const char *dirname,
@@ -310,7 +321,9 @@ cov_read_directory_2(
     	if (file_is_regular(child) == 0 &&
 	    cov_is_source_filename(child))
 	    successes += cov_read_source_file_2(child, /*quiet*/TRUE);
-	else if (recursive && file_is_directory(child) == 0)
+	else if (recursive &&
+		 file_is_directory(child) == 0 &&
+		 !directory_is_ignored(dirname, child))
 	    successes += cov_read_directory_2(child, recursive, /*quiet*/TRUE);
     }
     
