@@ -34,3 +34,15 @@ ggcov:
 @REDHAT_TRUE@
 @REDHAT_TRUE@CLEANFILES= rpm.d
 
+COVFLAGS=		-fprofile-arcs -ftest-coverage
+coverage:
+	cd src ; $(MAKE) \
+	    CFLAGS="$(CFLAGS) $(COVFLAGS)" \
+	    CXXFLAGS="$(CXXFLAGS) $(COVFLAGS)" \
+	    all
+
+profile:
+	cd src ; $(MAKE) \
+	    CFLAGS="`echo ' $(CFLAGS) ' | sed -e 's| -O[1-9] | |g'` -pg" \
+	    CXXFLAGS="`echo ' $(CXXFLAGS) ' | sed -e 's| -O[1-9] | |g'` -pg" \
+	    all

@@ -164,7 +164,3 @@ mangletest_LDADD=	$(CLI_LIBS)
 popttest_SOURCES=	popttest.c
 popttest_LDADD= 	$(GGCOV_CLI_LIBS)
 
-COVFLAGS=		-fprofile-arcs -ftest-coverage
-coverage: covered-all
-covered-all:
-	$(MAKE) CFLAGS="$(CFLAGS) $(COVFLAGS)" CXXFLAGS="$(CXXFLAGS) $(COVFLAGS)" all
