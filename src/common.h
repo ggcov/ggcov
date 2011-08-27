@@ -258,6 +258,11 @@ typedef unsigned long long	gnb_u64_t;
 extern int u32cmp(gnb_u32_t, gnb_u32_t);
 extern int u64cmp(gnb_u64_t, gnb_u64_t);
 
+extern void timing_impl(const char *func, unsigned int line,
+		        const char *detail);
+#define timing() timing_impl(__FUNCTION__, __LINE__, 0)
+#define timingx(detail) timing_impl(__FUNCTION__, __LINE__, (detail))
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #ifdef _

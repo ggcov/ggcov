@@ -17,6 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <sys/types.h>
+#include <sys/time.h>
 #include "common.h"
 
 CVSID("$Id: common.c,v 1.20 2010-05-09 05:37:14 gnb Exp $");
@@ -250,6 +252,38 @@ debug_enabled_tokens(void)
     }
     
     return str;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void timing_impl(const char *func, unsigned int line, const char *detail)
+{
+    static FILE *fp;
+    static struct timeval prev;
+    struct timeval now;
+    static const char filename[] = "timing.dat";
+
+    gettimeofday(&now, NULL);
+    if (prev.tv_sec)
+    {
+	struct timeval d;
+	timersub(&now, &prev, &d);
+	if (!fp)
+	{
+	    fp = fopen(filename, "w");
+	    if (!fp)
+	    {
+		perror(filename);
+		exit(1);
+	    }
+	}
+	fprintf(fp, "%s:%u %lu.%06lu %s\n",
+		func, line,
+		(unsigned long)d.tv_sec, (unsigned long)d.tv_usec,
+		(detail ? detail : ""));
+	fflush(fp);
+    }
+    prev = now;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
