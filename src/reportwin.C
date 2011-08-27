@@ -75,6 +75,7 @@ reportwin_t::populate_report_combo()
     add(report_combo_, _(null_report.label), (gpointer)&null_report);
     for (rep = all_reports ; rep->name != 0 ; rep++)
 	add(report_combo_, _(rep->label), (gpointer)rep);
+    done(report_combo_);
     set_active(report_combo_, (gpointer)report_);
 }
 

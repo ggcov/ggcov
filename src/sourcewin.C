@@ -497,6 +497,7 @@ sourcewin_t::populate_filenames()
 	cov_file_t *f = *iter;
 	add(filenames_combo_, f->minimal_name(), f);
     }
+    done(filenames_combo_);
     populating_ = FALSE;
 }
 
@@ -566,6 +567,7 @@ sourcewin_t::populate_functions()
     clear(functions_combo_);
     while ((fn = functions.remove_head()) != 0)
 	add(functions_combo_, fn->name(), fn);
+    done(functions_combo_);
     populating_ = FALSE;
 }
 

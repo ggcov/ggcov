@@ -201,6 +201,7 @@ summarywin_t::populate_filename_combo(ui_combo_t *cbox)
 
 	add(cbox, f->minimal_name(), (gpointer)f);
     }
+    done(cbox);
     set_active(cbox, (gpointer)file_);
 }
 

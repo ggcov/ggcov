@@ -72,15 +72,26 @@ init(ui_combo_t *cbox, const char *sep)
     return cbox;
 }
 
+#if GTK2
+static const char pending_model_key[] = "ui-pending-model";
+#endif
+
 void
 clear(ui_combo_t *cbox)
 {
 #if GTK2
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
+    /* Detach the model from the cbox temporarily.  This was found
+     * experimentally to have a huge performance impact, at least
+     * for 2.16, due to the GtkTreeView's signal handlers not being
+     * called on every row add, which had horrible O(N^2) behaviour */
+    g_object_ref(G_OBJECT(model));
+    gtk_combo_box_set_model(cbox, NULL);
     if (GTK_IS_TREE_STORE(model))
 	gtk_tree_store_clear(GTK_TREE_STORE(model));
     else
 	gtk_list_store_clear(GTK_LIST_STORE(model));
+    g_object_set_data(G_OBJECT(cbox), pending_model_key, model);
 #else
     gtk_list_clear_items(GTK_LIST(cbox->list), 0, -1);
 #endif
@@ -90,7 +101,9 @@ void
 add(ui_combo_t *cbox, const char *label, gpointer data)
 {
 #if GTK2
-    GtkTreeModel *model = gtk_combo_box_get_model(cbox);
+    GtkTreeModel *model = (GtkTreeModel *)
+	g_object_get_data(G_OBJECT(cbox), pending_model_key);
+
     if (GTK_IS_TREE_STORE(model))
     {
 	const char *sep = (const char *)
@@ -133,8 +146,11 @@ add(ui_combo_t *cbox, const char *label, gpointer data)
     {
 	GtkListStore *store = GTK_LIST_STORE(model);
 	GtkTreeIter treeitr;
-	gtk_list_store_append(store, &treeitr);
-	gtk_list_store_set(store, &treeitr, COL_LABEL, label, COL_DATA, data, -1);
+	/* Atomically (w.r.t. gtk signals) append a new column.
+	 * Experiment indicates that appending has exactly the
+	 * same performance as prepending, at least for 2.16. */
+	gtk_list_store_insert_with_values(store, &treeitr, 0x7fffffff,
+					  COL_LABEL, label, COL_DATA, data, -1);
     }
 #else
     GtkWidget *item;
@@ -143,6 +159,17 @@ add(ui_combo_t *cbox, const char *label, gpointer data)
     gtk_object_set_data(GTK_OBJECT(item), ui_combo_item_key, data);
     gtk_widget_show(item);
     gtk_container_add(GTK_CONTAINER(cbox->list), item);
+#endif
+}
+
+void
+done(ui_combo_t *cbox)
+{
+#if GTK2
+    GtkTreeModel *model = (GtkTreeModel *)
+	g_object_steal_data(G_OBJECT(cbox), pending_model_key);
+    gtk_combo_box_set_model(cbox, model);
+    g_object_unref(G_OBJECT(model));
 #endif
 }
 

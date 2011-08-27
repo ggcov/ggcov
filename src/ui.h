@@ -41,6 +41,7 @@ GtkWidget *ui_get_dummy_menu(GladeXML *xml, const char *name);
 ui_combo_t *init(ui_combo_t *, const char *sep = 0);
 void clear(ui_combo_t *);
 void add(ui_combo_t *, const char *label, gpointer data);
+void done(ui_combo_t *);
 gpointer get_active(ui_combo_t *);
 void set_active(ui_combo_t *, gpointer data);
 

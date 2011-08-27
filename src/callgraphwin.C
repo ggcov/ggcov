@@ -242,6 +242,7 @@ callgraphwin_t::populate_function_combo(GtkComboBox *combo)
 
 	add(combo, label.data(), cn);
     }
+    done(combo);
 
     list.remove_all();
 }

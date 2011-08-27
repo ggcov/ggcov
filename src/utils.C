@@ -61,6 +61,7 @@ populate_function_combo(
 
 	add(cbox, label.data(), fn);
     }
+    done(cbox);
 
     if (currentp != 0)
 	set_active(cbox, (gpointer)(*currentp));
