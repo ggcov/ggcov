@@ -70,6 +70,9 @@ public:
     	return ((asection *)this)->_raw_size;
 #endif
     }
+    const asymbol *find_symbol_by_value(unsigned long val,
+				        unsigned int flagsmask,
+					unsigned int flagsmatch);
 };
 
 class cov_bfd_t
@@ -123,7 +126,8 @@ private:
 
     unsigned int num_symbols_;
     asymbol **symbols_;
-    
+    asymbol **sorted_symbols_;
+
     unsigned int num_code_sections_;
     asection **code_sections_;
     

@@ -80,18 +80,9 @@ cov_i386_call_scanner_t::find_function_by_value(
     cov_bfd_section_t *sec,
     unsigned long value)
 {
-    unsigned int i;
-
-    for (i = 0 ; i < cbfd_->num_symbols() ; i++)
-    {
-	const asymbol *sym = cbfd_->nth_symbol(i);
-	if (sym->section == (asection *)sec &&
-	    sym->value == value &&
-	    (sym->flags & (BSF_LOCAL|BSF_GLOBAL|BSF_FUNCTION)) == 
-		    	  (BSF_LOCAL|           BSF_FUNCTION))
-	    return sym;
-    }
-    return 0;
+    return sec->find_symbol_by_value(value,
+			    (BSF_LOCAL|BSF_GLOBAL|BSF_FUNCTION),
+			    (BSF_LOCAL|BSF_FUNCTION));
 }
 
 #define read_lu32(p)	\

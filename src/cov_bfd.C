@@ -27,6 +27,32 @@ CVSID("$Id: cov_bfd.C,v 1.9 2010-05-09 05:37:15 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static int
+compare_symbols(const void *v1, const void *v2)
+{
+    const asymbol *a = *(const asymbol **)v1;
+    const asymbol *b = *(const asymbol **)v2;
+
+    int r = 0;
+
+    if (a->section->id > b->section->id)
+	r = 1;
+    else if (a->section->id < b->section->id)
+	r = -1;
+
+    if (!r)
+    {
+	if (a->value > b->value)
+	    r = 1;
+	else if (a->value < b->value)
+	    r = -1;
+    }
+
+    return r;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 cov_bfd_t::cov_bfd_t()
 {
 }
@@ -137,7 +163,12 @@ cov_bfd_t::get_symbols()
 	num_symbols_ = 0;
 	return FALSE;
     }
-    
+
+    sorted_symbols_ = g_new(asymbol*, num_symbols_);
+    memcpy(sorted_symbols_, symbols_, num_symbols_*sizeof(*symbols_));
+    qsort((void *)sorted_symbols_, num_symbols_,
+	  sizeof(asymbol*), compare_symbols);
+
     if (debug_enabled(D_CGRAPH|D_VERBOSE))
     {
         unsigned int i;
@@ -407,6 +438,36 @@ cov_bfd_section_t::find_nearest_line(
     	*functionp = function;
     
     return TRUE;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+const asymbol *
+cov_bfd_section_t::find_symbol_by_value(
+    unsigned long val,
+    unsigned int flagsmask,
+    unsigned int flagsmatch)
+{
+    asection *sec = (asection *)this;
+    cov_bfd_t *b = owner();
+
+    asymbol key, *keyp = &key;
+    memset(&key, 0, sizeof(key));
+    key.value = val;
+    key.section = sec;
+
+    const asymbol **found = (const asymbol **)
+	bsearch((void *)&keyp, (void *)b->sorted_symbols_,
+		b->num_symbols_, sizeof(asymbol*), compare_symbols);
+    if (!found)
+	return 0;
+    assert(found >= b->sorted_symbols_);
+    assert(found < b->sorted_symbols_+b->num_symbols_);
+    assert((*found)->section == sec);
+    assert((*found)->value == val);
+    if (((*found)->flags & flagsmask) != flagsmatch)
+	return 0;
+    return (*found);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
