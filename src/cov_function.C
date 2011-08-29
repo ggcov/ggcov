@@ -490,15 +490,8 @@ cov_function_t::list_all()
     list_t<cov_function_t> *list = new list_t<cov_function_t>;
 
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
-    {
 	for (ptrarray_iterator_t<cov_function_t> fnitr = (*iter)->functions().first() ; *fnitr ; ++fnitr)
-	{
-	    cov_function_t *fn = *fnitr;
-
-	    if (fn->status() != cov::SUPPRESSED)
-		list->prepend(fn);
-	}
-    }
+	    list->prepend(*fnitr);
     list->sort(cov_function_t::compare);
     return list;
 }
