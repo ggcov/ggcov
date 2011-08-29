@@ -57,8 +57,9 @@ public:
     	return idx_;
     }
     
-    /* returns a new string */
-    char *describe() const;
+    /* returns pointer to a static buffer, make a copy if you want to
+     * use it after calling describe() again */
+    const char *describe() const;
 
     /* For iterating over outgoing arcs.
      * There used to be an iterator for incoming arcs, turns out

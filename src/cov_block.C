@@ -52,10 +52,13 @@ cov_block_t::~cov_block_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-char *
+const char *
 cov_block_t::describe() const
 {
-    return g_strdup_printf("%s:%d", function_->name(), idx_);
+    static estring buf;
+    buf.truncate();
+    buf.append_printf("%s:%d", function_->name(), idx_);
+    return buf.data();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

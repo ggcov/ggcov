@@ -415,20 +415,15 @@ cov_file_t::add_location(
      */
     if (ln->blocks_.head() && b->is_epilogue())
     {
-    	if (debug_enabled(D_BB))
-	{
-    	    string_var desc = b->describe();
-    	    duprintf3("Block %s skipping duplicate epilogue line %s:%lu\n",
-		      desc.data(), filename, lineno);
-	}
-    	return;
+	dprintf3(D_BB, "Block %s skipping duplicate epilogue line %s:%lu\n",
+		  b->describe(), filename, lineno);
+	return;
     }
 
     if (debug_enabled(D_BB))
     {
-	string_var desc = b->describe();
 	duprintf3("Block %s adding location %s:%lu\n",
-    		  desc.data(), filename, lineno);
+		  b->describe(), filename, lineno);
 	if (ln->blocks_.head())
     	    duprintf3("%s:%lu: this line belongs to %d blocks\n",
 	    	      filename, lineno, ln->blocks_.length()+1);
@@ -1598,19 +1593,11 @@ cov_file_t::o_file_add_call(
 	 */
     	if (b->needs_call())
 	{
-	    if (debug_enabled(D_CGRAPH))
-	    {
-    		string_var desc = b->describe();
-    	        duprintf1("    block %s\n", desc.data());
-	    }
+	    dprintf1(D_CGRAPH, "    block %s\n", b->describe());
 	    b->add_call(callname_dem, loc);
 	    return TRUE;
 	}
-	if (debug_enabled(D_CGRAPH))
-	{
-    	    string_var desc = b->describe();
-	    duprintf1("    skipping block %s\n", desc.data());
-	}
+	dprintf1(D_CGRAPH, "    skipping block %s\n", b->describe());
 	if (pure_candidate == 0)
 	    pure_candidate = b;
     }

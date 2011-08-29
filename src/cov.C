@@ -624,12 +624,9 @@ dump_callnode(cov_callnode_t *cn, FILE *fp)
 void
 dump_arc(FILE *fp, cov_arc_t *a)
 {
-    estring fromdesc = a->from()->describe();
-    estring todesc = a->to()->describe();
-
     fprintf(fp, "                    ARC {\n");
-    fprintf(fp, "                        FROM=%s\n", fromdesc.data());
-    fprintf(fp, "                        TO=%s\n", todesc.data());
+    fprintf(fp, "                        FROM=%s\n", a->from()->describe());
+    fprintf(fp, "                        TO=%s\n", a->to()->describe());
     fprintf(fp, "                        COUNT="GNB_U64_DFMT"\n", a->count());
     fprintf(fp, "                        NAME=%s\n", a->name());
     fprintf(fp, "                        ON_TREE=%s\n", boolstr(a->on_tree_));
@@ -642,10 +639,8 @@ dump_arc(FILE *fp, cov_arc_t *a)
 void
 dump_block(FILE *fp, cov_block_t *b)
 {
-    estring desc = b->describe();
-    
     fprintf(fp, "            BLOCK {\n");
-    fprintf(fp, "                IDX=%s\n", desc.data());
+    fprintf(fp, "                IDX=%s\n", b->describe());
     fprintf(fp, "                COUNT="GNB_U64_DFMT"\n", b->count());
     fprintf(fp, "                STATUS=%s\n", status_names[b->status()]);
 

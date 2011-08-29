@@ -255,7 +255,6 @@ cov_function_t::reconcile_calls()
     for (bidx = 0 ; bidx < num_blocks()-2 ; bidx++)
     {
     	cov_block_t *b = nth_block(bidx);
-	string_var desc = b->describe();
 
 	if (b->out_ncalls_ != (b->call_ == 0 ? 0U : 1U))
 	{
@@ -269,7 +268,7 @@ cov_function_t::reconcile_calls()
 		 * relationship to the source code.
 		 */
 		dprintf1(D_CGRAPH, "Failed to reconcile calls for block %s\n",
-			    desc.data());
+			    b->describe());
 		dprintf2(D_CGRAPH, "    %d call arcs, %d recorded calls\n",
 			    b->out_ncalls_,
 			    (b->call_ == 0 ? 0 : 1));
@@ -286,8 +285,8 @@ cov_function_t::reconcile_calls()
     	    if (a->is_call())
 	    {
 	    	a->name_ = b->pop_call();
-	    	dprintf2(D_CGRAPH|D_VERBOSE, "    block %s calls %s\n",
-		    	    	    desc.data(), a->name_.data());
+		dprintf2(D_CGRAPH|D_VERBOSE, "    block %s calls %s\n",
+			  b->describe(), a->name_.data());
 		if (a->is_call_suppressed())
 		{
 		    dprintf0(D_CGRAPH|D_VERBOSE, "    suppressing\n");
@@ -296,7 +295,7 @@ cov_function_t::reconcile_calls()
 	    }
     	}
 	dprintf2(D_CGRAPH, "Reconciled %d calls for block %s\n",
-		    	    b->out_ncalls_, desc.data());
+		  b->out_ncalls_, b->describe());
     }
     return ret;
 }
