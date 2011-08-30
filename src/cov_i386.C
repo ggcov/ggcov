@@ -20,26 +20,29 @@
 #include "cov_specific.H"
 #include "string_var.H"
 
-#if defined(HAVE_LIBBFD) && defined(COV_I386)
+#if defined(HAVE_LIBBFD) && (defined(COV_I386) || defined(COV_AM64))
 
 CVSID("$Id: cov_i386.C,v 1.9 2010-05-09 05:37:15 gnb Exp $");
 
 /*
- * Machine-specific code to scan i386 object code for function calls.
+ * Machine-specific code to scan i386 and amd64 object code for function calls.
  */
  
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-
+/* This handles both i386 and most of amd64 */
 class cov_i386_call_scanner_t : public cov_call_scanner_t
 {
 public:
     cov_i386_call_scanner_t();
     ~cov_i386_call_scanner_t();
+
+    gboolean attach(cov_bfd_t *);
     int next(cov_call_scanner_t::calldata_t *);
 
     const asymbol *find_function_by_value(cov_bfd_section_t *, unsigned long);
     int scan_statics(cov_call_scanner_t::calldata_t *calld);
+    virtual boolean is_function_reloc(const arelent *) const;
 
 private:
     unsigned int section_;
@@ -57,8 +60,24 @@ private:
 };
 
 COV_FACTORY_STATIC_REGISTER(cov_call_scanner_t,
-    	    	    	    cov_i386_call_scanner_t);
+			    cov_i386_call_scanner_t);
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+#ifdef COV_AMD64
+
+class cov_amd64_call_scanner_t : public cov_i386_call_scanner_t
+{
+public:
+    cov_amd64_call_scanner_t();
+    ~cov_amd64_call_scanner_t();
+
+    gboolean attach(cov_bfd_t *);
+    boolean is_function_reloc(const arelent *) const;
+};
+
+COV_FACTORY_STATIC_REGISTER(cov_call_scanner_t,
+			    cov_amd64_call_scanner_t);
+#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_i386_call_scanner_t::cov_i386_call_scanner_t()
@@ -71,6 +90,16 @@ cov_i386_call_scanner_t::~cov_i386_call_scanner_t()
     	g_free(relocs_);
     if (buf_)
     	g_free(buf_);
+}
+
+gboolean
+cov_i386_call_scanner_t::attach(cov_bfd_t *b)
+{
+    if (b->architecture() != bfd_arch_i386)
+	return FALSE;
+    if (b->mach() != bfd_mach_i386_i386)
+	return FALSE;
+    return cov_call_scanner_t::attach(b);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -121,10 +150,11 @@ cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
      */
 
     /* CALL instruction is 5 bytes long so don't bother scanning last 5 bytes */
+    /* Happily, AMD64 also uses the byte sequence E8,rel32 but names it callq */
     for (p = contents_+offset_ ; p < end ; p++)
     {
     	if (*p != 0xe8)
-	    continue;	    /* not a CALL instruction */
+	    continue;	    /* not a CALL/CALLQ instruction */
 	callfrom = startaddr_ + (p - contents_);
 	p++;
 	callto = callfrom + read_lu32(p) + 5;
@@ -148,6 +178,28 @@ cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
     g_free(contents_);
     contents_ = 0;
     return 0;	/* end of scan */
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+boolean
+cov_i386_call_scanner_t::is_function_reloc(const arelent *rel) const
+{
+    switch (rel->howto->type)
+    {
+    case R_386_32:  	/* external data reference from static code */
+    case R_386_GOTPC:	/* external data reference from PIC code */
+    case R_386_GOTOFF:	/* external data reference from PIC code */
+    case R_386_GOT32:	/* external data reference from ??? code */
+	return FALSE;
+    case R_386_PC32:	/* function call from static code */
+    case R_386_PLT32:	/* function call from PIC code */
+	return TRUE;
+    default:
+	fprintf(stderr, "%s: Warning unexpected 386 reloc howto type %d\n",
+			    cbfd_->filename(), rel->howto->type);
+	return FALSE;
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -177,21 +229,8 @@ cov_i386_call_scanner_t::next(cov_call_scanner_t::calldata_t *calld)
     	    if (debug_enabled(D_CGRAPH|D_VERBOSE))
     		cov_bfd_t::dump_reloc(reloc_, rel);
 
-	    switch (rel->howto->type)
-	    {
-	    case R_386_32:  	/* external data reference from static code */
-    	    case R_386_GOTPC:	/* external data reference from PIC code */
-	    case R_386_GOTOFF:	/* external data reference from PIC code */
-	    case R_386_GOT32:	/* external data reference from ??? code */
-	    	continue;
-	    case R_386_PC32:	/* function call from static code */
-	    case R_386_PLT32:	/* function call from PIC code */
-	    	break;
-	    default:
-	    	fprintf(stderr, "%s: Warning unexpected 386 reloc howto type %d\n",
-		    	    	    cbfd_->filename(), rel->howto->type);
-	    	continue;
-	    }
+	    if (!is_function_reloc(rel))
+		continue;
 
     	    if (symbol_is_ignored(sym->name))
 	    	continue;
@@ -230,6 +269,50 @@ cov_i386_call_scanner_t::next(cov_call_scanner_t::calldata_t *calld)
     return 0;	/* end of scan */
 }
 
-#endif /*HAVE_LIBBFD && COV_I386 */
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+#ifdef COV_AMD64
+
+cov_amd64_call_scanner_t::cov_amd64_call_scanner_t()
+{
+}
+
+cov_amd64_call_scanner_t::~cov_amd64_call_scanner_t()
+{
+}
+
+gboolean
+cov_amd64_call_scanner_t::attach(cov_bfd_t *b)
+{
+    if (b->architecture() != bfd_arch_i386)
+	return FALSE;
+    if (b->mach() != bfd_mach_x86_64)
+	return FALSE;
+    return cov_call_scanner_t::attach(b);
+}
+
+boolean
+cov_amd64_call_scanner_t::is_function_reloc(const arelent *rel) const
+{
+    switch (rel->howto->type)
+    {
+    case R_X86_64_32:	    /* external data reference from static code */
+    case R_X86_64_GOTPC:    /* external data reference from PIC code */
+    case R_X86_64_GOTOFF:   /* external data reference from PIC code */
+    case R_X86_64_GOT32:    /* external data reference from ??? code */
+	return FALSE;
+    case R_X86_64_PC32:	    /* function call from static code */
+    case R_X86_64_PLT32:    /* function call from PIC code */
+	return TRUE;
+    default:
+	fprintf(stderr, "%s: Warning unexpected x86-64 reloc howto type %d\n",
+			    cbfd_->filename(), rel->howto->type);
+	return FALSE;
+    }
+}
+
+#endif /*COV_AMD64 */
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#endif /*HAVE_LIBBFD && (COV_I386 || COV_AMD64) */
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

@@ -111,6 +111,14 @@ public:
     {
     	return bfd_get_flavour(abfd_);
     }
+    enum bfd_architecture architecture() const
+    {
+	return bfd_get_arch(abfd_);
+    }
+    unsigned long mach() const
+    {
+	return bfd_get_mach(abfd_);
+    }
 
 private:
     /* utility functions */
