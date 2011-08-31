@@ -301,9 +301,9 @@ static void
 dump_callgraph(void)
 {
     FILE *fp;
-    string_var cgfilename = file_make_absolute("callgraph.tggcov");
+    const char *cgfilename = file_make_absolute("callgraph.tggcov");
 
-    fprintf(stderr, "Writing %s\n", cgfilename.data());
+    fprintf(stderr, "Writing %s\n", cgfilename);
     if ((fp = fopen(cgfilename, "w")) == 0)
     {
     	perror(cgfilename);

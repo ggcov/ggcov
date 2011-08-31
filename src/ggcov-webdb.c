@@ -957,7 +957,6 @@ create_database(void)
 {
     char *tempdir;
     char *webdb_file;
-    char *output_tarball_abs;
     DB *db;
     int ret;
 
@@ -965,8 +964,6 @@ create_database(void)
 
     tempdir = g_strdup_printf("%s/ggcov-web-%d.d", get_tmpdir(), (int)getpid());
     webdb_file = g_strconcat(tempdir, "/", "ggcov.webdb", (char*)0);
-    output_tarball_abs = (!strcmp(output_tarball, "-") ? (char *)"-" :
-			    file_make_absolute(output_tarball));
 
     systemf("/bin/rm -rf \"%s\"", tempdir);
     file_build_tree(tempdir, 0755);
@@ -1005,6 +1002,8 @@ create_database(void)
 
     create_source_symlinks(tempdir);
 
+    const char *output_tarball_abs = (!strcmp(output_tarball, "-") ? "-" :
+			              file_make_absolute(output_tarball));
     systemf("cd \"%s\" ; tar -cvhzf \"%s\" *", tempdir, output_tarball_abs);
     systemf("/bin/rm -rf \"%s\"", tempdir);
 

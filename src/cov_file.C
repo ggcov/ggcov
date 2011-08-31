@@ -900,7 +900,7 @@ cov_file_t::infer_compilation_directory(const char *path)
 	    name_.data(), path);
 }
 
-char *
+const char *
 cov_file_t::make_absolute(const char *filename) const
 {
     if (compiledir_ != (const char *)0)
@@ -950,7 +950,8 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 {
     gnb_u32_t tag, length;
     cov_function_t *fn = 0;
-    estring filename, funcname;
+    const char *filename = NULL;
+    estring funcname;
     gnb_u32_t tmp;
     unsigned int nblocks = 0;
     gnb_u32_t bidx, last_bidx = 0;
@@ -1665,9 +1666,8 @@ cov_file_t::scan_o_file_calls(covio_t *io)
     	while ((r = cs->next(&cdata)) == 1)
 	{
 	    cov_location_t loc = cdata.location;
-    	    loc.filename = make_absolute(loc.filename);
+	    loc.filename = (char *)make_absolute(loc.filename);
 	    o_file_add_call(&loc, cdata.callname);
-	    g_free(loc.filename);
 	}
 	delete cs;
 	ret = (r == 0); /* 0=>successfully finished scan */

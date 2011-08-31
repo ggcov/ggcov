@@ -79,10 +79,10 @@ gboolean
 cov_read_source_file_2(const char *fname, gboolean quiet)
 {
     cov_file_t *f;
-    string_var filename;
+    const char *filename;
 
     filename = file_make_absolute(fname);
-    dprintf1(D_FILES, "Handling source file %s\n", filename.data());
+    dprintf1(D_FILES, "Handling source file %s\n", filename);
 
     if ((f = cov_file_t::find(filename)) != 0)
     {

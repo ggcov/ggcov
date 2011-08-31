@@ -53,9 +53,8 @@ TEARDOWN
 
 #define TESTCASE(in, expected) \
 { \
-    char *out = file_make_absolute(in); \
+    const char *out = file_make_absolute(in); \
     check_str_equals(expected, out); \
-    g_free(out); \
 }
 
 TEST(make_absolute)

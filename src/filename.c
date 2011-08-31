@@ -156,16 +156,17 @@ is_path_tail(const char *path, const char *file)
     return (!strcmp(tail, file) && (tail == path || tail[-1] == '/'));
 }
 
-static char *
+static const char *
 file_make_absolute_to(
     const char *filename,
     const char *absfile,
     gboolean isdir)
 {
-    estring abs;
+    static estring abs;
     tok_t tok(filename, "/");
     const char *part;
-    
+
+    abs.truncate();
     if (*filename == '/')
     {
     	abs.append_string("/");
@@ -179,7 +180,11 @@ file_make_absolute_to(
 	else
 	{
 	    if (is_path_tail(absfile, filename))
-		return g_strdup(absfile);
+	    {
+		abs.truncate();
+		abs.append_string(absfile);
+		return abs.data();
+	    }
 	    const char *t = strrchr(absfile, '/');
 	    assert(t != 0);
 	    abs.append_chars(absfile, t-absfile);
@@ -210,22 +215,22 @@ file_make_absolute_to(
 	abs.append_string(part);
     }
 
-    return abs.take();
+    return abs.data();
 }
 
-char *
+const char *
 file_make_absolute(const char *filename)
 {
     return file_make_absolute_to(filename, 0, FALSE);
 }
 
-char *
+const char *
 file_make_absolute_to_file(const char *filename, const char *absfile)
 {
     return file_make_absolute_to(filename, absfile, FALSE);
 }
 
-char *
+const char *
 file_make_absolute_to_dir(const char *filename, const char *absdir)
 {
     return file_make_absolute_to(filename, absdir, TRUE);

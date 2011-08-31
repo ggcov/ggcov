@@ -193,7 +193,7 @@ private:
     gboolean read_old_bbg_file(covio_t *);
     gboolean read_oldplus_bbg_file(covio_t *);
     void infer_compilation_directory(const char *abspath);
-    char *make_absolute(const char *filename) const;
+    const char *make_absolute(const char *filename) const;
     gboolean read_gcc3_bbg_file(covio_t *io, gnb_u32_t expect_version,
 				covio_t::format_t);
     gboolean read_gcc33_bbg_file(covio_t *);
