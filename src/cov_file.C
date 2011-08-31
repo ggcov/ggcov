@@ -216,8 +216,7 @@ cov_file_t *
 cov_file_t::find(const char *name)
 {
     assert(files_ != 0);
-    string_var fullname = unminimise_name(name);
-    return files_->lookup(fullname);
+    return files_->lookup(unminimise_name(name));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -310,19 +309,23 @@ cov_file_t::minimise_name(const char *name)
     }
 }
 
-char *
+const char *
 cov_file_t::unminimise_name(const char *name)
 {
     if (name[0] == '/')
     {
-    	/* absolute name */
-    	return g_strdup(name);
+	/* absolute name */
+	return name;
     }
     else
     {
-    	/* partial, presumably minimal, name */
-    	check_common_path();
-	return g_strconcat(common_path_, name, (char *)0);
+	static estring full;
+	/* partial, presumably minimal, name */
+	check_common_path();
+	full.truncate();
+	full.append_string(common_path_);
+	full.append_string(name);
+	return full.data();
     }
 }
 
