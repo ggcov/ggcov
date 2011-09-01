@@ -97,8 +97,8 @@ INCLUDES=	$(BASEINCLUDES) -DPKGDATADIR="\"$(pkgdatadir)\"" \
 		-DLIBDIR="\"$(libdir)\"" -DSYSCONFDIR="\"$(sysconfdir)\"" \
  		-DDEBUG=$(DEBUG) -DUI_DEBUG=$(UI_DEBUG) \
 		$(CPU_DEFINES) $(OS_DEFINES)
-ggcov_LDADD=	libcov.a libcommon.a $(GGCOV_GUI_LIBS)
-CLI_LIBS=	libcov.a libcommon.a $(GGCOV_CLI_LIBS)
+ggcov_LDADD=	libcov.a libcommon.a $(GGCOV_GUI_LIBS) $(BFD_LIBS)
+CLI_LIBS=	libcov.a libcommon.a $(GGCOV_CLI_LIBS) $(BFD_LIBS)
 
 tggcov_SOURCES= tggcov.c \
 		check_scenegen.H check_scenegen.C \
@@ -163,4 +163,19 @@ mangletest_LDADD=	$(CLI_LIBS)
 
 popttest_SOURCES=	popttest.c
 popttest_LDADD= 	$(GGCOV_CLI_LIBS)
+
+# On Ubuntu, check that none of the installable programs
+# are dynamically linked against libbfd.  See the comment
+# in configure.in for why that would be bad.
+install-exec-local:
+	if grep Ubuntu /etc/issue > /dev/null 2>&1 ; then \
+	    ok=yes ;\
+	    for prog in $(bin_PROGRAMS) ; do \
+		if ldd $$prog | grep libbfd >/dev/null ; then \
+		    echo "error: $$prog is dynamically linked against libbfd" 1>&2 ;\
+		    ok=no ;\
+		fi ;\
+	    done ;\
+	    [ "$$ok" = yes ] || exit 1 ;\
+	fi
 
