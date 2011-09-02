@@ -296,16 +296,23 @@ cov_amd64_call_scanner_t::is_function_reloc(const arelent *rel) const
     switch (rel->howto->type)
     {
     case R_X86_64_32:	    /* external data reference from static code */
-    case R_X86_64_GOTPC:    /* external data reference from PIC code */
-    case R_X86_64_GOTOFF:   /* external data reference from PIC code */
-    case R_X86_64_GOT32:    /* external data reference from ??? code */
+    case R_X86_64_32S:	    /* external data reference from static code */
+    case R_X86_64_GOTPCREL: /* external data reference from PIC code */
 	return FALSE;
-    case R_X86_64_PC32:	    /* function call from static code */
+    case R_X86_64_PC32:	    /* function call or external data reference from static code */
     case R_X86_64_PLT32:    /* function call from PIC code */
 	return TRUE;
     default:
-	fprintf(stderr, "%s: Warning unexpected x86-64 reloc howto type %d\n",
-			    cbfd_->filename(), rel->howto->type);
+	const char *name = 0;
+	if (rel->sym_ptr_ptr &&
+	    *rel->sym_ptr_ptr)
+	    name = (*rel->sym_ptr_ptr)->name;
+	if (!name)
+	    name = "(unknown symbol)";
+	fprintf(stderr, "%s: Warning unexpected x86-64 reloc howto "
+			"type %d at %p for %s\n",
+			cbfd_->filename(), rel->howto->type,
+			(void *)rel->address, name);
 	return FALSE;
     }
 }
