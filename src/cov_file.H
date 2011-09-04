@@ -29,6 +29,7 @@
 
 class cov_function_t;
 class cov_line_t;
+class cov_suppression_t;
 
 class cov_file_t
 {
@@ -71,7 +72,7 @@ public:
     }
     gboolean is_suppressed() const
     {
-    	return (status() == cov::SUPPRESSED);
+	return (suppression_ != 0);
     }
     
     /* find a file by name, full or minimal */
@@ -218,6 +219,7 @@ private:
     gboolean read_src_file();
     void zero_arc_counts();
     gboolean solve();
+    void suppress(const cov_suppression_t *);
     void finalise();
 
     cov::status_t calc_stats(cov_stats_t *stats) const;
@@ -234,7 +236,7 @@ private:
     string_var relpath_;    /* relative path with which this file was found */
     string_var compiledir_; /* directory in which this source was compiled;
 			     * base for relative pathnames */
-    gboolean common_;	    /* whether this file uses common_path_ */
+    const cov_suppression_t *suppression_;
     gboolean finalised_;    /* data read & post-read connections made */
     gboolean has_locations_;/* any locations added */
     const format_rec_t *format_;

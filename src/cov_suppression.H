@@ -22,38 +22,123 @@
 
 #include "common.h"
 #include "hashtable.H"
+#include "list.H"
 #include "string_var.H"
 
-struct cov_suppression_t;
-typedef hashtable_iter_t<const char, cov_suppression_t> cov_suppression_iter_t;
-
-struct cov_suppression_t
+class cov_suppression_t
 {
+public:
     enum type_t
     {
 	IFDEF,		/* lines inside #if word_ */
 	COMMENT_LINE,	/* line with a comment containing word_ */
 	COMMENT_RANGE,	/* lines between a comment containing word_
-	     	         * and a comment containing word2_ */
+			 * and a comment containing word2_ */
+	ARC_CALLS,	/* arc is a call to named function */
+	BLOCK_CALLS,	/* block contains an arc which is a
+			 * call to named function */
+	FUNCTION,	/* named function */
+	FILENAME,	/* named filename */
+	MERGED,		/* all components are suppressed */
+	UNSOLVABLE,	/* function tree cannot be solved */
 	NUM_TYPES
+    };
+
+    cov_suppression_t(const char *w, type_t t, const char *o);
+    ~cov_suppression_t();
+
+    static const cov_suppression_t *find(const char *w, type_t t);
+    static list_iterator_t<const cov_suppression_t> first(type_t t)
+    {
+	return all_[t].first();
+    }
+    static unsigned int count(type_t t)
+    {
+	return all_[t].length();
+    }
+
+    type_t type() const
+    {
+	return type_;
+    }
+    const char *word() const
+    {
+	return word_;
+    }
+
+    const char *word2() const
+    {
+	return word2_;
+    }
+    void set_word2(const char *s)
+    {
+	word2_ = s;
+    }
+
+    const char *origin() const
+    {
+	return origin_;
+    }
+    void set_origin(const char *s)
+    {
+	origin_ = s;
+    }
+
+    const char *describe() const;
+
+    static void init_builtins();
+
+private:
+    struct init_t
+    {
+	type_t type;
+	const char *word;
     };
 
     string_var word_;
     string_var word2_;
     enum type_t type_;
+    string_var origin_;
 
-    cov_suppression_t(const char *w, type_t t)
-     : word_(w), type_(t)
+    static hashtable_t<const char, const cov_suppression_t> *by_word_[NUM_TYPES];
+    static list_t<const cov_suppression_t> prefixed_[NUM_TYPES];
+    static list_t<const cov_suppression_t> all_[NUM_TYPES];
+};
+
+
+/*
+ * Class cov_suppression_combiner_t reifys the algorithm
+ * for choosing whether to push a suppression *upwards*
+ * in the object hierarchy, i.e. whether to suppress a
+ * function because all it's blocks are suppressed.
+ */
+class cov_suppression_combiner_t
+{
+public:
+    cov_suppression_combiner_t()
+     :  suppression_(0),
+        num_unsuppressed_(0)
     {
     }
 
-    static cov_suppression_t *add(const char *w, type_t t);
-    static cov_suppression_t *find(const char *w, type_t t);
-    static cov_suppression_iter_t first(type_t t);
-    static unsigned int count();
+    void add(const cov_suppression_t *s)
+    {
+	if (!s)
+	    num_unsuppressed_++;
+	else if (!suppression_)
+	    suppression_ = s;
+	else if (suppression_ != s)
+	    suppression_ = cov_suppression_t::find(0, cov_suppression_t::MERGED);
+    }
 
-    static hashtable_t<const char, cov_suppression_t> *all_[NUM_TYPES];
+    const cov_suppression_t *result() const
+    {
+	return (num_unsuppressed_ ? 0 : suppression_);
+    }
+
+private:
+    const cov_suppression_t *suppression_;
+    unsigned int num_unsuppressed_;
 };
-
 
 #endif /* _ggcov_cov_suppression_H_ */

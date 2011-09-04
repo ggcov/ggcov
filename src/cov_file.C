@@ -32,8 +32,6 @@
 
 CVSID("$Id: cov_file.C,v 1.83 2010-05-09 05:37:15 gnb Exp $");
 
-static gboolean filename_is_common(const char *filename);
-
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
 list_t<cov_file_t> cov_file_t::files_list_;
 list_t<char> cov_file_t::search_path_;
@@ -70,7 +68,9 @@ cov_file_t::cov_file_t(const char *name, const char *relpath)
     null_line_ = new cov_line_t();
 
     files_->insert(name_, this);
-    if ((common_ = filename_is_common(name_)))
+
+    suppress(cov_suppression_t::find(name_, cov_suppression_t::FILENAME));
+    if (!suppression_)
 	add_name(name_);
 }
 
@@ -93,7 +93,7 @@ cov_file_t::~cov_file_t()
     delete lines_;
     delete null_line_;
 
-    if (common_)
+    if (!suppression_)
 	dirty_common_path();
 }
 
@@ -109,71 +109,44 @@ cov_file_t::init()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static gboolean
-filename_matches_directory_prefix(const char *filename, const char *dir)
-{
-    int dirlen = strlen(dir);
-
-    return (!strncmp(dir, filename, dirlen) &&
-	    (filename[dirlen] == '\0' || filename[dirlen] == '/'));
-}
-
-static gboolean
-filename_is_common(const char *filename)
-{
-    static const char * const uncommon_dirs[] = 
-    {
-	"/usr/include",
-	"/usr/lib",
-	0
-    };
-    const char * const * dirp;
-
-    for (dirp = uncommon_dirs ; *dirp != 0 ; dirp++)
-    {
-    	if (filename_matches_directory_prefix(filename, *dirp))
-	    return FALSE;
-    }
-    return TRUE;
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-#if 0
-gboolean
-cov_file_t::is_self_suppressed() const
-{
-    /* TOOO: implement suppression by filename, directory, or library here */
-}
-
 void
-cov_file_t::suppress()
+cov_file_t::suppress(const cov_suppression_t *s)
 {
-    unsigned int i;
+    if (s && !suppression_)
+    {
+	dprintf1(D_CGRAPH|D_VERBOSE, "suppressing file: %s\n", s->describe());
+	suppression_ = s;
 
-    suppressed_ = TRUE;
-    for (i = 0 ; i < functions_->length() ; i++)
-    	functions_->nth(i)->suppress();
+	/* in most cases we'll be suppressed before any lines or
+	 * functions are added, but this is here for completeness */
+	for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
+	    (*fnitr)->suppress(s);
+	for (ptrarray_iterator_t<cov_line_t> liter = lines_->first() ; *liter ; ++liter)
+	    (*liter)->suppress(s);
+    }
 }
-#endif
 
 void
 cov_file_t::finalise()
 {
-    unsigned int i;
-
     if (finalised_)
 	return;
     finalised_ = TRUE;
 
-#if 0
-    /* TODO: push file-level suppression downwards to functions */
-    if (is_self_suppressed())
-    	suppress();
-#endif
+    for (ptrarray_iterator_t<cov_line_t> liter = lines_->first() ; *liter ; ++liter)
+	(*liter)->finalise();
+    for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
+	(*fnitr)->finalise();
 
-    for (i = 0 ; i < functions_->length() ; i++)
-    	functions_->nth(i)->finalise();
+    if (!suppression_)
+    {
+	/* suppress the file if all it's
+	 * functions are suppressed */
+	cov_suppression_combiner_t c;
+	for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
+	    c.add((*fnitr)->suppression_);
+	suppress(c.result());
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -280,7 +253,7 @@ cov_file_t::check_common_path()
     	dprintf0(D_FILES, "cov_file_t::check_common_path: recalculating common path\n");
     	common_len_ = 0;
 	for (hashtable_iter_t<const char, cov_file_t> itr = files_->first() ; *itr ; ++itr)
-	    if (itr.value()->common_)
+	    if (!(*itr)->suppression_)
 		add_name(itr.key());
     }
 }
@@ -288,8 +261,8 @@ cov_file_t::check_common_path()
 const char *
 cov_file_t::minimal_name() const
 {
-    if (!common_)
-    	return name_;
+    if (suppression_)
+	return name_;
     check_common_path();
     return name_.data() + common_len_;
 }
@@ -365,7 +338,11 @@ cov_file_t::get_nth_line(unsigned int lineno)
     
     if (lineno > lines_->length() ||
     	(ln = lines_->nth(lineno-1)) == 0)
-	lines_->set(lineno-1, ln = new cov_line_t());
+    {
+	ln = new cov_line_t();
+	ln->suppress(suppression_);
+	lines_->set(lineno-1, ln);
+    }
     return ln;
 }
 
@@ -448,7 +425,8 @@ cov_file_t::add_function()
     
     fn->idx_ = functions_->append(fn);
     fn->file_ = this;
-    
+    fn->suppress(suppression_);
+
     return fn;
 }
 
@@ -464,14 +442,20 @@ cov::status_t
 cov_file_t::calc_stats(cov_stats_t *stats) const
 {
     cov_stats_t mine;
-    
+    cov::status_t st;
+
     assert(finalised_);
 
-    for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
-	(*fnitr)->calc_stats(&mine);
-
-    stats->accumulate(&mine);
-    return mine.status_by_blocks();
+    if (suppression_)
+	st = cov::SUPPRESSED;
+    else
+    {
+	for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
+	    (*fnitr)->calc_stats(&mine);
+	stats->accumulate(&mine);
+	st = mine.status_by_blocks();
+    }
+    return st;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1428,7 +1412,6 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
     cov_function_t *fn = 0;
     gnb_u64_t count;
     gnb_u32_t tmp;
-    unsigned int bidx;
     unsigned int len_unit = 1;
 
     io->set_format(ioformat);
@@ -1706,82 +1689,91 @@ class cov_file_src_parser_t : public cpp_parser_t
 {
 private:
     cov_file_t *file_;
-    unsigned int is_suppressed_;    /* mask of active suppression types */
-    hashtable_t<const char, cov_suppression_t> *active_ranges_;
+    const cov_suppression_t *suppressions_[cov_suppression_t::NUM_TYPES];
+    hashtable_t<const char, const cov_suppression_t> *active_ranges_;
 
     void
     depends_changed()
     {
-    	if (debug_enabled(D_CPP|D_VERBOSE))
+	if (debug_enabled(D_CPP|D_VERBOSE))
 	    dump();
 
-	is_suppressed_ &= ~(1<<cov_suppression_t::IFDEF);
-	for (cov_suppression_iter_t itr = cov_suppression_t::first(cov_suppression_t::IFDEF) ; *itr ; ++itr)
+	suppressions_[cov_suppression_t::IFDEF] = 0;
+	for (list_iterator_t<const cov_suppression_t> itr =
+	     cov_suppression_t::first(cov_suppression_t::IFDEF) ; *itr ; ++itr)
 	{
-	    if (depends(itr.key()))
+	    const cov_suppression_t *s = *itr;
+	    if (depends(s->word()))
 	    {
-		is_suppressed_ |= (1<<cov_suppression_t::IFDEF);
+		dprintf1(D_CPP, "depends_changed suppressions_[IFDEF]=%s\n", s->describe());
+		suppressions_[s->type()] = s;
 		break;
 	    }
 	}
-    	dprintf1(D_CPP, "depends_changed suppressed=%u\n", is_suppressed_);
+    }
+
+    const cov_suppression_t *
+    suppression() const
+    {
+	int i;
+
+	for (i = 0 ; i < cov_suppression_t::NUM_TYPES ; i++)
+	    if (suppressions_[i])
+		return suppressions_[i];
+	return 0;
     }
 
     void
     post_line()
     {
 	cov_line_t *ln;
-	
-	if (is_suppressed_ &&
+	const cov_suppression_t *s = suppression();
+
+	if (s &&
 	    lineno() <= file_->lines_->length() &&
 	    (ln = file_->lines_->nth(lineno()-1)) != 0)
 	{
-    	    dprintf1(D_CPP|D_VERBOSE, "post_line: suppressing %u\n", is_suppressed_);
-	    ln->suppress();
+	    dprintf1(D_CPP|D_VERBOSE, "post_line: suppressing: %s\n",
+			s->describe());
+	    ln->suppress(s);
 	}
-    	/* line suppression is one-shot */
-	is_suppressed_ &= ~(1<<cov_suppression_t::COMMENT_LINE);
+	/* line suppression is one-shot */
+	suppressions_[cov_suppression_t::COMMENT_LINE] = 0;
     }
 
     void
     handle_comment(const char *text)
     {
-	cov_suppression_t *s;
+	const cov_suppression_t *s;
 
-    	dprintf1(D_CPP, "handle_comment: \"%s\"\n", text);
+	dprintf1(D_CPP, "handle_comment: \"%s\"\n", text);
 
 	s = cov_suppression_t::find(text, cov_suppression_t::COMMENT_LINE);
-	if (s != 0)
+	if (s)
 	{
 	    /* comment suppresses this line only */
-	    is_suppressed_ |= (1<<cov_suppression_t::COMMENT_LINE);
-    	    dprintf0(D_CPP, "handle_comment: suppressing line\n");
+	    suppressions_[s->type()] = s;
+	    dprintf0(D_CPP, "handle_comment: suppressing line\n");
 	}
 
 	s = cov_suppression_t::find(text, cov_suppression_t::COMMENT_RANGE);
-	if (s != 0)
+	if (s)
 	{
 	    /* comment starts a new active range */
-    	    dprintf2(D_CPP, "handle_comment: starting range %s-%s\n",
-	    	    	    s->word_.data(), s->word2_.data());
-	    if (active_ranges_ == 0)
-	    {
-		active_ranges_ = new hashtable_t<const char, cov_suppression_t>;
-		active_ranges_->insert(s->word2_, s);
-	    }
-	    else if (active_ranges_->lookup(s->word2_) == 0)
-	    {
-		active_ranges_->insert(s->word2_, s);
-	    }
-	    is_suppressed_ |= (1<<cov_suppression_t::COMMENT_RANGE);
+	    dprintf2(D_CPP, "handle_comment: starting range %s-%s\n",
+			    s->word(), s->word2());
+	    if (!active_ranges_->lookup(s->word2()))
+		active_ranges_->insert(s->word2(), s);
+	    suppressions_[s->type()] = s;
 	}
 
-	if (active_ranges_ != 0 && (s = active_ranges_->lookup(text)) != 0)
+	s = active_ranges_->lookup(text);
+	if (s)
 	{
 	    /* comment ends an active range */
 	    active_ranges_->remove(text);
-    	    dprintf2(D_CPP, "handle_comment: ending range %s-%s\n",
-	    	    	    s->word_.data(), s->word2_.data());
+	    dprintf2(D_CPP, "handle_comment: ending range %s-%s\n",
+			    s->word(), s->word2());
 	    if (active_ranges_->size() == 0)
 	    {
 		/*
@@ -1789,9 +1781,9 @@ private:
 		 * by range, but suppress this line so the range
 		 * is inclusive of the closing magical comment line
 		 */
-		is_suppressed_ &= ~(1<<cov_suppression_t::COMMENT_RANGE);
-		is_suppressed_ |= (1<<cov_suppression_t::COMMENT_LINE);
-    		dprintf0(D_CPP, "handle_comment: last range\n");
+		suppressions_[cov_suppression_t::COMMENT_RANGE] = 0;
+		suppressions_[cov_suppression_t::COMMENT_LINE] = s;
+		dprintf0(D_CPP, "handle_comment: last range\n");
 	    }
 	}
     }
@@ -1800,10 +1792,10 @@ private:
 public:
     cov_file_src_parser_t(cov_file_t *f)
      :  cpp_parser_t(f->name()),
-     	file_(f),
-	is_suppressed_(0),
-	active_ranges_(0)
+	file_(f)
     {
+	memset(suppressions_, 0, sizeof(suppressions_));
+	active_ranges_ = new hashtable_t<const char, const cov_suppression_t>;
     }
     ~cov_file_src_parser_t()
     {
@@ -1925,6 +1917,18 @@ cov_file_t::file_missing(const char *ext, const char *ext2) const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static int
+have_line_suppressions(void)
+{
+    if (cov_suppression_t::count(cov_suppression_t::IFDEF))
+	return TRUE;
+    if (cov_suppression_t::count(cov_suppression_t::COMMENT_LINE))
+	return TRUE;
+    if (cov_suppression_t::count(cov_suppression_t::COMMENT_RANGE))
+	return TRUE;
+    return FALSE;
+}
+
 gboolean
 cov_file_t::read(gboolean quiet)
 {
@@ -1985,7 +1989,7 @@ cov_file_t::read(gboolean quiet)
     else if (!read_da_file(io))
 	return FALSE;
 
-    if (cov_suppression_t::count() != 0 && !read_src_file())
+    if (have_line_suppressions() && !read_src_file())
     {
 	static const char warnmsg[] = 
 	"could not scan source file for cpp conditionals or comments, "

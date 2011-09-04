@@ -18,6 +18,7 @@
  */
 
 #include "cov.H"
+#include "cov_suppression.H"
 #include "string_var.H"
 
 CVSID("$Id: cov_function.C,v 1.26 2010-05-09 05:37:15 gnb Exp $");
@@ -46,6 +47,8 @@ cov_function_t::set_name(const char *name)
     assert(name_ == 0);
     name_ = name;
     file_->functions_by_name_->insert(name_, this);
+
+    suppress(cov_suppression_t::find(name_, cov_suppression_t::FUNCTION));
 }
 
 void
@@ -65,51 +68,13 @@ cov_function_t::add_block()
 
     b->idx_ = blocks_->append(b);
     b->function_ = this;
-    
+    b->suppress(suppression_);
+
     return b;
 }
 
-gboolean
-cov_function_t::is_self_suppressed() const
-{
-    static const char * const prefixes[] =
-    {
-	"_GLOBAL_",
-	0
-    };
-    static const char * const names[] =
-    {
-	/* inlines in glibc's </sys/sysmacros.h> */
-	"gnu_dev_major",
-	"gnu_dev_minor",
-	"gnu_dev_makedev",
-	/* inlines in glibc's <sys/stat.h> */
-	"stat",
-	"lstat",
-	"fstat",
-	"mknod",
-	0
-    };
-    const char * const *n;
-
-    /* TODO: implement suppression by function name here */
-
-    for (n = prefixes ; *n ; n++)
-    {
-	if (!strncmp(name_, *n, strlen(*n)))
-	    return TRUE;
-    }
-    for (n = names ; *n ; n++)
-    {
-	if (!strcmp(name_, *n))
-	    return TRUE;
-    }
-    return FALSE;
-}
-
-
 void
-cov_function_t::suppress()
+cov_function_t::suppress(const cov_suppression_t *s)
 {
     /*
      * If it weren't for the case of compiler-generated functions
@@ -118,20 +83,30 @@ cov_function_t::suppress()
      * up again to files.  Instead we have to remember when we're
      * suppressed externally or by self.
      */
-    suppressed_ = TRUE;
-
-    for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
-	(*bitr)->suppress();
+    if (s && !suppression_)
+    {
+	dprintf2(D_SUPPRESS, "suppressing function %s: %s\n", name(), s->describe());
+	suppression_ = s;
+	for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
+	    (*bitr)->suppress(s);
+    }
 }
 
 void
 cov_function_t::finalise()
 {
-    if (is_self_suppressed())
-	suppress();
-
     for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
 	(*bitr)->finalise();
+
+    if (!suppression_)
+    {
+	/* suppress the function if all it's
+	 * blocks are suppressed */
+	cov_suppression_combiner_t c;
+	for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
+	    c.add((*bitr)->suppression_);
+	suppress(c.result());
+    }
 }
 
 /*
@@ -213,20 +188,23 @@ cov_function_t::calc_stats(cov_stats_t *stats) const
     unsigned int bidx;
     cov_stats_t mine;
     cov::status_t st;
-    
+
     assert(file_->finalised_);
 
-    /* skip the 0th and last psuedo-blocks which don't correspond to code */
-    assert(num_blocks() >= 2);
-    for (bidx = 1 ; bidx < num_blocks()-1 ; bidx++)
-	nth_block(bidx)->calc_stats(&mine);
+    if (suppression_)
+	st = cov::SUPPRESSED;
+    else
+    {
+	/* skip the 0th and last psuedo-blocks which don't correspond to code */
+	assert(num_blocks() >= 2);
+	for (bidx = 1 ; bidx < num_blocks()-1 ; bidx++)
+	    nth_block(bidx)->calc_stats(&mine);
+	stats->accumulate(&mine);
+	st = mine.status_by_lines();
+    }
 
-    st = mine.status_by_lines();
-    if (suppressed_)
-    	st = cov::SUPPRESSED;
     stats->functions_[st]++;
-    stats->accumulate(&mine);
-    
+
     return st;
 }
 
@@ -238,7 +216,7 @@ cov_function_t::reconcile_calls()
     unsigned int bidx;
     gboolean ret = TRUE;
 
-    if (is_self_suppressed())
+    if (suppression_)
 	return TRUE;	/* ignored */
 
     /*
@@ -281,17 +259,13 @@ cov_function_t::reconcile_calls()
 	for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
 	{
 	    cov_arc_t *a = *aiter;
+	    char *name;
 
-    	    if (a->is_call())
+	    if (a->is_call() && (name = b->pop_call()))
 	    {
-	    	a->name_ = b->pop_call();
 		dprintf2(D_CGRAPH|D_VERBOSE, "    block %s calls %s\n",
-			  b->describe(), a->name_.data());
-		if (a->is_call_suppressed())
-		{
-		    dprintf0(D_CGRAPH|D_VERBOSE, "    suppressing\n");
-		    b->suppress();
-		}
+			  b->describe(), name);
+		a->take_name(name);
 	    }
     	}
 	dprintf2(D_CGRAPH, "Reconciled %d calls for block %s\n",
@@ -317,8 +291,6 @@ cov_function_t::solve()
     int passes, changes;
     cov_arc_t *a;
     cov_block_t *b;
-
-    unsolveable_ = FALSE;
 
     /* For every block in the file,
        - if every exit/entrance arc has a known count, then set the block count
@@ -417,8 +389,7 @@ cov_function_t::solve()
 			fprintf(stderr, "Function %s cannot be solved because "
 				        "the arc counts are inconsistent, suppressing\n",
 					name_.data());
-			unsolveable_ = TRUE;
-			suppress();
+			suppress(cov_suppression_t::find(0, cov_suppression_t::UNSOLVABLE));
 			return TRUE;
 		    }
 		    assert(b->count_ >= out_total);
@@ -441,8 +412,7 @@ cov_function_t::solve()
 			fprintf(stderr, "Function %s cannot be solved because "
 				        "the arc counts are inconsistent, suppressing\n",
 					name_.data());
-			unsolveable_ = TRUE;
-			suppress();
+			suppress(cov_suppression_t::find(0, cov_suppression_t::UNSOLVABLE));
 			return TRUE;
 		    }
 		    assert(b->count_ >= in_total);

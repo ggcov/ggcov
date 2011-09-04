@@ -60,6 +60,7 @@ typedef enum
     D_DA,
     D_IO,
     D_CGRAPH,
+    D_SUPPRESS,
     D_SOLVE,
     D_STABS,
     D_DWARF,

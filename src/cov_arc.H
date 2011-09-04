@@ -100,35 +100,25 @@ public:
 	return from_->locations().head();
     }
 
-    boolean is_suppressed() const;
-
-    cov::status_t status()
+    boolean is_suppressed() const
     {
-	if (is_suppressed())
-	    return cov::SUPPRESSED;
-	else if (count_)
-	    return cov::COVERED;
-	else
-	    return cov::UNCOVERED;
+	return (suppression_ != 0);
     }
 
-    void finalise();
+    cov::status_t status();
 
 private:
     cov_arc_t();
     void attach(cov_block_t *from, cov_block_t *to);
     ~cov_arc_t();
 
-    void suppress()
-    {
-    	suppressed_ = true;
-    }
-    gboolean is_call_suppressed() const;
+    void suppress(const cov_suppression_t *s);
 
     void set_count(count_t count);
     static count_t total(const list_t<cov_arc_t> &list);
     static cov_arc_t *find_invalid(const list_t<cov_arc_t> &list,
     	    	    	    	   gboolean may_be_call);
+    void take_name(char *name);	/* takes over string */
 
     cov_block_t *from_, *to_;
     unsigned int idx_; 	    /* serial number in from->out_arcs */
@@ -138,8 +128,8 @@ private:
     boolean call_:1;
     boolean fall_through_:1;
     boolean count_valid_:1;
-    boolean suppressed_:1;
-    
+    const cov_suppression_t *suppression_;
+
     friend class cov_file_t;
     friend class cov_function_t;
     friend class cov_block_t;

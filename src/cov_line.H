@@ -46,7 +46,7 @@ public:
     /* Check for suppression without the side effect of calculate_count() */
     gboolean is_suppressed() const
     {
-    	return (count_valid_ && status_ == cov::SUPPRESSED);
+	return (suppression_ != 0);
     }
 
     const list_t<cov_block_t> &blocks() const
@@ -70,16 +70,14 @@ private:
     ~cov_line_t();
     static void remove(const cov_location_t *, cov_block_t *);
     void calculate_count();
-    void suppress()
-    {
-    	count_valid_ = true;
-	status_ = cov::SUPPRESSED;
-    }
+    void suppress(const cov_suppression_t *);
+    void finalise();
 
     list_t<cov_block_t> blocks_;
     boolean count_valid_;  /* covers status_, count_ */
     cov::status_t status_;
     count_t count_;
+    const cov_suppression_t *suppression_;
     
     friend class cov_file_t;
     friend class cov_block_t;

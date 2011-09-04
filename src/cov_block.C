@@ -18,6 +18,7 @@
  */
 
 #include "cov.H"
+#include "cov_suppression.H"
 #include "estring.H"
 #include "filename.h"
 
@@ -168,39 +169,41 @@ cov_block_t::pop_call()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-cov_block_t::suppress()
+cov_block_t::suppress(const cov_suppression_t *s)
 {
-    suppressed_ = TRUE;
-
-    /* suppress all outbound arcs */
-    for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
-	(*aiter)->suppress();
-    
-    /* TODO: should we suppress inbound arcs also!?? */
-    
-    /* suppress all lines, where all the blocks
-     * on the line are suppressed */
-    for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
+    if (s && !suppression_)
     {
-	cov_line_t *l = cov_line_t::find(*liter);
-	unsigned int nunsuppressed = 0;
-	for (list_iterator_t<cov_block_t> biter = l->blocks().first() ; *biter ; ++biter)
-	{
-	    if (!(*biter)->suppressed_)
-		nunsuppressed++;
-	}
-	if (!nunsuppressed)
-	    l->suppress();
+	dprintf2(D_SUPPRESS, "suppressing block %s: %s\n", describe(), s->describe());
+	suppression_ = s;
+
+	/* suppress all outbound arcs */
+	for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
+	    (*aiter)->suppress(s);
     }
 }
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
 cov_block_t::finalise()
 {
-    for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
-	(*aiter)->finalise();
+    if (!suppression_)
+    {
+	/* suppress the block if all it's
+	 * lines are suppressed */
+	cov_suppression_combiner_t c;
+	for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
+	    c.add(cov_line_t::find(*liter)->suppression_);
+	suppress(c.result());
+    }
+
+    if (!suppression_)
+    {
+	/* suppress the block if all it's
+	 * outgoing arcs are suppressed */
+	cov_suppression_combiner_t c;
+	for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
+	    c.add((*aiter)->suppression_);
+	suppress(c.result());
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -214,72 +217,77 @@ cov::status_t
 cov_block_t::calc_stats(cov_stats_t *stats) const
 {
     unsigned int bits = 0;
+    cov_stats_t mine;
     cov::status_t st;
 
     assert(function_->file()->finalised_);
 
-    /*
-     * Calculate call and branches coverage.
-     */
-    for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
+    if (suppression_)
+	st = cov::SUPPRESSED;
+    else
     {
-	cov_arc_t *a = *aiter;
-
-    	if (a->is_fall_through())
-	    continue;	/* control flow does not branch */
-	    
-	if (a->is_call())
-	    stats->calls_[a->status()]++;
-	else
-	    stats->branches_[a->status()]++;
-    }
-
-    /*
-     * Calculate line coverage.
-     */
-    for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
-    {
-	cov_line_t *ln = cov_line_t::find(*liter);
-
-    	st = ln->status();
-
 	/*
-	 * Compensate for multiple blocks on a line by
-	 * only counting when we hit the first block.
-	 * This will lead to anomalies when there are
-	 * multiple functions on the same line, but code
-	 * like that *deserves* anomalies.
+	 * Calculate call and branches coverage.
 	 */
-	if (ln->blocks().head() != this)
+	for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
 	{
-	    if (st == cov::SUPPRESSED)
-		bits |= (1<<st);    /* handle middle block on suppressed line */
-	    continue;
+	    cov_arc_t *a = *aiter;
+
+	    if (a->is_fall_through())
+		continue;	/* control flow does not branch */
+
+	    if (a->is_call())
+		mine.calls_[a->status()]++;
+	    else
+		mine.branches_[a->status()]++;
 	}
 
-    	stats->lines_[st]++;
-	bits |= (1<<st);
-    }
+	/*
+	 * Calculate line coverage.
+	 */
+	for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
+	{
+	    cov_line_t *ln = cov_line_t::find(*liter);
 
-    /*
-     * Return the block's status.  Note this can't be achieved
-     * by simply calling cov_stats_t::status() as that works on
-     * lines and may be inaccurate when the first or last line is
-     * shared with other blocks.  Instead we use the block's count_.
-     */
-    if (suppressed_ /*externally suppressed*/ ||
-    	bits == (1<<cov::SUPPRESSED)/* all lines suppressed, none covered */)
-    	st = cov::SUPPRESSED;
-    else if (count_)
-    	st = cov::COVERED;
-    else
-    	st = cov::UNCOVERED;
+	    st = ln->status();
+
+	    /*
+	     * Compensate for multiple blocks on a line by
+	     * only counting when we hit the first block.
+	     * This will lead to anomalies when there are
+	     * multiple functions on the same line, but code
+	     * like that *deserves* anomalies.
+	     */
+	    if (ln->blocks().head() != this)
+	    {
+		if (st == cov::SUPPRESSED)
+		    bits |= (1<<st);    /* handle middle block on suppressed line */
+		continue;
+	    }
+
+	    mine.lines_[st]++;
+	    bits |= (1<<st);
+	}
+
+	/*
+	 * Return the block's status.  Note this can't be achieved
+	 * by simply calling cov_stats_t::status() as that works on
+	 * lines and may be inaccurate when the first or last line is
+	 * shared with other blocks.  Instead we use the block's count_.
+	 *
+	 * Note: we cannot have the case where all the lines
+	 * are suppressed, that should have set suppression_
+	 */
+	assert(bits != (1<<cov::SUPPRESSED));
+	st = (count_ ? cov::COVERED : cov::UNCOVERED);
+	stats->accumulate(&mine);
+    }
 
     /*
      * Calculate block coverage
      */
     stats->blocks_[st]++;
-    
+
     return st;
 }
 

@@ -19,6 +19,7 @@
 
 #include "cov.H"
 #include "cov_specific.H"
+#include "cov_suppression.H"
 #include "estring.H"
 #include "filename.h"
 #include "estring.H"
@@ -107,6 +108,7 @@ cov_read_source_file(const char *filename)
     return cov_read_source_file_2(filename, /*quiet*/FALSE);
 }
 
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #ifdef HAVE_LIBBFD
@@ -132,6 +134,7 @@ cov_init(void)
 
     cov_callnode_t::init();
     cov_file_t::init();
+    cov_suppression_t::init_builtins();
 }
 
 void
@@ -489,7 +492,8 @@ cov_read_files(const list_t<const char> &files)
 	const char *v;
 	
 	while ((v = tok.next()) != 0)
-    	    cov_suppress_ifdef(v);
+	    new cov_suppression_t(v, cov_suppression_t::IFDEF,
+				  "commandline -X option");
     }
 
     if (suppressed_comment_lines != 0)
@@ -498,7 +502,8 @@ cov_read_files(const list_t<const char> &files)
 	const char *v;
 	
 	while ((v = tok.next()) != 0)
-    	    cov_suppress_lines_with_comment(v);
+	    new cov_suppression_t(v, cov_suppression_t::COMMENT_LINE,
+				  "commandline -Y option");
     }
 
     if (suppressed_comment_ranges != 0)
@@ -513,7 +518,10 @@ cov_read_files(const list_t<const char> &files)
 		fprintf(stderr, "%s: -Z option requires pairs of words\n", argv0);
 		exit(1);
 	    }
-    	    cov_suppress_lines_between_comments(s, e);
+	    cov_suppression_t *sup;
+	    sup = new cov_suppression_t(s, cov_suppression_t::COMMENT_RANGE,
+					"commandline -Z option");
+	    sup->set_word2(e);
 	}
     }
 

@@ -42,7 +42,7 @@ public:
     }
     gboolean is_suppressed() const
     {
-    	return (status() == cov::SUPPRESSED);
+    	return (suppression_ != 0);
     }
     
     cov_file_t *
@@ -92,8 +92,7 @@ private:
     void set_name(const char *name);
     void set_id(gnb_u64_t); /* needed for gcc 4.0 and hacked-up RH gcc 3.4 file formats */
     cov_block_t *add_block();
-    gboolean is_self_suppressed() const;
-    void suppress();
+    void suppress(const cov_suppression_t *);
     void finalise();
     gboolean reconcile_calls();
     gboolean solve();
@@ -101,11 +100,9 @@ private:
 
     cached_string name_;
     gnb_u64_t id_;
-    gboolean suppressed_:1; /* suppressed from above or by self */
-    gboolean unsolveable_:1;/* function cannot be solved due to
-			       inconsistent arc counts */
     unsigned int idx_; 	    /* serial number in file */
     cov_file_t *file_;
+    const cov_suppression_t *suppression_;
     ptrarray_t<cov_block_t> *blocks_;
     
     friend class cov_file_t;

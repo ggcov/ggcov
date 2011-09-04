@@ -18,6 +18,7 @@
  */
 
 #include "cov.H"
+#include "cov_suppression.H"
 
 CVSID("$Id: cov_line.C,v 1.9 2010-05-09 05:37:15 gnb Exp $");
 
@@ -62,7 +63,7 @@ cov_line_t::calculate_count()
 	cov_block_t *b = *itr;
 
 	len++;
-	if (b->is_self_suppressed())
+	if (b->is_suppressed())
 	{
 	    nsupp++;
 	    continue;
@@ -109,6 +110,37 @@ cov_line_t::remove(const cov_location_t *loc, cov_block_t *b)
 
     if (ln)
 	ln->blocks_.remove(b);
+}
+
+void
+cov_line_t::suppress(const cov_suppression_t *s)
+{
+    if (s && !suppression_)
+    {
+	count_valid_ = true;
+	status_ = cov::SUPPRESSED;
+	dprintf1(D_SUPPRESS, "suppressing line: %s\n", s->describe());
+	suppression_ = s;
+
+	/* suppress any arcs out of blocks on this line */
+	for (list_iterator_t<cov_block_t> biter = blocks_.first() ; *biter ; ++biter)
+	    (*biter)->suppress(s);
+	/* TODO: suppress any blocks wholly on this line??? */
+    }
+}
+
+void
+cov_line_t::finalise()
+{
+    if (!suppression_)
+    {
+	/* suppress lines, where all the blocks
+	 * on the line are suppressed */
+	cov_suppression_combiner_t c;
+	for (list_iterator_t<cov_block_t> biter = blocks_.first() ; *biter ; ++biter)
+	    c.add((*biter)->suppression_);
+	suppress(c.result());
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

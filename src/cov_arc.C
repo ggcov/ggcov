@@ -18,6 +18,7 @@
  */
 
 #include "cov.H"
+#include "cov_suppression.H"
 #include "estring.H"
 #include "filename.h"
 
@@ -45,6 +46,9 @@ cov_arc_t::attach(cov_block_t *from, cov_block_t *to)
     to_->in_arcs_.append(this);
     if (!call_)
 	to_->in_ninvalid_++;
+
+    /* inherit any suppression from the origin block */
+    suppress(from->suppression_);
 }
 
 cov_arc_t::~cov_arc_t()
@@ -56,47 +60,15 @@ cov_arc_t::~cov_arc_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
-cov_arc_t::is_call_suppressed() const
+cov::status_t
+cov_arc_t::status()
 {
-    static const char * const names[] =
-    {
-	/* externs in glibc's <assert.h> */
-	"__assert_fail",
-	"__assert_perror_fail",
-	"__assert",
-	"abort",
-	0
-    };
-    const char * const *n;
-
-    if (!name_)
-	return FALSE;
-
-    for (n = names ; *n ; n++)
-    {
-	if (!strcmp(name_, *n))
-	    return TRUE;
-    }
-    return FALSE;
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-boolean
-cov_arc_t::is_suppressed() const
-{
-    const cov_location_t *loc;
-    cov_line_t *ln;
-
-    /* externally suppressed, e.g. function suppressed by name */
-    if (suppressed_)
-    	return TRUE;
-    
-    /* originating line suppressed, e.g. by ifdef */
-    return ((loc = get_from_location()) != 0 &&
-	    (ln = cov_line_t::find(loc)) != 0 &&
-	    ln->is_suppressed());
+    if (suppression_)
+	return cov::SUPPRESSED;
+    else if (count_)
+	return cov::COVERED;
+    else
+	return cov::UNCOVERED;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -149,37 +121,29 @@ cov_arc_t::find_invalid(const list_t<cov_arc_t> &list, gboolean may_be_call)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-cov_arc_t::finalise()
+cov_arc_t::suppress(const cov_suppression_t *s)
 {
-    static const char * const ignored[] =
+    if (s && !suppression_)
     {
-	"__cxa_allocate_exception", /* gcc 3.4 exception handling */
-	"__cxa_begin_catch",   	    /* gcc 3.4 exception handling */
-	"__cxa_call_unexpected",    /* gcc 3.4 exception handling */
-	"__cxa_end_catch",   	    /* gcc 3.4 exception handling */
-	"__cxa_throw",   	    /* gcc 3.4 exception handling */
-	"_Unwind_Resume",   	    /* gcc 3.4 exception handling */
-    	0
-    };
-    const char * const *p;
-    
-    if (name_ == 0)
-    	return;
-    
-    /*
-     * Suppress arcs which are calls to any of the internal
-     * language functions we don't care about, such as g++
-     * exception handling.
-     * TODO: also stuff like integer arithmetic millicode.
-     */
-    for (p = ignored ; *p != 0 ; p++)
-    {
-	if (!strcmp(name_, *p))
+	if (debug_enabled(D_SUPPRESS))
 	{
-	    suppress();
-	    return;
+	    string_var fdesc = from_->describe();
+	    string_var tdesc = to_->describe();
+	    duprintf3("suppressing arc from %s to %s: %s\n",
+		      fdesc.data(), tdesc.data(), s->describe());
 	}
+	suppression_ = s;
     }
+}
+
+void
+cov_arc_t::take_name(char *name)
+{
+    assert(name);
+    name_ = name;
+
+    from_->suppress(cov_suppression_t::find(name_, cov_suppression_t::BLOCK_CALLS));
+    suppress(cov_suppression_t::find(name_, cov_suppression_t::ARC_CALLS));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

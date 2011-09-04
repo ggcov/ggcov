@@ -37,13 +37,9 @@ public:
 	cov_stats_t stats;
 	return calc_stats(&stats);
     }
-    gboolean is_self_suppressed() const
-    {
-	return suppressed_;
-    }
     gboolean is_suppressed() const
     {
-    	return (status() == cov::SUPPRESSED);
+	return (suppression_ != 0);
     }
 
     cov_function_t *
@@ -83,7 +79,7 @@ public:
     }
     
     gboolean is_epilogue() const;
-    
+
     void finalise();
 
 private:
@@ -115,10 +111,10 @@ private:
     gboolean needs_call() const;
     void add_call(const char *name, const cov_location_t *loc);
     char *pop_call();
-    void suppress();
+    void suppress(const cov_suppression_t *);
     cov::status_t calc_stats(cov_stats_t *) const;
 
-    gboolean suppressed_;   /* suppressed from above or by self */
+    const cov_suppression_t *suppression_;
 
     cov_function_t *function_;
     unsigned int idx_; 	    /* serial number in function */
@@ -145,6 +141,7 @@ private:
     friend class cov_file_t;
     friend class cov_function_t;
     friend class cov_arc_t;
+    friend class cov_line_t;
     friend class cov_range_scope_t;
     friend class cov_call_iterator_t;
     friend void dump_block(FILE *fp, cov_block_t *b);

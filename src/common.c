@@ -143,6 +143,7 @@ static struct
 {"da",       	F(D_DA)},
 {"io",       	F(D_IO)},
 {"cgraph",   	F(D_CGRAPH)},
+{"suppress",   	F(D_SUPPRESS)},
 {"solve",    	F(D_SOLVE)},
 {"stabs",    	F(D_STABS)},
 {"dwarf",    	F(D_DWARF)},
