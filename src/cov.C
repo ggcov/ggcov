@@ -352,6 +352,7 @@ cov_read_directory(const char *dirname, gboolean recursive)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
+static char *suppressed_calls = 0;
 static char *suppressed_ifdefs = 0;
 static char *suppressed_comment_lines = 0;
 static char *suppressed_comment_ranges = 0;
@@ -369,6 +370,15 @@ const struct poptOption cov_popt_options[] =
 	&recursive,     	    	    	/* arg */
 	0,  	    	    	    	    	/* val 0=don't return */
 	"recursively scan directories for source", /* descrip */
+	0	    	    	    	    	/* argDescrip */
+    },
+    {
+	"suppress-call",	    	    	/* longname */
+	0,  	    	    	    	    	/* shortname */
+	POPT_ARG_STRING,  	    	    	/* argInfo */
+	&suppressed_calls,			/* arg */
+	0,  	    	    	    	    	/* val 0=don't return */
+	"suppress blocks which call this function", /* descrip */
 	0	    	    	    	    	/* argDescrip */
     },
     {
@@ -463,6 +473,7 @@ cov_post_args(void)
 	string_var token_str = debug_enabled_tokens();
 
 	duprintf1("cov_post_args: recursive=%d\n", recursive);
+	duprintf1("cov_post_args: suppressed_calls=%s\n", suppressed_calls);
 	duprintf1("cov_post_args: suppressed_ifdefs=%s\n", suppressed_ifdefs);
 	duprintf1("cov_post_args: suppressed_comment_lines=%s\n", suppressed_comment_lines);
 	duprintf1("cov_post_args: suppressed_comment_ranges=%s\n", suppressed_comment_ranges);
@@ -485,6 +496,16 @@ cov_read_files(const list_t<const char> &files)
     }
 
     cov_init();
+
+    if (suppressed_calls != 0)
+    {
+	tok_t tok(/*force copy*/(const char *)suppressed_calls, ", \t");
+	const char *v;
+
+	while ((v = tok.next()) != 0)
+	    new cov_suppression_t(v, cov_suppression_t::BLOCK_CALLS,
+				  "commandline --suppress-call option");
+    }
 
     if (suppressed_ifdefs != 0)
     {
