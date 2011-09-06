@@ -56,6 +56,7 @@ protected:
 
 private:
     void on_close_activate();
+    void on_delete_event(GdkEvent *);
     void on_exit_activate();
     void load_geometry();
     void save_geometry();

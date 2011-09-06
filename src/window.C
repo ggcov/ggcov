@@ -321,6 +321,13 @@ window_t::on_close_activate()
 }
 
 GLADE_CALLBACK void
+window_t::on_delete_event(GdkEvent *ev)
+{
+    save_geometry();
+    delete this;
+}
+
+GLADE_CALLBACK void
 window_t::on_exit_activate()
 {
     for (list_iterator_t<window_t> itr = all.first() ; *itr ; ++itr)
