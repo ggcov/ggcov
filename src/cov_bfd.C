@@ -63,6 +63,8 @@ cov_bfd_t::~cov_bfd_t()
 	bfd_close(abfd_);
     if (symbols_ != 0)
     	g_free(symbols_);
+    if (sorted_symbols_ != 0)
+    	g_free(sorted_symbols_);
     if (code_sections_ != 0)
     	g_free(code_sections_);
 }

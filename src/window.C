@@ -271,8 +271,8 @@ window_t::load_geometry()
 {
     assert(window_);
     confsection_t *cs = confsection_t::get("window-geometry");
-    const char *geom = cs->get_string(name(), 0);
-    if (!geom)
+    string_var geom = cs->get_string(name(), 0);
+    if (!geom.data())
 	return;
     gtk_window_parse_geometry(GTK_WINDOW(window_), geom);
 }

@@ -117,10 +117,12 @@ add(ui_combo_t *cbox, const char *label, gpointer data)
 	{
 	    while (itr_valid)
 	    {
-		const char *ilabel = 0;
+		char *ilabel = 0;
 		gtk_tree_model_get(model, &itr, COL_LABEL, &ilabel, -1);
 		assert(ilabel);
-		if (!strcmp(ilabel, comp))
+		boolean done = !strcmp(ilabel, comp);
+		g_free(ilabel);
+		if (done)
 		    break;
 		itr_valid = gtk_tree_model_iter_next(model, &itr);
 	    }
