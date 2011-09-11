@@ -24,7 +24,8 @@ typedef struct
 {
     const char *name;	    /* name for commandline option */
     const char *label;	    /* label for GUI menu */
-    int (*func)(FILE *);    /* function to perform the report, returns #lines */
+    int (*func)(FILE *,	    /* function to perform the report, returns #lines */
+		const char *filename/*NULL for tmpfile */);
     const char *filename;   /* default filename for Save As dialog */
 }
 report_t;

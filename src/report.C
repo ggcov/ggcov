@@ -76,7 +76,7 @@ print_summary(FILE *fp, const cov_stats_t *stats, const char *what)
 }
 
 static int
-report_summary_all(FILE *fp)
+report_summary_all(FILE *fp, const char *)
 {
     cov_scope_t *sc = new cov_overall_scope_t;
     int nlines = print_summary(fp, sc->get_stats(), "all files");
@@ -85,7 +85,7 @@ report_summary_all(FILE *fp)
 }
 
 static int
-report_summary_per_directory(FILE *fp)
+report_summary_per_directory(FILE *fp, const char *)
 {
     hashtable_t<char, cov_stats_t> *ht;
     cov_stats_t *st;
@@ -140,7 +140,7 @@ report_summary_per_directory(FILE *fp)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
-report_untested_functions_per_file(FILE *fp)
+report_untested_functions_per_file(FILE *fp, const char *)
 {
     gboolean did_head1 = FALSE;
     int nlines = 0;
@@ -188,7 +188,7 @@ global_fraction_covered(void)
 }
 
 static int
-report_poorly_covered_functions_per_file(FILE *fp)
+report_poorly_covered_functions_per_file(FILE *fp, const char *)
 {
     double global_avg = global_fraction_covered();
     gboolean did_head1 = FALSE;
@@ -235,7 +235,7 @@ report_poorly_covered_functions_per_file(FILE *fp)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
-report_incompletely_covered_functions_per_file(FILE *fp)
+report_incompletely_covered_functions_per_file(FILE *fp, const char *)
 {
     gboolean did_head1 = FALSE;
     int nlines = 0;
@@ -570,8 +570,15 @@ cob_report_t::emit(FILE *fp)
 }
 
 static int
-report_cobertura(FILE *fp)
+report_cobertura(FILE *fp, const char *filename)
 {
+    if (!filename)
+    {
+	fprintf(fp, "This report isn't really meant for human eyes.\n"
+		    "Please try the Save As button\n");
+	return 1;
+    }
+
     cob_report_t report;
 
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)

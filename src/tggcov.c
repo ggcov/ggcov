@@ -206,7 +206,7 @@ do_report(FILE *fp, const report_t *rep)
     if (report_lastlines > 0)
     	fputc('\n', fp);
 
-    report_lastlines = (*rep->func)(fp);
+    report_lastlines = (*rep->func)(fp, "stdout");
 }
 
 static void

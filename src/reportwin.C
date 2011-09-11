@@ -31,7 +31,7 @@ CVSID("$Id: reportwin.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
-null_report_func(FILE *)
+null_report_func(FILE *, const char *)
 {
     return 0;
 }
@@ -148,7 +148,7 @@ reportwin_t::update()
     if ((fp = open_temp_file()) == 0)
     	return;
 	
-    report_->func(fp);
+    report_->func(fp, NULL);
     fflush(fp);
     fseek(fp, 0L, SEEK_SET);
 
@@ -197,7 +197,7 @@ reportwin_t::on_save_as_ok_clicked()
 	}
 	else
 	{
-	    report_->func(fp);
+	    report_->func(fp, filename);
 	    fclose(fp);
 	}
     }

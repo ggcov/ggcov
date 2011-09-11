@@ -713,7 +713,7 @@ save_reports(DB *db)
 	}
 
 	// Run the report, capturing the output in the temp file
-	(*rep->func)(fp);
+	(*rep->func)(fp, tmp_filename);
 	fflush(fp);
 
 	// Read the report output into buffer
