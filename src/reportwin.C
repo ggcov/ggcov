@@ -36,7 +36,7 @@ null_report_func(FILE *)
     return 0;
 }
 
-static const report_t null_report =  { "none", N_("None"), null_report_func };
+static const report_t null_report =  { "none", N_("None"), null_report_func, NULL };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -54,6 +54,7 @@ reportwin_t::reportwin_t()
     report_combo_ = init(UI_COMBO(w));
     text_ = glade_xml_get_widget(xml, "report_text");
     ui_text_setup(text_);
+    save_as_button_ = glade_xml_get_widget(xml, "report_save_as_button");
 
     ui_register_windows_menu(ui_get_dummy_menu(xml, "report_windows_dummy"));
 
@@ -63,6 +64,8 @@ reportwin_t::reportwin_t()
 
 reportwin_t::~reportwin_t()
 {
+    if (save_dialog_)
+	gtk_widget_destroy(save_dialog_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -96,6 +99,7 @@ reportwin_t::populate()
 void
 reportwin_t::grey_items()
 {
+    gtk_widget_set_sensitive(save_as_button_, (report_ != &null_report));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -172,6 +176,61 @@ reportwin_t::on_report_combo_changed()
 	report_ = rep;
 	update();
     }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+GLADE_CALLBACK void
+reportwin_t::on_save_as_ok_clicked()
+{
+    dprintf0(D_UICORE, "reportwin_t::on_save_as_ok_clicked\n");
+
+    const char *filename = gtk_file_selection_get_filename(
+		    GTK_FILE_SELECTION(save_dialog_));
+
+    if (filename != 0 && *filename != '\0')
+    {
+	FILE *fp = fopen(filename, "w");
+	if (!fp)
+	{
+	    perror(filename);
+	}
+	else
+	{
+	    report_->func(fp);
+	    fclose(fp);
+	}
+    }
+
+    gtk_widget_hide(save_dialog_);
+}
+
+GLADE_CALLBACK void
+reportwin_t::on_save_as_cancel_clicked()
+{
+    dprintf0(D_UICORE, "reportwin_t::on_save_as_cancel_clicked\n");
+    gtk_widget_hide(save_dialog_);
+}
+
+GLADE_CALLBACK void
+reportwin_t::on_save_as_clicked()
+{
+    dprintf0(D_UICORE, "reportwin_t::on_save_as_clicked\n");
+    if (save_dialog_ == 0)
+    {
+	GladeXML *xml = ui_load_tree("report_save_as");
+	save_dialog_ = glade_xml_get_widget(xml, "report_save_as");
+	attach(save_dialog_);
+    }
+
+    string_var filename = report_->filename;
+    if (!filename.data())
+	filename = g_strconcat("report_", report_->name, ".txt", (char *)NULL);
+    gtk_file_selection_set_filename(
+	    GTK_FILE_SELECTION(save_dialog_),
+	    filename);
+
+    gtk_widget_show(save_dialog_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

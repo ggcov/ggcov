@@ -587,19 +587,19 @@ report_cobertura(FILE *fp)
 
 const report_t all_reports[] = 
 {
-#define report(name, label) { #name, label, report_##name },
+#define report(name, label, fname) { #name, label, report_##name, fname },
     report(summary_all,
-    	   N_("Summary, all files"))
+	   N_("Summary, all files"), NULL)
     report(summary_per_directory,
-    	   N_("Summary, per directory"))
+	   N_("Summary, per directory"), NULL)
     report(untested_functions_per_file,
-    	   N_("Untested functions per file"))
+	   N_("Untested functions per file"), NULL)
     report(poorly_covered_functions_per_file,
-    	   N_("Poorly covered functions per file"))
+	   N_("Poorly covered functions per file"), NULL)
     report(incompletely_covered_functions_per_file,
-    	   N_("Incompletely covered functions per file"))
+	   N_("Incompletely covered functions per file"), NULL)
     report(cobertura,
-    	   N_("Cobertura-compatible XML report"))
+	   N_("Cobertura-compatible XML report"), "cobertura.xml")
 #undef report
     {0, 0}
 };

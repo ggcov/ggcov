@@ -36,11 +36,17 @@ private:
     void update();
     void grey_items();
     void on_report_combo_changed();
+    void on_filename_view_clicked();
+    void on_save_as_clicked();
+    void on_save_as_ok_clicked();
+    void on_save_as_cancel_clicked();
 
     const report_t *report_;
 
     ui_combo_t *report_combo_;
     GtkWidget *text_;
+    GtkWidget *save_as_button_;
+    GtkWidget *save_dialog_;
     gboolean populating_;
 };
 
