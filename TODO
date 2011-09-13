@@ -1,15 +1,9 @@
 
 --- OPEN ---
 
-x  Grey out the View->Block Diagram... menu item in the Source
-   window unless a function is selected.
-x  Make persistent the state of the check menu items in the Calls
-   window.
 x  Calculate the CCN complexity metric as part of cov_stats_t
    and display it in the Summary window, Functions window,
    Files window.
-
-x  Suppress the Cobertura report from the Report window.
 
 x  Convert to using stdtypes.h and uint64_t.  Also stdbool.h and bool.
 
@@ -29,7 +23,6 @@ x  version control integration: have a Commits window and show
    the most recent N commits with incremental coverage
    information, as per git-history-coverage but more graphical.
 x  the --help messages mention .da etc files - should mention .gcda
-x  in the Source window, the Filenames drop-down box should contain a tree not a list
 
 x  Test both cases in test030
    tggcov bar.c bar.y
@@ -109,9 +102,6 @@ x  Extend colour coding to all the places where a percentage, fraction,
    
 x  Handle the boundary case of the last block in a function properly.
 
-x  In the Source window, show branches graphically, as drawn arrows
-   (labelled with branch probablities) from one block to another.
-   
 x  Option to watch mtimes of .da files and reload them when they
    change, so that user can watch coverage stats update in realtime
    as their testsuite is run.
@@ -130,9 +120,6 @@ x  Add a menu command to the Source window to search for patterns.
 x  Additional source annotations in the Source window (i.e. non-column
    additions like per-function stats) should be colour coded to
    make them distinct from non-executable lines of source.
-   
-x  Add column titles to Source window, with the ability to hide them,
-   visible by default, state saved automatically.
    
 x  Merge the Line column in the Calls window into the Call From column,
    so it's expressed as "function:line".
@@ -360,3 +347,19 @@ x  On the flow diagrams in the Source window, add a tooltip on each
 x  Remember in prefs the size of the Source window.
 x  Remember in prefs the set of visible columns in the Source window.
 
+x  Make persistent the state of the check menu items in the Calls
+   window.
+
+x  in the Source window, the Filenames drop-down box should contain a tree not a list
+
+x  Grey out the View->Block Diagram... menu item in the Source
+   window unless a function is selected.
+
+x  Suppress the Cobertura report from the Report window.
+
+x  In the Source window, show branches graphically, as drawn arrows
+   (labelled with branch probablities) from one block to another.
+   
+x  Add column titles to Source window, with the ability to hide them,
+   visible by default, state saved automatically.
+   
