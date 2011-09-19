@@ -87,18 +87,18 @@ cov_suppression_t::find(const char *w, type_t t)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static const char * const type_names[] =
+static const char * const type_descs[] =
 {
-    "IFDEF",
-    "COMMENT_LINE",
-    "COMMENT_RANGE",
-    "ARC_CALLS",
-    "BLOCK_CALLS",
-    "FUNCTION",
-    "FILENAME",
-    "MERGED",
-    "UNSOLVABLE",
-    "RELOC",
+    "line depends on #ifdef",
+    "line contains comment",
+    "line between comments",
+    "arc calls",
+    "block calls",
+    "function matches",
+    "filename matches",
+    "all components are suppressed",
+    "function cannot be solved",
+    "reloc record matches",
     0
 };
 
@@ -108,11 +108,11 @@ cov_suppression_t::describe() const
     static estring buf;
     buf.truncate();
     buf.append_printf("%s %s ",
-		      type_names[type_],
+		      type_descs[type_],
 		      word_.data());
     if (word2_.data())
-	buf.append_printf("%s ", word2_.data());
-    buf.append_printf("(%s)\n", origin_.data());
+	buf.append_printf("and %s ", word2_.data());
+    buf.append_printf("(%s)", origin_.data());
     return buf;
 }
 
@@ -165,11 +165,11 @@ cov_suppression_t::init_builtins(void)
     const init_t *si;
 
     for (si = inits ; si->word ; si++)
-	new cov_suppression_t(si->word, si->type, "builtin suppressions");
+	new cov_suppression_t(si->word, si->type, "builtin defaults");
 
-    new cov_suppression_t(0, MERGED, "all components are suppressed");
+    new cov_suppression_t(0, MERGED, "builtin defaults");
 
-    new cov_suppression_t(0, UNSOLVABLE, "function cannot be solved");
+    new cov_suppression_t(0, UNSOLVABLE, "builtin defaults");
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -41,6 +41,10 @@ public:
     {
 	return (suppression_ != 0);
     }
+    const cov_suppression_t *suppression() const
+    {
+	return suppression_;
+    }
 
     cov_function_t *
     function() const

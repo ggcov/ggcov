@@ -20,6 +20,7 @@
 #include "canvas_scenegen.H"
 #include "ui.h"
 #include "canvas_function_popup.H"
+#include "cov_suppression.H"
 
 CVSID("$Id: canvas_scenegen.C,v 1.4 2010-05-09 05:37:14 gnb Exp $");
 
@@ -206,29 +207,29 @@ canvas_scenegen_t::polyline_end(gboolean arrow)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void describe_status(estring &txt, cov::status_t status, count_t count)
+static void describe_status(estring &txt, const cov_suppression_t *sup, count_t count)
 {
-    switch (status)
+    if (sup)
     {
-    case cov::SUPPRESSED:
-	txt.append_printf("(suppressed)\n");
-	break;
-    case cov::UNCOVERED:
+	txt.append_printf("suppressed because %s\n", sup->describe());
+    }
+    else if (!count)
+    {
 	txt.append_printf("never executed\n");
-	break;
-    default:
+    }
+    else
+    {
 	txt.append_printf("executed "GNB_U64_DFMT" times\n", count);
-	break;
     }
 }
 
 void
 canvas_scenegen_t::format_tooltip(estring &txt, cov_block_t *b)
 {
-    txt.append_printf("Block %d\n", b->bindex());
-    txt.append_printf("of %s\n", b->function()->name());
+    txt.append_printf("Block %d", b->bindex());
+    txt.append_printf(" of %s\n", b->function()->name());
 
-    describe_status(txt, b->status(), b->count());
+    describe_status(txt, b->suppression(), b->count());
     for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
     {
 	cov_arc_t *a = *aiter;
@@ -251,7 +252,7 @@ canvas_scenegen_t::format_tooltip(estring &txt, cov_block_t *b)
 	    txt.append_printf("branch to block %u", a->to()->bindex());
 	}
 	txt.append_string(", ");
-	describe_status(txt, a->status(), a->count());
+	describe_status(txt, a->suppression(), a->count());
     }
 }
 

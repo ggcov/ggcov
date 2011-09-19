@@ -104,6 +104,10 @@ public:
     {
 	return (suppression_ != 0);
     }
+    const cov_suppression_t *suppression() const
+    {
+	return suppression_;
+    }
 
     cov::status_t status();
 
