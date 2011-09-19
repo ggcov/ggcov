@@ -136,35 +136,6 @@ cov_call_scanner_t::setup_calldata(
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
-cov_call_scanner_t::symbol_is_ignored(const char *name) const
-{
-    static const char * const ignored[] =
-    {
-	"__bb_init_func",   	    /* code inserted by gcc to instrument blocks */
-	"__gcov_init",	    	    /* a more modern version of the same */
-	"_Unwind_Resume",   	    /* gcc 3.4 exception handling */
-	"__cxa_call_unexpected",    /* gcc 3.4 exception handling */
-	"__cxa_end_catch",   	    /* gcc 3.4 exception handling */
-	"__i686.get_pc_thunk.bx",   /* gcc 4.x -fPIC */
-	/* Note: -fstack-protector is on by default on Ubuntu */
-	"__stack_chk_fail",	    /* gcc 4.x -fstack-protector */
-	"__stack_chk_fail_local",   /* gcc 4.x -fstack-protector */
-	0
-    };
-    const char * const *p;
-    
-    for (p = ignored ; *p != 0 ; p++)
-    {
-	if (!strcmp(name, *p))
-	    return TRUE;
-    }
-	
-    return FALSE;
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 /* TODO: allocate these dynamically */
 int
 cov_call_scanner_t::factory_category()

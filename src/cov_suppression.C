@@ -98,6 +98,7 @@ static const char * const type_names[] =
     "FILENAME",
     "MERGED",
     "UNSOLVABLE",
+    "RELOC",
     0
 };
 
@@ -148,6 +149,17 @@ cov_suppression_t::init_builtins(void)
 	{ BLOCK_CALLS, "__assert_perror_fail" },
 	{ BLOCK_CALLS, "__assert" },
 	{ BLOCK_CALLS, "abort" },
+	/* millicode & other relocs to ignore while
+	 * scanning object code for calls */
+	{ RELOC, "__bb_init_func" },	    /* code inserted by gcc to instrument blocks */
+	{ RELOC, "__gcov_init" },	    /* a more modern version of the same */
+	{ RELOC, "_Unwind_Resume" },	    /* gcc 3.4 exception handling */
+	{ RELOC, "__cxa_call_unexpected" }, /* gcc 3.4 exception handling */
+	{ RELOC, "__cxa_end_catch" },	    /* gcc 3.4 exception handling */
+	{ RELOC, "__i686.get_pc_thunk.bx" },/* gcc 4.x -fPIC */
+	/* Note: -fstack-protector is on by default on Ubuntu */
+	{ RELOC, "__stack_chk_fail" },	    /* gcc 4.x -fstack-protector */
+	{ RELOC, "__stack_chk_fail_local" },/* gcc 4.x -fstack-protector */
 	{ (type_t)0, 0 }
     };
     const init_t *si;

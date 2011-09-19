@@ -41,6 +41,7 @@ public:
 	FILENAME,	/* named filename */
 	MERGED,		/* all components are suppressed */
 	UNSOLVABLE,	/* function tree cannot be solved */
+	RELOC,		/* ELF reloc during call scanning */
 	NUM_TYPES
     };
 
