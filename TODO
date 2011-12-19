@@ -12,8 +12,6 @@ x  For the Blocks column in the Source window, colourise each block
 
 x  test solving a function in which a signal was delivered which
    terminated the process.
-x  maybe mark or log the functions that failed solve to make it obvious
-   to the gui user
 x  don't pop up a file selector when we used default args to find
    files just fine thanks
 x  version control integration: for the Source window, do a git
@@ -363,3 +361,5 @@ x  In the Source window, show branches graphically, as drawn arrows
 x  Add column titles to Source window, with the ability to hide them,
    visible by default, state saved automatically.
    
+x  maybe mark or log the functions that failed solve to make it obvious
+   to the gui user
