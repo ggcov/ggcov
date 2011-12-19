@@ -19,4 +19,5 @@
 
 bin_SCRIPTS=	git-history-coverage
 
-EXTRA_DIST=	git-history-coverage
+EXTRA_DIST=	git-history-coverage \
+		agedata.pl agemap.pl
