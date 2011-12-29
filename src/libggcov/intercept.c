@@ -238,7 +238,10 @@ open(const char *filename, int flags, ...)
 		 * to both the directories and files we create */
 		r = mkpath(freeme, 0755);
 		if (r < 0)
+		{
+		    perror(freeme);
 		    return r;
+		}
 		mode |= 0444;
 		old_umask = umask(new_umask);
 	    }
