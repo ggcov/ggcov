@@ -149,7 +149,7 @@ EXTRA_CLEAN=		licence.c glade_callbacks.c
 noinst_PROGRAMS=	testrunner mangletest \
 			popttest
 
-testrunner_SOURCES=	testrunner.c testfw.c \
+testrunner_SOURCES=	testrunner.c testfw.c testfw.h \
 			filetest.c \
 			phptest.C php_serializer.C \
 			estringtest.c \
