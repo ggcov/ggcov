@@ -84,9 +84,13 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root)
 %{_bindir}/tggcov
 %{_bindir}/git-history-coverage
+%{_bindir}/ggcov-run
+%{_libdir}/ggcov/libggcov.la
+%{_libdir}/ggcov/libggcov.so*
 %doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
 %docdir %{_mandir}
 %{_mandir}/man1/git-history-coverage.1*
+%{_mandir}/man1/ggcov-run.1*
 
 @WEB_TRUE@%files web
 @WEB_TRUE@%defattr(-,root,root)
@@ -106,6 +110,8 @@ Test coverage data is produced by programs which have been built with "gcc
 executed, cumulatively over multiple test runs.
 
 %changelog
+* Wed Feb 29 2012 Greg Banks <gnb@users.sourceforge.net>
+- Distribute ggcov-run
 * Thu Feb 24 2011 Greg Banks <gnb@users.sourceforge.net>
 - Split off separate ggcov-gnome and ggcov-cli packages
 - The -gnome package is not built if --disable-gui is used
