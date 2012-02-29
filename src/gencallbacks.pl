@@ -163,7 +163,6 @@ sub do_trampoline
     my $aa = $fn->{arguments};
     $aa =~ s/^\(//;
     $aa =~ s/\)$//;
-    my $_; # make $_ lexical so we can futz with it
     my (@ta) = map
     {
 	s/^\s+//;			# remove leading WS
