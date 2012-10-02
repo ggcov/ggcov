@@ -2025,8 +2025,10 @@ cov_file_t::read(gboolean quiet)
 	 * files.  So if we can't find the object or can't read it,
 	 * complain and keep going.
 	 */
-	if ((io = find_file(".o", quiet, 0)) == 0 ||
-	    !read_o_file(io))
+	io = find_file(".o", quiet, 0);
+	if (!io)
+	    io = find_file(".os", TRUE, 0);
+	if (!io || !read_o_file(io))
 	{
 	    static const char warnmsg[] = 
 	    "could not find or read matching object file; the contents "

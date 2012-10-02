@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+. ../common.sh
+
+init "simple C line coverage test"
+
+compile_c foo.c
+link foo foo.o
+mv foo.o foo.os
+
+run foo 1
+run foo 2
+run foo 23 423
+
+run_gcov foo.c
+run_tggcov foo.c
+compare_lines foo.c
+compare_counts foo.c
