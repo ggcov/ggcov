@@ -1295,6 +1295,7 @@
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
 	      <property name="ypad">0</property>
+	      <property name="width-chars">12</property>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
@@ -1319,6 +1320,7 @@
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
 	      <property name="ypad">0</property>
+	      <property name="width-chars">12</property>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
@@ -1343,6 +1345,7 @@
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
 	      <property name="ypad">0</property>
+	      <property name="width-chars">12</property>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
@@ -1367,6 +1370,7 @@
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
 	      <property name="ypad">0</property>
+	      <property name="width-chars">12</property>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
@@ -1391,6 +1395,7 @@
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
 	      <property name="ypad">0</property>
+	      <property name="width-chars">12</property>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">1</property>
@@ -1415,6 +1420,7 @@
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
 	      <property name="ypad">0</property>
+	      <property name="width-chars">12</property>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">2</property>
@@ -1439,6 +1445,7 @@
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
 	      <property name="ypad">0</property>
+	      <property name="width-chars">12</property>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">2</property>
@@ -1463,6 +1470,7 @@
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
 	      <property name="ypad">0</property>
+	      <property name="width-chars">12</property>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">2</property>
@@ -1487,6 +1495,7 @@
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
 	      <property name="ypad">0</property>
+	      <property name="width-chars">12</property>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">2</property>
@@ -1511,6 +1520,7 @@
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
 	      <property name="ypad">0</property>
+	      <property name="width-chars">12</property>
 	    </widget>
 	    <packing>
 	      <property name="left_attach">2</property>
