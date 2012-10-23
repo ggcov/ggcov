@@ -1872,29 +1872,41 @@ cov_file_t::set_gcda_prefix(const char *dir)
 }
 
 
+//
+// Attempts to open a file given a filename 'fn' and a filename
+// extension 'ext'.  The extension replaces the existing extension on
+// the filename.  Returns a covio_t object opened for reading, or on
+// error returns NULL and sets errno.
+//
 covio_t *
 cov_file_t::try_file(const char *fn, const char *ext) const
 {
-    string_var ofilename = fn, dfilename;
+    string_var ofilename = fn;
 
-    if (ext[0] == '+')
-    	dfilename = g_strconcat(ofilename, ext+1, (char *)0);
-    else
-	dfilename = file_change_extension(ofilename, 0, ext);
-    
+    assert(ext[0] != '+');  /* this used to be a feature */
+    string_var dfilename = file_change_extension(ofilename, 0, ext);
+
     dprintf1(D_FILES|D_VERBOSE, "    try %s\n", dfilename.data());
-    
+
     if (file_is_regular(dfilename) < 0)
-    	return 0;
-	
+    {
+	int e = errno;
+	if (e == EISDIR)
+	    fprintf(stderr, "%s: not a regular file\n", dfilename.data());
+	else if (e != ENOENT)
+	    perror(dfilename);
+	errno = e;
+	return 0;
+    }
+
     covio_t *io = new covio_t(dfilename);
     if (!io->open_read())
     {
 	int e = errno;
-    	perror(dfilename);
-    	delete io;
+	perror(dfilename);
+	delete io;
 	errno = e;
-    	return 0;
+	return 0;
     }
 
     return io;
@@ -1916,16 +1928,16 @@ cov_file_t::find_file(const char *ext, gboolean quiet,
 	 * First try the prefix.
 	 */
 	string_var fn = g_strconcat(prefix, name(), (char *)0);
-	if ((io = try_file(fn, ext)) != 0)
+	if ((io = try_file(fn, ext)) != 0 || errno != ENOENT)
 	    return io;
     }
 
     /*
      * Then try the same directory as the source file.
      */
-    if ((io = try_file(name(), ext)) != 0)
-    	return io;
-	
+    if ((io = try_file(name(), ext)) != 0 || errno != ENOENT)
+	return io;
+
     /*
      * Then try the .libs/ directory in the same directory
      * as the source file - libtool built objects sometimes
@@ -1933,7 +1945,7 @@ cov_file_t::find_file(const char *ext, gboolean quiet,
      */
     string_var dirname = file_dirname(name());
     string_var ltlibfn = g_strconcat(dirname, "/.libs/", file_basename_c(name()), (char *)0);
-    if ((io = try_file(ltlibfn, ext)) != 0)
+    if ((io = try_file(ltlibfn, ext)) != 0 || errno != ENOENT)
 	return io;
 
     /*
@@ -1942,8 +1954,8 @@ cov_file_t::find_file(const char *ext, gboolean quiet,
     for (list_iterator_t<char> iter = search_path_.first() ; *iter ; ++iter)
     {
 	string_var fn = g_strconcat(*iter, "/", file_basename_c(name()), (char *)0);
-	if ((io = try_file(fn, ext)) != 0)
-    	    return io;
+	if ((io = try_file(fn, ext)) != 0 || errno != ENOENT)
+	    return io;
     }
     
     if (!quiet)
