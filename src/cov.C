@@ -478,6 +478,51 @@ cov_post_args(void)
 	duprintf1("cov_post_args: suppressed_comment_lines=%s\n", suppressed_comment_lines);
 	duprintf1("cov_post_args: suppressed_comment_ranges=%s\n", suppressed_comment_ranges);
 	duprintf2("cov_post_args: debug = 0x%lx (%s)\n", debug, token_str.data());
+
+	static const struct { const char *name; int value; } build_options[] =
+	{
+	    { "HAVE_LIBBFD",
+	    #ifdef HAVE_LIBBFD
+	    1
+	    #endif
+	    }, { "HAVE_LIBPOPT",
+	    #ifdef HAVE_LIBPOPT
+	    1
+	    #endif
+	    }, { "HAVE_LIBGCONF",
+	    #ifdef HAVE_LIBGCONF
+	    1
+	    #endif
+	    }, { "COV_I386",
+	    #ifdef COV_I386
+	    1
+	    #endif
+	    }, { "COV_AMD64",
+	    #ifdef COV_AMD64
+	    1
+	    #endif
+	    }, { "UI_DEBUG",
+	    #ifdef UI_DEBUG
+	    1
+	    #endif
+	    }, { "HAVE_GNOME_PROGRAM_INIT",
+	    #ifdef HAVE_GNOME_PROGRAM_INIT
+	    1
+	    #endif
+	    }, { "HAVE_GTK_TEXT_BUFFER_SELECT_RANGE",
+	    #ifdef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
+	    1
+	    #endif
+	    }, { "HAVE_G_HASH_TABLE_ITER",
+	    #ifdef HAVE_G_HASH_TABLE_ITER
+	    1
+	    #endif
+	    }, { NULL, 0 }
+	};
+	duprintf0("cov_post_args: built with");
+	for (int i = 0 ; build_options[i].name ; i++)
+	    duprintf2(" %s%s", build_options[i].value ? "" : "!", build_options[i].name);
+	duprintf0("\n");
     }
 }
 
