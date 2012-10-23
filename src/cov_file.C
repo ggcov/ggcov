@@ -2092,8 +2092,8 @@ cov_file_t::read(gboolean quiet)
 	    static int count = 0;
 	    static const char warnmsg[] =
 	    "could not find or read matching object file; the contents "
-	    "of the Calls, Call Butterfly and Call Graph windows may "
-	    "be inaccurate or incomplete.\n"
+	    "of some windows may be inaccurate or incomplete, but ggcov "
+	    "is still usable.\n"
 	    ;
 	    /* TODO: save and report in alert to user */
 	    if (!count++)
