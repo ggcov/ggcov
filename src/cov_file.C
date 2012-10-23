@@ -2046,12 +2046,14 @@ cov_file_t::read(gboolean quiet)
 
     if (have_line_suppressions() && !read_src_file())
     {
-	static const char warnmsg[] = 
+	static int count = 0;
+	static const char warnmsg[] =
 	"could not scan source file for cpp conditionals or comments, "
 	"reports may be inaccurate.\n";
 
-    	/* TODO: save and report in alert to user */
-    	fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
+	/* TODO: save and report in alert to user */
+	if (!count++)
+	    fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
     }
 
     /*
@@ -2062,15 +2064,17 @@ cov_file_t::read(gboolean quiet)
 #ifdef HAVE_LIBBFD
     if (gcc296_braindeath())
     {
-	static const char warnmsg[] = 
+	static int count = 0;
+	static const char warnmsg[] =
 	"data files written by a broken gcc 2.96; the Calls "
 	"statistics and the contents of the Calls, Call Butterfly and "
 	"Call Graph windows will be incomplete.  Skipping object "
 	"file.\n"
 	;
-    	/* TODO: save and report in alert to user */
+	/* TODO: save and report in alert to user */
 	/* TODO: update the message to point out that line stats are fine */
-    	fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
+	if (!count++)
+	    fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
     }
     else
     {
@@ -2085,13 +2089,15 @@ cov_file_t::read(gboolean quiet)
 	    io = find_file(".os", TRUE, 0);
 	if (!io || !read_o_file(io))
 	{
-	    static const char warnmsg[] = 
+	    static int count = 0;
+	    static const char warnmsg[] =
 	    "could not find or read matching object file; the contents "
 	    "of the Calls, Call Butterfly and Call Graph windows may "
 	    "be inaccurate or incomplete.\n"
 	    ;
-    	    /* TODO: save and report in alert to user */
-    	    fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
+	    /* TODO: save and report in alert to user */
+	    if (!count++)
+		fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
 	}
     }
 #endif
