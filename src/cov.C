@@ -658,6 +658,13 @@ static const char *status_names[cov::NUM_STATUS] =
     "SUPPRESSED"
 };
 
+static const char *linkage_names[] =
+{
+    "UNKNOWN",
+    "LOCAL",
+    "GLOBAL"
+};
+
 static void
 dump_callarcs(FILE *fp, list_t<cov_callarc_t> &arcs)
 {
@@ -757,6 +764,7 @@ dump_function(FILE *fp, cov_function_t *fn)
     fprintf(fp, "        FUNCTION {\n");
     fprintf(fp, "            NAME=\"%s\"\n", fn->name());
     fprintf(fp, "            STATUS=%s\n", status_names[fn->status()]);
+    fprintf(fp, "            LINKAGE=%s\n", linkage_names[fn->linkage()]);
     for (ptrarray_iterator_t<cov_block_t> itr = fn->blocks().first() ; *itr ; ++itr)
 	dump_block(fp, *itr);
     fprintf(fp, "    }\n");

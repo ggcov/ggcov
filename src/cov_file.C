@@ -1666,21 +1666,12 @@ cov_file_t::o_file_add_call(
  * Use the BFD library to scan relocation records in the .o file.
  */
 gboolean
-cov_file_t::scan_o_file_calls(covio_t *io)
+cov_file_t::scan_o_file_calls(cov_bfd_t *cbfd)
 {
-    cov_bfd_t *cbfd;
     cov_call_scanner_t *cs;
     gboolean ret = FALSE;
-    
-    dprintf1(D_FILES, "Reading .o file \"%s\"\n", io->filename());
-    
-    if ((cbfd = new(cov_bfd_t)) == 0 ||
-    	!cbfd->open(io->filename(), io->take()) ||
-	cbfd->num_symbols() == 0)
-    {
-    	delete cbfd;
-	return FALSE;
-    }
+
+    dprintf1(D_FILES, "Scanning .o file \"%s\" for calls\n", cbfd->filename());
 
     cov_factory_t<cov_call_scanner_t> factory;
     do
@@ -1703,17 +1694,64 @@ cov_file_t::scan_o_file_calls(covio_t *io)
 	delete cs;
 	ret = (r == 0); /* 0=>successfully finished scan */
     }
-    delete cbfd;
     return ret;
+}
+
+/*
+ * Use the BFD library to extract function linkage information
+ * from the object file's symbol table.  This will be useful
+ * for resolving symbol name clashes in the callgraph.
+ */
+void
+cov_file_t::scan_o_file_linkage(cov_bfd_t *cbfd)
+{
+    dprintf1(D_FILES, "Scanning .o file \"%s\" for linkage\n", cbfd->filename());
+
+    int n = cbfd->num_symbols();
+    for (int i = 0 ; i < n ; i++)
+    {
+	const asymbol *sym = cbfd->nth_symbol(i);
+	if (!(sym->flags & BSF_FUNCTION))
+	    continue;
+	cov_function_t *fn = find_function(sym->name);
+	if (!fn)
+	    continue;
+
+	switch (sym->flags & (BSF_LOCAL|BSF_GLOBAL))
+	{
+	case BSF_LOCAL:
+	    dprintf1(D_FILES|D_VERBOSE, "Function %s is LOCAL\n", sym->name);
+	    fn->set_linkage(cov_function_t::LOCAL);
+	    break;
+	case BSF_GLOBAL:
+	    dprintf1(D_FILES|D_VERBOSE, "Function %s is GLOBAL\n", sym->name);
+	    fn->set_linkage(cov_function_t::GLOBAL);
+	    break;
+	/* case 0: undefined, can't tell from here */
+	/* default: should not happen */
+	}
+    }
 }
 
 
 gboolean
 cov_file_t::read_o_file(covio_t *io)
 {
-    if (!scan_o_file_calls(io))
+    dprintf1(D_FILES, "Reading .o file \"%s\"\n", io->filename());
+
+    cov_bfd_t *cbfd = new(cov_bfd_t);
+    if (!cbfd->open(io->filename(), io->take()) || cbfd->num_symbols() == 0)
+    {
+	delete cbfd;
+	return FALSE;
+    }
+
+    if (!scan_o_file_calls(cbfd))
+    {
+	delete cbfd;
 	return TRUE;	    /* this info is optional */
-    
+    }
+
     /*
      * Calls can fail to be reconciled for perfectly harmless
      * reasons (e.g. the code uses function pointers) so don't
@@ -1723,6 +1761,9 @@ cov_file_t::read_o_file(covio_t *io)
     for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
 	(*fnitr)->reconcile_calls();
 
+    scan_o_file_linkage(cbfd);
+
+    delete cbfd;
     return TRUE;
 }
 

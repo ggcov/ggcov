@@ -56,6 +56,15 @@ public:
     	return idx_;
     }
 
+    enum linkage_t
+    {
+	UNKNOWN, LOCAL, GLOBAL
+    };
+    linkage_t linkage() const
+    {
+	return linkage_;
+    }
+
     unsigned int
     num_blocks() const
     {
@@ -97,11 +106,16 @@ private:
     gboolean reconcile_calls();
     gboolean solve();
     cov::status_t calc_stats(cov_stats_t *) const;
+    void set_linkage(linkage_t ll)
+    {
+	linkage_ = ll;
+    }
 
     cached_string name_;
     gnb_u64_t id_;
     unsigned int idx_; 	    /* serial number in file */
     cov_file_t *file_;
+    linkage_t linkage_;
     const cov_suppression_t *suppression_;
     ptrarray_t<cov_block_t> *blocks_;
     
