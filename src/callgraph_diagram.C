@@ -212,8 +212,11 @@ void
 callgraph_diagram_t::find_roots()
 {
     dprintf0(D_DCALLGRAPH, "finding root and disconnected nodes:\n");
-    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
-	find_roots_1(*cnitr);
+
+    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
+    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
+	    find_roots_1(*cnitr);
     callnode_roots_.sort(compare_root_nodes);
     
     for (list_iterator_t<cov_callnode_t> iter = callnode_roots_.first() ; *iter ; ++iter)
@@ -231,13 +234,16 @@ callgraph_diagram_t::find_roots()
 	/* check for unreached nodes and whine about them */    
 	unsigned int nunreached = 0;
 
-	for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
+	for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
 	{
-	    if (!node_t::from_callnode(*cnitr))
+	    for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    {
-		duprintf1("find_roots: \"%s\" not reached\n",
-			  (*cnitr)->name.data());
-		nunreached++;
+		if (!node_t::from_callnode(*cnitr))
+		{
+		    duprintf1("find_roots: \"%s\" not reached\n",
+			      (*cnitr)->name.data());
+		    nunreached++;
+		}
 	    }
 	}
 	if (nunreached)
@@ -674,8 +680,13 @@ void
 callgraph_diagram_t::dump_graph()
 {
     duprintf0("dump_graph:\n");
-    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
-	dump_graph_1(*cnitr);
+
+    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
+    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    {
+	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
+	    dump_graph_1(*cnitr);
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -518,17 +518,15 @@ build_callnode_index(void)
     unsigned int n = 0;
 
     callnode_index = new hashtable_t<void, unsigned int>;
-    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
-	callnode_index->insert((void *)*cnitr, new unsigned int(++n));
+    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
+    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    {
+	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
+	    callnode_index->insert((void *)*cnitr, new unsigned int(++n));
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static int
-compare_node_by_name(const cov_callnode_t *cn1, const cov_callnode_t *cn2)
-{
-    return strcmp(cn1->name, cn2->name);
-}
 
 static void
 save_callnode_index(DB *db)
@@ -538,9 +536,13 @@ save_callnode_index(DB *db)
     int ret;
 
     // Sort the callnode index, for the node <select>
-    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
-	all.append(*cnitr);
-    all.sort(compare_node_by_name);
+    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
+    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    {
+	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
+	    all.append(*cnitr);
+    }
+    all.sort(cov_callnode_t::compare_by_name_and_file);
 
     // PHP-serialise the callnode index
     ser.begin_array(callnode_index->size());
@@ -565,33 +567,12 @@ save_callnode_index(DB *db)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static int
-compare_in_arc_by_count(const cov_callarc_t *ca1, const cov_callarc_t *ca2)
-{
-    int r;
-
-    r = -u64cmp(ca1->count, ca2->count);
-    if (!r)
-	r = strcmp(ca1->from->name, ca2->from->name);
-    return r;
-}
-
-static int
-compare_out_arc_by_count(const cov_callarc_t *ca1, const cov_callarc_t *ca2)
-{
-    int r;
-
-    r = -u64cmp(ca1->count, ca2->count);
-    if (!r)
-	r = strcmp(ca1->to->name, ca2->to->name);
-    return r;
-}
-
 static void
 serialize_arc_list(php_serializer_t *ser, list_t<cov_callarc_t> &arcs, gboolean out)
 {
     list_t<cov_callarc_t> copy = arcs.copy();
-    copy.sort(out ? compare_out_arc_by_count : compare_in_arc_by_count);
+    copy.sort(out ? cov_callarc_t::compare_by_count_and_to :
+		    cov_callarc_t::compare_by_count_and_from);
 
     ser->begin_array(copy.length());
     for (list_iterator_t<cov_callarc_t> itr = copy.first() ; *itr ; ++itr)
@@ -636,8 +617,12 @@ save_callnode(cov_callnode_t *cn, DB *db)
 static void
 save_callgraph(DB *db)
 {
-    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
-	save_callnode(*cnitr, db);
+    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
+    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    {
+	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
+	    save_callnode(*cnitr, db);
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

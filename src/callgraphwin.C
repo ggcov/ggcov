@@ -183,6 +183,8 @@ callgraphwin_t::callgraphwin_t()
     hpaned_ = glade_xml_get_widget(xml, "callgraph_hpaned");
     gtk_signal_connect(GTK_OBJECT(get_window()), "show",
     	GTK_SIGNAL_FUNC(on_callgraph_show), 0);
+
+    callnode_ = cov_callgraph_t::instance()->default_node();
 }
 
 callgraphwin_t::~callgraphwin_t()
@@ -190,17 +192,6 @@ callgraphwin_t::~callgraphwin_t()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-static int
-compare_callnodes(const cov_callnode_t *cna, const cov_callnode_t *cnb)
-{
-    int ret;
-
-    ret = strcmp(cna->name, cnb->name);
-    if (ret == 0 && cna->function != 0 && cnb->function != 0)
-	ret = strcmp(cna->function->file()->name(), cnb->function->file()->name());
-    return ret;
-}
 
 /*
  * TODO: invert this function and make the loop with the unambiguous
@@ -215,9 +206,13 @@ callgraphwin_t::populate_function_combo(GtkComboBox *combo)
 
     clear(combo);
 
-    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
-	list.prepend(*cnitr);
-    list.sort(compare_callnodes);
+    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
+    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    {
+	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
+	    list.prepend(*cnitr);
+    }
+    list.sort(cov_callnode_t::compare_by_name_and_file);
 
     for (list_iterator_t<cov_callnode_t> itr = list.first() ; *itr ; ++itr)
     {
@@ -255,9 +250,13 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
     
     ui_combo_clear(combo);    /* stupid glade2 */
 
-    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
-	list.prepend(*cnitr);
-    list.sort(compare_callnodes);
+    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
+    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    {
+	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
+	    list.prepend(*cnitr);
+    }
+    list.sort(cov_callnode_t::compare_by_name_and_file);
 
     for (list_iterator_t<cov_callnode_t> itr = list.first() ; *itr ; ++itr)
     {
@@ -388,7 +387,12 @@ callgraphwin_t::update()
     
     dprintf0(D_GRAPHWIN, "callgraphwin_t::update\n");
     gtk_widget_set_sensitive(function_view_, (cn->function != 0));
-    set_title(cn->name);
+
+    estring title;
+    title.append_string(cn->name);
+    if (cn->function)
+	title.append_printf(" (%s)", cn->function->file()->minimal_name());
+    set_title(title);
 
     update_clist(ancestors_clist_, cn->in_arcs, TRUE);
     update_clist(descendants_clist_, cn->out_arcs, FALSE);

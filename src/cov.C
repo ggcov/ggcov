@@ -132,7 +132,7 @@ cov_init(void)
     bfd_set_error_handler(cov_bfd_error_handler);
 #endif /* HAVE_LIBBFD */
 
-    cov_callnode_t::init();
+    new cov_callgraph_t();	// becomes singleton instance
     cov_file_t::init();
     cov_suppression_t::init_builtins();
 }
@@ -152,10 +152,11 @@ cov_post_read(void)
 
     /* Build the callgraph */
     /* TODO: only do this to newly read files */
+    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
     for (iter = cov_file_t::first() ; *iter ; ++iter)
-    	cov_add_callnodes(*iter);
+	callgraph->add_nodes(*iter);
     for (iter = cov_file_t::first() ; *iter ; ++iter)
-    	cov_add_callarcs(*iter);
+	callgraph->add_arcs(*iter);
 
     /* emit an MVC notification */
     mvc_changed(cov_file_t::files_model(), 1);
@@ -672,33 +673,42 @@ dump_callarcs(FILE *fp, list_t<cov_callarc_t> &arcs)
     {
 	cov_callarc_t *ca = *itr;
 
-	fprintf(fp, "        ARC {\n");
-	fprintf(fp, "            FROM=%s\n", ca->from->name.data());
-	fprintf(fp, "            TO=%s\n", ca->to->name.data());
-	fprintf(fp, "            COUNT="GNB_U64_DFMT"\n", ca->count);
-	fprintf(fp, "        }\n");
+	fprintf(fp, "            ARC {\n");
+	fprintf(fp, "                FROM=%s\n", ca->from->name.data());
+	fprintf(fp, "                TO=%s\n", ca->to->name.data());
+	fprintf(fp, "                COUNT="GNB_U64_DFMT"\n", ca->count);
+	fprintf(fp, "            }\n");
     }
 }
 
 static void
-dump_callnode(cov_callnode_t *cn, FILE *fp)
+dump_callspace(cov_callspace_t *space, FILE *fp)
 {
-    fprintf(fp, "CALLNODE {\n");
-    fprintf(fp, "    NAME=%s\n", cn->name.data());
-    if (cn->function == 0)
-	fprintf(fp, "    FUNCTION=null\n");
-    else
-	fprintf(fp, "    FUNCTION=%s:%s\n", cn->function->file()->name(),
-	    	    	    	    	    	cn->function->name());
-    fprintf(fp, "    COUNT="GNB_U64_DFMT"\n", cn->count);
-    fprintf(fp, "    OUT_ARCS={\n");
-    dump_callarcs(fp, cn->out_arcs);
-    fprintf(fp, "    }\n");
-    fprintf(fp, "    IN_ARCS={\n");
-    dump_callarcs(fp, cn->in_arcs);
-    fprintf(fp, "    }\n");
+    fprintf(fp, "CALLSPACE {\n");
+    fprintf(fp, "    NAME=%s\n", space->name());
+
+    for (cov_callnode_iter_t cnitr = space->first() ; *cnitr ; ++cnitr)
+    {
+	cov_callnode_t *cn = *cnitr;
+
+	fprintf(fp, "    CALLNODE {\n");
+	fprintf(fp, "        NAME=%s\n", cn->name.data());
+	if (cn->function == 0)
+	    fprintf(fp, "        FUNCTION=null\n");
+	else
+	    fprintf(fp, "        FUNCTION=%s:%s\n", cn->function->file()->name(),
+						    cn->function->name());
+	fprintf(fp, "        COUNT="GNB_U64_DFMT"\n", cn->count);
+	fprintf(fp, "        OUT_ARCS={\n");
+	dump_callarcs(fp, cn->out_arcs);
+	fprintf(fp, "        }\n");
+	fprintf(fp, "        IN_ARCS={\n");
+	dump_callarcs(fp, cn->in_arcs);
+	fprintf(fp, "        }\n");
+	fprintf(fp, "    }\n");
+    }
+
     fprintf(fp, "}\n");
-    
 }
 
 /*
@@ -793,8 +803,9 @@ cov_dump(FILE *fp)
 	for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
 	    dump_file(fp, *iter);
 
-	for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
-	    dump_callnode(*cnitr, fp);
+	cov_callgraph_t *callgraph = cov_callgraph_t::instance();
+	for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+	    dump_callspace(*csitr, fp);
     }
 }
 

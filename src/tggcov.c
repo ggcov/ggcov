@@ -282,12 +282,6 @@ check_callgraph(void)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static int
-compare_nodes_by_name(const cov_callnode_t **a, const cov_callnode_t **b)
-{
-    return strcmp((*a)->name, (*b)->name);
-}
-
 static void
 set_printable_location(cov_location_var &loc, const cov_location_t *from)
 {
@@ -311,9 +305,13 @@ dump_callgraph(void)
     }
 
     ptrarray_t<cov_callnode_t> *nodes = new ptrarray_t<cov_callnode_t>;
-    for (cov_callnode_iter_t cnitr = cov_callnode_t::first() ; *cnitr ; ++cnitr)
-	nodes->append(*cnitr);
-    nodes->sort(compare_nodes_by_name);
+    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
+    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    {
+	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
+	    nodes->append(*cnitr);
+    }
+    nodes->sort(cov_callnode_t::compare_by_name);
 
     fprintf(fp, "# tggcov callgraph version 1\n");
     fprintf(fp, "base %s\n", cov_file_t::common_path());
