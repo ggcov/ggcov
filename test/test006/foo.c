@@ -42,7 +42,9 @@ start_child(const char *arg)
 {
     pid_t pid;
 
-    pid = fork();			    /* C(2) */
+    /* gcc 4.7 has a bug which double-counts executions
+     * of the call to fork(), so we ignore it */
+    pid = fork();
     if (pid < 0)			    /* C(4) */
     {
 	perror("fork");			    /* C(0) */
@@ -104,7 +106,9 @@ main(int argc, char **argv)
 {
     pid_t pid;
     
-    pid = start_child(argv[1]);			/* C(2) */
+    /* gcc 4.7 has a bug which double-counts executions
+     * of the call to start_child(), so we ignore it */
+    pid = start_child(argv[1]);
     do_stuff(argv[2]);				/* C(2) */
     wait_for_child(pid);			/* C(2) */
 

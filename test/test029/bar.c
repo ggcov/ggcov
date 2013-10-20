@@ -2,7 +2,7 @@
 
 static int
 munge(int x)
-{					/* C(4) */
+{					/* C(-) */
     x += 42;				/* C(4) */
     return x;				/* C(4) */
 }

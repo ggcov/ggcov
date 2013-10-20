@@ -963,6 +963,9 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	if (expect_version != BBG_VERSION_GCC33)
 	    bbg_failed1("unexpected version=0x%08x", format_version_);
     	break;
+    case _NEW_VERSION(4,7,'*'):
+	features_ |= FF_FNCHECKSUM2;
+	/* fall through */
     case _NEW_VERSION(4,0,'*'):
     case _NEW_VERSION(4,0,'R'):
     case _NEW_VERSION(4,0,'U'):	/* Ubuntu Dapper Drake */
@@ -1019,7 +1022,20 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    if ((features_ & FF_FUNCIDS))
+	    if ((features_ & FF_FNCHECKSUM2))
+	    {
+		estring filename;
+
+		if (!io->read_u64(funcid) ||	    // ident, lineno_checksum
+		    !io->read_u32(tmp) ||	    // cfg_checksum
+		    !io->read_string(funcname) ||   // name
+		    !io->read_string(filename) ||   // source
+		    !io->read_u32(tmp))		    // lineno
+		    bbg_failed0("short file");
+		if (compiledir_ == (const char *)0)
+		    infer_compilation_directory(filename);
+	    }
+	    else if ((features_ & FF_FUNCIDS))
 	    {
 		estring filename;
 
@@ -1449,7 +1465,16 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
     	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    if ((features_ & FF_FUNCIDS))
+	    if ((features_ & FF_FNCHECKSUM2))
+	    {
+		gnb_u64_t funcid;
+		if (!io->read_u64(funcid) ||	    // ident, lineno_checksum
+		    !io->read_u32(tmp))		    // cfg_checksum
+		    fn = 0;
+		else if ((fn = functions_by_id_->lookup(&funcid)) == 0)
+		    da_failed1("unexpected function id %llu", (unsigned long long)funcid);
+	    }
+	    else if ((features_ & FF_FUNCIDS))
 	    {
 		gnb_u64_t funcid;
 		if (!io->read_u64(funcid))

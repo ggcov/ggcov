@@ -158,7 +158,10 @@ private:
 	/* In the Fedora Core 1 compiler.  Additional information is
 	 * encoded in a per-function header which we ignore, and other
 	 * format changes. */
-	FF_OLDPLUS	=(1<<5)
+	FF_OLDPLUS	=(1<<5),
+	/* From 4.7, two checksums are stored in function headers.
+	 * We ignore them both. */
+	FF_FNCHECKSUM2	=(1<<6)
     };
     
     static void init();

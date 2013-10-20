@@ -72,8 +72,9 @@ while (<STDIN>)
     if ($gcov_mode)
     {
 	my $rem;
-	($count, $line, $rem) = m/^([ #0-9-]{9}:)([ 0-9]{5}:)(.*)$/;
+	($count, $line, $rem) = m/^([ #=0-9-]{9}:)([ 0-9]{5}:)(.*)$/;
 	next unless defined($rem);
+	$count =~ s/=/\#/g;	# treat the gcc 4.7 ===== like #####
 	next if ($line eq '    0:');
 	$_ = $rem;
     }

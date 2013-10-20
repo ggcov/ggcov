@@ -4,7 +4,7 @@
 
 static struct foo *
 foo_factory(const char *name)
-{					    /* C(7) */
+{					    /* C(-) */
     if (!strcmp(name, "bar"))		    /* C(7) */
 	return bar_new();		    /* C(4) */
     if (!strcmp(name, "baz"))		    /* C(3) */
@@ -16,7 +16,7 @@ foo_factory(const char *name)
 
 int
 main(int argc, char **argv)
-{					    /* C(3) */
+{					    /* C(-) */
     int x = 42;				    /* C(3) */
     int i;				    /* C(-) */
     struct foo *f;			    /* C(-) */

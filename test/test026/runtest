@@ -26,6 +26,8 @@ run_gcov quux.c
 run_tggcov quux.c
 compare_counts quux.c
 
-run_gcov bar.c
-run_tggcov bar.c
+# gcc 4.7 won't write a c.gcov file if the .gcda doesn't exist
+# so we can only check for zero line counts directly.  But we
+# need to work out whether to use the -N flag
+run_tggcov $(_tggcov_Nflag quux.c) bar.c
 compare_counts bar.c

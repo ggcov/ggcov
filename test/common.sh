@@ -470,7 +470,7 @@ run_gcov ()
     if vcapdo $TMP1 gcov -b $SRC ; then
 	cat $TMP1
 	GCOV_FILES=$(sed -n \
-	    -e 's|^Creating[ \t][ \t]*\([^ \t]*\.gcov\)\.$|\1|p' \
+	    -e 's|^Creating[ \t][ \t]*'\''\?\([^ \t]*\.gcov\)'\''\?\.\?$|\1|p' \
 	    -e 's|^.*:creating[ \t][ \t]*.\([^ \t]*\.gcov\).$|\1|p' \
 	    < $TMP1)
 	[ -z "$GCOV_FILES" ] && fatal "no output files from gcov"
