@@ -1907,6 +1907,16 @@ cov_file_t::find_file(const char *ext, gboolean quiet,
     	return io;
 	
     /*
+     * Then try the .libs/ directory in the same directory
+     * as the source file - libtool built objects sometimes
+     * dump their .gcda files there
+     */
+    string_var dirname = file_dirname(name());
+    string_var ltlibfn = g_strconcat(dirname, "/.libs/", file_basename_c(name()), (char *)0);
+    if ((io = try_file(ltlibfn, ext)) != 0)
+	return io;
+
+    /*
      * Now look in the search path.
      */
     for (list_iterator_t<char> iter = search_path_.first() ; *iter ; ++iter)
