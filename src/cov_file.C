@@ -1153,8 +1153,8 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	    break;
 
 	default:
-	    fprintf(stderr, "%s: skipping unknown tag 0x%08x\n",
-	    	    io->filename(), tag);
+	    fprintf(stderr, "%s: skipping unknown tag 0x%08x offset 0x%08lx length 0x%08x\n",
+		    io->filename(), tag, (unsigned long)(io->tell()-8), length);
 	    io->skip(length);
 	    break;
 	}
@@ -1529,8 +1529,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 	    break;
 
 	default:
-	    fprintf(stderr, "%s: skipping unknown tag 0x%08x\n",
-	    	    io->filename(), tag);
+	    fprintf(stderr, "%s: skipping unknown tag 0x%08x offset 0x%08lx length 0x%08x\n",
+		    io->filename(), tag, (unsigned long)(io->tell()-8), length);
 	    /* fall through */
     	case GCOV_TAG_OBJECT_SUMMARY:
     	case GCOV_TAG_PROGRAM_SUMMARY:
