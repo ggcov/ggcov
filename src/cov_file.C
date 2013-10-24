@@ -1587,6 +1587,25 @@ cov_file_t::o_file_add_call(
 
     loc.filename = (char *)make_absolute(loc.filename);
 
+    /*
+     * Sometimes, for some reason particularly with .y files, gcc
+     * and bfd conspire to report incorrect filenames.  For example,
+     * if a file named baz/quux.y is built from a directory named
+     * /foo/bar, bfd reports the filename as /foo/bar/quux.c instead
+     * of the correct /foo/bar/baz/quux.c.  Here we heuristically
+     * work around that bug.
+     */
+    if (file_exists(loc.filename) < 0)
+    {
+	string_var candidate = file_make_absolute_to_file(file_basename_c(loc.filename), name_);
+	if (file_exists(candidate) == 0)
+	{
+	    dprintf2(D_CGRAPH, "o_file_add_call: heuristically replacing \"%s\" with \"%s\"\n",
+		      loc.filename, (const char *)candidate);
+	    loc.filename = candidate.take();
+	}
+    }
+
     if ((ln = cov_line_t::find(&loc)) == 0)
     {
 	fprintf(stderr, "No blocks for call to %s at %s:%ld\n",
