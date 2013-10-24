@@ -1013,6 +1013,9 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 
     while (io->read_u32(tag))
     {
+	if (tag == 0 && ((features_ & FF_DA0TAG)))
+	    break;  /* end of file */
+
 	if (!io->read_u32(length))
     	    bbg_failed0("short file");
 	length *= len_unit;
