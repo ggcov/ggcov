@@ -575,6 +575,10 @@ cov_read_files(const list_t<const char> &files)
 	    {
 		successes += cov_read_directory(filename, recursive);
 	    }
+	    else if (errno != ENOTDIR)
+	    {
+		perror(filename);
+	    }
 	    else if (file_is_regular(filename) == 0)
 	    {
 		if (cov_is_source_filename(filename))

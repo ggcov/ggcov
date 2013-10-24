@@ -93,6 +93,10 @@ ggcov_read_file(const char *filename)
 	if (!cov_read_directory(filename, /*recursive*/FALSE))
 	    return FALSE;
     }
+    else if (errno != ENOTDIR)
+    {
+	perror(filename);
+    }
     else if (file_is_regular(filename) == 0)
     {
 	if (cov_is_source_filename(filename))
