@@ -215,7 +215,7 @@ private:
     gboolean read_rtl_file(covio_t *);
     gboolean discover_format(covio_t *io);
 #ifdef HAVE_LIBBFD
-    static gboolean o_file_add_call(const cov_location_t *, const char *);
+    gboolean o_file_add_call(cov_location_t, const char *);
     gboolean scan_o_file_calls(covio_t *);
     gboolean read_o_file(covio_t *);
 #endif

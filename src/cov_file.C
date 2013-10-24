@@ -1579,16 +1579,18 @@ cov_file_t::read_da_file(covio_t *io)
 
 gboolean
 cov_file_t::o_file_add_call(
-    const cov_location_t *loc,
+    cov_location_t loc,
     const char *callname_dem)
 {
     cov_line_t *ln;
     cov_block_t *pure_candidate = 0;
 
-    if ((ln = cov_line_t::find(loc)) == 0)
+    loc.filename = (char *)make_absolute(loc.filename);
+
+    if ((ln = cov_line_t::find(&loc)) == 0)
     {
 	fprintf(stderr, "No blocks for call to %s at %s:%ld\n",
-		    callname_dem, loc->filename, loc->lineno);
+		    callname_dem, loc.filename, loc.lineno);
 	return FALSE;
     }
 
@@ -1609,7 +1611,7 @@ cov_file_t::o_file_add_call(
     	if (b->needs_call())
 	{
 	    dprintf1(D_CGRAPH, "    block %s\n", b->describe());
-	    b->add_call(callname_dem, loc);
+	    b->add_call(callname_dem, &loc);
 	    return TRUE;
 	}
 	dprintf1(D_CGRAPH, "    skipping block %s\n", b->describe());
@@ -1626,7 +1628,7 @@ cov_file_t::o_file_add_call(
      */
     if (pure_candidate != 0)
     {
-    	pure_candidate->add_call(callname_dem, loc);
+	pure_candidate->add_call(callname_dem, &loc);
 	return TRUE;
     }
 
@@ -1637,7 +1639,7 @@ cov_file_t::o_file_add_call(
      * .bbg files, or we've encountered the braindead gcc 2.96.
      */
     fprintf(stderr, "Could not assign block for call to %s at %s:%ld\n",
-		callname_dem, loc->filename, loc->lineno);
+		callname_dem, loc.filename, loc.lineno);
     return FALSE;
 }
 
@@ -1678,11 +1680,7 @@ cov_file_t::scan_o_file_calls(covio_t *io)
 	cov_call_scanner_t::calldata_t cdata;
 
     	while ((r = cs->next(&cdata)) == 1)
-	{
-	    cov_location_t loc = cdata.location;
-	    loc.filename = (char *)make_absolute(loc.filename);
-	    o_file_add_call(&loc, cdata.callname);
-	}
+	    o_file_add_call(cdata.location, cdata.callname);
 	delete cs;
 	ret = (r == 0); /* 0=>successfully finished scan */
     }
