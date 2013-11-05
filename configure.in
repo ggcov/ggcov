@@ -393,15 +393,21 @@ x86_64)
 esac
 
 AC_MSG_CHECKING(for OS-specific defines)
-OS_DEFINES=
 is_linux=no
 is_redhat=no
 case "$host_os" in
-solaris*) OS_DEFINES=-DELF_TARGET_ALL ;;
-linux*) is_linux=yes ;;
+solaris*)
+    AC_DEFINE(ELF_TARGET_ALL,1,[Something magical for Solaris])
+    AC_MSG_RESULT([-DELF_TARGET_ALL])
+    ;;
+linux*)
+    is_linux=yes
+    AC_MSG_RESULT([])
+    ;;
+*)
+    AC_MSG_RESULT([])
+    ;;
 esac
-AC_MSG_RESULT($OS_DEFINES)
-AC_SUBST(OS_DEFINES)
 
 if test x$is_linux = xyes ; then
     AC_MSG_CHECKING(for Linux distro-specific defines)
