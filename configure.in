@@ -377,13 +377,20 @@ CC="$CXX"
 AC_CANONICAL_HOST
 
 AC_MSG_CHECKING(for cpu-specific defines)
-CPU_DEFINES=
 case "$host_cpu" in
-i?86|i86pc) CPU_DEFINES=-DCOV_I386 ;;
-x86_64) CPU_DEFINES="-DCOV_AMD64 -DCOV_I386" ;;
+i?86|i86pc)
+    AC_DEFINE(COV_I386,1,[Building on i386 platform])
+    AC_MSG_RESULT([COV_I386])
+    ;;
+x86_64)
+    AC_DEFINE(COV_I386,1,[Building on i386 platform])
+    AC_DEFINE(COV_AMD64,1,[Building on amd64 platform])
+    AC_MSG_RESULT([COV_AMD64 COV_I386])
+    ;;
+*)
+    AC_MSG_RESULT([])
+    ;;
 esac
-AC_MSG_RESULT($CPU_DEFINES)
-AC_SUBST(CPU_DEFINES)
 
 AC_MSG_CHECKING(for OS-specific defines)
 OS_DEFINES=
