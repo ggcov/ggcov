@@ -16,15 +16,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-# 
-# $Id: autogen.sh,v 1.4 2010-05-09 05:37:14 gnb Exp $
 #
 
 set -x
-aclocal || exit 1
-libtoolize -c || exit 1
-autoconf || exit 1
-autoheader || exit 1
-automake -a -c || exit 1
-/bin/rm -rf config.status config.cache autom4te.cache
-./configure "$@" || exit 1
+autoreconf -iv || exit 1
+./configure "$@"
