@@ -40,8 +40,8 @@ TEARDOWN
 {
     int r;
 
-    if (oldcwd[0])
-	chdir(oldcwd);
+    if (oldcwd[0] && chdir(oldcwd) < 0)
+	return -1;
 
     r = system("rm -rf "TESTDIR);
     if (r)

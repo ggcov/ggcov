@@ -822,7 +822,8 @@ create_source_symlinks(const char *tempdir)
 	string_var tempmindir = file_dirname(link);
 	file_build_tree(tempmindir, 0755);
 	dprintf2(D_WEB, "symlink %s -> %s\n", link.data(), f->name());
-	symlink(f->name(), link);
+	if (symlink(f->name(), link) < 0)
+	    perror(f->name());
     }
 }
 
