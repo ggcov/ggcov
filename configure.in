@@ -285,15 +285,13 @@ AC_GCC_ADD_CFLAGS([-Wall -Wchar-subscripts
 
 AC_GCC_ADD_CFLAGS([-fno-rtti -fno-exceptions -fno-implement-inlines])
 
-
-dnl Use the latest version of gtk which actually is complete and works.
-dnl Should result in: gtk 1.2 on RedHat 7.3, gtk 2 on RedHat 8 & greater.
-
 ifdef([PKG_PROG_PKG_CONFIG],[
 PKG_PROG_PKG_CONFIG
 ])
 
-# try gtk 2.0
+#
+# GUI libraries: Glade, GTK and Gnome.
+#
 have_gconf=no
 libpopt=
 if test x$gui = xyes ; then
@@ -334,23 +332,7 @@ if test x$gui = xyes ; then
     ])
 	fi
     else
-ifdef([AM_PATH_LIBGLADE],[
-	# fall back to gtk 1.2
-	AC_MSG_WARN([GNOME version 2 libraries not found, falling back to 1.2])
-	AM_PATH_LIBGLADE(,AC_MSG_ERROR(ggcov requires the libglade library),gnome)
-	AM_PATH_IMLIB(,,AC_MSG_ERROR(ggcov requires the libgdk_imlib library))
-	AM_PATH_GLIB(,,AC_MSG_ERROR(ggcov requires the glib library))
-	GGCOV_GUI_CFLAGS="$LIBGLADE_CFLAGS $IMLIB_CFLAGS"
-	GGCOV_GUI_LIBS="$LIBGLADE_LIBS $IMLIB_LIBS"
-	GGCOV_CLI_CFLAGS="$GLIB_CFLAGS"
-	GGCOV_CLI_LIBS="$GLIB_LIBS"
-	GGCOV_GLADE_FILE=ggcov.glade
-	# gnome1.2 requires popt so we can assume it's present
-	libpopt=" -lpopt"
-	GGCOV_GUI_LIBS="$GGCOV_GUI_LIBS$libpopt"
-],[
-    	AC_MSG_ERROR([ggcov requires the GNOME libraries, unless configured with --disable-gui])
-])
+	AC_MSG_ERROR([ggcov requires the GNOME libraries, unless configured with --disable-gui])
     fi
     AC_SUBST(GGCOV_GUI_CFLAGS)
     AC_SUBST(GGCOV_GUI_LIBS)
@@ -359,15 +341,7 @@ else
     # gui disabled
     PKG_CHECK_MODULES(GGCOV_CLI, glib-2.0 >= 2.0.0 libxml-2.0 >= 2.0.0, [glib2=yes],[glib2=no])
     if test $glib2 = no ; then
-ifdef([AM_PATH_LIBGLADE],[
-	# fall back to glib 1.2
-	AC_MSG_WARN([glib version 2 library not found, falling back to 1.2])
-	AM_PATH_GLIB(,,AC_MSG_ERROR(ggcov requires the glib library))
-	GGCOV_CLI_CFLAGS="$GLIB_CFLAGS"
-	GGCOV_CLI_LIBS="$GLIB_LIBS"
-],[
-    	AC_MSG_ERROR([ggcov requires the glib library])
-])
+	AC_MSG_ERROR([ggcov requires the glib library])
     fi
     # we're headless, so we have no idea whether libpopt is present
     AC_CHECK_LIB(popt,poptGetContext,
