@@ -1,3 +1,39 @@
+Thu Mar 13 07:44:17 2014  Greg Banks <gnb@users.sourceforge.net>
+	* Release 0.9
+
+	* Handle gcc 4.7 (generic)
+	* Update RPM spec to distribute ggcov-run
+	* Work around bfd dynamic library linking issues on Ubuntu
+	* Support call scanning on x86-64.
+	* Work around a gcc/bfd filename bug with yacc files
+
+	* Find object files with a .os extension
+	* Find .gcda files buried in libtool .libs/ dirs
+	* Don't recurse into toplevel debian/ or .git/ directories
+
+	* Automatically suppress blocks which call abort() and blocks
+	which represent the failure case of assert() statements; now
+	your assert() statements don't drag down the coverage stats.
+	* Add the --suppress-call option to allow you to suppress
+	any block which calls a given function.
+
+	* Remember various user interface state between ggcov runs:
+	window size and position, checkboxes in menus, Source window
+	column state.
+	* Lists of files now trees with filename and directory icons.
+	* Update several windows to use the newer GtkComboBox widget.
+	* Tooltips on flow diagram show block info and suppressions
+	* Add a Save As button to the Report window.
+	* Don't show the Cobertura XML in the Report window
+	* Make the Summary text columns fixed width so the window
+	doesn't resize unexpectedly.
+	* Fix scroll preservation on the Source window
+	* Grey out menu items in the Source window
+	* Show abbreviated common path in Files window
+	* Improved error message for missing files, bogus tags.
+	* Minor performance improvements
+	* Improvements to data structures, code, build and unit tests.
+
 Sun Jul 24 13:59:04 2011  Greg Banks <gnb@users.sourceforge.net>
 	* Release 0.8.4
 
