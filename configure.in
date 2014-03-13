@@ -22,7 +22,7 @@ dnl $Id: configure.in,v 1.79 2010-05-09 05:55:03 gnb Exp $
 dnl
 
 AC_INIT(src/ggcov.c)
-AM_INIT_AUTOMAKE(ggcov, 0.8.4)
+AM_INIT_AUTOMAKE(ggcov, 0.9)
 AM_CONFIG_HEADER(config.h)
 
 AM_MAINTAINER_MODE
