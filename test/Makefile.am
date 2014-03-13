@@ -20,7 +20,8 @@
 #
 
 EXTRA_DIST=	common.sh platform.sh runtest list-manifest.sh \
-		filter-callgraph.pl filter-coverage.pl filter-expected.pl
+		filter-callgraph.pl filter-coverage.pl \
+		filter-expected.pl filter-status.pl
 
 TESTS=		   runtest
 TESTS_ENVIRONMENT= sh
