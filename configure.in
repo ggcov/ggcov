@@ -304,6 +304,11 @@ if test x$gui = xyes ; then
 	GGCOV_GUI_LIBS=`echo "$GGCOV_GUI_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
 	GCONF_LIBS=`echo "$GCONF_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
 
+	dnl some modern distros don't make X11 symbols visible
+	dnl by default when you link against GTK2 so for them
+	dnl we need to link against libX11 explicitly.
+	GGCOV_GUI_LIBS="$GGCOV_GUI_LIBS -lX11"
+
 	AC_CHECK_LIB(gtk-x11-2.0, gtk_text_buffer_select_range,
 		  AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE,1,[
      * The function gtk_text_buffer_select_range may or may
