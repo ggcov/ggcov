@@ -77,11 +77,15 @@ DB_LIB_db41="db-4.1"
 DB_CPPFLAGS_db41="-I/usr/include/db41"
 DB_LDFLAGS_db41=""
 
+DB_LIB_fedora="db-4"
+DB_CPPFLAGS_fedora="-I/usr/include/libdb4"
+DB_LDFLAGS_fedora=""
+
 DB_LIB_plain="db"
 DB_CPPFLAGS_plain=""
 DB_LDFLAGS_plain=""
 
-DB_FLAVORS="db42 db41 plain"
+DB_FLAVORS="db42 db41 fedora plain"
 
 found=no
 web=yes
@@ -95,7 +99,12 @@ for flavor in $DB_FLAVORS ; do
     oldLIBS="$LIBS"
     CPPFLAGS="$cppflags $CPPFLAGS"
     found=yes
+    dnl Defeat autoconf caching
+    unset ac_cv_header_db_h
     AC_CHECK_HEADER(db.h,[],[found=no])
+    dnl Defeat autoconf caching
+    cachevar=`echo unset ac_cv_lib_${lib}_db_create | $as_tr_sh`
+    eval "unset $cachevar"
     AC_CHECK_LIB($lib,db_create,[],[found=no],$ldflags)
     CPPFLAGS="$oldCPPFLAGS"
     LIBS="$oldLIBS"
