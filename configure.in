@@ -269,6 +269,22 @@ AC_TRY_COMPILE([
     AC_MSG_RESULT(no)
 ])
 
+AC_MSG_CHECKING([whether bfd library needs zlib])
+AC_TRY_COMPILE([
+#include <bfd.h>
+],[
+#if BFD_COMPRESS
+    return 0;
+#else
+    fail to compile
+#endif
+],[
+    BFD_LIBS="$BFD_LIBS -lz"
+    AC_MSG_RESULT(yes)
+],[
+    AC_MSG_RESULT(no)
+])
+
 else
     BFD_LIBS=
 fi
