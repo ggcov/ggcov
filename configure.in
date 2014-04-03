@@ -252,6 +252,23 @@ fi
 
 if test $have_libbfd = yes ; then
     AC_DEFINE(HAVE_LIBBFD,1,[the GNU bfd library is available])
+
+AC_MSG_CHECKING([whether bfd library needs dlopen])
+AC_TRY_COMPILE([
+#include <bfd.h>
+],[
+#if BFD_SUPPORTS_PLUGINS
+    return 0;
+#else
+    fail to compile
+#endif
+],[
+    BFD_LIBS="$BFD_LIBS -ldl"
+    AC_MSG_RESULT(yes)
+],[
+    AC_MSG_RESULT(no)
+])
+
 else
     BFD_LIBS=
 fi
