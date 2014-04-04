@@ -162,7 +162,12 @@ private:
 	FF_OLDPLUS	=(1<<5),
 	/* From 4.7, two checksums are stored in function headers.
 	 * We ignore them both. */
-	FF_FNCHECKSUM2	=(1<<6)
+	FF_FNCHECKSUM2	=(1<<6),
+	/* From 4.8, an extra histogram of counters is stored in the
+	 * PROGRAM_SUMMARY which we ignore.  More importantly, the
+	 * special exit block in a function is now block 1 rather
+	 * than block N-1 */
+	FF_EXITBLOCK1	=(1<<7)
     };
     
     static void init();
@@ -180,6 +185,8 @@ private:
     covio_t *find_file(const char *ext, gboolean quiet,
 		       const char *prefix) const;
     void file_missing(const char *ext, const char *ext2) const;
+
+    gboolean exit_block_is_1() const { return !!(features_ & FF_EXITBLOCK1); }
 
     gboolean
     gcc296_braindeath() const

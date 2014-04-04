@@ -94,6 +94,19 @@ public:
 
     void zero_arc_counts();
 
+    /*
+     * Each function has two special blocks, one of which is there so
+     * that arcs from it can represent calls to the function and one of
+     * returns from the function.  Since the dawn of time, the entry
+     * block was block 0 (the very first block) and the exit block was
+     * block N-1 (the very last block).  Since gcc 4.8 the exit block is
+     * now block 1 (the second block).  These functions hide that.
+     */
+    unsigned int entry_block() const;
+    unsigned int exit_block() const;
+    unsigned int first_real_block() const;
+    unsigned int last_real_block() const;
+
 private:
     cov_function_t();
     ~cov_function_t();

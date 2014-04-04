@@ -182,6 +182,31 @@ cov_function_t::compare(const cov_function_t *fa, const cov_function_t *fb)
     return ret;
 }
 
+unsigned int
+cov_function_t::entry_block() const
+{
+    return 0;
+}
+
+unsigned int
+cov_function_t::exit_block() const
+{
+    return (file_->exit_block_is_1() ? 1 : blocks_->length()-1);
+}
+
+unsigned int
+cov_function_t::first_real_block() const
+{
+    return (file_->exit_block_is_1() ? 2 : 1);
+}
+
+unsigned int
+cov_function_t::last_real_block() const
+{
+    unsigned int len = blocks_->length();
+    return (file_->exit_block_is_1() ? len-1 : len-2);
+}
+
 cov::status_t
 cov_function_t::calc_stats(cov_stats_t *stats) const
 {
@@ -195,9 +220,9 @@ cov_function_t::calc_stats(cov_stats_t *stats) const
 	st = cov::SUPPRESSED;
     else
     {
-	/* skip the 0th and last psuedo-blocks which don't correspond to code */
+	/* skip the psuedo-blocks which don't correspond to code */
 	assert(num_blocks() >= 2);
-	for (bidx = 1 ; bidx < num_blocks()-1 ; bidx++)
+	for (bidx = first_real_block() ; bidx <= last_real_block() ; bidx++)
 	    nth_block(bidx)->calc_stats(&mine);
 	stats->accumulate(&mine);
 	st = mine.status_by_lines();
@@ -230,7 +255,7 @@ cov_function_t::reconcile_calls()
     if (num_blocks() <= 2)
 	return TRUE;
 
-    for (bidx = 0 ; bidx < num_blocks()-2 ; bidx++)
+    for (bidx = first_real_block() ; bidx <= last_real_block() ; bidx++)
     {
     	cov_block_t *b = nth_block(bidx);
 
@@ -319,13 +344,13 @@ cov_function_t::solve()
      * counts.
      */
     assert(num_blocks() >= 2);
-    if ((b = blocks_->head())->in_arcs_.head() == 0)
+    if ((b = blocks_->nth(entry_block()))->in_arcs_.head() == 0)
     {
     	assert(file_->format_version_ > 0);
 	b->in_ninvalid_ = ~0U;
 	dprintf0(D_SOLVE, "entry block tweaked\n");
     }
-    if ((b = blocks_->tail())->out_arcs_.head() == 0)
+    if ((b = blocks_->nth(exit_block()))->out_arcs_.head() == 0)
     {
     	assert(file_->format_version_ > 0);
 	b->out_ninvalid_ = ~0U;

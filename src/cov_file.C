@@ -941,7 +941,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     estring funcname;
     gnb_u32_t tmp;
     unsigned int nblocks = 0;
-    gnb_u32_t bidx, last_bidx = 0;
+    gnb_u32_t bidx, last_bidx = (exit_block_is_1() ? 1 : 0);
     unsigned int nlines = 0;
     cov_arc_t *a;
     gnb_u32_t dest, flags;
@@ -963,6 +963,10 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	if (expect_version != BBG_VERSION_GCC33)
 	    bbg_failed1("unexpected version=0x%08x", format_version_);
     	break;
+    case _NEW_VERSION(4,8,'R'):	/* Fedora 19 */
+    case _NEW_VERSION(4,8,'*'):
+	features_ |= FF_EXITBLOCK1;
+	/* fall through */
     case _NEW_VERSION(4,7,'R'):	/* RedHat Fedora 18 */
     case _NEW_VERSION(4,7,'*'):
 	features_ |= FF_FNCHECKSUM2;
@@ -1107,7 +1111,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 		 * at gcc 4.1.1, which will emit an arc (N-2 -> N-1, !FALL_THROUGH)
 		 * for a "return" statement which the last line in a function.
 		 */
-    		a->call_ = (dest == nblocks-1 && (flags & BBG_FAKE));
+    		a->call_ = (dest == fn->exit_block() && (flags & BBG_FAKE));
 		a->on_tree_ = !!(flags & BBG_ON_TREE);
 		a->attach(fn->nth_block(bidx), fn->nth_block(dest));
 	    }
@@ -1118,7 +1122,8 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	    	bbg_failed0("short file");
 	    if (bidx >= nblocks)
     	    	bbg_failed2("bidx=%u > nblocks=%u", bidx, nblocks);
-	    if (bidx > 0 && bidx < nblocks-1)
+	    if (filename && last_line &&
+		bidx >= fn->first_real_block() && bidx <= fn->last_real_block())
 	    {
 	    	/* may need to interpolate some block->line assignments */
 		for (last_bidx++ ; last_bidx < bidx ; last_bidx++)
