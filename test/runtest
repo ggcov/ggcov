@@ -21,6 +21,7 @@
 #
 
 TESTS=
+ARGS=
 SUPPRESS=
 GIVEN=no
 SHELL=bash
@@ -67,6 +68,14 @@ addsuppress ()
 
 while [ $# -gt 0 ] ; do
     case "$1" in
+    -D)
+	ARGS="$ARGS $1 $2"
+	shift
+	;;
+    --no-log|--valgrind|--debug=*)
+	ARGS="$ARGS $1"
+	;;
+
     test???)
     	addtest $1
 	;;
@@ -125,7 +134,7 @@ for t in $TESTS ; do
     (
 # 	echo "==== $t start"
     	cd $t
-	$SHELL runtest
+	$SHELL runtest $ARGS
     )
     if [ $? = 0 ]; then
 	NPASS=`expr $NPASS + 1`
