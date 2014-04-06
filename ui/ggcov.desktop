@@ -1,8 +1,10 @@
 [Desktop Entry]
 Name=GGcov
-Comment=Source code coverage browser
-Icon=ggcov64.png
+Comment=Source code test coverage browser
+Icon=ggcov64
 Exec=ggcov
 Terminal=false
 Type=Application
-Categories=Application;Development;
+Categories=Development;IDE;
+GenericName=Test Coverage Browser
+Encoding=UTF-8

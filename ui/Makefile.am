@@ -24,7 +24,7 @@ EXTRA_DIST=	ggcov.glade ggcov-glade2.glade \
 		ggcov.desktop ggcov.schemas
 
 if GUI
-desktopdir=	$(datadir)/gnome/apps/Development
+desktopdir=	$(datadir)/applications
 pixmapsdir=	$(datadir)/pixmaps
 pixmaps_DATA=	ggcov64.png
 pkgdata_DATA=	@GGCOV_GLADE_FILE@ ggcov64.png
