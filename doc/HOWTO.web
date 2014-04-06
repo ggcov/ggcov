@@ -51,10 +51,10 @@ install software, installation should be easy.
 3.  restart the web server, e.g.
     www# service httpd restart
 
-4.  install one or more tests in subdirectories of /var/ggcov/web/tests/, e.g.
+4.  install one or more tests in subdirectories of /var/cache/ggcov/web/tests/, e.g.
     dev$ ggcov-webdb *.c
     dev$ scp ggcov.webdb.tgz root@www:/tmp
-    web# cd /var/ggcov/web/tests
+    web# cd /var/cache/ggcov/web/tests
     web# mkdir foo ; cd foo
     web# tar -xzf /tmp/ggcov.webdb.tgz
 

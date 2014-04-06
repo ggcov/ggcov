@@ -64,7 +64,7 @@ which are mentioned in the database.  This is all the information
 that the \fBggcov\fP web pages need, in one bundle which is
 convenient to copy from the development machine to the web server.
 Usually this tarball would be extracted into a subdirectory
-of \fI/var/ggcov/tests/\fP on the web server.
+of \fI/var/cache/ggcov/tests/\fP on the web server.
 .PP
 Arguments are used to specify how to find coverage data files.
 The arguments can combinations of:
@@ -197,11 +197,11 @@ Generate intermediate database for all the available source
 in the executable \fBa.out\fP (on some platforms only), and
 install as test \fBfoo\fP in the default tests location.
 .IP
-.B mkdir /var/ggcov/tests/foo
+.B mkdir /var/cache/ggcov/tests/foo
 .br
 .B ggcov\-webdb -f - a.out |
 .br
-.B "    " (cd /var/ggcov/tests/foo ; tar \-xzf \- )
+.B "    " (cd /var/cache/ggcov/tests/foo ; tar \-xzf \- )
 .br
 .PP
 Generate intermediate database for all the C source in the current directory.

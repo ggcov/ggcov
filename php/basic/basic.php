@@ -30,7 +30,7 @@ function basic_test_dir()
     {
 	$test_dir = getenv('GGCOV_TEST_DIR');
 	if (!$test_dir)
-	    $test_dir = '/var/ggcov/tests';
+	    $test_dir = '/var/cache/ggcov/tests';
     }
     return $test_dir;
 }
