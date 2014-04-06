@@ -60,7 +60,7 @@ cov_is_source_filename(const char *filename)
     const char *ext;
     static const char * const recognised_exts[] =
     {
-	".c", ".cc", ".cxx", ".cpp", ".C",
+	".c", ".cc", ".cxx", ".cpp", ".C", ".c++",
 	".y", ".l",
 	0
     };
