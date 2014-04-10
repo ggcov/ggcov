@@ -8,6 +8,11 @@
 #define BASEDIR "/tmp"
 #define TESTDIR BASEDIR"/ggcov.filename.test"
 
+/* PATH_MAX not defined on Hurd */
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+
 static char oldcwd[PATH_MAX];
 
 SETUP
