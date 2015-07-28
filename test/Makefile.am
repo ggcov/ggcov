@@ -19,6 +19,8 @@
 # $Id: Makefile.am,v 1.12 2010-05-09 05:37:15 gnb Exp $
 #
 
+AUTOMAKE_OPTIONS = serial-tests
+
 EXTRA_DIST=	common.sh platform.sh runtest list-manifest.sh \
 		filter-callgraph.pl filter-coverage.pl \
 		filter-expected.pl filter-status.pl
