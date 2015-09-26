@@ -4,6 +4,7 @@ lib*.a
 *.la
 .libs
 .deps
+.vagrant
 COPYING
 INSTALL
 aclocal.m4
