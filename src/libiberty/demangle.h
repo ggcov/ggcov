@@ -23,6 +23,10 @@
 
 #include <ansidecl.h>
 
+#ifndef PARAMS
+#define PARAMS(ARGS)            ARGS
+#endif
+
 /* Options passed to cplus_demangle (in 2nd parameter). */
 
 #define DMGL_NO_OPTS	 0		/* For readability... */
