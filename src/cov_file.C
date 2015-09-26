@@ -963,6 +963,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	if (expect_version != BBG_VERSION_GCC33)
 	    bbg_failed1("unexpected version=0x%08x", format_version_);
     	break;
+    case _NEW_VERSION(4,9,'*'):
     case _NEW_VERSION(4,8,'R'):	/* Fedora 19 */
     case _NEW_VERSION(4,8,'*'):
 	features_ |= FF_EXITBLOCK1;
