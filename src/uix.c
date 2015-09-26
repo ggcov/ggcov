@@ -239,4 +239,38 @@ uix_font_height(GdkFont *gfont)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+/* Called when we receive some error events from the X server
+ * (not things like BadFont from XLookupFont though) */
+static int
+x_error_handler(Display *display, XErrorEvent *event)
+{
+    char errmsg[1024];
+    strncpy(errmsg, "<unknown>", sizeof(errmsg)-1);
+    XGetErrorText(display, event->error_code, errmsg, sizeof(errmsg));
+    fprintf(stderr, "ggcov: %s error from X server, resource %lu serial %lu request %u/%u\n",
+	    errmsg, event->resourceid, event->serial,
+	    event->request_code, event->minor_code);
+    fflush(stderr);
+    return 0;	/* return value igored */
+}
+
+/* Called when we lose connection to the X server */
+static int
+x_io_error_handler(Display *display)
+{
+    fprintf(stderr, "ggcov: lost connection to the X server!!\n");
+    fflush(stderr);
+    return 0;	/* return value igored */
+    /* Xlib will exit() */
+}
+
+void
+uix_log_init(void)
+{
+    XSetErrorHandler(x_error_handler);
+    XSetIOErrorHandler(x_io_error_handler);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

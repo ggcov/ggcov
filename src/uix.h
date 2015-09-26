@@ -33,4 +33,6 @@ GdkFont *uix_fixed_width_font(GdkFont *oldfont);
 int uix_font_width(GdkFont *);
 int uix_font_height(GdkFont *);
 
+void uix_log_init(void);
+
 #endif /* _ggcov_uix_h_ */

@@ -151,4 +151,6 @@ typedef struct
     GCallback tramp;
 } ui_class_callback_t;
 
+void ui_log_init(void);
+
 #endif /* _ggcov_ui_h_ */

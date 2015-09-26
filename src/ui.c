@@ -1366,6 +1366,55 @@ ui_text_get_contents(GtkWidget *w)
 #endif /* !GTK2 */
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static const char *
+log_level_to_str(GLogLevelFlags level)
+{
+    static char buf[32];
+
+    switch (level & G_LOG_LEVEL_MASK)
+    {
+    case G_LOG_LEVEL_ERROR: return "ERROR";
+    case G_LOG_LEVEL_CRITICAL: return "CRITICAL";
+    case G_LOG_LEVEL_WARNING: return "WARNING";
+    case G_LOG_LEVEL_MESSAGE: return "MESSAGE";
+    case G_LOG_LEVEL_INFO: return "INFO";
+    case G_LOG_LEVEL_DEBUG: return "DEBUG";
+    default:
+    	snprintf(buf, sizeof(buf), "%d", level);
+	return buf;
+    }
+}
+
+static void
+log_func(
+    const char *domain,
+    GLogLevelFlags level,
+    const char *msg,
+    gpointer user_data)
+{
+    fprintf(stderr, "%s:%s:%s\n",
+    	(domain == 0 ? PACKAGE : domain),
+	log_level_to_str(level),
+	msg);
+    if (level & G_LOG_FLAG_FATAL)
+    	exit(1);
+}
+
+void
+ui_log_init(void)
+{
+    static const char * const domains[] = 
+	{ "GLib", "GLib-GObject", "Gtk", "Gnome", "libglade", /*application*/0 };
+    unsigned int i;
+    
+    for (i = 0 ; i < sizeof(domains)/sizeof(domains[0]) ; i++)
+	g_log_set_handler(domains[i],
+    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
+    	    	      log_func, /*user_data*/0);
+    uix_log_init();
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
