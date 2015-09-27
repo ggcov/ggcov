@@ -39,6 +39,11 @@ private:
     void on_zoom_in_activate();
     void on_zoom_out_activate();
     void on_show_all_activate();
+    static diagwin_t *from_widget(GtkWidget *w)
+    {
+	return (diagwin_t *)window_t::from_widget(w);
+    }
+    static void diagwin_realize_cb(GtkWidget *w);
 
     diagram_t *diagram_;
     GtkWidget *canvas_;

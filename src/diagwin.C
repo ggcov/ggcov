@@ -95,6 +95,12 @@ set_diagram_colors(diagram_t *di)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+void diagwin_t::diagwin_realize_cb(GtkWidget *w)
+{
+    diagwin_t *dw = diagwin_t::from_widget(w);
+    dw->zoom_all();
+}
+
 void
 diagwin_t::populate()
 {
@@ -120,7 +126,12 @@ diagwin_t::populate()
     gnome_canvas_set_scroll_region(GNOME_CANVAS(canvas_),
 				   bounds.x1, bounds.y1,
 				   bounds.x2, bounds.y2);
-    zoom_all();
+
+    if (!GTK_WIDGET_REALIZED(canvas_))
+	gtk_signal_connect(GTK_OBJECT(canvas_), "realize",
+			   GTK_SIGNAL_FUNC(diagwin_realize_cb), 0);
+    else
+	zoom_all();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
