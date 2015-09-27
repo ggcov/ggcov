@@ -149,6 +149,7 @@ static struct
 {"dwarf",    	F(D_DWARF)},
 {"elf",    	F(D_ELF)},
 {"dump",     	F(D_DUMP)},
+{"scene",     	F(D_SCENE)},
 {"report",     	F(D_REPORT)},
 {"dcallgraph",  F(D_DCALLGRAPH)},
 {"dlego",	F(D_DLEGO)},

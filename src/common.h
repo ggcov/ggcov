@@ -66,6 +66,7 @@ typedef enum
     D_DWARF,
     D_ELF,
     D_DUMP,
+    D_SCENE,
     D_REPORT,
     D_DCALLGRAPH,
     D_DLEGO,
@@ -129,6 +130,8 @@ char *debug_enabled_tokens(void);
     if (debug_enabled(val)) fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6), (a7))
 #define dprintf8(val, fmt, a1, a2, a3, a4, a5, a6, a7, a8) \
     if (debug_enabled(val)) fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6), (a7), (a8))
+#define dprintf9(val, fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9) \
+    if (debug_enabled(val)) fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6), (a7), (a8), (a9))
 /* Unconditional debugging prints, use inside if(debug_enabled()) */
 #define duprintf0(fmt) \
     fprintf(stderr, (fmt))
@@ -148,6 +151,8 @@ char *debug_enabled_tokens(void);
     fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6), (a7))
 #define duprintf8(fmt, a1, a2, a3, a4, a5, a6, a7, a8) \
     fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6), (a7), (a8))
+#define duprintf9(fmt, a1, a2, a3, a4, a5, a6, a7, a8, a9) \
+    fprintf(stderr, (fmt), (a1), (a2), (a3), (a4), (a5), (a6), (a7), (a8), (a9))
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

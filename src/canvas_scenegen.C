@@ -17,6 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "common.h"
 #include "canvas_scenegen.H"
 #include "ui.h"
 #include "canvas_function_popup.H"
@@ -117,6 +118,16 @@ canvas_scenegen_t::box(double x, double y, double w, double h)
 {
     GnomeCanvasItem *item;
 
+    if (debug_enabled(D_SCENE))
+    {
+	int cx1, cy1, cx2, cy2;
+	gnome_canvas_w2c(canvas_, x, y, &cx1, &cy1);
+	gnome_canvas_w2c(canvas_, x+w, y+h, &cx2, &cy2);
+	dprintf8(D_SCENE, "box(world {x=%g, y=%g, w=%g, h=%g} "
+			  "canvas {x=%d, y=%d, w=%d, h=%d})\n",
+			  x, y, w, h, cx1, cy1, cx2-cx1, cy2-cy1);
+    }
+
     item = gnome_canvas_item_new(root_, GNOME_TYPE_CANVAS_RECT,
 		"x1", 	    	x,
 		"y1",	    	y,
@@ -142,6 +153,16 @@ canvas_scenegen_t::textbox(
     const char *text)
 {
     GnomeCanvasItem *item;
+
+    if (debug_enabled(D_SCENE))
+    {
+	int cx1, cy1, cx2, cy2;
+	gnome_canvas_w2c(canvas_, x, y, &cx1, &cy1);
+	gnome_canvas_w2c(canvas_, x+w, y+h, &cx2, &cy2);
+	dprintf9(D_SCENE, "textbox(world {x=%g, y=%g, w=%g, h=%g} "
+			  "canvas {x=%d, y=%d, w=%d, h=%d}, text=\"%s\"\n",
+			  x, y, w, h, cx1, cy1, cx2-cx1, cy2-cy1, text);
+    }
 
     item = gnome_canvas_item_new(root_, GNOME_TYPE_CANVAS_TEXT,
 		"text",     	text,
@@ -192,6 +213,7 @@ canvas_scenegen_t::polyline_end(gboolean arrow)
 
     if (!points_.num_points)
 	return;
+    dprintf1(D_SCENE, "polyline([...%u...])\n", points_.num_points);
     item = gnome_canvas_item_new(root_, GNOME_TYPE_CANVAS_LINE,
 		"points", 	    	&points_,
 		"first_arrowhead",	first_arrow_flag_,
