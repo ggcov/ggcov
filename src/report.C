@@ -461,7 +461,7 @@ cob_report_t::post_add_lines(
 	    continue;
 	xml_node_t *xline = xlines->new_child("line");
 	xline->add_propf("number", "%u", lineno);
-	xline->add_propf("hits", "%llu", ln->count());
+	xline->add_propf("hits", "%llu", (unsigned long long)ln->count());
 	xline->add_prop("branch", "false"); /* TODO */
     }
 }

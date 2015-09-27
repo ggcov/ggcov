@@ -1304,7 +1304,7 @@ cov_file_t::read_old_da_file(covio_t *io)
     	    	    duprintf3("DA arc {from=%s to=%s} count=%llu\n",
 		    	      fromdesc.data(),
 		    	      todesc.data(),
-			      ent);
+			      (unsigned long long)ent);
     	    	}
 
     	    	a->set_count(ent);
@@ -1402,7 +1402,7 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
     	    	    duprintf3("DA arc {from=%s to=%s} count=%llu\n",
 		    	      fromdesc.data(),
 		    	      todesc.data(),
-			      ent);
+			      (unsigned long long)ent);
     	    	}
 
     	    	a->set_count(ent);
@@ -1530,7 +1530,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
     	    		duprintf3("DA arc {from=%s to=%s} count=%llu\n",
 		    		  fromdesc.data(),
 		    		  todesc.data(),
-				  count);
+				  (unsigned long long)count);
     	    	    }
     	    	    a->set_count(count);
 		}

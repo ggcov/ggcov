@@ -241,7 +241,7 @@ static void describe_status(estring &txt, const cov_suppression_t *sup, count_t 
     }
     else
     {
-	txt.append_printf("executed "GNB_U64_DFMT" times\n", count);
+	txt.append_printf("executed %llu times\n", (unsigned long long)count);
     }
 }
 

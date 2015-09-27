@@ -388,13 +388,13 @@ cov_function_t::solve()
 		{
 		    b->set_count(cov_arc_t::total(b->out_arcs_));
 		    changes++;
-    	    	    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), b->count());
+    	    	    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), (unsigned long long)b->count());
 		}
 		else if (b->in_ninvalid_ == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->in_arcs_));
 		    changes++;
-    	    	    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), b->count());
+    	    	    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), (unsigned long long)b->count());
 		}
 	    }
 	    
@@ -421,7 +421,8 @@ cov_function_t::solve()
 		    a->set_count(b->count_ - out_total);
 		    changes++;
     	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
-		    	    a->from()->bindex(), a->to()->bindex(), a->count());
+		    	    a->from()->bindex(), a->to()->bindex(),
+			    (unsigned long long)a->count());
 		}
 		if (b->in_ninvalid_ == 1)
 		{
@@ -444,7 +445,8 @@ cov_function_t::solve()
 		    a->set_count(b->count_ - in_total);
 		    changes++;
     	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
-		    	    a->from()->bindex(), a->to()->bindex(), a->count());
+		    	    a->from()->bindex(), a->to()->bindex(),
+			    (unsigned long long)a->count());
 		}
 	    }
 	}

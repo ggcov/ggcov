@@ -324,7 +324,9 @@ format_stat(
     else if (percent_flag)
     	snprintf(buf, maxlen, "%.2f", (double)numerator * 100.0 / denominator);
     else
-    	snprintf(buf, maxlen, GNB_U64_DFMT"/"GNB_U64_DFMT, numerator, denominator);
+    	snprintf(buf, maxlen, "%llu/%llu",
+		 (unsigned long long)numerator,
+		 (unsigned long long)denominator);
 }
 
 void

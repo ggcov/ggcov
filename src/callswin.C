@@ -264,7 +264,7 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 	    (itr->name() == 0 || strcmp(to_fn->name(), itr->name())))
 	    continue;
 
-	snprintf(countbuf, sizeof(countbuf), GNB_U64_DFMT, itr->count());
+	snprintf(countbuf, sizeof(countbuf), "%llu", (unsigned long long)itr->count());
 	text[COL_COUNT] = countbuf;
 
     	if ((loc = itr->location()) == 0)

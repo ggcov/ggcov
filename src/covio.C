@@ -109,7 +109,7 @@ covio_t::read_lu64(gnb_u64_t &wr)
 
     wr = w;
 
-    dprintf1(D_IO|D_VERBOSE, "covio_t::read_lu64() = 0x%016llx\n", w);
+    dprintf1(D_IO|D_VERBOSE, "covio_t::read_lu64() = 0x%016llx\n", (unsigned long long)w);
 
     return (!feof(fp_));
 }
@@ -132,7 +132,7 @@ covio_t::read_bu64(gnb_u64_t &wr)
 
     wr = w;
 
-    dprintf1(D_IO|D_VERBOSE, "covio_t::read_bu64() = 0x%016llx\n", w);
+    dprintf1(D_IO|D_VERBOSE, "covio_t::read_bu64() = 0x%016llx\n", (unsigned long long)w);
 
     return (!feof(fp_));
 }

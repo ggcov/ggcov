@@ -676,7 +676,7 @@ dump_callarcs(FILE *fp, list_t<cov_callarc_t> &arcs)
 	fprintf(fp, "            ARC {\n");
 	fprintf(fp, "                FROM=%s\n", ca->from->name.data());
 	fprintf(fp, "                TO=%s\n", ca->to->name.data());
-	fprintf(fp, "                COUNT="GNB_U64_DFMT"\n", ca->count);
+	fprintf(fp, "                COUNT=%llu\n", (unsigned long long)ca->count);
 	fprintf(fp, "            }\n");
     }
 }
@@ -698,7 +698,7 @@ dump_callspace(cov_callspace_t *space, FILE *fp)
 	else
 	    fprintf(fp, "        FUNCTION=%s:%s\n", cn->function->file()->name(),
 						    cn->function->name());
-	fprintf(fp, "        COUNT="GNB_U64_DFMT"\n", cn->count);
+	fprintf(fp, "        COUNT=%llu\n", (unsigned long long)cn->count);
 	fprintf(fp, "        OUT_ARCS={\n");
 	dump_callarcs(fp, cn->out_arcs);
 	fprintf(fp, "        }\n");
@@ -722,7 +722,7 @@ dump_arc(FILE *fp, cov_arc_t *a)
     fprintf(fp, "                    ARC {\n");
     fprintf(fp, "                        FROM=%s\n", a->from()->describe());
     fprintf(fp, "                        TO=%s\n", a->to()->describe());
-    fprintf(fp, "                        COUNT="GNB_U64_DFMT"\n", a->count());
+    fprintf(fp, "                        COUNT=%llu\n", (unsigned long long)a->count());
     fprintf(fp, "                        NAME=%s\n", a->name());
     fprintf(fp, "                        ON_TREE=%s\n", boolstr(a->on_tree_));
     fprintf(fp, "                        CALL=%s\n", boolstr(a->call_));
@@ -736,7 +736,7 @@ dump_block(FILE *fp, cov_block_t *b)
 {
     fprintf(fp, "            BLOCK {\n");
     fprintf(fp, "                IDX=%s\n", b->describe());
-    fprintf(fp, "                COUNT="GNB_U64_DFMT"\n", b->count());
+    fprintf(fp, "                COUNT=%llu\n", (unsigned long long)b->count());
     fprintf(fp, "                STATUS=%s\n", status_names[b->status()]);
 
     fprintf(fp, "                OUT_ARCS {\n");

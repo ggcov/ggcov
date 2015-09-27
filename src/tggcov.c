@@ -146,7 +146,9 @@ annotate_file(cov_file_t *f)
 	    	ln->status() != cov::SUPPRESSED)
 	    {
 		if (ln->count())
-		    fprintf(outfp, "%9llu:%5lu:", ln->count(), lineno);
+		    fprintf(outfp, "%9llu:%5lu:",
+			    (unsigned long long)ln->count(),
+			    lineno);
 		else
 		    fprintf(outfp, "    #####:%5lu:", lineno);
 	    }
@@ -159,7 +161,7 @@ annotate_file(cov_file_t *f)
 	    	ln->status() != cov::SUPPRESSED)
 	    {
 		if (ln->count())
-		    fprintf(outfp, "%12lld    ", ln->count());
+		    fprintf(outfp, "%12llu    ", (unsigned long long)ln->count());
 		else
 		    fputs("      ######    ", outfp);
 	    }
@@ -346,7 +348,7 @@ dump_callgraph(void)
 		set_printable_location(loc, itr->location());
 		fprintf(fp, "\t\tcall %s\n\t\t\tcount %llu\n\t\t\tlocation %s\n",
 			(itr->name() != 0 ? itr->name() : "-"),
-			itr->count(),
+			(unsigned long long)itr->count(),
 			loc.describe());
 	    }
 	    delete itr;
@@ -361,7 +363,7 @@ dump_callgraph(void)
 	    	fprintf(fp, "\tlocation %s\n", loc.describe());
 		fprintf(fp, "\t\tcall %s\n\t\t\tcount %llu\n",
 			(itr->name() != 0 ? itr->name() : "-"),
-			itr->count());
+			(unsigned long long)itr->count());
 	    }
 	    delete itr;
 	}

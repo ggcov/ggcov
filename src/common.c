@@ -173,7 +173,7 @@ static struct
 {"cov",     	R(D_FILES,D_DUMP)},
 {"ui",     	R(D_UICORE,D_DIAGWIN)},
 {"none",     	0},
-{"all",     	~1 /*"all" doesn't get you "verbose"*/},
+{"all",     	~1U /*"all" doesn't get you "verbose"*/},
 {0, 0}
 #undef R
 #undef U

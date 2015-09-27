@@ -711,7 +711,8 @@ sourcewin_t::update()
 	    case cov::COVERED:
 	    case cov::PARTCOVERED:
 		snprintf(countbuf, sizeof(countbuf), "%*llu",
-		    	 column_widths_[COL_COUNT]-1, ln->count());
+		    	 column_widths_[COL_COUNT]-1,
+			 (unsigned long long)ln->count());
 		break;
 	    case cov::UNCOVERED:
 		strncpy(countbuf, " ######", sizeof(countbuf));
