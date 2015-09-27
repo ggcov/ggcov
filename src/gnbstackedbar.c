@@ -26,7 +26,7 @@
  * Modified by the GTK+ Team and others 1997-1999.  See the AUTHORS
  * file for a list of people on the GTK+ Team.  See the ChangeLog
  * files for a list of changes.  These files are distributed with
- * GTK+ at ftp://ftp.gtk.org/pub/gtk/. 
+ * GTK+ at ftp://ftp.gtk.org/pub/gtk/.
  */
 
 #if HAVE_CONFIG_H
@@ -78,9 +78,9 @@ gnb_stacked_bar_get_type(void)
 	    sizeof (GnbStackedBarClass),
 	    (GtkClassInitFunc) gnb_stacked_bar_class_init,
 	    (GtkObjectInitFunc) gnb_stacked_bar_init,
-            /* reserved_1 */ NULL,
-            /* reserved_2 */ NULL,
-            (GtkClassInitFunc) NULL
+	    /* reserved_1 */ NULL,
+	    /* reserved_2 */ NULL,
+	    (GtkClassInitFunc) NULL
 	};
 
 	stacked_bar_type = gtk_type_unique(GTK_TYPE_WIDGET, &stacked_bar_info);
@@ -164,16 +164,16 @@ gnb_stacked_bar_finalize(
 {
     GnbStackedBar *sbar;
     guint i;
-    
+
     g_return_if_fail(object != NULL);
     g_return_if_fail(GNB_IS_STACKED_BAR(object));
-    
+
     sbar = GNB_STACKED_BAR(object);
 
     for (i = 0 ; i < sbar->nmetrics ; i++)
     {
-    	if (sbar->metrics[i].gc != NULL)
-    	    gtk_gc_release(sbar->metrics[i].gc);
+	if (sbar->metrics[i].gc != NULL)
+	    gtk_gc_release(sbar->metrics[i].gc);
     }
     if (sbar->metrics != NULL)
     {
@@ -211,7 +211,7 @@ gnb_stacked_bar_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 
 #if STACKEDBAR_DEBUG
     fprintf(stderr, "%s: size_allocate %d %d %d %d\n",
-    	    	widget->name,
+		widget->name,
 		allocation->x, allocation->y,
 		allocation->width, allocation->height);
 #endif
@@ -247,7 +247,7 @@ gnb_stacked_bar_create_pixmap(GnbStackedBar *sbar)
 						widget->allocation.width,
 						widget->allocation.height,
 						-1);
-    	gnb_stacked_bar_paint(sbar);
+	gnb_stacked_bar_paint(sbar);
     }
 }
 
@@ -256,7 +256,7 @@ GLADE_CALLBACK GtkWidget *
 gnb_stacked_bar_new(void)
 {
     GtkWidget *widget;
-    
+
     widget = gtk_widget_new(GNB_TYPE_STACKED_BAR, NULL);
 
     return widget;
@@ -276,7 +276,7 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
     g_return_if_fail(GNB_IS_STACKED_BAR(sbar));
 
     if (sbar->offscreen_pixmap == NULL)
-    	return;
+	return;
 
     widget = GTK_WIDGET(sbar);
 
@@ -292,11 +292,11 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
 
     total = 0;
     for (i = 0 ; i < sbar->nmetrics ; i++)
-    	total += sbar->metrics[i].value;
+	total += sbar->metrics[i].value;
 
 #if STACKEDBAR_DEBUG
     fprintf(stderr, "%s: total=%lu xthick=%d ythick=%d\n",
-    	    	widget->name, total, xthick, ythick);
+		widget->name, total, xthick, ythick);
 #endif
 
     /* divide screen space up proportionally */
@@ -305,24 +305,24 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
 	/* avoid division by zero: give all space to 0th metric */
 	/* TODO: not right!! */
 	for (i = 0 ; i < sbar->nmetrics ; i++)
-    	    sbar->metrics[i].length = (i ? 0 : space);
+	    sbar->metrics[i].length = (i ? 0 : space);
     }
     else
     {
-    	x = 0;
+	x = 0;
 	for (i = 0 ; i < sbar->nmetrics ; i++)
 	{
-    	    x += sbar->metrics[i].length =
-	    	    (sbar->metrics[i].value * space + total/2) / total;
-    	}
-	
-    	/* add the roundoff error to the last nonzero metric */
-    	x = space - x;
+	    x += sbar->metrics[i].length =
+		    (sbar->metrics[i].value * space + total/2) / total;
+	}
+
+	/* add the roundoff error to the last nonzero metric */
+	x = space - x;
 	if (x)
 	{
 #if STACKEDBAR_DEBUG
 	    fprintf(stderr, "%s: cumulative rounding error %d\n",
-	    	    widget->name, x);
+		    widget->name, x);
 #endif
 	    for (i = sbar->nmetrics-1 ; i >= 0 ; --i)
 	    {
@@ -330,10 +330,10 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
 		{
 #if STACKEDBAR_DEBUG
 		    fprintf(stderr, "%s:   applied to metric %d\n",
-	    		    widget->name, i);
+			    widget->name, i);
 #endif
-	    	    sbar->metrics[i].length += x;
-	    	    break;
+		    sbar->metrics[i].length += x;
+		    break;
 		}
 	    }
 	}
@@ -342,28 +342,28 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
     /* paint the outside shadow */
 #if STACKEDBAR_DEBUG
     fprintf(stderr, "%s: PAINTBOX(trough, %d, %d, %d, %d)\n",
-    	    	   widget->name,
+		   widget->name,
 		   0, 0,
 		   widget->allocation.width,
 		   widget->allocation.height);
 #endif
     gtk_paint_box(widget->style,
 		  sbar->offscreen_pixmap,
-		  GTK_STATE_NORMAL, GTK_SHADOW_IN, 
+		  GTK_STATE_NORMAL, GTK_SHADOW_IN,
 		  NULL, widget, "trough",
 		  0, 0,
 		  widget->allocation.width,
 		  widget->allocation.height);
 
     if (widget->allocation.width <= (gint)(2*xthick) ||
-        widget->allocation.height <= (gint)(2*ythick))
-    	return;
+	widget->allocation.height <= (gint)(2*ythick))
+	return;
 
     x = xthick;
     for (i = 0 ; i < sbar->nmetrics ; i++)
     {
-    	metric = &sbar->metrics[i];
-	
+	metric = &sbar->metrics[i];
+
 	if (!metric->length)
 	    continue;
 
@@ -380,21 +380,21 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
 	    gcvals.foreground = metric->color;
 	    gcmask |= GDK_GC_FOREGROUND;
 	    metric->gc = gtk_gc_get(widget->style->depth,
-		    		  widget->style->colormap,
+				  widget->style->colormap,
 				  &gcvals,
 				  (GdkGCValuesMask)gcmask);
 	}
 
 #if STACKEDBAR_DEBUG
-    	fprintf(stderr, "%s: metric[%d]length=%d fillrect(%u, %u, %u, %u)\n",
-    	    		widget->name,
-	    	    	i, metric->length,
+	fprintf(stderr, "%s: metric[%d]length=%d fillrect(%u, %u, %u, %u)\n",
+			widget->name,
+			i, metric->length,
 			x, ythick,
 			metric->length,
 			widget->allocation.height - 2*ythick);
 #endif
-    	gdk_draw_rectangle(
-	    	    sbar->offscreen_pixmap,
+	gdk_draw_rectangle(
+		    sbar->offscreen_pixmap,
 		    metric->gc,
 		    /*filled*/TRUE,
 		    x, ythick,
@@ -419,10 +419,10 @@ gnb_stacked_bar_set_num_metrics(GnbStackedBar *sbar, guint nmetrics)
     {
 	for (i = 0 ; i < sbar->nmetrics ; i++)
 	{
-    	    if (sbar->metrics[i].gc != NULL)
-    		gtk_gc_release(sbar->metrics[i].gc);
+	    if (sbar->metrics[i].gc != NULL)
+		gtk_gc_release(sbar->metrics[i].gc);
 	}
-    	g_free(sbar->metrics);
+	g_free(sbar->metrics);
     }
 
     sbar->nmetrics = nmetrics;
@@ -430,8 +430,8 @@ gnb_stacked_bar_set_num_metrics(GnbStackedBar *sbar, guint nmetrics)
 
     for (i = 0 ; i < sbar->nmetrics ; i++)
     {
-    	metric = &sbar->metrics[i];
-	
+	metric = &sbar->metrics[i];
+
 	metric->value = 0;
 	metric->length = 0;
 	memset(&metric->color, 0, sizeof(GdkColor));
@@ -455,25 +455,25 @@ gnb_stacked_bar_set_metric_color(
     g_return_if_fail(sbar != NULL);
     g_return_if_fail(GNB_IS_STACKED_BAR(sbar));
     g_return_if_fail(idx < sbar->nmetrics);
-    
+
     metric = &sbar->metrics[idx];
 
     if (color != NULL)
     {
-    	changed = !metric->color_set;
+	changed = !metric->color_set;
 	metric->color_set = TRUE;
 	metric->color = *color;
     }
     else
     {
-    	changed = metric->color_set;
+	changed = metric->color_set;
 	metric->color_set = FALSE;
 	/* TODO: unallocate the color */
     }
 
     if (changed)
     {
-    	if (metric->gc != NULL)
+	if (metric->gc != NULL)
 	{
 	    gtk_gc_release(metric->gc);
 	    metric->gc = NULL;
@@ -496,22 +496,22 @@ gnb_stacked_bar_set_metric_colors(
 
     g_return_if_fail(sbar != NULL);
     g_return_if_fail(GNB_IS_STACKED_BAR(sbar));
-    
+
     for (i = 0, metric = sbar->metrics ;
-    	 i < sbar->nmetrics ;
+	 i < sbar->nmetrics ;
 	 i++, metric++)
     {
 	gboolean changed = FALSE;
 
 	if (colorp != NULL && *colorp != NULL)
 	{
-    	    changed = !metric->color_set;
+	    changed = !metric->color_set;
 	    metric->color_set = TRUE;
 	    metric->color = **colorp;
 	}
 	else
 	{
-    	    changed = metric->color_set;
+	    changed = metric->color_set;
 	    metric->color_set = FALSE;
 	    /* TODO: unallocate the color */
 	}
@@ -519,17 +519,17 @@ gnb_stacked_bar_set_metric_colors(
 	if (changed)
 	{
 	    nchanged++;
-    	    if (metric->gc != NULL)
+	    if (metric->gc != NULL)
 	    {
 		gtk_gc_release(metric->gc);
 		metric->gc = NULL;
 	    }
 	}
 
-    	if (colorp != NULL)
+	if (colorp != NULL)
 	    colorp++;
     }
-    
+
     if (nchanged && GTK_WIDGET_DRAWABLE(GTK_WIDGET(sbar)))
 	gtk_widget_queue_draw(GTK_WIDGET(sbar));
 }
@@ -548,12 +548,12 @@ gnb_stacked_bar_set_metric_value(
     g_return_if_fail(sbar != NULL);
     g_return_if_fail(GNB_IS_STACKED_BAR(sbar));
     g_return_if_fail(idx < sbar->nmetrics);
-    
+
     metric = &sbar->metrics[idx];
 
     if (metric->value != value)
     {
-    	changed = TRUE;
+	changed = TRUE;
 	metric->value = value;
     }
 
@@ -574,14 +574,14 @@ gnb_stacked_bar_set_metric_values(
 
     g_return_if_fail(sbar != NULL);
     g_return_if_fail(GNB_IS_STACKED_BAR(sbar));
-    
+
     for (i = 0, metric = sbar->metrics ;
-    	 i < sbar->nmetrics ;
+	 i < sbar->nmetrics ;
 	 i++, metric++, valuep++)
     {
 	if (metric->value != *valuep)
 	{
-    	    changed = TRUE;
+	    changed = TRUE;
 	    metric->value = *valuep;
 	}
     }

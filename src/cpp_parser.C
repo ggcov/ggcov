@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2004-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -20,7 +20,7 @@
 #include "cpp_parser.H"
 #include "tok.H"
 
-#define ISBLANK(c)  	((c) == ' ' || (c) == '\t')
+#define ISBLANK(c)      ((c) == ' ' || (c) == '\t')
 
 CVSID("$Id: cpp_parser.C,v 1.7 2010-05-09 05:37:15 gnb Exp $");
 
@@ -58,17 +58,17 @@ cpp_parser_t::getc_commentless()
 {
     while (index_ < line_.length())
     {
-    	int c = xgetc();
+	int c = xgetc();
 
-    	if (!in_comment_)
-    	{
+	if (!in_comment_)
+	{
 	    /* scanning for start of comment */
 	    if (c == '/')
 	    {
-	    	c = xgetc();
+		c = xgetc();
 		if (c == '*')
 		{
-	    	    in_comment_ = TRUE;
+		    in_comment_ = TRUE;
 		    comment_.truncate();
 		}
 		else if (c == '/')  /* // C++ style comment */
@@ -79,21 +79,21 @@ cpp_parser_t::getc_commentless()
 		else
 		{
 		    xungetc(c);
-	    	    return '/';
+		    return '/';
 		}
 	    }
 	    else
-	    	return c;
+		return c;
 	}
 	else
 	{
 	    /* scanning for '*' at end of C comment */
 	    if (c == '*')
 	    {
-	    	c = xgetc();
+		c = xgetc();
 		if (c == '/')
 		{
-	    	    in_comment_ = FALSE;
+		    in_comment_ = FALSE;
 		    got_comment(comment_, 0);
 		}
 	    }
@@ -148,32 +148,32 @@ cpp_parser_t::get_token()
     while ((c = getc_commentless()) != EOF && ISBLANK(c))
 	;
     if (c == EOF)
-    	return EOF;
+	return EOF;
 
     tokenbuf_[0] = '\0';
-	
+
     if (isdigit(c))
     {
-    	do
+	do
 	{
 	    tokenbuf_[len++] = c;
 	}
 	while ((c = getc_commentless()) != EOF &&
-	       isdigit(c) && 
+	       isdigit(c) &&
 	       len < sizeof(tokenbuf_));
 	tokenbuf_[len] = '\0';
 	if (c != EOF)
 	    xungetc(c);
-    	return T_NUMBER;
+	return T_NUMBER;
     }
     else if (isalpha(c) || (c) == '_')
     {
-    	do
+	do
 	{
 	    tokenbuf_[len++] = c;
 	}
 	while ((c = getc_commentless()) != EOF &&
-	       (isalnum(c) || (c) == '_') && 
+	       (isalnum(c) || (c) == '_') &&
 	       len < sizeof(tokenbuf_));
 	tokenbuf_[len] = '\0';
 	if (c != EOF)
@@ -203,14 +203,14 @@ cpp_parser_t::get_token()
     }
     else if (c == '&')
     {
-    	if ((c = xgetc()) == '&')
+	if ((c = xgetc()) == '&')
 	    return T_LOG_AND;
 	xungetc(c);
 	return '&';
     }
     else if (c == '|')
     {
-    	if ((c = xgetc()) == '|')
+	if ((c = xgetc()) == '|')
 	    return T_LOG_OR;
 	xungetc(c);
 	return '|';
@@ -221,9 +221,9 @@ cpp_parser_t::get_token()
 const char *
 cpp_parser_t::token_as_string(int tok) const
 {
-    static const char *token_strs[] = 
+    static const char *token_strs[] =
     {
-    	"INCLUDE",
+	"INCLUDE",
 	"IF",
 	"IFDEF",
 	"IFNDEF",
@@ -244,7 +244,7 @@ cpp_parser_t::token_as_string(int tok) const
     if (tok < 256)
     {
 	static char cbuf[8];
-    	if (isprint(tok))
+	if (isprint(tok))
 	{
 	    cbuf[0] = tok;
 	    cbuf[1] = '\0';
@@ -253,7 +253,7 @@ cpp_parser_t::token_as_string(int tok) const
 	{
 	    snprintf(cbuf, sizeof(cbuf), "\\%03o", tok);
 	}
-    	return cbuf;
+	return cbuf;
     }
     return (tok >= T_MAX_TOKEN ? "unknown" : token_strs[tok-256]);
 }
@@ -283,18 +283,18 @@ void
 cpp_parser_t::set_delta(depend_t *dep, const char *var, int delta)
 {
     int *dd;
-    
+
     if ((dd = dep->deltas_->lookup(var)) == 0)
     {
-    	dd = new int;
+	dd = new int;
 	dep->deltas_->insert(g_strdup(var), dd);
     }
     else if (*dd != delta)
     {
-    	fprintf(stderr,
-	    	"%s:%ld: Warning: complex expression involves %s"
-	    	" more than once, code suppression may not work.\n",
-	    	filename_.data(), lineno_, var);
+	fprintf(stderr,
+		"%s:%ld: Warning: complex expression involves %s"
+		" more than once, code suppression may not work.\n",
+		filename_.data(), lineno_, var);
     }
     *dd = delta;
 }
@@ -338,10 +338,10 @@ void
 cpp_parser_t::stack_dump()
 {
     int i;
-    
+
     fprintf(stderr, "Parse stack:");
     for (i = 0 ; i < depth_ ; i++)
-    	fprintf(stderr, " %s", token_as_string(stack_[i]));
+	fprintf(stderr, " %s", token_as_string(stack_[i]));
     fputc('\n', stderr);
 }
 
@@ -391,10 +391,10 @@ cpp_parser_t::parse_boolean_expr(gboolean inverted)
 
     while ((tok = get_token()) != EOF)
     {
-    	dprintf2(D_CPP|D_VERBOSE, "Read token %s %s\n",
-	    	token_as_string(tok), tokenbuf_);
+	dprintf2(D_CPP|D_VERBOSE, "Read token %s %s\n",
+		token_as_string(tok), tokenbuf_);
 
-    	/* shift */
+	/* shift */
 	switch (tok)
 	{
 	case T_LEFT_PAREN:
@@ -410,41 +410,41 @@ cpp_parser_t::parse_boolean_expr(gboolean inverted)
 		stack_peek(0) == T_IDENTIFIER &&
 		stack_peek(1) == T_LEFT_PAREN &&
 		stack_peek(2) == T_DEFINED)
-	    	stack_replace(3, T_BOOL_EXPR);
+		stack_replace(3, T_BOOL_EXPR);
 	    else if (depth_ >= 2 &&
 		stack_peek(0) == T_BOOL_EXPR &&
 		stack_peek(1) == T_LEFT_PAREN)
-	    	stack_replace(2, stack_peek(0));
+		stack_replace(2, stack_peek(0));
 	    break;
 	case T_IDENTIFIER:
 	    stack_push(T_IDENTIFIER);
-    	    set_delta(depend_stack_.head(), tokenbuf_, (inverted ? -1 : 1));
+	    set_delta(depend_stack_.head(), tokenbuf_, (inverted ? -1 : 1));
 	    break;
 	case T_BANG:
 	    stack_push(T_BANG);
-    	    inverted = !inverted;
+	    inverted = !inverted;
 	    break;
 	default:
-    	    return FALSE;
+	    return FALSE;
 	}
 
-    	/* reduce */
-    	for (;;)
+	/* reduce */
+	for (;;)
 	{
 	    if (depth_ >= 2 &&
-	    	stack_peek(0) == T_BOOL_EXPR &&
+		stack_peek(0) == T_BOOL_EXPR &&
 		stack_peek(1) == T_BANG)
 	    {
 		stack_replace(2, stack_peek(0));
 		inverted = !inverted;
 	    }
 	    else if (depth_ >= 3 &&
-	    	stack_peek(0) == T_BOOL_EXPR &&
-	    	stack_peek(1) == T_LOG_OP &&
+		stack_peek(0) == T_BOOL_EXPR &&
+		stack_peek(1) == T_LOG_OP &&
 		stack_peek(2) == T_BOOL_EXPR)
 		stack_replace(3, T_BOOL_EXPR);
 	    else
-	    	break;
+		break;
 	}
     }
     return TRUE;
@@ -461,7 +461,7 @@ cpp_parser_t::parse_if()
     dep->lineno_ = lineno_;
     depend_stack_.prepend(dep);
 
-    depth_ = 0;    
+    depth_ = 0;
     parse_boolean_expr(FALSE);
 
     // notify subclasses
@@ -474,9 +474,9 @@ cpp_parser_t::parse_ifdef()
     dprintf1(D_CPP, "[%ld] ifdef\n", lineno_);
 
     if (get_token() != T_IDENTIFIER)
-    	return; /* syntax error */
+	return; /* syntax error */
     if (get_token() != EOF)
-    	return; /* syntax error */
+	return; /* syntax error */
 
     depend_t *dep = new depend_t;
     dep->lineno_ = lineno_;
@@ -493,9 +493,9 @@ cpp_parser_t::parse_ifndef()
     dprintf1(D_CPP, "[%ld] ifndef\n", lineno_);
 
     if (get_token() != T_IDENTIFIER)
-    	return; /* syntax error */
+	return; /* syntax error */
     if (get_token() != EOF)
-    	return; /* syntax error */
+	return; /* syntax error */
 
     depend_t *dep = new depend_t;
     dep->lineno_ = lineno_;
@@ -510,13 +510,13 @@ void
 cpp_parser_t::parse_else()
 {
     dprintf1(D_CPP, "[%ld] else\n", lineno_);
-    
+
     depend_t *dep;
     if ((dep = depend_stack_.head()) == 0)
     {
-    	fprintf(stderr,
-	    	"%s:%ld: Warning: unmatched else\n",
-	    	filename_.data(), lineno_);
+	fprintf(stderr,
+		"%s:%ld: Warning: unmatched else\n",
+		filename_.data(), lineno_);
 	return;
     }
     dep->lineno_ = lineno_;
@@ -539,12 +539,12 @@ cpp_parser_t::parse_endif()
 
     if ((dep = depend_stack_.remove_head()) == 0)
     {
-    	fprintf(stderr,
-	    	"%s:%ld: Warning: unmatched endif\n",
-	    	filename_.data(), lineno_);
+	fprintf(stderr,
+		"%s:%ld: Warning: unmatched endif\n",
+		filename_.data(), lineno_);
 	return;
     }
-    
+
     delete dep;
 
     // notify subclasses
@@ -559,9 +559,9 @@ cpp_parser_t::parse_cpp_line(unsigned long lineno)
     lineno_ = lineno;
     index_ = 0;
     in_comment_ = FALSE;
-    
+
     dprintf2(D_CPP|D_VERBOSE, "parse_cpp_line: line[%lu]=\"%s\"\n",
-    	     lineno, line_.data());
+	     lineno, line_.data());
 
 #if 0
     int c;
@@ -580,7 +580,7 @@ cpp_parser_t::parse_cpp_line(unsigned long lineno)
 	    lineno, data_);
     while ((tok = get_token()) != EOF)
     {
-    	fprintf(stderr, " %d(%s)", tok, token_as_string(tok));
+	fprintf(stderr, " %d(%s)", tok, token_as_string(tok));
     }
     fprintf(stderr, "\n");
 #endif
@@ -606,9 +606,9 @@ cpp_parser_t::parse_c_line(unsigned long lineno)
     lineno_ = lineno;
     index_ = 0;
     in_comment_ = FALSE;
-    
+
     dprintf2(D_CPP|D_VERBOSE, "parse_c_line: line[%lu]=\"%s\"\n",
-    	     lineno, line_.data());
+	     lineno, line_.data());
 
     while (getc_commentless() != EOF)
 	;
@@ -625,17 +625,17 @@ cpp_parser_t::parse()
     char *start, *end;
     unsigned long lineno = 0, extended = 0, lineno_adj = 0;
     char buf[1024];
-    
+
     if ((fp = fopen(filename_, "r")) == 0)
     {
-    	perror(filename_);
+	perror(filename_);
 	return FALSE;
     }
-    
+
     while (fgets(buf, sizeof(buf), fp) != 0)
     {
-    	++lineno;
-    	/* drop trailing newline */
+	++lineno;
+	/* drop trailing newline */
 	for (end = buf+strlen(buf)-1 ;
 	     end >= buf && (*end == '\n' || *end == '\r') ;
 	     )
@@ -645,7 +645,7 @@ cpp_parser_t::parse()
 	for (start = buf ; ISBLANK(*start) ; start++)
 	    ;
 
-    	if (extended) /* previous line was extended */
+	if (extended) /* previous line was extended */
 	{
 	    line_.append_char(' ');
 	}
@@ -656,7 +656,7 @@ cpp_parser_t::parse()
 	    {
 		line_.append_string(start);
 		parse_c_line(lineno - lineno_adj);
-		continue;	    /* not a pre-processor line */
+		continue;           /* not a pre-processor line */
 	    }
 	    start++;
 	}
@@ -674,13 +674,13 @@ cpp_parser_t::parse()
 
 	line_.append_string(start);
 
-	if (extended)		/* this line is extended */
+	if (extended)           /* this line is extended */
 	    continue;
-	
+
 	/* Have a complete pre-processor line in `line_' */
 	parse_cpp_line(lineno - lineno_adj);
     }
-    
+
     fclose(fp);
     return TRUE;
 }

@@ -34,13 +34,13 @@ cached_string::get(const char *s)
 	return 0;
 
     if (all_ == 0)
-    	all_ = new hashtable_t<const char, char>;
+	all_ = new hashtable_t<const char, char>;
     else
-    	p = all_->lookup(s);
+	p = all_->lookup(s);
 
     if (p == 0)
     {
-    	p = g_strdup(s);
+	p = g_strdup(s);
 	all_->insert(p, p);
     }
 
@@ -51,7 +51,7 @@ const char *
 cached_string::lookup(const char *s)
 {
     if (all_ == 0 || s == 0)
-    	return 0;
+	return 0;
     return all_->lookup(s);
 }
 

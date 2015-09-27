@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -30,19 +30,19 @@
 CVSID("$Id: fileswin.C,v 1.27 2010-05-09 05:37:15 gnb Exp $");
 
 
-#define COL_FILE	0
-#define COL_BLOCKS   	1
-#define COL_LINES   	2
-#define COL_FUNCTIONS	3
-#define COL_CALLS   	4
-#define COL_BRANCHES	5
+#define COL_FILE        0
+#define COL_BLOCKS      1
+#define COL_LINES       2
+#define COL_FUNCTIONS   3
+#define COL_CALLS       4
+#define COL_BRANCHES    5
 #if !GTK2
-#define NUM_COLS    	6
+#define NUM_COLS        6
 #else
-#define COL_CLOSURE	6
-#define COL_FG_GDK	7
-#define COL_ICON	8
-#define NUM_COLS    	9
+#define COL_CLOSURE     6
+#define COL_FG_GDK      7
+#define COL_ICON        8
+#define NUM_COLS        9
 #define COL_TYPES \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, GDK_TYPE_COLOR, \
@@ -53,7 +53,7 @@ CVSID("$Id: fileswin.C,v 1.27 2010-05-09 05:37:15 gnb Exp $");
 
 struct file_rec_t
 {
-    string_var name; 	    	/* partial name */
+    string_var name;            /* partial name */
     cov_file_t *file;
     cov_scope_t *scope;
 #if !GTK2
@@ -80,13 +80,13 @@ struct file_rec_t
     ~file_rec_t()
     {
 	delete scope;
-    	children.delete_all();
+	children.delete_all();
     }
 
     void
     add_child(file_rec_t *child)
     {
-    	children.append(child);
+	children.append(child);
 	((cov_compound_scope_t *)scope)->add_child(child->scope);
     }
 };
@@ -106,33 +106,33 @@ fileswin_compare(file_rec_t *fr1, file_rec_t *fr2, int column)
     const cov_stats_t *s2 = fr2->scope->get_stats();
 
     dprintf2(D_FILESWIN|D_VERBOSE,
-    	    "fileswin_compare: fr1=\"%s\" fr2=\"%s\"\n",
-    	    fr1->name.data(), fr2->name.data());
+	    "fileswin_compare: fr1=\"%s\" fr2=\"%s\"\n",
+	    fr1->name.data(), fr2->name.data());
     switch (column)
     {
     case COL_BLOCKS:
-    	return ratiocmp(s1->blocks_sort_fraction(),
-	    	    	s2->blocks_sort_fraction());
-	
+	return ratiocmp(s1->blocks_sort_fraction(),
+			s2->blocks_sort_fraction());
+
     case COL_LINES:
-    	return ratiocmp(s1->lines_sort_fraction(),
-	    	    	s2->lines_sort_fraction());
-	
+	return ratiocmp(s1->lines_sort_fraction(),
+			s2->lines_sort_fraction());
+
     case COL_FUNCTIONS:
-    	return ratiocmp(s1->functions_sort_fraction(),
-	    	        s2->functions_sort_fraction());
-	
+	return ratiocmp(s1->functions_sort_fraction(),
+			s2->functions_sort_fraction());
+
     case COL_CALLS:
-    	return ratiocmp(s1->calls_sort_fraction(),
-	    	        s2->calls_sort_fraction());
-	
+	return ratiocmp(s1->calls_sort_fraction(),
+			s2->calls_sort_fraction());
+
     case COL_BRANCHES:
-    	return ratiocmp(s1->branches_sort_fraction(),
-	    	        s2->branches_sort_fraction());
-	
+	return ratiocmp(s1->branches_sort_fraction(),
+			s2->branches_sort_fraction());
+
     case COL_FILE:
-    	return strcmp(fr1->name, fr2->name);
-	
+	return strcmp(fr1->name, fr2->name);
+
     default:
 	return 0;
     }
@@ -143,8 +143,8 @@ static int
 fileswin_clist_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
 {
     return fileswin_compare(
-    	(file_rec_t *)((GtkCListRow *)ptr1)->data,
-    	(file_rec_t *)((GtkCListRow *)ptr2)->data,
+	(file_rec_t *)((GtkCListRow *)ptr1)->data,
+	(file_rec_t *)((GtkCListRow *)ptr2)->data,
 	clist->sort_column);
 }
 #else
@@ -174,12 +174,12 @@ fileswin_t::fileswin_t()
     GtkTreeViewColumn *col;
     GtkCellRenderer *rend;
 #endif
-    
+
     /* load the interface & connect signals */
     xml = ui_load_tree("files");
-    
+
     set_window(glade_xml_get_widget(xml, "files"));
-    
+
     blocks_check_ = glade_xml_get_widget(xml, "files_blocks_check");
     lines_check_ = glade_xml_get_widget(xml, "files_lines_check");
     functions_check_ = glade_xml_get_widget(xml, "files_functions_check");
@@ -193,17 +193,17 @@ fileswin_t::fileswin_t()
     ctree_ = glade_xml_get_widget(xml, "files_ctree");
 #if !GTK2
     gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_BLOCKS,
-    	    	    	    	       GTK_JUSTIFY_RIGHT);
+				       GTK_JUSTIFY_RIGHT);
     gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_LINES,
-    	    	    	    	       GTK_JUSTIFY_RIGHT);
+				       GTK_JUSTIFY_RIGHT);
     gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_FUNCTIONS,
-    	    	    	    	       GTK_JUSTIFY_RIGHT);
+				       GTK_JUSTIFY_RIGHT);
     gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_CALLS,
-    	    	    	    	       GTK_JUSTIFY_RIGHT);
+				       GTK_JUSTIFY_RIGHT);
     gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_BRANCHES,
-    	    	    	    	       GTK_JUSTIFY_RIGHT);
+				       GTK_JUSTIFY_RIGHT);
     gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_FILE,
-    	    	    	    	       GTK_JUSTIFY_LEFT);
+				       GTK_JUSTIFY_LEFT);
     gtk_clist_set_compare_func(GTK_CLIST(ctree_), fileswin_clist_compare);
 
     ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_BLOCKS);
@@ -227,7 +227,7 @@ fileswin_t::fileswin_t()
 	  fileswin_tree_iter_compare, GINT_TO_POINTER(COL_CALLS), 0);
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_BRANCHES,
 	  fileswin_tree_iter_compare, GINT_TO_POINTER(COL_BRANCHES), 0);
-    
+
     gtk_tree_view_set_model(GTK_TREE_VIEW(ctree_), GTK_TREE_MODEL(store_));
 
     rend = gtk_cell_renderer_text_new();
@@ -251,31 +251,31 @@ fileswin_t::fileswin_t()
     gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
 
     col = gtk_tree_view_column_new_with_attributes(_("Blocks"), rend,
-    	    	"text", COL_BLOCKS,
+		"text", COL_BLOCKS,
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_BLOCKS);
     gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
-    
+
     col = gtk_tree_view_column_new_with_attributes(_("Lines"), rend,
-    	    	"text", COL_LINES,
+		"text", COL_LINES,
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_LINES);
     gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
-    
+
     col = gtk_tree_view_column_new_with_attributes(_("Functions"), rend,
-    	    	"text", COL_FUNCTIONS,
+		"text", COL_FUNCTIONS,
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_FUNCTIONS);
     gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
-    
+
     col = gtk_tree_view_column_new_with_attributes(_("Calls"), rend,
-    	    	"text", COL_CALLS,
+		"text", COL_CALLS,
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_CALLS);
     gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
-    
+
     col = gtk_tree_view_column_new_with_attributes(_("Branches"), rend,
-    	    	"text", COL_BRANCHES,
+		"text", COL_BRANCHES,
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_BRANCHES);
     gtk_tree_view_append_column(GTK_TREE_VIEW(ctree_), col);
@@ -304,7 +304,7 @@ dump_file_tree(file_rec_t *fr, int indent)
     int i;
 
     for (i = 0 ; i < indent ; i++)
-    	fputc(' ', stderr);
+	fputc(' ', stderr);
     fprintf(stderr, "%s\n", fr->name.data());
 
     for (list_iterator_t<file_rec_t> friter = fr->children.first() ; *friter ; ++friter)
@@ -317,7 +317,7 @@ fileswin_t::populate()
     dprintf0(D_FILESWIN, "fileswin_t::populate\n");
 
     if (root_ != 0)
-    	delete root_;
+	delete root_;
     // common_path() includes a trailing /, we just
     // want the last directory component
     estring rootname = cov_file_t::common_path();
@@ -338,13 +338,13 @@ fileswin_t::populate()
 	tok_t tok(buf, "/");
 	const char *part;
 
-    	parent = root_;
+	parent = root_;
 
-    	while ((part = tok.next()) != 0)
+	while ((part = tok.next()) != 0)
 	{
 	    if (part + strlen(part) == end)
 	    {
-	    	parent->add_child(fr = new file_rec_t(part, (*iter)));
+		parent->add_child(fr = new file_rec_t(part, (*iter)));
 	    }
 	    else
 	    {
@@ -381,11 +381,11 @@ format_stat(
     unsigned long denominator)
 {
     if (denominator == 0)
-    	*buf = '\0';
+	*buf = '\0';
     else if (percent_flag)
-    	snprintf(buf, maxlen, "%.2f", (double)numerator * 100.0 / denominator);
+	snprintf(buf, maxlen, "%.2f", (double)numerator * 100.0 / denominator);
     else
-    	snprintf(buf, maxlen, "%lu/%lu", numerator, denominator);
+	snprintf(buf, maxlen, "%lu/%lu", numerator, denominator);
 }
 
 void
@@ -407,28 +407,28 @@ fileswin_t::add_node(
     is_leaf = (fr->children.head() == 0);
     if (tree_flag || is_leaf)
     {
-    	const cov_stats_t *stats = fr->scope->get_stats();
+	const cov_stats_t *stats = fr->scope->get_stats();
 
 	text[COL_FILE] = (char *)fr->name.data();
 
 	format_stat(blocks_pc_buf, sizeof(blocks_pc_buf), percent_flag,
-	    	    stats->blocks_executed(), stats->blocks_total());
+		    stats->blocks_executed(), stats->blocks_total());
 	text[COL_BLOCKS] = blocks_pc_buf;
 
 	format_stat(lines_pc_buf, sizeof(lines_pc_buf), percent_flag,
-	    	    stats->lines_executed(), stats->lines_total());
+		    stats->lines_executed(), stats->lines_total());
 	text[COL_LINES] = lines_pc_buf;
 
 	format_stat(functions_pc_buf, sizeof(functions_pc_buf), percent_flag,
-	    	    stats->functions_executed(), stats->functions_total());
+		    stats->functions_executed(), stats->functions_total());
 	text[COL_FUNCTIONS] = functions_pc_buf;
 
 	format_stat(calls_pc_buf, sizeof(calls_pc_buf), percent_flag,
-	    	    stats->calls_executed(), stats->calls_total());
+		    stats->calls_executed(), stats->calls_total());
 	text[COL_CALLS] = calls_pc_buf;
 
 	format_stat(branches_pc_buf, sizeof(branches_pc_buf), percent_flag,
-	    	    stats->branches_executed(), stats->branches_total());
+		    stats->branches_executed(), stats->branches_total());
 	text[COL_BRANCHES] = branches_pc_buf;
 
 	color = foregrounds_by_status[fr->scope->status()];
@@ -437,20 +437,20 @@ fileswin_t::add_node(
 	fr->node = gtk_ctree_insert_node(
 		GTK_CTREE(ctree_),
 		(parent == 0 || !tree_flag ? 0 : parent->node),
-		(GtkCTreeNode *)0,	    /* sibling */
+		(GtkCTreeNode *)0,          /* sibling */
 		text,
-		4,     	    	    /* spacing */
-		(GdkPixmap *)0,	    /* pixmap_closed */
-		(GdkBitmap *)0,	    /* mask_closed */
-		(GdkPixmap *)0,	    /* pixmap_opened */
-		(GdkBitmap *)0,	    /* mask_opened */
-		is_leaf,  	    	    /* is_leaf */
-		TRUE);  	    	    /* expanded*/
-    	gtk_ctree_node_set_row_data(GTK_CTREE(ctree_), fr->node, fr);
+		4,                  /* spacing */
+		(GdkPixmap *)0,     /* pixmap_closed */
+		(GdkBitmap *)0,     /* mask_closed */
+		(GdkPixmap *)0,     /* pixmap_opened */
+		(GdkBitmap *)0,     /* mask_opened */
+		is_leaf,                    /* is_leaf */
+		TRUE);                      /* expanded*/
+	gtk_ctree_node_set_row_data(GTK_CTREE(ctree_), fr->node, fr);
 	if (color != 0)
-    	    gtk_ctree_node_set_foreground(GTK_CTREE(ctree_), fr->node, color);
+	    gtk_ctree_node_set_foreground(GTK_CTREE(ctree_), fr->node, color);
 #else
-    	gtk_tree_store_append(store_, &fr->iter,
+	gtk_tree_store_append(store_, &fr->iter,
 	    (parent == 0 || !tree_flag ? 0 : &parent->iter));
 	gtk_tree_store_set(store_,  &fr->iter,
 	    COL_FILE, text[COL_FILE],
@@ -476,7 +476,7 @@ fileswin_t::update()
 {
     gboolean percent_flag;
     gboolean tree_flag;
-    
+
     dprintf0(D_FILESWIN, "fileswin_t::update\n");
 
     percent_flag = GTK_CHECK_MENU_ITEM(percent_check_)->active;
@@ -485,9 +485,9 @@ fileswin_t::update()
 #if !GTK2
     gtk_clist_freeze(GTK_CLIST(ctree_));
     gtk_clist_clear(GTK_CLIST(ctree_));
-    
+
     gtk_ctree_set_line_style(GTK_CTREE(ctree_),
-    	    tree_flag ? GTK_CTREE_LINES_SOLID : GTK_CTREE_LINES_NONE);
+	    tree_flag ? GTK_CTREE_LINES_SOLID : GTK_CTREE_LINES_NONE);
 #else
     gtk_tree_store_clear(store_);
 #endif

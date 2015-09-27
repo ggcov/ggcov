@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -38,11 +38,11 @@ template<class T> class ptrarray_iterator_t
 {
 private:
     ptrarray_t<T> *array_;
-    int i_;	    /* needs to go to -1 for EOF in -- */
+    int i_;         /* needs to go to -1 for EOF in -- */
 
     ptrarray_iterator_t(ptrarray_t<T> *a, int i)
      :  array_(a),
-        i_(i)
+	i_(i)
     {
     }
 
@@ -56,7 +56,7 @@ private:
 public:
     ptrarray_iterator_t()
      :  array_(0),
-        i_(0)
+	i_(0)
     {
     }
 
@@ -131,19 +131,19 @@ public:
     ~ptrarray_t()
     {
     }
-    
+
     void * operator new(size_t)
     {
-    	return g_ptr_array_new();
+	return g_ptr_array_new();
     }
     void operator delete(void *x)
     {
-    	g_ptr_array_free((GPtrArray *)x, /*free_seg*/TRUE);
+	g_ptr_array_free((GPtrArray *)x, /*free_seg*/TRUE);
     }
 
     void resize(unsigned int n)
     {
-    	g_ptr_array_set_size(this, n);
+	g_ptr_array_set_size(this, n);
     }
 
     unsigned int append(T *p)
@@ -163,14 +163,14 @@ public:
     }
     void set(unsigned i, T *p)
     {
-    	if (i >= len)
-    	    g_ptr_array_set_size(this, i+1);
+	if (i >= len)
+	    g_ptr_array_set_size(this, i+1);
 	((T **)pdata)[i] = p;
     }
 
     T *nth(unsigned i) const
     {
-    	assert(i < len);
+	assert(i < len);
 	return (T *)g_ptr_array_index(this, i);
     }
     T *operator[](unsigned i) const
@@ -185,20 +185,20 @@ public:
     {
 	return (T *)g_ptr_array_index(this, len-1);
     }
-    
+
     T * const *data() const
     {
 	return (T * const *)(pdata);
     }
     unsigned int length() const
     {
-    	return len;
+	return len;
     }
 
     void sort(int (*compare)(const T **, const T **))
     {
 	qsort(pdata, len, sizeof(void*),
-    	    	(int (*)(const void*, const void*))compare);
+		(int (*)(const void*, const void*))compare);
     }
 
     ptrarray_iterator_t<T>

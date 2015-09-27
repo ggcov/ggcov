@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -23,7 +23,7 @@
 #include "common.h"
 #include "cov.H"
 
-/* 
+/*
  * Scenegen is an abstract base class used as an interface between code
  * that generates diagrams and the code that talks to window systems
  * or PostScript.  It behaves as a streaming interface which generates
@@ -83,7 +83,7 @@ public:
 protected:
     enum object_type_t
     {
-    	OT_NONE=0,
+	OT_NONE=0,
 	OT_FUNCTION,
 	OT_FILE,
 	OT_BLOCK
@@ -98,7 +98,7 @@ protected:
 private:
     void set_object(object_type_t, void *);
     void *get_object(object_type_t);
-    
+
     void *object_;
     object_type_t object_type_;
 };

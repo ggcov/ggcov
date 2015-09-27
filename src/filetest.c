@@ -5,8 +5,8 @@
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#define BASEDIR	"/tmp"
-#define TESTDIR	BASEDIR"/ggcov.filename.test"
+#define BASEDIR "/tmp"
+#define TESTDIR BASEDIR"/ggcov.filename.test"
 
 static char oldcwd[PATH_MAX];
 

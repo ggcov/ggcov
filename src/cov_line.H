@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003-2004 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -33,14 +33,14 @@ public:
     count_t count()
     {
 	if (!count_valid_)
-    	    calculate_count();
+	    calculate_count();
 	return count_;
     }
 
     cov::status_t status()
     {
 	if (!count_valid_)
-    	    calculate_count();
+	    calculate_count();
 	return status_;
     }
     /* Check for suppression without the side effect of calculate_count() */
@@ -54,17 +54,17 @@ public:
 	return blocks_;
     }
     cov_function_t *function() const;
-    
+
     static cov_line_t *find(const cov_location_t *);
-    
+
     /*
      * Format a string compactly describing the list of blocks
      * on a particular line.  Used in the Source window and
      * for tggcov.  Width should be at least 8.
      */
     unsigned int format_blocks(char *buf, unsigned int maxlen);
-    
-    
+
+
 private:
     cov_line_t();
     ~cov_line_t();
@@ -78,7 +78,7 @@ private:
     cov::status_t status_;
     count_t count_;
     const cov_suppression_t *suppression_;
-    
+
     friend class cov_file_t;
     friend class cov_block_t;
     friend class cov_file_src_parser_t;

@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2002-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -41,7 +41,7 @@ confsection_t::confsection_t(const char *secname)
  :  secname_(secname)
 {
     if (all_ == 0)
-    	all_ = new hashtable_t<const char, confsection_t>;
+	all_ = new hashtable_t<const char, confsection_t>;
     all_->insert(secname_, this);
 }
 
@@ -57,10 +57,10 @@ confsection_t *
 confsection_t::get(const char *name)
 {
     confsection_t *cs;
-    
+
     if (all_ == 0 ||
-    	(cs = all_->lookup(name)) == 0)
-    	cs = new confsection_t(name);
+	(cs = all_->lookup(name)) == 0)
+	cs = new confsection_t(name);
     return cs;
 }
 
@@ -116,7 +116,7 @@ confsection_t::get_string(const char *name, const char *deflt)
     gboolean defaulted = FALSE;
     val = gnome_config_get_string_with_default(key.data(), &defaulted);
     if (defaulted)
-    	val = (deflt == 0 ? 0 : g_strdup(deflt));
+	val = (deflt == 0 ? 0 : g_strdup(deflt));
 #endif
 
     return val;
@@ -143,16 +143,16 @@ int
 confsection_t::get_enum(const char *name, const confenum_t *tbl, int deflt)
 {
     string_var val = get_string(name, 0);
-    
+
     if (val == (char *)0)
-    	return deflt;
+	return deflt;
 
     for ( ; tbl->string != 0 ; tbl++)
     {
-    	if (!strcasecmp(tbl->string, val))
+	if (!strcasecmp(tbl->string, val))
 	    return tbl->value;
     }
-    
+
     if (isdigit(val.data()[0]))
     {
 	char *end = 0;
@@ -170,13 +170,13 @@ confsection_t::set_enum(const char *name, const confenum_t *tbl, int value)
 
     for ( ; tbl->string != 0 ; tbl++)
     {
-    	if (value == tbl->value)
+	if (value == tbl->value)
 	{
 	    set_string(name, tbl->string);
 	    return;
 	}
     }
-    
+
     snprintf(buf, sizeof(buf), "%d", value);
     set_string(name, buf);
 }
@@ -206,7 +206,7 @@ confsection_t::get_bool(const char *name, gboolean deflt)
     gboolean defaulted = FALSE;
     val = gnome_config_get_bool_with_default(key.data(), &defaulted);
     if (defaulted)
-    	val = deflt;
+	val = deflt;
 #endif
     return val;
 }
@@ -250,7 +250,7 @@ confsection_t::get_int(const char *name, int deflt)
     gboolean defaulted = FALSE;
     val = gnome_config_get_int_with_default(key.data(), &defaulted);
     if (defaulted)
-    	val = deflt;
+	val = deflt;
 #endif
     return val;
 }
@@ -295,7 +295,7 @@ confsection_t::get_float(const char *name, float deflt)
     gboolean defaulted = FALSE;
     val = gnome_config_get_float_with_default(key.data(), &defaulted);
     if (defaulted)
-    	val = deflt;
+	val = deflt;
 #endif
     return val;
 }

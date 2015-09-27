@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -94,9 +94,9 @@ cov_line_t::find(const cov_location_t *loc)
     cov_file_t *f;
 
     return ((f = cov_file_t::find(loc->filename)) == 0 ||
-    	    loc->lineno < 1 ||
+	    loc->lineno < 1 ||
 	    loc->lineno > f->num_lines()
-    	    ? 0
+	    ? 0
 	    : f->nth_line(loc->lineno));
 }
 
@@ -171,23 +171,23 @@ cov_line_t::format_blocks(char *buf, unsigned int maxlen)
 	}
 
 	if (start == end)
-    	    snprintf(buf, maxlen, "%u,", start);
+	    snprintf(buf, maxlen, "%u,", start);
 	else
-    	    snprintf(buf, maxlen, "%u%c%u,",
-	    	    start, (end == start+1 ? ',' : '-'), end);
+	    snprintf(buf, maxlen, "%u%c%u,",
+		    start, (end == start+1 ? ',' : '-'), end);
 	len = strlen(buf);
 	buf += len;
 	maxlen -= len;
 	start = end = b->bindex();
     }
-    
+
     if (maxlen > 0 && start > 0)
     {
 	if (start == end)
-    	    snprintf(buf, maxlen, "%u", start);
+	    snprintf(buf, maxlen, "%u", start);
 	else
-    	    snprintf(buf, maxlen, "%u%c%u",
-	    		start, (end == start+1 ? ',' : '-'), end);
+	    snprintf(buf, maxlen, "%u%c%u",
+			start, (end == start+1 ? ',' : '-'), end);
 	len = strlen(buf);
 	buf += len;
 	maxlen -= len;

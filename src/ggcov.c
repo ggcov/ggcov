@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2004 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -42,7 +42,7 @@ CVSID("$Id: ggcov.c,v 1.53 2010-05-09 05:37:15 gnb Exp $");
 #define DEBUG_GTK 1
 
 char *argv0;
-static list_t<const char> files;	    /* incoming specification from commandline */
+static list_t<const char> files;            /* incoming specification from commandline */
 
 static const char ** debug_argv;
 static const char *initial_windows = "summary";
@@ -60,23 +60,23 @@ stash_argv(int argc, char **argv)
 {
     int i, len;
     char **nargv, *p;
-    
+
     len = 0;
     for (i = 0 ; i < argc ; i++)
-    	len += sizeof(char*) + strlen(argv[i]) + 1/*trailing nul char*/;
+	len += sizeof(char*) + strlen(argv[i]) + 1/*trailing nul char*/;
     len += sizeof(char*)/* trailing NULL ptr */ ;
-    
+
     nargv = (char **)gnb_xmalloc(len);
     p = (char *)(nargv + argc + 1);
 
     for (i = 0 ; i < argc ; i++)
     {
-    	nargv[i] = p;
-    	strcpy(p, argv[i]);
+	nargv[i] = p;
+	strcpy(p, argv[i]);
 	p += strlen(p) + 1;
     }
     nargv[i] = 0;
-    
+
     debug_argv = (const char **)nargv;
 }
 
@@ -112,7 +112,7 @@ ggcov_read_file(const char *filename)
     }
     else
     {
-    	/* TODO: gui alert to user */
+	/* TODO: gui alert to user */
 	fprintf(stderr, "%s: don't know how to handle this filename\n",
 		filename);
 	return FALSE;
@@ -131,12 +131,12 @@ on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
     dprintf0(D_UICORE, "on_open_ok_button_clicked\n");
 
     filename = gtk_file_selection_get_filename(
-    	    	    GTK_FILE_SELECTION(open_window));
+		    GTK_FILE_SELECTION(open_window));
 
     if (filename != 0 && *filename != '\0')
     {
-    	cov_pre_read();
-    	if (ggcov_read_file(filename))
+	cov_pre_read();
+	if (ggcov_read_file(filename))
 	    cov_post_read();
     }
 
@@ -147,7 +147,7 @@ on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
      * argument and failed to load a file in the Open dialog.
      */
     if (!*cov_file_t::first())
-    	exit(1);
+	exit(1);
 }
 
 GLADE_CALLBACK void
@@ -161,7 +161,7 @@ on_open_cancel_button_clicked(GtkWidget *w, gpointer userdata)
      * argument and cancelled the Open dialog.
      */
     if (!*cov_file_t::first())
-    	exit(1);
+	exit(1);
 }
 
 GLADE_CALLBACK void
@@ -171,12 +171,12 @@ on_file_open_activate(GtkWidget *w, gpointer userdata)
 
     if (open_window == 0)
     {
-    	GladeXML *xml;
-	
+	GladeXML *xml;
+
 	xml = ui_load_tree("open");
 	open_window = glade_xml_get_widget(xml, "open");
     }
-    
+
     gtk_widget_show(open_window);
 }
 
@@ -186,7 +186,7 @@ static void
 on_windows_new_summarywin_activated(GtkWidget *w, gpointer userdata)
 {
     summarywin_t *sw;
-    
+
     sw = new summarywin_t();
     sw->show();
 }
@@ -195,7 +195,7 @@ static void
 on_windows_new_fileswin_activated(GtkWidget *w, gpointer userdata)
 {
     fileswin_t *fw;
-    
+
     fw = new fileswin_t();
     fw->show();
 }
@@ -204,7 +204,7 @@ static void
 on_windows_new_functionswin_activated(GtkWidget *w, gpointer userdata)
 {
     functionswin_t *fw;
-    
+
     fw = new functionswin_t();
     fw->show();
 }
@@ -213,7 +213,7 @@ static void
 on_windows_new_callswin_activated(GtkWidget *w, gpointer userdata)
 {
     callswin_t *cw;
-    
+
     cw = new callswin_t();
     cw->show();
 }
@@ -222,7 +222,7 @@ static void
 on_windows_new_callgraphwin_activated(GtkWidget *w, gpointer userdata)
 {
     callgraphwin_t *cgw;
-    
+
     cgw = new callgraphwin_t();
     cgw->show();
 }
@@ -231,7 +231,7 @@ static void
 on_windows_new_callgraph2win_activated(GtkWidget *w, gpointer userdata)
 {
     diagwin_t *lw;
-    
+
     lw = new diagwin_t(new callgraph_diagram_t);
     lw->show();
 }
@@ -240,7 +240,7 @@ static void
 on_windows_new_legowin_activated(GtkWidget *w, gpointer userdata)
 {
     diagwin_t *lw;
-    
+
     lw = new diagwin_t(new lego_diagram_t);
     lw->show();
 }
@@ -324,8 +324,8 @@ ui_create(const char *full_argv0)
 
     if (!files.head())
     {
-    	/* Nothing on commandline...show the File->Open dialog to get some */
-    	on_file_open_activate(0, 0);
+	/* Nothing on commandline...show the File->Open dialog to get some */
+	on_file_open_activate(0, 0);
 	while (!*cov_file_t::first())
 	    gtk_main_iteration();
     }
@@ -376,22 +376,22 @@ static poptContext popt_context;
 static const struct poptOption popt_options[] =
 {
     {
-    	"initial-windows",    	    	    	/* longname */
-	'w',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&initial_windows,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"list of windows to open initially",	/* descrip */
-	0	    	    	    	    	/* argDescrip */
+	"initial-windows",                      /* longname */
+	'w',                                    /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&initial_windows,                       /* arg */
+	0,                                      /* val 0=don't return */
+	"list of windows to open initially",    /* descrip */
+	0                                       /* argDescrip */
     },
     {
-	"profile",				/* longname */
-	0,  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&profile_mode,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	0,					/* descrip */
-	0	    	    	    	    	/* argDescrip */
+	"profile",                              /* longname */
+	0,                                      /* shortname */
+	POPT_ARG_NONE,                          /* argInfo */
+	&profile_mode,                          /* arg */
+	0,                                      /* val 0=don't return */
+	0,                                      /* descrip */
+	0                                       /* argDescrip */
     },
     COV_POPT_OPTIONS
     POPT_AUTOHELP
@@ -402,39 +402,39 @@ static void
 parse_args(int argc, char **argv)
 {
     const char *file;
-    
+
     argv0 = argv[0];
-    
+
 #if HAVE_GNOME_PROGRAM_INIT
     /* gnome_program_init() already has popt options */
 #elif GTK2
     popt_context = poptGetContext(PACKAGE, argc, (const char**)argv,
-    	    	    	    	  popt_options, 0);
+				  popt_options, 0);
     int rc;
     while ((rc = poptGetNextOpt(popt_context)) > 0)
-    	;
+	;
     if (rc < -1)
     {
-    	fprintf(stderr, "%s:%s at or near %s\n",
+	fprintf(stderr, "%s:%s at or near %s\n",
 	    argv[0],
 	    poptStrerror(rc),
 	    poptBadOption(popt_context, POPT_BADOPTION_NOALIAS));
-    	exit(1);
+	exit(1);
     }
 #endif
-    
+
     while ((file = poptGetArg(popt_context)) != 0)
     {
-    	/* transparently handle file: URLs for Nautilus integration */
-    	if (!strncmp(file, "file://", 7))
+	/* transparently handle file: URLs for Nautilus integration */
+	if (!strncmp(file, "file://", 7))
 	    file += 7;
 	files.append(file);
     }
-	
+
     poptFreeContext(popt_context);
-    
+
     cov_post_args();
-    
+
     if (debug_enabled(D_DUMP|D_VERBOSE))
     {
 	const char **p;
@@ -443,9 +443,9 @@ parse_args(int argc, char **argv)
 	for (p = debug_argv ; *p ; p++)
 	{
 	    if (strpbrk(*p, " \t\"'") == 0)
-	    	duprintf1(" %s", *p);
+		duprintf1(" %s", *p);
 	    else
-	    	duprintf1(" \"%s\"", *p);
+		duprintf1(" \"%s\"", *p);
 	}
 	duprintf0(" }\n");
     }
@@ -463,7 +463,7 @@ main(int argc, char **argv)
 
 #if HAVE_GNOME_PROGRAM_INIT
     GnomeProgram *prog;
-    
+
     prog = gnome_program_init(PACKAGE, VERSION, LIBGNOMEUI_MODULE,
 			      argc, argv,
 			      GNOME_PARAM_POPT_TABLE, popt_options,

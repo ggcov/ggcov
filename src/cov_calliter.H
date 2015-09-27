@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -33,44 +33,44 @@ protected:
     cov_call_iterator_t();
 public:
     virtual ~cov_call_iterator_t();
-    
+
     virtual gboolean next() = 0;
 
     cov_block_t *block() const
     {
-    	return block_;
+	return block_;
     }
-    
+
     const char *name() const
     {
 	if (pure_ != 0)
-    	    return pure_->name_;
+	    return pure_->name_;
 	else if (arc_ != 0)
-    	    return arc_->call_name();
+	    return arc_->call_name();
 	else
-    	    return 0;
+	    return 0;
     }
 
     const cov_location_t *location() const
     {
 	if (pure_ != 0)
-    	    return &pure_->location_;
+	    return &pure_->location_;
 	else if (arc_ != 0)
-    	    return arc_->call_location();
+	    return arc_->call_location();
 	else
-    	    return 0;
+	    return 0;
     }
 
     count_t count() const
     {
 	if (pure_ != 0)
-    	    return block_->count();
+	    return block_->count();
 	else if (arc_ != 0)
-    	    return arc_->count();
+	    return arc_->count();
 	else
-    	    return 0;
+	    return 0;
     }
-    
+
     gboolean is_pure() const
     {
 	return (block_ != 0 && pure_ != 0);
@@ -106,7 +106,7 @@ class cov_range_call_iterator_t : public cov_call_iterator_t
 {
 public:
     cov_range_call_iterator_t(const cov_location_t *first,
-    	    	    	      const cov_location_t *last);
+			      const cov_location_t *last);
     ~cov_range_call_iterator_t();
     gboolean next();
 

@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -29,19 +29,19 @@ CVSID("$Id: diagwin.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
 diagwin_t::diagwin_t(diagram_t *di)
 {
     GladeXML *xml;
-    
+
     zoom_ = 1.0;
     diagram_ = di;
 
     /* load the interface & connect signals */
     xml = ui_load_tree("diag");
-    
+
     set_window(glade_xml_get_widget(xml, "diag"));
     set_title(diagram_->title());
-    
+
     canvas_ = glade_xml_get_widget(xml, "diag_canvas");
     gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas_), zoom_);
-    
+
     ui_register_windows_menu(ui_get_dummy_menu(xml, "diag_windows_dummy"));
 }
 
@@ -71,7 +71,7 @@ diagwin_t::zoom_all()
     zoomy = canvas_->allocation.height / bounds.height();
     zoom_ = MIN(zoomx, zoomy);
     dprintf3(D_DIAGWIN, "diagwin_t::zoom_all: zoomx=%g zoomy=%g zoom=%g\n",
-    	    	zoomx, zoomy, zoom_);
+		zoomx, zoomy, zoom_);
 
     gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas_), zoom_);
 }
@@ -110,7 +110,7 @@ diagwin_t::populate()
 
     while (root->item_list != 0)
     {
-    	gtk_object_destroy(GTK_OBJECT(root->item_list->data));
+	gtk_object_destroy(GTK_OBJECT(root->item_list->data));
     }
 
     set_diagram_colors(diagram_);

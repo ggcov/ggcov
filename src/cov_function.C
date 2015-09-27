@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -33,9 +33,9 @@ cov_function_t::cov_function_t()
 cov_function_t::~cov_function_t()
 {
     unsigned int i;
-    
+
     for (i = 0 ; i < blocks_->length() ; i++)
-    	delete blocks_->nth(i);
+	delete blocks_->nth(i);
     delete blocks_;
 }
 
@@ -63,7 +63,7 @@ cov_block_t *
 cov_function_t::add_block()
 {
     cov_block_t *b;
-    
+
     b = new cov_block_t;
 
     b->idx_ = blocks_->append(b);
@@ -175,10 +175,10 @@ int
 cov_function_t::compare(const cov_function_t *fa, const cov_function_t *fb)
 {
     int ret;
-    
+
     ret = strcmp(fa->name_, fb->name_);
     if (ret == 0)
-    	ret = strcmp(fa->file_->name(), fb->file_->name());
+	ret = strcmp(fa->file_->name(), fb->file_->name());
     return ret;
 }
 
@@ -242,7 +242,7 @@ cov_function_t::reconcile_calls()
     gboolean ret = TRUE;
 
     if (suppression_)
-	return TRUE;	/* ignored */
+	return TRUE;    /* ignored */
 
     /*
      * Last two blocks in a function appear to be the function
@@ -257,7 +257,7 @@ cov_function_t::reconcile_calls()
 
     for (bidx = first_real_block() ; bidx <= last_real_block() ; bidx++)
     {
-    	cov_block_t *b = nth_block(bidx);
+	cov_block_t *b = nth_block(bidx);
 
 	if (b->out_ncalls_ != (b->call_ == 0 ? 0U : 1U))
 	{
@@ -292,7 +292,7 @@ cov_function_t::reconcile_calls()
 			  b->describe(), name);
 		a->take_name(name);
 	    }
-    	}
+	}
 	dprintf2(D_CGRAPH, "Reconciled %d calls for block %s\n",
 		  b->out_ncalls_, b->describe());
     }
@@ -335,7 +335,7 @@ cov_function_t::solve()
        This takes an average of slightly more than 3 passes.  */
 
     dprintf1(D_SOLVE, " ---> %s\n", name_.data());
-    
+
     /*
      * In the new gcc 3.3 file format we cannot expect to get arcs into
      * the entry block and out of the exit block.  So if we don't get any,
@@ -346,13 +346,13 @@ cov_function_t::solve()
     assert(num_blocks() >= 2);
     if ((b = blocks_->nth(entry_block()))->in_arcs_.head() == 0)
     {
-    	assert(file_->format_version_ > 0);
+	assert(file_->format_version_ > 0);
 	b->in_ninvalid_ = ~0U;
 	dprintf0(D_SOLVE, "entry block tweaked\n");
     }
     if ((b = blocks_->nth(exit_block()))->out_arcs_.head() == 0)
     {
-    	assert(file_->format_version_ > 0);
+	assert(file_->format_version_ > 0);
 	b->out_ninvalid_ = ~0U;
 	dprintf0(D_SOLVE, "exit block tweaked\n");
     }
@@ -364,19 +364,19 @@ cov_function_t::solve()
 	passes++;
 	changes = 0;
 
-    	dprintf1(D_SOLVE, "pass %d\n", passes);
+	dprintf1(D_SOLVE, "pass %d\n", passes);
 
 	for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->last() ; *bitr ; --bitr)
 	{
 	    b = *bitr;
-    	    dprintf1(D_SOLVE, "[%d]\n", b->bindex());
-	    
+	    dprintf1(D_SOLVE, "[%d]\n", b->bindex());
+
 	    if (!b->count_valid_)
 	    {
-    		dprintf3(D_SOLVE, "[%d] out_ninvalid_=%u in_ninvalid_=%u\n",
-		    	    b->bindex(), b->out_ninvalid_, b->in_ninvalid_);
+		dprintf3(D_SOLVE, "[%d] out_ninvalid_=%u in_ninvalid_=%u\n",
+			    b->bindex(), b->out_ninvalid_, b->in_ninvalid_);
 
-    	    	/*
+		/*
 		 * For blocks with calls we have to ignore the outbound total
 		 * when calculating the block count, because of the possibility
 		 * of calls to fork(), exit() or other functions which can
@@ -388,23 +388,23 @@ cov_function_t::solve()
 		{
 		    b->set_count(cov_arc_t::total(b->out_arcs_));
 		    changes++;
-    	    	    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), (unsigned long long)b->count());
+		    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), (unsigned long long)b->count());
 		}
 		else if (b->in_ninvalid_ == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->in_arcs_));
 		    changes++;
-    	    	    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), (unsigned long long)b->count());
+		    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), (unsigned long long)b->count());
 		}
 	    }
-	    
+
 	    if (b->count_valid_)
 	    {
 		if (b->out_ninvalid_ == 1)
 		{
 		    /* Search for the invalid arc, and set its count.  */
 		    if ((a = cov_arc_t::find_invalid(b->out_arcs_, FALSE)) == 0)
-			return FALSE;	/* ERROR */
+			return FALSE;   /* ERROR */
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
@@ -412,7 +412,7 @@ cov_function_t::solve()
 		    if (b->count_ < out_total)
 		    {
 			fprintf(stderr, "Function %s cannot be solved because "
-				        "the arc counts are inconsistent, suppressing\n",
+					"the arc counts are inconsistent, suppressing\n",
 					name_.data());
 			suppress(cov_suppression_t::find(0, cov_suppression_t::UNSOLVABLE));
 			return TRUE;
@@ -420,15 +420,15 @@ cov_function_t::solve()
 		    assert(b->count_ >= out_total);
 		    a->set_count(b->count_ - out_total);
 		    changes++;
-    	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
-		    	    a->from()->bindex(), a->to()->bindex(),
+		    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
+			    a->from()->bindex(), a->to()->bindex(),
 			    (unsigned long long)a->count());
 		}
 		if (b->in_ninvalid_ == 1)
 		{
 		    /* Search for the invalid arc, and set its count.  */
 		    if ((a = cov_arc_t::find_invalid(b->in_arcs_, FALSE)) == 0)
-			return FALSE;	/* ERROR */
+			return FALSE;   /* ERROR */
 		    /* Calculate count for remaining arc by conservation.  */
 		    /* One of the counts will be invalid, but it is zero,
 		       so adding it in also doesn't hurt.  */
@@ -436,7 +436,7 @@ cov_function_t::solve()
 		    if (b->count_ < in_total)
 		    {
 			fprintf(stderr, "Function %s cannot be solved because "
-				        "the arc counts are inconsistent, suppressing\n",
+					"the arc counts are inconsistent, suppressing\n",
 					name_.data());
 			suppress(cov_suppression_t::find(0, cov_suppression_t::UNSOLVABLE));
 			return TRUE;
@@ -444,8 +444,8 @@ cov_function_t::solve()
 		    assert(b->count_ >= in_total);
 		    a->set_count(b->count_ - in_total);
 		    changes++;
-    	    	    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
-		    	    a->from()->bindex(), a->to()->bindex(),
+		    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
+			    a->from()->bindex(), a->to()->bindex(),
 			    (unsigned long long)a->count());
 		}
 	    }
@@ -473,8 +473,8 @@ cov_function_t::solve()
     }
 
     dprintf2(D_SOLVE, "Solved flow graph for %s in %d passes\n",
-    	    	    	name(), passes);
-    	
+			name(), passes);
+
     return TRUE;
 }
 

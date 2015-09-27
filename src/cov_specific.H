@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -48,30 +48,30 @@ private:
     int category_;
     const char *name_;
     void *(*creator_)();
-    
+
     friend class cov_factory_item_iterator_t;
 
 public:
     cov_factory_item_t(int cat, const char *name, void *(*creator)())
      :  category_(cat),
-     	name_(name),
+	name_(name),
 	creator_(creator)
     {
-    	next_ = all_;
+	next_ = all_;
 	all_ = this;
     }
-    
+
     int category() const
     {
-    	return category_;
+	return category_;
     }
     const char *name() const
     {
-    	return name_;
+	return name_;
     }
     void *create() const
     {
-    	return (*creator_)();
+	return (*creator_)();
     }
 };
 
@@ -80,12 +80,12 @@ class cov_factory_item_iterator_t
 private:
     int category_;
     cov_factory_item_t *elem_;
-    
+
 public:
     cov_factory_item_iterator_t(int category)
      :  category_(category)
     {
-    	for (elem_ = cov_factory_item_t::all_ ;
+	for (elem_ = cov_factory_item_t::all_ ;
 	     elem_ != 0 && elem_->category() != category_ ;
 	     elem_ = elem_->next_)
 	    ;
@@ -93,15 +93,15 @@ public:
     ~cov_factory_item_iterator_t()
     {
     }
-    
+
     cov_factory_item_t *current() const
     {
-    	return elem_;
+	return elem_;
     }
 
     cov_factory_item_t *next()
     {
-    	do
+	do
 	{
 	     elem_ = (elem_ == 0 ? 0 : elem_->next_);
 	}
@@ -114,41 +114,41 @@ template<class T> class cov_factory_t
 {
 private:
     cov_factory_item_iterator_t iter_;
-    
+
 public:
     cov_factory_t()
      :  iter_(T::factory_category())
     {
     }
-    
+
     ~cov_factory_t()
     {
     }
 
     T *create() const
     {
-    	return (iter_.current() == 0 ? 0 : (T *)iter_.current()->create());
+	return (iter_.current() == 0 ? 0 : (T *)iter_.current()->create());
     }
 
     gboolean next()
     {
-    	return (iter_.next() != 0);
+	return (iter_.next() != 0);
     }
-    
+
     const char *name() const
     {
-    	return (iter_.current() == 0 ? 0 : iter_.current()->name());
+	return (iter_.current() == 0 ? 0 : iter_.current()->name());
     }
 };
 
 
-#define PASTE(x,y)  	x##y
-#define STRINGIFY(x)	#x
+#define PASTE(x,y)      x##y
+#define STRINGIFY(x)    #x
 
 #define COV_FACTORY_STATIC_REGISTER(superklass, klass) \
     static void * PASTE(klass,_creator)() { return new klass (); } \
     cov_factory_item_t PASTE(klass,_static_reg)( \
-    	superklass::factory_category(), \
+	superklass::factory_category(), \
 	STRINGIFY(klass), PASTE(klass,_creator))
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -163,13 +163,13 @@ class cov_filename_scanner_t
 public:
     cov_filename_scanner_t();
     virtual ~cov_filename_scanner_t();
-    
+
     // attempt to use the given object file
     virtual gboolean attach(cov_bfd_t *);
 
     /* Iteration interface: returns new strings until it returns NULL */
     virtual char *next() = 0;
-    
+
     static int factory_category();
 
 protected:
@@ -188,12 +188,12 @@ class cov_shlib_scanner_t
 public:
     cov_shlib_scanner_t();
     virtual ~cov_shlib_scanner_t();
-    
+
     virtual gboolean attach(cov_bfd_t *b);
-    
+
     /* Iteration interface: returns new strings until it returns NULL */
     virtual char *next() = 0;
-    
+
     static int factory_category();
 
 protected:
@@ -212,24 +212,24 @@ class cov_call_scanner_t
 public:
     cov_call_scanner_t();
     virtual ~cov_call_scanner_t();
-    
+
     virtual gboolean attach(cov_bfd_t *b);
-    
+
     struct calldata_t
     {
-    	cov_location_t location;
-	string_var callname;	/* demangled */
-	const char *function;	/* mangled */
+	cov_location_t location;
+	string_var callname;    /* demangled */
+	const char *function;   /* mangled */
     };
 
-    /* returns 1=have call, 0=end of scan, -1=error */    
+    /* returns 1=have call, 0=end of scan, -1=error */
     virtual int next(calldata_t *call/*return*/) = 0;
-    
+
     static int factory_category();
 
 protected:
     gboolean setup_calldata(cov_bfd_section_t *, unsigned long,
-    	    	    	    const char *, calldata_t *);
+			    const char *, calldata_t *);
 
     cov_bfd_t *cbfd_;
 };

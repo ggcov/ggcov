@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -38,13 +38,13 @@ public:
 
 	SU_NSCOPES
     };
-    
+
     static void show_overall();
     static void show_file(const cov_file_t *);
     static void show_function(const cov_function_t *);
     static void show_lines(const char *filename, unsigned long start,
-    	    	    	   unsigned long end);
-    
+			   unsigned long end);
+
 private:
     static summarywin_t *instance();
     void populate_filename_combo(ui_combo_t *);
@@ -69,12 +69,12 @@ private:
     static list_t<summarywin_t> instances_;
 
     scope_t scope_;
-    const cov_file_t *file_;	    	/* SU_FILENAME, SU_RANGE */
-    const cov_function_t *function_;	/* SU_FUNCTION */
-    unsigned long start_, end_;     	/* SU_RANGE */
-    
+    const cov_file_t *file_;            /* SU_FILENAME, SU_RANGE */
+    const cov_function_t *function_;    /* SU_FUNCTION */
+    unsigned long start_, end_;         /* SU_RANGE */
+
     GtkWidget *scope_radio_[SU_NSCOPES];
-    
+
     ui_combo_t *filename_combo_;
     GtkWidget *filename_view_;
     ui_combo_t *function_combo_;

@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003-2004 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -40,7 +40,7 @@ public:
 protected:
     virtual cov::status_t calc_stats(cov_stats_t *) = 0;
     void dirty();
-    
+
 private:
     gboolean dirty_;
     cov_stats_t stats_;
@@ -86,9 +86,9 @@ public:
 
     const cov_function_t *function() const
     {
-    	return function_;
+	return function_;
     }
-    
+
     virtual const char *describe() const;
 private:
     virtual cov::status_t calc_stats(cov_stats_t *);
@@ -100,9 +100,9 @@ class cov_range_scope_t : public cov_scope_t
 {
 public:
     cov_range_scope_t(const char *filename,
-    	    	      unsigned long start, unsigned long end);
+		      unsigned long start, unsigned long end);
     cov_range_scope_t(const cov_file_t *,
-    	    	      unsigned long start, unsigned long end);
+		      unsigned long start, unsigned long end);
     ~cov_range_scope_t();
 
     virtual const char *describe() const;
@@ -122,7 +122,7 @@ public:
     cov_compound_scope_t();
     cov_compound_scope_t(list_t<cov_scope_t> *);
     ~cov_compound_scope_t();
-    
+
     void add_child(cov_scope_t *);
     void remove_child(cov_scope_t *);
 

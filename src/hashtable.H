@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003-2011 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -120,7 +120,7 @@ public:
     T *operator*()
     {
 	delayed_init();
-    	return (T *)value_;
+	return (T *)value_;
     }
 
     gboolean next()
@@ -198,59 +198,59 @@ public:
     ~hashtable_t()
     {
     }
-    
+
     void *operator new(size_t)
     {
-    	return g_hash_table_new(
-	    	    hashtable_ops_t<K>::hash,
+	return g_hash_table_new(
+		    hashtable_ops_t<K>::hash,
 		    hashtable_ops_t<K>::compare);
     }
-    
+
     void operator delete(void *x)
     {
-    	g_hash_table_destroy((GHashTable *)x);
+	g_hash_table_destroy((GHashTable *)x);
     }
 
     void insert(K *key, T *value)
     {
-    	g_hash_table_insert(this, (gpointer)key, (gpointer)value);
+	g_hash_table_insert(this, (gpointer)key, (gpointer)value);
     }
-    
+
     void remove(K *key)
     {
-    	g_hash_table_remove(this, (gconstpointer)key);
+	g_hash_table_remove(this, (gconstpointer)key);
     }
-    
+
     T *lookup(K *key)
     {
-    	return (T *)g_hash_table_lookup(this, (gconstpointer)key);
+	return (T *)g_hash_table_lookup(this, (gconstpointer)key);
     }
-    
+
     gboolean lookup_extended(K *key, K *orig_key_ret, T **value_ret)
     {
-    	return g_hash_table_lookup_extended(this, (gconstpointer)key,
-	    	    	(gpointer *)orig_key_ret, (gpointer *)value_ret);
+	return g_hash_table_lookup_extended(this, (gconstpointer)key,
+			(gpointer *)orig_key_ret, (gpointer *)value_ret);
     }
-    
+
     void foreach(void (*func)(K*, T*, void *closure), void *closure)
     {
-    	g_hash_table_foreach(this, (GHFunc)*func, closure);
+	g_hash_table_foreach(this, (GHFunc)*func, closure);
     }
-    
+
     void foreach_remove(gboolean (*func)(K*, T*, void *closure), void *closure)
     {
-    	g_hash_table_foreach_remove(this, (GHRFunc)func, closure);
+	g_hash_table_foreach_remove(this, (GHRFunc)func, closure);
     }
-    
+
     guint size() const
     {
-    	return g_hash_table_size((GHashTable*)this);
+	return g_hash_table_size((GHashTable*)this);
     }
 
     /* Builds a list of all the keys, sorted in increasing key order */
     void keys(list_t<K> *list) const
     {
-    	g_hash_table_foreach((GHashTable*)this, gnb_hash_table_add_one_key, list);
+	g_hash_table_foreach((GHashTable*)this, gnb_hash_table_add_one_key, list);
 	list->sort((gint (*)(const K*, const K*))hashtable_ops_t<K>::sort_compare);
     }
 

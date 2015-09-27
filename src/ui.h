@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -54,7 +54,7 @@ void ui_register_window(GtkWidget *w);
 void ui_register_windows_menu(GtkWidget *menu);
 /* add a predefined menu entry to all Windows menus */
 void ui_register_windows_entry(const char *label,
-    	    	    	       void (*callback)(GtkWidget *, gpointer userdata),
+			       void (*callback)(GtkWidget *, gpointer userdata),
 			       gpointer userdata);
 
 /*
@@ -88,7 +88,7 @@ void ui_clist_set_sort_type(GtkCList *, GtkSortType ty);
  * gtk1's GtkCList/GtkCTree and gtk2's GtkTreeView.
  */
 gpointer ui_list_double_click_data(GtkWidget *, GdkEvent *,
-    	    	    	    	   int col/*gtk2 closure column*/);
+				   int col/*gtk2 closure column*/);
 void ui_list_set_column_visibility(GtkWidget *, int col, gboolean vis);
 
 /*
@@ -133,7 +133,7 @@ void ui_text_select_lines(GtkWidget *w, unsigned long start, unsigned long end);
 void ui_text_ensure_visible(GtkWidget *w, unsigned long line);
 /* return the range of lines currently selected */
 void ui_text_get_selected_lines(GtkWidget *w, unsigned long *startp,
-    	    	    	    	unsigned long *endp);
+				unsigned long *endp);
 /* get the entire contents of the window, needs to be g_free()d */
 char *ui_text_get_contents(GtkWidget *w);
 

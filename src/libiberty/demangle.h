@@ -1,7 +1,7 @@
 /* Defs for interface to demanglers.
    Copyright 1992, 1993, 1994, 1995, 1996, 1997, 1998, 2000
    Free Software Foundation, Inc.
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2, or (at your option)
@@ -29,21 +29,21 @@
 
 /* Options passed to cplus_demangle (in 2nd parameter). */
 
-#define DMGL_NO_OPTS	 0		/* For readability... */
-#define DMGL_PARAMS	 (1 << 0)	/* Include function args */
-#define DMGL_ANSI	 (1 << 1)	/* Include const, volatile, etc */
-#define DMGL_JAVA	 (1 << 2)	/* Demangle as Java rather than C++. */
+#define DMGL_NO_OPTS     0              /* For readability... */
+#define DMGL_PARAMS      (1 << 0)       /* Include function args */
+#define DMGL_ANSI        (1 << 1)       /* Include const, volatile, etc */
+#define DMGL_JAVA        (1 << 2)       /* Demangle as Java rather than C++. */
 
-#define DMGL_AUTO	 (1 << 8)
-#define DMGL_GNU	 (1 << 9)
-#define DMGL_LUCID	 (1 << 10)
-#define DMGL_ARM	 (1 << 11)
-#define DMGL_HP 	 (1 << 12)       /* For the HP aCC compiler;
-                                            same as ARM except for
-                                            template arguments, etc. */
-#define DMGL_EDG	 (1 << 13)
-#define DMGL_GNU_V3	 (1 << 14)
-#define DMGL_GNAT	 (1 << 15)
+#define DMGL_AUTO        (1 << 8)
+#define DMGL_GNU         (1 << 9)
+#define DMGL_LUCID       (1 << 10)
+#define DMGL_ARM         (1 << 11)
+#define DMGL_HP          (1 << 12)       /* For the HP aCC compiler;
+					    same as ARM except for
+					    template arguments, etc. */
+#define DMGL_EDG         (1 << 13)
+#define DMGL_GNU_V3      (1 << 14)
+#define DMGL_GNAT        (1 << 15)
 
 /* If none of these are set, use 'current_demangling_style' as the default. */
 #define DMGL_STYLE_MASK (DMGL_AUTO|DMGL_GNU|DMGL_LUCID|DMGL_ARM|DMGL_HP|DMGL_EDG|DMGL_GNU_V3|DMGL_JAVA|DMGL_GNAT)
@@ -72,12 +72,12 @@ extern enum demangling_styles
 
 /* Define string names for the various demangling styles. */
 
-#define AUTO_DEMANGLING_STYLE_STRING	      "auto"
-#define GNU_DEMANGLING_STYLE_STRING    	      "gnu"
-#define LUCID_DEMANGLING_STYLE_STRING	      "lucid"
-#define ARM_DEMANGLING_STYLE_STRING	      "arm"
-#define HP_DEMANGLING_STYLE_STRING	      "hp"
-#define EDG_DEMANGLING_STYLE_STRING	      "edg"
+#define AUTO_DEMANGLING_STYLE_STRING          "auto"
+#define GNU_DEMANGLING_STYLE_STRING           "gnu"
+#define LUCID_DEMANGLING_STYLE_STRING         "lucid"
+#define ARM_DEMANGLING_STYLE_STRING           "arm"
+#define HP_DEMANGLING_STYLE_STRING            "hp"
+#define EDG_DEMANGLING_STYLE_STRING           "edg"
 #define GNU_V3_DEMANGLING_STYLE_STRING        "gnu-v3"
 #define JAVA_DEMANGLING_STYLE_STRING          "java"
 #define GNAT_DEMANGLING_STYLE_STRING          "gnat"
@@ -119,14 +119,14 @@ cplus_mangle_opname PARAMS ((const char *opname, int options));
 extern void
 set_cplus_marker_for_demangling PARAMS ((int ch));
 
-extern enum demangling_styles 
+extern enum demangling_styles
 cplus_demangle_set_style PARAMS ((enum demangling_styles style));
 
-extern enum demangling_styles 
+extern enum demangling_styles
 cplus_demangle_name_to_style PARAMS ((const char *name));
 
 /* V3 ABI demangling entry point, defined in cp-demangle.c.  */
 extern char*
 cplus_demangle_v3 PARAMS ((const char* mangled));
 
-#endif	/* DEMANGLE_H */
+#endif  /* DEMANGLE_H */

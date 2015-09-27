@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -23,12 +23,12 @@
 
 CVSID("$Id: callgraph_diagram.C,v 1.18 2010-05-09 05:37:14 gnb Exp $");
 
-#define MARGIN		    0.2
-#define BOX_WIDTH  	    4.0
-#define BOX_HEIGHT  	    1.0
-#define RANK_GAP 	    2.0
-#define FILE_GAP  	    0.1
-#define ARROW_SIZE	    0.5
+#define MARGIN              0.2
+#define BOX_WIDTH           4.0
+#define BOX_HEIGHT          1.0
+#define RANK_GAP            2.0
+#define FILE_GAP            0.1
+#define ARROW_SIZE          0.5
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -82,7 +82,7 @@ callgraph_diagram_t::node_t::ndown()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
- 
+
 gboolean
 callgraph_diagram_t::node_t::any_self()
 {
@@ -102,7 +102,7 @@ void
 callgraph_diagram_t::node_t::push_spread_rootwards(double deltaspread)
 {
     dprintf3(D_DCALLGRAPH|D_VERBOSE, "push_spread_rootwards: node %s spread %g deltaspread %g\n",
-	    	callnode_->name.data(), spread_, deltaspread);
+		callnode_->name.data(), spread_, deltaspread);
 
     spread_ += deltaspread;
     deltaspread /= nup();
@@ -120,7 +120,7 @@ void
 callgraph_diagram_t::node_t::push_spread_leafwards(double deltaspread)
 {
     dprintf3(D_DCALLGRAPH|D_VERBOSE, "push_spread_leafwards: node %s spread %g deltaspread %g\n",
-	    	callnode_->name.data(), spread_, deltaspread);
+		callnode_->name.data(), spread_, deltaspread);
 
     spread_ += deltaspread;
     deltaspread /= ndown();
@@ -130,7 +130,7 @@ callgraph_diagram_t::node_t::push_spread_leafwards(double deltaspread)
 	node_t *to = node_t::from_callnode((*itr)->to);
 
 	if (to != 0 && to->rank_ > rank_)
-    	    to->push_spread_leafwards(deltaspread);
+	    to->push_spread_leafwards(deltaspread);
     }
 }
 
@@ -164,9 +164,9 @@ void
 callgraph_diagram_t::find_roots_1(cov_callnode_t *cn)
 {
     enum { OTHER, DISCONNECTED, ROOT } type = OTHER;
-    
+
     if (!strcmp(cn->name, "main"))
-    	type = ROOT;
+	type = ROOT;
     else if (!cn->in_arcs.head())
 	type = (!cn->out_arcs.head() ? DISCONNECTED : ROOT);
 
@@ -175,36 +175,36 @@ callgraph_diagram_t::find_roots_1(cov_callnode_t *cn)
     case ROOT:
 	dprintf1(D_DCALLGRAPH, "root node \"%s\"\n", cn->name.data());
 	callnode_roots_.append(cn);
-    	break;
+	break;
     case DISCONNECTED:
 	dprintf1(D_DCALLGRAPH, "disconnected node \"%s\"\n", cn->name.data());
 	disconnected_.append(cn);
 	break;
     case OTHER:
-    	break;
+	break;
     }
 }
 
 int
 callgraph_diagram_t::compare_root_nodes(const cov_callnode_t *a,
-    	    	    	    	    	const cov_callnode_t *b)
+					const cov_callnode_t *b)
 {
     int r = 0;
 
     /* a node named "main" is presented first */
     if (!strcmp(a->name, "main"))
-    	r = -1;
+	r = -1;
     else if (!strcmp(b->name, "main"))
-    	r = 1;
+	r = 1;
 
-    /* root nodes with more descendants are presented earlier */	
+    /* root nodes with more descendants are presented earlier */
     if (r == 0)
 	r = b->out_arcs.length() - a->out_arcs.length();
 
-    /* as a final resort, root nodes are presented in alphabetical order */	
+    /* as a final resort, root nodes are presented in alphabetical order */
     if (r == 0)
-    	r = strcmp(a->name, b->name);
-    
+	r = strcmp(a->name, b->name);
+
     return r;
 }
 
@@ -218,20 +218,20 @@ callgraph_diagram_t::find_roots()
 	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    find_roots_1(*cnitr);
     callnode_roots_.sort(compare_root_nodes);
-    
+
     for (list_iterator_t<cov_callnode_t> iter = callnode_roots_.first() ; *iter ; ++iter)
     {
-    	cov_callnode_t *cn = (*iter);
+	cov_callnode_t *cn = (*iter);
 	dprintf1(D_DCALLGRAPH, "building nodes for \"%s\"\n", cn->name.data());
-    	node_t *n = build_node(cn, 0);
+	node_t *n = build_node(cn, 0);
 	if (!strcmp(cn->name, "main"))
 	    n->flags_ |= node_t::FIXED_RANK;
-    	roots_.append(n);
+	roots_.append(n);
     }
 
     if (debug_enabled(D_DCALLGRAPH))
     {
-	/* check for unreached nodes and whine about them */    
+	/* check for unreached nodes and whine about them */
 	unsigned int nunreached = 0;
 
 	for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
@@ -257,30 +257,30 @@ void
 callgraph_diagram_t::adjust_rank(callgraph_diagram_t::node_t *n, int delta)
 {
     dprintf3(D_DCALLGRAPH|D_VERBOSE, "adjust_rank: node %s rank %d delta %d\n",
-	    	n->callnode_->name.data(), n->rank_, delta);
+		n->callnode_->name.data(), n->rank_, delta);
     assert(delta > 0);
 
     if (n->generation_ == generation_)
     {
-    	dprintf1(D_DCALLGRAPH, "adjust_rank: avoiding loop at \"%s\"\n",
-	    	    n->callnode_->name.data());
-    	return;
+	dprintf1(D_DCALLGRAPH, "adjust_rank: avoiding loop at \"%s\"\n",
+		    n->callnode_->name.data());
+	return;
     }
 
     n->generation_ = generation_;
     n->rank_ += delta;
     if (n->rank_ > max_rank_)
 	max_rank_ = n->rank_;
-    
+
     int minrank = n->rank_+1;
     for (list_iterator_t<cov_callarc_t> itr = n->callnode_->out_arcs.first() ; *itr ; ++itr)
     {
 	node_t *nto = node_t::from_callnode((*itr)->to);
 
-    	if (nto != 0 &&
+	if (nto != 0 &&
 	    nto != n &&
 	    nto->rank_ < minrank)
-    	    adjust_rank(nto, (minrank - nto->rank_));
+	    adjust_rank(nto, (minrank - nto->rank_));
     }
 }
 
@@ -301,9 +301,9 @@ callgraph_diagram_t::prepare_ranks(callgraph_diagram_t::node_t *n, int depth)
 	{
 	    prepare_ranks(to, depth+1);
 	    if (!ndown || to->max_depth_ > n->max_depth_)
-	    	n->max_depth_ = to->max_depth_;
+		n->max_depth_ = to->max_depth_;
 	    if (!ndown || to->max_rank_ < n->max_rank_)
-	    	n->max_rank_ = to->max_rank_;
+		n->max_rank_ = to->max_rank_;
 	    if ((to->flags_ & node_t::FIXED_RANK))
 		n->flags_ |= node_t::FIXED_RANK;
 	    ndown++;
@@ -312,16 +312,16 @@ callgraph_diagram_t::prepare_ranks(callgraph_diagram_t::node_t *n, int depth)
 
     if (!ndown)
     {
-    	n->max_depth_ = depth;
+	n->max_depth_ = depth;
 	n->max_rank_ = max_rank_;
 	if (depth == (max_rank_+1))
 	    n->flags_ |= node_t::FIXED_RANK;
     }
     else
     {
-    	n->max_rank_--;
+	n->max_rank_--;
     }
-    
+
     dprintf4(D_DCALLGRAPH, "prepare_ranks: node %s rank %d max_rank %d max_depth %d\n",
 	    n->callnode_->name.data(), n->rank_, n->max_rank_, n->max_depth_);
 }
@@ -345,7 +345,7 @@ callgraph_diagram_t::maximise_ranks(callgraph_diagram_t::node_t *n)
     if (delta > 0 && n->ndown() >= n->nup())
     {
 	fprintf(stderr, "maximise_ranks: pushing node %s\n",
-	    	n->callnode_->name.data());
+		n->callnode_->name.data());
 	generation_++;
 	adjust_rank(n, delta);
     }
@@ -360,7 +360,7 @@ callgraph_diagram_t::push_false_root(callgraph_diagram_t::node_t *n)
     if (delta > 0)
     {
 	fprintf(stderr, "push_false_root: pushing %s\n",
-	    	n->callnode_->name.data());
+		n->callnode_->name.data());
 	generation_++;
 	adjust_rank(n, delta);
 	n->flags_ |= node_t::FIXED_RANK;
@@ -383,7 +383,7 @@ callgraph_diagram_t::balance_ranks(callgraph_diagram_t::node_t *n)
 
     while (nfixed < n->ndown())
     {
-    	
+
     }
 #endif
 }
@@ -403,7 +403,7 @@ rank_plusses(int rank)
     return buf.data();
 }
 
-/* 
+/*
  * Recursive descent from the roots, building node_t's
  * and calculating of node rank (which can be O(N^2) as we may
  * have to adjust the ranks of subtrees up to the entire tree).
@@ -418,12 +418,12 @@ callgraph_diagram_t::build_node(cov_callnode_t *cn, int rank)
 
     if ((n = node_t::from_callnode(cn)) != 0)
     {
-    	/* already seen at an earlier rank...demote to this rank */
-    	if (n->on_path_)
+	/* already seen at an earlier rank...demote to this rank */
+	if (n->on_path_)
 	{
 	    /* loop avoidance */
 	    fprintf(stderr, "build_node: avoided loop at %s\n",
-	    	    	n->callnode_->name.data());
+			n->callnode_->name.data());
 	    return n;
 	}
 	++generation_;
@@ -433,25 +433,25 @@ callgraph_diagram_t::build_node(cov_callnode_t *cn, int rank)
     }
     else if (cn->function == 0)
     {
-    	dprintf1(D_DCALLGRAPH, "build_node: skipping library function %s\n",
+	dprintf1(D_DCALLGRAPH, "build_node: skipping library function %s\n",
 	    cn->name.data());
-    	return 0;
+	return 0;
     }
     else
     {
-    	n = new node_t(cn);
+	n = new node_t(cn);
 	n->rank_ = rank;
 	if (rank > max_rank_)
 	    max_rank_ = rank;
     }
-    
+
     n->on_path_ = TRUE;
     for (list_iterator_t<cov_callarc_t> itr = cn->out_arcs.first() ; *itr ; ++itr)
     {
 	build_node((*itr)->to, rank+1);
     }
     n->on_path_ = FALSE;
-    
+
     return n;
 }
 
@@ -463,29 +463,29 @@ callgraph_diagram_t::build_ranks(callgraph_diagram_t::node_t *n)
     rank_t *r;
 
     if (n->file_)
-    	return;     /* already been here on another branch in the graph */
+	return;     /* already been here on another branch in the graph */
 
     dprintf1(D_DCALLGRAPH, "callgraph_diagram_t::build_ranks(\"%s\")\n",
-    	    	n->callnode_->name.data());
+		n->callnode_->name.data());
 
     if (n->rank_ >= (int)ranks_->length() || (r = ranks_->nth(n->rank_)) == 0)
     {
 	dprintf1(D_DCALLGRAPH, "callgraph_diagram_t::build_ranks: expanding ranks to %d\n",
-	    	    n->rank_);
+		    n->rank_);
 	r = new rank_t();
 	ranks_->set(n->rank_, r);
     }
     r->nodes_.append(n);
     n->file_ = r->nodes_.length();
     if (n->file_ > max_file_)
-    	max_file_ = n->file_;
+	max_file_ = n->file_;
 
     for (list_iterator_t<cov_callarc_t> itr = n->callnode_->out_arcs.first() ; *itr ; ++itr)
     {
 	node_t *child = node_t::from_callnode((*itr)->to);
 
-    	if (child != 0)
-    	    build_ranks(child);
+	if (child != 0)
+	    build_ranks(child);
     }
 }
 
@@ -498,7 +498,7 @@ callgraph_diagram_t::calc_spread(int pass, int rank)
 
     rank_t *r = ranks_->nth(rank);
     if (r == 0)
-    	return;
+	return;
 
     for (list_iterator_t<node_t> iter = r->nodes_.first() ; *iter ; ++iter)
     {
@@ -551,7 +551,7 @@ callgraph_diagram_t::assign_geometry()
     {
 	rank_t *r = ranks_->nth(i);
 
-    	if (r == 0)
+	if (r == 0)
 	    continue;
 
 	r->total_spread_ = 0.0;
@@ -576,7 +576,7 @@ callgraph_diagram_t::assign_geometry()
     {
 	rank_t *r = ranks_->nth(i);
 
-    	if (r == 0)
+	if (r == 0)
 	    continue;
 
 	double yperspread = height / r->total_spread_;
@@ -594,7 +594,7 @@ callgraph_diagram_t::assign_geometry()
 	    sy = ey;
 
 	    dprintf4(D_DCALLGRAPH, "assign_geometry: [%u]%s:%s spread_=%g\n",
-		i, 
+		i,
 		(cn->function == 0 ? "library" : cn->function->file()->minimal_name()),
 		cn->name.data(),
 		n->spread_);
@@ -613,7 +613,7 @@ callgraph_diagram_t::assign_geometry()
 
     bounds_.expand(MARGIN, MARGIN);
     dprintf4(D_DCALLGRAPH, "bounds={x1=%g y1=%g x2=%g y2=%g}\n",
-    	    	bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
+		bounds_.x1, bounds_.y1, bounds_.x2, bounds_.y2);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -642,7 +642,7 @@ callgraph_diagram_t::dump_ranks()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
- 
+
 void
 callgraph_diagram_t::dump_graph_1(cov_callnode_t *cn)
 {
@@ -651,14 +651,14 @@ callgraph_diagram_t::dump_graph_1(cov_callnode_t *cn)
 
     duprintf1("    %s\n", cn->name.data());
     if (n != 0)
-    	duprintf3("        rank %d file %d spread %g\n",
-	    	  n->rank_, n->file_, n->spread_);
+	duprintf3("        rank %d file %d spread %g\n",
+		  n->rank_, n->file_, n->spread_);
 
     for (itr = cn->in_arcs.first() ; *itr ; ++itr)
     {
 	cov_callarc_t *a = *itr;
 	node_t *from = node_t::from_callnode(a->from);
-	
+
 	duprintf1("        in %s", a->from->name.data());
 	if (from != 0)
 	    duprintf1(" rank %d", from->rank_);
@@ -668,7 +668,7 @@ callgraph_diagram_t::dump_graph_1(cov_callnode_t *cn)
     {
 	cov_callarc_t *a = *itr;
 	node_t *to = node_t::from_callnode(a->to);
-	
+
 	duprintf1("        out %s", a->to->name.data());
 	if (to != 0)
 	    duprintf1(" rank %d", to->rank_);
@@ -702,11 +702,11 @@ callgraph_diagram_t::prepare()
     find_roots();
 
     for (iter = roots_.first() ; *iter ; ++iter)
-        prepare_ranks(*iter, 1);
+	prepare_ranks(*iter, 1);
     for (iter = roots_.first() ; *iter ; ++iter)
-        push_false_root(*iter);
+	push_false_root(*iter);
     for (iter = roots_.first() ; *iter ; ++iter)
-        balance_ranks(*iter);
+	balance_ranks(*iter);
 
     if (roots_.head() == 0)
 	return;
@@ -720,9 +720,9 @@ callgraph_diagram_t::prepare()
 	build_ranks((*iter));
 
     for (i = ranks_->length() - 1 ; i >= 0 ; --i)
-    	calc_spread(1, i);
+	calc_spread(1, i);
     for (i = 0 ; i < (int)ranks_->length() ; i++)
-    	calc_spread(2, i);
+	calc_spread(2, i);
 
     if (debug_enabled(D_DCALLGRAPH))
     {
@@ -743,14 +743,14 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
     unsigned int rgb;
 
     if (n->shown_ == shown_)
-    	return;     /* already been here */
+	return;     /* already been here */
     n->shown_ = shown_;
 
     if (cn->function != 0)
     {
 	label = g_strdup_printf("%s\n%s\n%4.2f%%",
 	    cn->name.data(),
-    	    cn->function->file()->minimal_name(),
+	    cn->function->file()->minimal_name(),
 	    100.0 * n->scope_->get_stats()->blocks_fraction());
 	rgb = bg_rgb_by_status_[n->scope_->status()];
     }
@@ -773,10 +773,10 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 	cov_callarc_t *ca = *itr;
 	node_t *child = node_t::from_callnode(ca->to);
 
-    	if (child == 0)
+	if (child == 0)
 	    continue;
 
-    	show_node(child, sg);
+	show_node(child, sg);
 
 	sg->arrow_size(ARROW_SIZE);
 	sg->fill(fg_rgb_by_status_[ca->count ? cov::COVERED : cov::UNCOVERED]);
@@ -841,8 +841,8 @@ callgraph_diagram_t::render(scenegen_t *sg)
 	sg->noborder();
 	sg->box(bounds_.x1+MARGIN,
 		bounds_.y1+MARGIN,
-	        bounds_.width()-2*MARGIN,
-	        bounds_.height()-2*MARGIN);
+		bounds_.width()-2*MARGIN,
+		bounds_.height()-2*MARGIN);
     }
 
     shown_++;

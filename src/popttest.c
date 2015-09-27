@@ -12,22 +12,22 @@ GList *files;
 static const struct poptOption included_options[] =
 {
     {
-    	"rope",	    	    	    	    	/* longname */
-	'R',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&ropeopt,     	    	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"he's ropable",	    	    	    	/* descrip */
-	0	    	    	    	    	/* argDescrip */
+	"rope",                                 /* longname */
+	'R',                                    /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&ropeopt,                               /* arg */
+	0,                                      /* val 0=don't return */
+	"he's ropable",                         /* descrip */
+	0                                       /* argDescrip */
     },
     {
-    	"spool",	    	    	    	/* longname */
-	'S',  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&spoolopt,     	    	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"spoolin' spoolin' spoolin'",	    	/* descrip */
-	0	    	    	    	    	/* argDescrip */
+	"spool",                                /* longname */
+	'S',                                    /* shortname */
+	POPT_ARG_NONE,                          /* argInfo */
+	&spoolopt,                              /* arg */
+	0,                                      /* val 0=don't return */
+	"spoolin' spoolin' spoolin'",           /* descrip */
+	0                                       /* argDescrip */
     },
     POPT_TABLEEND
 };
@@ -35,31 +35,31 @@ static const struct poptOption included_options[] =
 static const struct poptOption options[] =
 {
     {
-    	"string",	    	    	    	/* longname */
-	's',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&stringopt,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"how long is a piece of string",    	/* descrip */
-	0	    	    	    	    	/* argDescrip */
+	"string",                               /* longname */
+	's',                                    /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&stringopt,                             /* arg */
+	0,                                      /* val 0=don't return */
+	"how long is a piece of string",        /* descrip */
+	0                                       /* argDescrip */
     },
     {
-    	"bool",	    	    	    	    	/* longname */
-	'b',  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&boolopt,     	    	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"to be or not to be",	    	    	/* descrip */
-	0	    	    	    	    	/* argDescrip */
+	"bool",                                 /* longname */
+	'b',                                    /* shortname */
+	POPT_ARG_NONE,                          /* argInfo */
+	&boolopt,                               /* arg */
+	0,                                      /* val 0=don't return */
+	"to be or not to be",                   /* descrip */
+	0                                       /* argDescrip */
     },
     {
-    	"whatever",				/* longname */
-	'?',  	    	    	    	    	/* shortname */
-	POPT_ARG_INCLUDE_TABLE,			/* argInfo */
-	(void *)included_options,		/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	0,					/* descrip */
-	0	    	    	    	    	/* argDescrip */
+	"whatever",                             /* longname */
+	'?',                                    /* shortname */
+	POPT_ARG_INCLUDE_TABLE,                 /* argInfo */
+	(void *)included_options,               /* arg */
+	0,                                      /* val 0=don't return */
+	0,                                      /* descrip */
+	0                                       /* argDescrip */
     },
     POPT_TABLEEND
 };
@@ -81,22 +81,22 @@ main(int argc, char **argv)
 
     con = poptGetContext("popttest", argc, (const char**)argv, options, 0);
     poptSetOtherOptionHelp(con,
-    	    	           "[OPTIONS] [executable|source|directory]...");
+			   "[OPTIONS] [executable|source|directory]...");
 
     while ((rc = poptGetNextOpt(con)) > 0)
-    	;
+	;
     if (rc < -1)
     {
-    	fprintf(stderr, "%s:%s at or near %s\n",
+	fprintf(stderr, "%s:%s at or near %s\n",
 	    argv0,
 	    poptStrerror(rc),
 	    poptBadOption(con, POPT_BADOPTION_NOALIAS));
-    	exit(0);
+	exit(0);
     }
-    
+
     while ((file = poptGetArg(con)) != 0)
 	files = g_list_append(files, (gpointer)file);
-	
+
     poptFreeContext(con);
 
     printf("boolopt=%d\n", boolopt);
@@ -105,7 +105,7 @@ main(int argc, char **argv)
     printf("ropeopt=\"%s\"\n", ropeopt);
     printf("files=");
     for (iter = files ; iter != 0 ; iter = iter->next)
-    	printf(" \"%s\"", (const char *)iter->data);
+	printf(" \"%s\"", (const char *)iter->data);
     printf("\n");
     return 0;
 }

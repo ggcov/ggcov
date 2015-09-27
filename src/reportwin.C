@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2004 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -47,7 +47,7 @@ reportwin_t::reportwin_t()
 
     /* load the interface & connect signals */
     xml = ui_load_tree("report");
-    
+
     set_window(glade_xml_get_widget(xml, "report"));
 
     w = glade_xml_get_widget(xml, "report_report_combo");
@@ -110,15 +110,15 @@ open_temp_file()
     char *fname;
     int fd;
     FILE *fp = 0;
-    
+
     fname = g_strdup("/tmp/gcov-reportXXXXXX");
     if ((fd = mkstemp(fname)) < 0)
     {
-    	perror(fname);
+	perror(fname);
     }
     else if ((fp = fdopen(fd, "w+")) == 0)
     {
-    	perror(fname);
+	perror(fname);
 	close(fd);
     }
     g_free(fname);
@@ -135,7 +135,7 @@ reportwin_t::update()
     char buf[1024];
 
     dprintf0(D_REPORTWIN, "reportwin_t::update\n");
-    
+
     grey_items();
 
     populating_ = TRUE;
@@ -146,8 +146,8 @@ reportwin_t::update()
     set_title(_(report_->label));
 
     if ((fp = open_temp_file()) == 0)
-    	return;
-	
+	return;
+
     report_->func(fp, NULL);
     fflush(fp);
     fseek(fp, 0L, SEEK_SET);
@@ -156,7 +156,7 @@ reportwin_t::update()
     while ((n = fread(buf, 1, sizeof(buf), fp)) > 0)
 	ui_text_add(text_, 0, buf, n);
     ui_text_end(text_);
-    
+
     fclose(fp);
 }
 

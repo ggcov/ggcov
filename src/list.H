@@ -1,17 +1,17 @@
 /*
  * CANT - A C implementation of the Apache/Tomcat ANT build system
  * Copyright (c) 2002-2003 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -36,23 +36,23 @@ template<class T> class list_iterator_t
 {
 private:
     GList *elem_;
-    
+
     list_iterator_t(GList *elem)
      :  elem_(elem)
     {
     }
-    
+
     friend class list_t<T>;
-    
+
 public:
     list_iterator_t()
      :  elem_(0)
     {
     }
-    
+
     T *operator++()
     {
-    	T *item = 0;
+	T *item = 0;
 	if (elem_ != 0)
 	{
 	    item = (T *)elem_->data;
@@ -60,10 +60,10 @@ public:
 	}
 	return item;
     }
-    
+
     T *operator--()
     {
-    	T *item = 0;
+	T *item = 0;
 	if (elem_ != 0)
 	{
 	    item = (T *)elem_->data;
@@ -71,19 +71,19 @@ public:
 	}
 	return item;
     }
-    
+
     T *operator*()
     {
-    	return (elem_ == 0 ? 0 : (T *)elem_->data);
+	return (elem_ == 0 ? 0 : (T *)elem_->data);
     }
-    
+
     list_iterator_t<T> peek_next() const
     {
-    	return list_iterator_t<T>(elem_ == 0 ? 0 : elem_->next);
+	return list_iterator_t<T>(elem_ == 0 ? 0 : elem_->next);
     }
     list_iterator_t<T> peek_prev() const
     {
-    	return list_iterator_t<T>(elem_ == 0 ? 0 : elem_->prev);
+	return list_iterator_t<T>(elem_ == 0 ? 0 : elem_->prev);
     }
 
     void replace(T *item)
@@ -96,7 +96,7 @@ public:
 	GList *last;
 
 	if (list == 0 || list->head_ == 0)
-    	    return;
+	    return;
 
 	last = g_list_last(list->head_);   // TODO: be smarter
 
@@ -106,18 +106,18 @@ public:
 
 	elem_->next = list->head_;
 	list->head_->prev = elem_;
-	
+
 	list->head_ = list->tail_ = 0;
     }
-    
+
 
     int operator==(T *item)
     {
-    	return (item == (elem_ == 0 ? 0 : (T *)elem_->data));
+	return (item == (elem_ == 0 ? 0 : (T *)elem_->data));
     }
     int operator!=(T *item)
     {
-    	return (item != (elem_ == 0 ? 0 : (T *)elem_->data));
+	return (item != (elem_ == 0 ? 0 : (T *)elem_->data));
     }
 };
 
@@ -132,142 +132,142 @@ private:
     /* ctor */
     list_t(GList *gl)
      :  head_(gl),
-        tail_(0)
+	tail_(0)
     {
     }
-    
+
 public:
     /* ctor */
     list_t()
      :  head_(0),
-        tail_(0)
+	tail_(0)
     {
     }
     /* dtor */
     ~list_t()
     {
 #if 0
-    	// User must clear out list first
-    	assert(head_ == 0);
-    	assert(tail_ == 0);
+	// User must clear out list first
+	assert(head_ == 0);
+	assert(tail_ == 0);
 #endif
     }
 
     void append(T *item)
     {
-    	if (tail_ == 0)
+	if (tail_ == 0)
 	    tail_ = g_list_last(head_);
-    	GList *elem = g_list_append(tail_, (gpointer)item);
+	GList *elem = g_list_append(tail_, (gpointer)item);
 	if (tail_ == 0)
 	    head_ = tail_ = elem;
 	else
 	    tail_ = tail_->next;
     }
-        
+
     void prepend(T *item)
     {
-    	head_ = g_list_prepend(head_, (gpointer)item);
+	head_ = g_list_prepend(head_, (gpointer)item);
 	if (tail_ == 0)
 	    tail_ = head_;
     }
-    
+
     void insert_sorted(T *item, gint (*compare)(const T*, const T*))
     {
-    	head_ = g_list_insert_sorted(head_, (gpointer)item, (GCompareFunc)compare);
-	// update tail_ pointer only if its no longer valid 
+	head_ = g_list_insert_sorted(head_, (gpointer)item, (GCompareFunc)compare);
+	// update tail_ pointer only if its no longer valid
 	if (tail_ == 0 || tail_->next != 0)
 	    tail_ = g_list_last(head_);
     }
-    
+
     void sort(gint (*compare)(const T*, const T*))
     {
-    	head_ = g_list_sort(head_, (GCompareFunc)compare);
-	// update tail_ pointer only if its no longer valid 
+	head_ = g_list_sort(head_, (GCompareFunc)compare);
+	// update tail_ pointer only if its no longer valid
 	if (tail_ == 0 || tail_->next != 0)
 	    tail_ = g_list_last(head_);
     }
-    
+
     void remove(T *item)
     {
-    	head_ = g_list_remove(head_, item);
+	head_ = g_list_remove(head_, item);
 	// invalidate tail
 	tail_ = 0;
     }
-    
+
     T *remove(list_iterator_t<T> itr)
     {
-    	T *item = (T *)itr.elem_->data;
+	T *item = (T *)itr.elem_->data;
 	if (tail_ != 0 && itr.elem_ == tail_)
 	    tail_ = tail_->prev;
 	else
-	    tail_ = 0;	// invalidate tail
-    	head_ = g_list_remove_link(head_, itr.elem_);
+	    tail_ = 0;  // invalidate tail
+	head_ = g_list_remove_link(head_, itr.elem_);
 	return item;
     }
 
     void remove_all()
     {
-    	while (head_ != 0)
+	while (head_ != 0)
 	    head_ = g_list_remove_link(head_, head_);
 	tail_ = 0;
     }
-    
+
     T *remove_head()
     {
-    	T *item = 0;
-    	if (head_ != 0)
+	T *item = 0;
+	if (head_ != 0)
 	{
 	    item = (T *)head_->data;
 	    if (head_ == tail_)
-	    	tail_ = 0;
+		tail_ = 0;
 	    head_ = g_list_remove_link(head_, head_);
 	}
 	return item;
     }
-    
+
     void apply_remove(void (*dtor)(T *))
     {
-    	while (head_ != 0)
+	while (head_ != 0)
 	{
 	    T *item = (T *)head_->data;
 	    head_ = g_list_remove_link(head_, head_);
-    	    (*dtor)(item);
+	    (*dtor)(item);
 	}
 	tail_ = 0;
     }
-    
+
     void delete_all()
     {
-    	while (head_ != 0)
+	while (head_ != 0)
 	{
 	    delete (T *)head_->data;
 	    head_ = g_list_remove_link(head_, head_);
 	}
 	tail_ = 0;
     }
-        
+
     void foreach(void (*func)(T*, void *closure), void *closure)
     {
-    	GList *iter;
+	GList *iter;
 	for (iter = head_ ; iter != 0 ; iter = iter->next)
 	    (*func)((T *)iter->data, closure);
     }
-    
+
     void foreach_remove(gboolean (*func)(T*, void *closure), void *closure)
     {
-    	GList *iter, *next;
+	GList *iter, *next;
 	for (iter = head_ ; iter != 0 ; iter = next)
 	{
 	    next = iter->next;
 	    if ((*func)((T *)iter->data, closure))
-	    	remove(list_iterator_t<T>(iter));
+		remove(list_iterator_t<T>(iter));
 	}
     }
-    
+
     void concat(list_t<T> *list)
     {
-    	// TODO: be smarter
-    	head_ = g_list_concat(head_, list->head_);
+	// TODO: be smarter
+	head_ = g_list_concat(head_, list->head_);
 	tail_ = list->tail_;
 	list->head_ = list->tail_ = 0;
     }
@@ -276,44 +276,44 @@ public:
     {
 	return list_t<T>(g_list_copy(head_));
     }
-    
+
     void take(list_t<T> *list)
     {
-    	head_ = list->head_;
+	head_ = list->head_;
 	tail_ = list->tail_;
 	list->head_ = list->tail_ = 0;
     }
 
     T *head() const
     {
-    	return (head_ == 0 ? 0 : (T *)head_->data);
+	return (head_ == 0 ? 0 : (T *)head_->data);
     }
-    
+
     T *tail() const
     {
-    	if (tail_ == 0)
+	if (tail_ == 0)
 	    ((list_t<T> *)this)->tail_ = g_list_last(head_);
-    	return (tail_ == 0 ? 0 : (T *)tail_->data);
+	return (tail_ == 0 ? 0 : (T *)tail_->data);
     }
 
     guint length() const
     {
-    	return g_list_length(head_);
+	return g_list_length(head_);
     }
 
-    // iteration interface    
+    // iteration interface
     list_iterator_t<T> first() const
     {
-    	return list_iterator_t<T>(head_);
+	return list_iterator_t<T>(head_);
     }
-    
+
     list_iterator_t<T> last() const
     {
-    	if (tail_ == 0)
+	if (tail_ == 0)
 	    ((list_t<T> *)this)->tail_ = g_list_last(head_);
-    	return list_iterator_t<T>(tail_);
+	return list_iterator_t<T>(tail_);
     }
-    
+
 };
 
 

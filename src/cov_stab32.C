@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003-2004 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -29,7 +29,7 @@ CVSID("$Id: cov_stab32.C,v 1.7 2010-05-09 05:37:15 gnb Exp $");
  * object file or executable and parse them for source filenames.
  * Large chunks of code ripped from binutils/rddbg.c and stabs.c
  */
- 
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 /*
@@ -67,16 +67,16 @@ private:
 };
 
 COV_FACTORY_STATIC_REGISTER(cov_filename_scanner_t,
-    	    	    	    cov_stab32_filename_scanner_t);
+			    cov_stab32_filename_scanner_t);
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_stab32_filename_scanner_t::~cov_stab32_filename_scanner_t()
 {
     if (stabs_ != 0)
-    	g_free(stabs_);
+	g_free(stabs_);
     if (strings_ != 0)
-    	g_free(strings_);
+	g_free(strings_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -87,18 +87,18 @@ cov_stab32_filename_scanner_t::attach(cov_bfd_t *b)
     cov_bfd_section_t *sec;
 
     if (!cov_filename_scanner_t::attach(b))
-    	return FALSE;
+	return FALSE;
 
     if ((sec = cbfd_->find_section(".stab")) == 0 ||
-    	(stabs_ = (cov_stab32_t *)sec->get_contents(&num_stabs_)) == 0)
-    	return FALSE;
+	(stabs_ = (cov_stab32_t *)sec->get_contents(&num_stabs_)) == 0)
+	return FALSE;
     num_stabs_ /= sizeof(cov_stab32_t);
-    
+
     if ((sec = cbfd_->find_section(".stabstr")) == 0 ||
-    	(strings_ = (char *)sec->get_contents(&string_size_)) == 0)
+	(strings_ = (char *)sec->get_contents(&string_size_)) == 0)
     if (strings_ == 0)
-    	return FALSE;
-    
+	return FALSE;
+
     assert(sizeof(cov_stab32_t) == 12);
 
     return TRUE;
@@ -114,9 +114,9 @@ cov_stab32_filename_scanner_t::next()
 
     for ( ; stabi_ < num_stabs_ ; stabi_++)
     {
-    	cov_stab32_t *st = &stabs_[stabi_];
+	cov_stab32_t *st = &stabs_[stabi_];
 
-    	if (st->type == 0)
+	if (st->type == 0)
 	{
 	    /*
 	     * Special type 0 stabs indicate the offset to the
@@ -129,27 +129,27 @@ cov_stab32_filename_scanner_t::next()
 	{
 	    if (stroff_ + st->strx > string_size_)
 	    {
-	    	/* TODO */
+		/* TODO */
 		fprintf(stderr, "%s: stab entry %u is corrupt, strx = 0x%x, type = %d\n",
 		    cbfd_->filename(),
 		    stabi_, st->strx, st->type);
 		continue;
 	    }
-	    
-    	    const char *s = strings_ + stroff_ + st->strx;
-	    
+
+	    const char *s = strings_ + stroff_ + st->strx;
+
 	    dprintf6(D_STABS|D_VERBOSE,
-	    	     "%5u|%4x|%5x|%04x|%08x|%s\n",
+		     "%5u|%4x|%5x|%04x|%08x|%s\n",
 		     stabi_, st->type, st->other, st->desc, st->value, s);
 
 	    if (s[0] == '\0')
-	    	continue;
+		continue;
 
 	    if (s[strlen(s)-1] == '/')
-	    	dir_ = s;
+		dir_ = s;
 	    else
 	    {
-	    	stabi_++;
+		stabi_++;
 		char *res = (s[0] == '/' ? g_strdup(s) : g_strconcat(dir_.data(), s, (char *)0));
 		dprintf1(D_STABS, "Scanned source file \"%s\"\n", res);
 		return res;
@@ -157,7 +157,7 @@ cov_stab32_filename_scanner_t::next()
 	}
     }
 
-    return 0;	/* end of iteration */
+    return 0;   /* end of iteration */
 }
 
 #endif /*HAVE_LIBBFD*/

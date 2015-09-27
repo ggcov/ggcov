@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -49,14 +49,14 @@ public:
     cov_function_t *
     function() const
     {
-    	return function_;
+	return function_;
     }
     unsigned int
     bindex() const
     {
-    	return idx_;
+	return idx_;
     }
-    
+
     /* returns pointer to a static buffer, make a copy if you want to
      * use it after calling describe() again */
     const char *describe() const;
@@ -79,9 +79,9 @@ public:
     count_t
     count() const
     {
-    	return count_;
+	return count_;
     }
-    
+
     gboolean is_epilogue() const;
 
     void finalise();
@@ -106,9 +106,9 @@ private:
 
     cov_block_t();
     ~cov_block_t();
-    
+
     static count_t total(const list_t<cov_block_t> &list);
-    
+
     void set_count(count_t);
     void add_location(const char *filename, unsigned lineno);
     gboolean is_call_site() const;
@@ -121,26 +121,26 @@ private:
     const cov_suppression_t *suppression_;
 
     cov_function_t *function_;
-    unsigned int idx_; 	    /* serial number in function */
-    
+    unsigned int idx_;      /* serial number in function */
+
     count_t count_;
     boolean count_valid_:1;
-    
+
     list_t<cov_arc_t> in_arcs_;
     unsigned in_ninvalid_;   /* number of inbound non-call arcs with invalid counts */
-    
+
     list_t<cov_arc_t> out_arcs_;
     unsigned out_ninvalid_;  /* number of outbound non-call arcs with invalid counts */
     unsigned int out_ncalls_;/* number of outbound call arcs */
-    
+
     list_t<cov_location_t> locations_;
     list_t<call_t> pure_calls_;
-    
+
     /* used while reading .o files to get arc names */
     string_var call_;
-    
+
     friend gboolean cov_o_file_add_call(cov_read_state_t *rs,
-    	    	    	    		unsigned long address,
+					unsigned long address,
 					const char *callname);
     friend class cov_file_t;
     friend class cov_function_t;

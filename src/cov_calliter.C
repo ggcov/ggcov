@@ -49,7 +49,7 @@ gboolean
 cov_call_iterator_t::block_next()
 {
     if (block_ == 0)
-    	return FALSE;
+	return FALSE;
     if (state_ == 0)
     {
 	if (pure_iter_ != (cov_block_t::call_t *)0)
@@ -62,14 +62,14 @@ cov_call_iterator_t::block_next()
     }
     if (state_ == 1)
     {
-    	pure_ = 0;
+	pure_ = 0;
 	for (list_iterator_t<cov_arc_t> oi = block_->first_arc() ; *oi ; ++oi)
 	{
 	    arc_ = *oi;
 	    if (!arc_->is_call())
-	    	continue;
+		continue;
 	    if (arc_->is_suppressed())
-	    	continue;
+		continue;
 	    state_++;
 	    return TRUE;
 	}
@@ -102,7 +102,7 @@ cov_function_call_iterator_t::next()
     for (;;)
     {
 	if (block_next())
-    	    return TRUE;
+	    return TRUE;
 	cov_block_t *b;
 	if (++bindex_ >= function_->num_blocks() ||
 	    (b = function_->nth_block(bindex_)) == 0)

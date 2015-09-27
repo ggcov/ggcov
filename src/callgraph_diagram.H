@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -41,14 +41,14 @@ public:
 private:
     struct node_t
     {
-    	cov_callnode_t *callnode_;
+	cov_callnode_t *callnode_;
 	cov_scope_t *scope_;
 	int rank_;
 	unsigned int file_;
-	unsigned int nup_;	/* number of incoming arcs from upper ranks */
-	unsigned int ndown_;	/* number of outgoing arcs to lower ranks */
-	int max_rank_;	    	/* lowest rank this node could be pushed to */
-	int max_depth_;     	/* longest path to leaf through this node */
+	unsigned int nup_;      /* number of incoming arcs from upper ranks */
+	unsigned int ndown_;    /* number of outgoing arcs to lower ranks */
+	int max_rank_;          /* lowest rank this node could be pushed to */
+	int max_depth_;         /* longest path to leaf through this node */
 	unsigned long generation_;
 	double spread_;
 	double x_, y_, h_;
@@ -62,16 +62,16 @@ private:
 	};
 	int flags_;
 
-    	unsigned int nup();
-    	unsigned int ndown();
-    	gboolean any_self();
-        void push_spread_rootwards(double deltaspread);
-    	void push_spread_leafwards(double deltaspread);
-    	static node_t *from_callnode(cov_callnode_t *cn)
+	unsigned int nup();
+	unsigned int ndown();
+	gboolean any_self();
+	void push_spread_rootwards(double deltaspread);
+	void push_spread_leafwards(double deltaspread);
+	static node_t *from_callnode(cov_callnode_t *cn)
 	{
 	    return (node_t *)cn->userdata;
 	}
-    	node_t(cov_callnode_t *);
+	node_t(cov_callnode_t *);
 	~node_t();
     };
 

@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -33,22 +33,22 @@ cov_block_t::cov_block_t()
 cov_block_t::~cov_block_t()
 {
     cov_arc_t *a;
-    
+
     cov_location_t *loc;
     while ((loc = locations_.remove_head()) != 0)
     {
 	cov_line_t::remove(loc, this);
 	delete loc;
     }
-    
+
     while ((a = in_arcs_.head()) != 0)
-    	delete a;
+	delete a;
     while ((a = out_arcs_.head()) != 0)
-    	delete a;
-	
+	delete a;
+
     call_t *cc;
     while ((cc = pure_calls_.remove_head()) != 0)
-    	delete cc;
+	delete cc;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -70,7 +70,7 @@ cov_block_t::is_epilogue() const
     unsigned int nblocks = function_->num_blocks();
 
     return (nblocks >= 4 &&
-            idx_ == (nblocks - 2) &&
+	    idx_ == (nblocks - 2) &&
 	    out_arcs_.length() == 1 &&
 	    (*(out_arcs_.first()))->to()->bindex() == (nblocks-1));
 }
@@ -81,9 +81,9 @@ void
 cov_block_t::add_location(const char *filename, unsigned lineno)
 {
     cov_location_t *loc;
-    
+
     loc = new(cov_location_t);
-    loc->filename = (char *)filename;	/* stored externally */
+    loc->filename = (char *)filename;   /* stored externally */
     loc->lineno = lineno;
     locations_.append(loc);
 }
@@ -105,10 +105,10 @@ cov_block_t::set_count(count_t count)
 	    cov_arc_t *a = (*aiter);
 	    if (a->call_)
 	    {
-	    	a->set_count(count);
+		a->set_count(count);
 		break;
 	    }
-	}	    
+	}
     }
 }
 
@@ -118,8 +118,8 @@ gboolean
 cov_block_t::is_call_site() const
 {
     return (idx_ > 0 &&
-    	    idx_ < function_->num_blocks()-1 &&
-    	    out_ncalls_ > 0);
+	    idx_ < function_->num_blocks()-1 &&
+	    out_ncalls_ > 0);
 }
 
 gboolean
@@ -138,23 +138,23 @@ cov_block_t::add_call(const char *name, const cov_location_t *loc)
 	name = "*pointer";
 
     if (is_call_site() &&
-    	((last = locations_.tail()) == 0 || *loc == *last))
+	((last = locations_.tail()) == 0 || *loc == *last))
     {
-    	dprintf5(D_CGRAPH, "%s: call from %s:%u to %s at %s\n",
-	    	fn, function_->name(), idx_, name, loc->describe());
-    	if (call_ != 0)
+	dprintf5(D_CGRAPH, "%s: call from %s:%u to %s at %s\n",
+		fn, function_->name(), idx_, name, loc->describe());
+	if (call_ != 0)
 	{
 	    /* multiple calls: assume the earlier one is actually pure */
-    	    dprintf5(D_CGRAPH, "%s: assuming earlier call from %s:%u to %s at %s was pure\n",
-	    	fn, function_->name(), idx_, call_.data(), locations_.tail()->describe());
+	    dprintf5(D_CGRAPH, "%s: assuming earlier call from %s:%u to %s at %s was pure\n",
+		fn, function_->name(), idx_, call_.data(), locations_.tail()->describe());
 	    pure_calls_.append(new call_t(call_, locations_.tail()));
 	}
 	call_ = name;
     }
     else
     {
-    	dprintf5(D_CGRAPH, "%s: pure call from %s:%u to %s at %s\n",
-	    	fn, function_->name(), idx_, name, loc->describe());
+	dprintf5(D_CGRAPH, "%s: pure call from %s:%u to %s at %s\n",
+		fn, function_->name(), idx_, name, loc->describe());
 	pure_calls_.append(new call_t(name, loc));
     }
 }
@@ -234,7 +234,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
 	    cov_arc_t *a = *aiter;
 
 	    if (a->is_fall_through())
-		continue;	/* control flow does not branch */
+		continue;       /* control flow does not branch */
 
 	    if (a->is_call())
 		mine.calls_[a->status()]++;

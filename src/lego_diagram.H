@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -39,16 +39,16 @@ public:
 private:
     struct node_t
     {
-    	cov_file_t *file_;	    /* NULL for directories */
+	cov_file_t *file_;          /* NULL for directories */
 	string_var name_;
 	/* TODO: really, really need a "directory" scope object */
 	cov_stats_t stats_;
 	list_t<node_t> children_;
-	unsigned int depth_;	    /* 1 = immediate children of minimaldir */
-	double x_, y_, w_, h_;	    /* in [0,1] space */
+	unsigned int depth_;        /* 1 = immediate children of minimaldir */
+	double x_, y_, w_, h_;      /* in [0,1] space */
 	double h_cov_, h_uncov_;
 
-    	node_t() : file_(0) {}
+	node_t() : file_(0) {}
 	~node_t() {}
     };
 

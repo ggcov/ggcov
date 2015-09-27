@@ -29,7 +29,7 @@ TEST(const_string_ctor)
     check(!strcmp(e.data(), x));
     check(e.data()[5] == '\0');
     check(strlen(e.data()) == 5);
-    check(e.data() != x);	    // argument must be copied
+    check(e.data() != x);           // argument must be copied
     check(is_heap(e.data()));
 }
 
@@ -49,7 +49,7 @@ TEST(non_const_string_ctor)
     check(e.length() == 12);
     check(!strcmp(e.data(), x));
     check(strlen(e.data()) == 12);
-    check(e.data() == x);	    // argument must be taken over
+    check(e.data() == x);           // argument must be taken over
 }
 
 TEST(non_const_string_ctor_with_null)
@@ -69,7 +69,7 @@ TEST(const_string_and_length_ctor)
     check(!strncmp(e.data(), x, 3));
     check(e.data()[3] == '\0');
     check(strlen(e.data()) == 3);
-    check(e.data() != x);	    // argument must be copied
+    check(e.data() != x);           // argument must be copied
     check(is_heap(e.data()));
 }
 
@@ -90,7 +90,7 @@ TEST(non_const_string_and_length_ctor)
     check(!strncmp(e.data(), x, 6));
     check(e.data()[6] == '\0');
     check(strlen(e.data()) == 6);
-    check(e.data() == x);	    // argument must be taken over
+    check(e.data() == x);           // argument must be taken over
 }
 
 TEST(non_const_string_and_length_ctor_with_null)
@@ -133,7 +133,7 @@ TEST(re_assignment_by_const_string)
     check(strlen(e.data()) == 13);
     check(!strcmp(e.data(), x1));
 
-    e = x2;		// non-expanding re-assignment
+    e = x2;             // non-expanding re-assignment
 
     check(e.length() == 10);
     check(e.data() != 0);
@@ -142,7 +142,7 @@ TEST(re_assignment_by_const_string)
     check(strlen(e.data()) == 10);
     check(!strcmp(e.data(), x2));
 
-    e = x3;		// non-expanding re-assignment
+    e = x3;             // non-expanding re-assignment
 
     check(e.length() == 17);
     check(e.data() != 0);
@@ -188,7 +188,7 @@ TEST(re_assignment_by_non_const_string)
     check(strlen(e.data()) == 13);
     check(!strcmp(e.data(), "I won't stand"));
 
-    e = x2;		// non-expanding re-assignment
+    e = x2;             // non-expanding re-assignment
 
     check(e.length() == 11);
     check(e.data() != 0);
@@ -197,7 +197,7 @@ TEST(re_assignment_by_non_const_string)
     check(strlen(e.data()) == 11);
     check(!strcmp(e.data(), "in your way"));
 
-    e = x3;		// non-expanding re-assignment
+    e = x3;             // non-expanding re-assignment
 
     check(e.length() == 26);
     check(e.data() != 0);
@@ -411,7 +411,7 @@ TEST(replace_string)
     check(!strcmp(e.data(), x));
     check(e.data()[40] == '\0');
     check(strlen(e.data()) == 40);
-    check(e.data() != x);	    // argument must be copied
+    check(e.data() != x);           // argument must be copied
     check(is_heap(e.data()));
 
     // replace some chars from the middle
@@ -480,7 +480,7 @@ TEST(remove)
     check(!strcmp(e.data(), x));
     check(e.data()[20] == '\0');
     check(strlen(e.data()) == 20);
-    check(e.data() != x);	    // argument must be copied
+    check(e.data() != x);           // argument must be copied
     check(is_heap(e.data()));
     p = e.data();
 
@@ -488,7 +488,7 @@ TEST(remove)
     e.remove(7, 3);
 
     check(e.length() == 17);
-    check(e.data() == p);	    // not been reallocated
+    check(e.data() == p);           // not been reallocated
     check(!strcmp(e.data(), "love real machine"));
     check(e.data()[17] == '\0');
     check(strlen(e.data()) == 17);
@@ -497,7 +497,7 @@ TEST(remove)
     e.remove(4, 1);
 
     check(e.length() == 16);
-    check(e.data() == p);	    // not been reallocated
+    check(e.data() == p);           // not been reallocated
     check(!strcmp(e.data(), "lovereal machine"));
     check(e.data()[16] == '\0');
     check(strlen(e.data()) == 16);
@@ -506,7 +506,7 @@ TEST(remove)
     e.remove(4, 0);
 
     check(e.length() == 16);
-    check(e.data() == p);	    // not been reallocated
+    check(e.data() == p);           // not been reallocated
     check(!strcmp(e.data(), "lovereal machine"));
     check(e.data()[16] == '\0');
     check(strlen(e.data()) == 16);
@@ -515,7 +515,7 @@ TEST(remove)
     e.remove(0, 4);
 
     check(e.length() == 12);
-    check(e.data() == p);	    // not been reallocated
+    check(e.data() == p);           // not been reallocated
     check(!strcmp(e.data(), "real machine"));
     check(e.data()[12] == '\0');
     check(strlen(e.data()) == 12);
@@ -524,7 +524,7 @@ TEST(remove)
     e.remove(9, 3);
 
     check(e.length() == 9);
-    check(e.data() == p);	    // not been reallocated
+    check(e.data() == p);           // not been reallocated
     check(!strcmp(e.data(), "real mach"));
     check(e.data()[9] == '\0');
     check(strlen(e.data()) == 9);
@@ -533,7 +533,7 @@ TEST(remove)
     e.remove(0, 9);
 
     check(e.length() == 0);
-    check(e.data() == p);	    // not been reallocated
+    check(e.data() == p);           // not been reallocated
     check(e.data()[0] == '\0');
     check(strlen(e.data()) == 0);
 }
@@ -733,7 +733,7 @@ TEST(trim_nuls_non_empty_string)
     check(!strcmp(e.data(), x));
     check(e.data()[24] == '\0');
     check(strlen(e.data()) == 24);
-    check(e.data() != x);	    // argument must be copied
+    check(e.data() != x);           // argument must be copied
     check(is_heap(e.data()));
 
     e.trim_nuls();
@@ -742,7 +742,7 @@ TEST(trim_nuls_non_empty_string)
     check(!strcmp(e.data(), x));
     check(e.data()[24] == '\0');
     check(strlen(e.data()) == 24);
-    check(e.data() != x);	    // argument must be copied
+    check(e.data() != x);           // argument must be copied
     check(is_heap(e.data()));
 }
 
@@ -753,14 +753,14 @@ TEST(trim_nuls_non_empty_string_with_trailing_nuls)
     estring e(x, 32);
 
     check(e.length() == 32);
-    check(e.data() == x);	    // argument must be taken over
+    check(e.data() == x);           // argument must be taken over
     check(!strcmp(e.data(), "scares the"));
     check(strlen(e.data()) == 10);
 
     e.trim_nuls();
 
     check(e.length() == 10);
-    check(e.data() == x);	    // argument must be taken over
+    check(e.data() == x);           // argument must be taken over
     check(!strcmp(e.data(), "scares the"));
     check(strlen(e.data()) == 10);
 }

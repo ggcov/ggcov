@@ -156,11 +156,11 @@ mkpath(char *path, mode_t mode)
     for (p = path ; ; *p++ = '/')
     {
 	while (*p == '/')
-	    p++;	    /* skip any leading / */
+	    p++;            /* skip any leading / */
 	while (*p && *p != '/')
-	    p++;	    /* skip the path component */
+	    p++;            /* skip the path component */
 	if (!*p)
-	    return 0;	    /* last component is filename */
+	    return 0;       /* last component is filename */
 	*p = '\0';
 
 #if DEBUG

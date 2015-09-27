@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2004 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -64,40 +64,40 @@ class covio_t
 public:
     covio_t(const char *fn)
      :  refcount_(0),
-     	fn_(fn),
+	fn_(fn),
 	buf_(0),
 	ownbuf_(FALSE),
-        fp_(0),
+	fp_(0),
 	ownfp_(TRUE),
 	format_(0)
     {
     }
     covio_t(const char *fn, FILE *fp)
      :  refcount_(0),
-     	fn_(fn),
+	fn_(fn),
 	buf_(0),
 	ownbuf_(FALSE),
-     	fp_(fp),
+	fp_(fp),
 	ownfp_(FALSE),
 	format_(0)
     {
     }
     covio_t(const char *fn, const char *buf, unsigned int len)
      :  refcount_(0),
-     	fn_(fn),
+	fn_(fn),
 	buf_((char *)buf),
 	ownbuf_(FALSE),
-     	fp_(fmemopen((char *)buf, len, "r")),
+	fp_(fmemopen((char *)buf, len, "r")),
 	ownfp_(TRUE),
 	format_(0)
     {
     }
     covio_t(const char *fn, char *buf, unsigned int len)
      :  refcount_(0),
-     	fn_(fn),
+	fn_(fn),
 	buf_(buf),
 	ownbuf_(TRUE),
-     	fp_(fmemopen(buf, len, "r")),
+	fp_(fmemopen(buf, len, "r")),
 	ownfp_(TRUE),
 	format_(0)
     {
@@ -106,30 +106,30 @@ public:
 
     void ref()
     {
-    	refcount_++;
+	refcount_++;
     }
     void unref()
     {
-    	if (--refcount_ <= 0)
+	if (--refcount_ <= 0)
 	    delete this;
     }
-    
+
     gboolean open_read();
 
     const char *filename() const { return fn_; }
     FILE *take()
     {
-    	FILE *fp = fp_;
+	FILE *fp = fp_;
 	fp_ = 0;
 	ownfp_ = FALSE;
-    	return fp;
+	return fp;
     }
-    
+
     gboolean skip(unsigned int len);
     int read(char *buf, unsigned int len);
     int read(estring &e, unsigned int len);
     gboolean gets(estring &e, unsigned int maxlen);
-    
+
     off_t tell() const { return ftell(fp_); }
     int seek(off_t off) { return fseek(fp_, off, SEEK_SET); }
     gboolean eof() const { return feof(fp_); }
@@ -138,23 +138,23 @@ public:
     gboolean read_bbstring(estring &, gnb_u32_t endtag);
     gboolean read_u32(gnb_u32_t &v)
     {
-    	return format_->read_u32(*this, v);
+	return format_->read_u32(*this, v);
     }
     gboolean read_u64(gnb_u64_t &v)
     {
-    	return format_->read_u64(*this, v);
+	return format_->read_u64(*this, v);
     }
     gboolean read_string(estring &v)
     {
-    	return format_->read_string(*this, v);
+	return format_->read_string(*this, v);
     }
 
     enum format_t
     {
-    	FORMAT_OLD, 	/* traditional gcc 2.x */
-	FORMAT_GCC33,	/* gcc 3.3 */
-	FORMAT_GCC34L,	/* gcc 3.4, little endian */
-	FORMAT_GCC34B,	/* gcc 3.4, big endian */
+	FORMAT_OLD,     /* traditional gcc 2.x */
+	FORMAT_GCC33,   /* gcc 3.3 */
+	FORMAT_GCC34L,  /* gcc 3.4, little endian */
+	FORMAT_GCC34B,  /* gcc 3.4, big endian */
 
 	FORMAT_NUM
     };
@@ -174,7 +174,7 @@ private:
     gboolean read_bu32(gnb_u32_t&); /* big-endian 32b */
     gboolean read_lu64(gnb_u64_t&); /* little-endian 64b */
     gboolean read_bu64(gnb_u64_t&); /* big-endian 64b */
-    
+
     /* the given byte length into a new string */
     gboolean read_string_len(estring &e, gnb_u32_t len);
 
@@ -189,7 +189,7 @@ class covio_var
 {
 private:
     covio_t *io_;
-    
+
 public:
     // default ctor
     covio_var()
@@ -200,33 +200,33 @@ public:
     covio_var(covio_t *io)
      :  io_(io)
     {
-    	if (io_)
+	if (io_)
 	    io_->ref();
     }
     // copy c'tor
     covio_var(const covio_var &o)
     {
-    	io_ = o.io_;
+	io_ = o.io_;
 	if (io_)
 	    io_->ref();
     }
-    // dtor    
+    // dtor
     ~covio_var()
     {
-    	if (io_)
+	if (io_)
 	    io_->unref();
     }
 
     operator covio_t *() const
     {
-    	return io_;
+	return io_;
     }
     // assignment operators
     covio_t *operator=(covio_t *io)
     {
 	if (io)
 	    io->ref();
-    	if (io_)
+	if (io_)
 	    io_->unref();
 	return io_ = io;
     }

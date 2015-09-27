@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -27,7 +27,7 @@ void
 gnb_hash_table_add_one_key(gpointer key, gpointer value, gpointer closure)
 {
     list_t<void> *list = (list_t<void> *)closure;
-    
+
     list->prepend(key);
 }
 
@@ -41,11 +41,11 @@ static int
 direct_compare(gconstpointer v1, gconstpointer v2)
 {
     if ((unsigned long)v1 < (unsigned long)v2)
-    	return -1;
+	return -1;
     else if ((unsigned long)v1 > (unsigned long)v2)
-    	return 1;
+	return 1;
     else
-    	return 0;
+	return 0;
 }
 
 /* copied from glib's g_str_hash() */
@@ -75,11 +75,11 @@ gnb_u64_t_compare(gconstpointer v1, gconstpointer v2)
     gnb_u64_t u2 = *(gnb_u64_t *)v2;
 
     if (u1 < u2)
-    	return -1;
+	return -1;
     else if (u1 > u2)
-    	return 1;
+	return 1;
     else
-    	return 0;
+	return 0;
 }
 
 template<> GHashFunc hashtable_ops_t<char>::hash = g_str_hash;

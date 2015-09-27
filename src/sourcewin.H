@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2006 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -49,20 +49,20 @@ private:
     enum columns
     {
 	COL_FLOW,
-    	COL_LINE,
-    	COL_BLOCK,
-    	COL_COUNT,
-    	COL_SOURCE,
-    	NUM_COLS
+	COL_LINE,
+	COL_BLOCK,
+	COL_COUNT,
+	COL_SOURCE,
+	NUM_COLS
     };
 #if GTK2
     struct flow_t
     {
 	GtkWidget *canvas_;
-	int bufy_;		    /* buffer y coord of canvas */
-	unsigned int width_;	    /* width in pixels of canvas */
+	int bufy_;                  /* buffer y coord of canvas */
+	unsigned int width_;        /* width in pixels of canvas */
 	cov_function_t *function_;
-	unsigned int shown_;	    /* generation number for showing flows */
+	unsigned int shown_;        /* generation number for showing flows */
     };
 #endif
 
@@ -118,8 +118,8 @@ private:
     static const int column_widths_[NUM_COLS];
     static const char *column_names_[NUM_COLS];
     static list_t<sourcewin_t> instances_;
-    
-    GtkWidget *text_;	/* GtkText in gtk1.2, GtkTextView in gtk2.0 */
+
+    GtkWidget *text_;   /* GtkText in gtk1.2, GtkTextView in gtk2.0 */
     ui_text_tag *text_tags_[cov::NUM_STATUS];
     GtkWidget *column_checks_[NUM_COLS];
     GtkWidget *colors_check_;

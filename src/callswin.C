@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -28,15 +28,15 @@
 CVSID("$Id: callswin.C,v 1.24 2010-05-09 05:37:14 gnb Exp $");
 
 #define COL_FROM    0
-#define COL_TO	    1
+#define COL_TO      1
 #define COL_LINE    2
 #define COL_COUNT   3
 #if !GTK2
-#define COL_CLOSURE	0
-#define NUM_COLS    	4
+#define COL_CLOSURE     0
+#define NUM_COLS        4
 #else
-#define COL_CLOSURE	4
-#define NUM_COLS    	5
+#define COL_CLOSURE     4
+#define NUM_COLS        5
 #define COL_TYPES \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
     G_TYPE_STRING, G_TYPE_POINTER
@@ -53,46 +53,46 @@ struct callswin_call_t
 
     callswin_call_t(cov_function_t *fn, cov_call_iterator_t *itr)
      :  from_(fn),
-     	to_(itr->name()),
+	to_(itr->name()),
 	location_(itr->location()),
 	count_(itr->count())
     {
     }
 
     static int compare(
-    	const callswin_call_t *a,
+	const callswin_call_t *a,
 	const callswin_call_t *b,
-    	int column)
+	int column)
     {
-    	int cols[NUM_COLS+1];
+	int cols[NUM_COLS+1];
 	int i, n = 0, r;
-	
+
 	/* primary sort key */
 	cols[n++] = column;
 	/* secondary sort keys */
 	cols[n++] = COL_FROM;
 	cols[n++] = COL_LINE;
 	cols[n++] = COL_TO;
-	
+
 	for (i = 0 ; i < n ; i++)
 	{
 	    switch (cols[i])
 	    {
 	    case COL_FROM:
-    		r =  strcmp(safestr(a->from_->name()),
-	    		    safestr(b->from_->name()));
+		r =  strcmp(safestr(a->from_->name()),
+			    safestr(b->from_->name()));
 		break;
 
 	    case COL_TO:
-    		r = strcmp(safestr(a->to_), safestr(b->to_));
+		r = strcmp(safestr(a->to_), safestr(b->to_));
 		break;
 
 	    case COL_LINE:
-    		r = u32cmp(a->location_->lineno, b->location_->lineno);
+		r = u32cmp(a->location_->lineno, b->location_->lineno);
 		break;
 
 	    case COL_COUNT:
-    		r = u64cmp(a->count_, b->count_);
+		r = u64cmp(a->count_, b->count_);
 		break;
 
 	    default:
@@ -100,7 +100,7 @@ struct callswin_call_t
 		break;
 	    }
 	    if (r)
-	    	return r;
+		return r;
 	}
 	return 0;
     }
@@ -113,9 +113,9 @@ static int
 callswin_clist_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
 {
     return callswin_call_t::compare(
-    	(callswin_call_t *)((GtkCListRow *)ptr1)->data,
-    	(callswin_call_t *)((GtkCListRow *)ptr2)->data,
-    	clist->sort_column);
+	(callswin_call_t *)((GtkCListRow *)ptr1)->data,
+	(callswin_call_t *)((GtkCListRow *)ptr2)->data,
+	clist->sort_column);
 }
 #else
 static int
@@ -147,9 +147,9 @@ callswin_t::callswin_t()
 
     /* load the interface & connect signals */
     xml = ui_load_tree("calls");
-    
+
     set_window(glade_xml_get_widget(xml, "calls"));
-    
+
     w = glade_xml_get_widget(xml, "calls_from_function_combo");
     from_function_combo_ = init(UI_COMBO(w));
     from_function_view_ = glade_xml_get_widget(xml, "calls_from_function_view");
@@ -178,31 +178,31 @@ callswin_t::callswin_t()
 	  callswin_tree_iter_compare, GINT_TO_POINTER(COL_LINE), 0);
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_COUNT,
 	  callswin_tree_iter_compare, GINT_TO_POINTER(COL_COUNT), 0);
-    
+
     gtk_tree_view_set_model(GTK_TREE_VIEW(clist_), GTK_TREE_MODEL(store_));
 
     rend = gtk_cell_renderer_text_new();
 
     col = gtk_tree_view_column_new_with_attributes(_("From"), rend,
-    	    	"text", COL_FROM,
+		"text", COL_FROM,
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_FROM);
     gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
-    
+
     col = gtk_tree_view_column_new_with_attributes(_("To"), rend,
-    	    	"text", COL_TO,
+		"text", COL_TO,
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_TO);
     gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
-    
+
     col = gtk_tree_view_column_new_with_attributes(_("Line"), rend,
-    	    	"text", COL_LINE,
+		"text", COL_LINE,
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_LINE);
     gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
-    
+
     col = gtk_tree_view_column_new_with_attributes(_("Count"), rend,
-    	    	"text", COL_COUNT,
+		"text", COL_COUNT,
 		(char *)0);
     gtk_tree_view_column_set_sort_column_id(col, COL_COUNT);
     gtk_tree_view_append_column(GTK_TREE_VIEW(clist_), col);
@@ -257,7 +257,7 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
     char linebuf[32];
 
     cov_call_iterator_t *itr = new cov_function_call_iterator_t(from_fn);
-    
+
     while (itr->next())
     {
 	if (to_fn != 0 &&
@@ -267,7 +267,7 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 	snprintf(countbuf, sizeof(countbuf), "%llu", (unsigned long long)itr->count());
 	text[COL_COUNT] = countbuf;
 
-    	if ((loc = itr->location()) == 0)
+	if ((loc = itr->location()) == 0)
 	    strncpy(linebuf, "WTF??", sizeof(linebuf));
 	else
 	    snprintf(linebuf, sizeof(linebuf), "%lu", loc->lineno);
@@ -276,14 +276,14 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 	text[COL_FROM] = (char *)from_fn->name();
 	if ((text[COL_TO] = (char *)itr->name()) == 0)
 	    text[COL_TO] = "(unknown)";
-	    
+
 	call = new callswin_call_t(from_fn, itr);
 
 #if !GTK2
 	row = gtk_clist_append(GTK_CLIST(clist_), (char **)text);
 	gtk_clist_set_row_data(GTK_CLIST(clist_), row, call);
 #else
-    	gtk_list_store_append(store_, &titer);
+	gtk_list_store_append(store_, &titer);
 	gtk_list_store_set(store_,  &titer,
 	    COL_FROM, text[COL_FROM],
 	    COL_TO, text[COL_TO],
@@ -302,27 +302,27 @@ callswin_t::update()
     cov_function_t *from_fn = (cov_function_t *)get_active(from_function_combo_);
     cov_function_t *to_fn = (cov_function_t *)get_active(to_function_combo_);
     estring title;
-    
+
     dprintf0(D_CALLSWIN, "callswin_t::update\n");
     switch ((from_fn == 0 ? 0 : 2)|(to_fn == 0 ? 0 : 1))
     {
     case 0:
 	break;
     case 1:
-    	title.append_printf(_("to %s"), to_fn->name());
+	title.append_printf(_("to %s"), to_fn->name());
 	break;
     case 2:
-    	title.append_printf(_("from %s"), from_fn->name());
+	title.append_printf(_("from %s"), from_fn->name());
 	break;
     case 3:
-    	title.append_printf(_("from %s to %s"),
-	    	    	      from_fn->name(), to_fn->name());
+	title.append_printf(_("from %s to %s"),
+			      from_fn->name(), to_fn->name());
 	break;
     }
     set_title(title.data());
-    
+
     gtk_widget_set_sensitive(from_function_view_, (from_fn != 0));
-    gtk_widget_set_sensitive(to_function_view_, (to_fn != 0));    
+    gtk_widget_set_sensitive(to_function_view_, (to_fn != 0));
 
 #if !GTK2
     gtk_clist_freeze(GTK_CLIST(clist_));
@@ -333,7 +333,7 @@ callswin_t::update()
 
     if (from_fn != 0)
     {
-    	update_for_func(from_fn, to_fn);
+	update_for_func(from_fn, to_fn);
     }
     else
     {
@@ -341,7 +341,7 @@ callswin_t::update()
 	for (list_iterator_t<cov_function_t> iter = functions_->first() ; *iter ; ++iter)
 	    update_for_func(*iter, to_fn);
     }
-    
+
 #if !GTK2
     gtk_clist_columns_autosize(GTK_CLIST(clist_));
     gtk_clist_thaw(GTK_CLIST(clist_));

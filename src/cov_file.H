@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -39,7 +39,7 @@ public:
     const char *
     name() const
     {
-    	return name_;
+	return name_;
     }
 
     /*
@@ -68,14 +68,14 @@ public:
 
     cov::status_t status() const
     {
-    	cov_stats_t stats;
+	cov_stats_t stats;
 	return calc_stats(&stats);
     }
     gboolean is_suppressed() const
     {
 	return (suppression_ != 0);
     }
-    
+
     /* find a file by name, full or minimal */
     static cov_file_t *find(const char *name);
     /* Return an iterator over all the files in minimal filename order */
@@ -94,12 +94,12 @@ public:
     unsigned int
     num_functions() const
     {
-    	return functions_->length();
+	return functions_->length();
     }
     cov_function_t *
     nth_function(unsigned int n) const
     {
-    	return functions_->nth(n);
+	return functions_->nth(n);
     }
     const ptrarray_t<cov_function_t> &
     functions() const
@@ -114,9 +114,9 @@ public:
     unsigned int
     num_lines() const
     {
-    	return lines_->length();
+	return lines_->length();
     }
-    /* 
+    /*
      * Never returns a NULL pointer.  If n is outside the line number
      * range or the line is not instrumented, returns a default line
      * object which has count=0 and status=UNINSTRUMENTED.
@@ -126,10 +126,10 @@ public:
 private:
     cov_file_t(const char *name, const char *relpath);
     ~cov_file_t();
-    
+
     struct format_rec_t
     {
-    	const char *magic_;
+	const char *magic_;
 	unsigned int magic_len_;
 	gboolean (cov_file_t::*read_bbg_)(covio_t *);
 	gboolean (cov_file_t::*read_da_)(covio_t *);
@@ -141,35 +141,35 @@ private:
     {
 	/* From 3.4 onwards: timestamps in .gcno and .gcda files, and
 	 * lengths are 4 bytes long. */
-	FF_TIMESTAMP	=(1<<0),
+	FF_TIMESTAMP    =(1<<0),
 	/* From gcc 4.0 onwards, and also in the pre-4.0 CVS snapshot
 	 * that RedHat used for the FC3 compiler.  Functions are
 	 * identified by 64b functionids rather than names. */
-	FF_FUNCIDS	=(1<<1),
+	FF_FUNCIDS      =(1<<1),
 	/* From gcc 4.0 onwards.  A zero tag in the .gcda file is valid
 	 * and a terminator. */
-	FF_DA0TAG	=(1<<2),
+	FF_DA0TAG       =(1<<2),
 	/* In the gcc 3.3 shipped in some versions of SLES.  The
 	 * function name in the .gcda file is mangled, which matches
 	 * the function name in the .gcno file, unlike stock gcc 3.3.  */
-	FF_DAMANGLED	=(1<<3),
+	FF_DAMANGLED    =(1<<3),
 	/* Before gcc 3.3.  A separate .bb file contains some of the
 	 * compile-time coverage information. */
-	FF_BBFILE	=(1<<4),
+	FF_BBFILE       =(1<<4),
 	/* In the Fedora Core 1 compiler.  Additional information is
 	 * encoded in a per-function header which we ignore, and other
 	 * format changes. */
-	FF_OLDPLUS	=(1<<5),
+	FF_OLDPLUS      =(1<<5),
 	/* From 4.7, two checksums are stored in function headers.
 	 * We ignore them both. */
-	FF_FNCHECKSUM2	=(1<<6),
+	FF_FNCHECKSUM2  =(1<<6),
 	/* From 4.8, an extra histogram of counters is stored in the
 	 * PROGRAM_SUMMARY which we ignore.  More importantly, the
 	 * special exit block in a function is now block 1 rather
 	 * than block N-1 */
-	FF_EXITBLOCK1	=(1<<7)
+	FF_EXITBLOCK1   =(1<<7)
     };
-    
+
     static void init();
     static void post_read_1(const char *, cov_file_t *, gpointer);
     static void post_read();
@@ -191,7 +191,7 @@ private:
     gboolean
     gcc296_braindeath() const
     {
-    	return (num_missing_fake_ > 0 && num_expected_fake_ > 0);
+	return (num_missing_fake_ > 0 && num_expected_fake_ > 0);
     }
 
     static void search_path_append(const char *dir);
@@ -244,7 +244,7 @@ private:
     static int common_len_;
     static void *files_model_;
 
-    string_var name_;	    /* full absolute pathname of this file */
+    string_var name_;       /* full absolute pathname of this file */
     string_var relpath_;    /* relative path with which this file was found */
     string_var compiledir_; /* directory in which this source was compiled;
 			     * base for relative pathnames */
@@ -252,8 +252,8 @@ private:
     gboolean finalised_;    /* data read & post-read connections made */
     gboolean has_locations_;/* any locations added */
     const format_rec_t *format_;
-    gnb_u32_t format_version_;	/* file format version */
-    gnb_u32_t features_;	/* FF_* flags */
+    gnb_u32_t format_version_;  /* file format version */
+    gnb_u32_t features_;        /* FF_* flags */
     ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char, cov_function_t> *functions_by_name_;
     /* extra hashtable needed for RH-hacked gcc3.4 formats */

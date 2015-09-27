@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -30,18 +30,18 @@ class cov_suppression_t
 public:
     enum type_t
     {
-	IFDEF,		/* lines inside #if word_ */
-	COMMENT_LINE,	/* line with a comment containing word_ */
-	COMMENT_RANGE,	/* lines between a comment containing word_
+	IFDEF,          /* lines inside #if word_ */
+	COMMENT_LINE,   /* line with a comment containing word_ */
+	COMMENT_RANGE,  /* lines between a comment containing word_
 			 * and a comment containing word2_ */
-	ARC_CALLS,	/* arc is a call to named function */
-	BLOCK_CALLS,	/* block contains an arc which is a
+	ARC_CALLS,      /* arc is a call to named function */
+	BLOCK_CALLS,    /* block contains an arc which is a
 			 * call to named function */
-	FUNCTION,	/* named function */
-	FILENAME,	/* named filename */
-	MERGED,		/* all components are suppressed */
-	UNSOLVABLE,	/* function tree cannot be solved */
-	RELOC,		/* ELF reloc during call scanning */
+	FUNCTION,       /* named function */
+	FILENAME,       /* named filename */
+	MERGED,         /* all components are suppressed */
+	UNSOLVABLE,     /* function tree cannot be solved */
+	RELOC,          /* ELF reloc during call scanning */
 	NUM_TYPES
     };
 
@@ -118,7 +118,7 @@ class cov_suppression_combiner_t
 public:
     cov_suppression_combiner_t()
      :  suppression_(0),
-        num_unsuppressed_(0)
+	num_unsuppressed_(0)
     {
     }
 

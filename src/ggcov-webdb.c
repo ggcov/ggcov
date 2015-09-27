@@ -6,12 +6,12 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -48,7 +48,7 @@ CVSID("$Id: ggcov-webdb.c,v 1.11 2010-05-09 05:37:15 gnb Exp $");
 #endif
 
 char *argv0;
-static list_t<const char> files;	    /* incoming specification from commandline */
+static list_t<const char> files;            /* incoming specification from commandline */
 
 static char *dump_mode = NULL;
 static const char *output_tarball = "ggcov.webdb.tgz";
@@ -166,7 +166,7 @@ save_file_lines(DB *db, cov_file_t *f)
 	ser.end_array();
     }
     ser.end_array();
-    
+
     // Store the serialised line array
     string_var key = g_strdup_printf("FL%u", ftag(f));
     if ((ret = db->put(db, 0, dbt(key), dbt(ser), 0)))
@@ -272,7 +272,7 @@ save_global_function_index(DB *db)
     unique = new hashtable_t<const char, list_t<cov_function_t> >;
     for (list_iterator_t<cov_function_t> fniter = all_functions->first() ; *fniter ; ++fniter)
     {
-    	cov_function_t *fn = *fniter;
+	cov_function_t *fn = *fniter;
 	if (fn->is_suppressed())
 	    continue;
 	list_t<cov_function_t> *list = unique->lookup(fn->name());
@@ -283,7 +283,7 @@ save_global_function_index(DB *db)
 	}
 	list->append(fn);
     }
-    
+
     // PHP-serialise the function index
     unique->keys(&keys);
     ser.begin_array(unique->size());
@@ -343,10 +343,10 @@ save_global_function_list(DB *db)
 	if (fn->is_suppressed())
 	    continue;
 
-    	label.truncate();
+	label.truncate();
 	label.append_string(fn->name());
 
-    	/* see if we need to present some more scope to uniquify the name */
+	/* see if we need to present some more scope to uniquify the name */
 	list_iterator_t<cov_function_t> next = iter.peek_next();
 	list_iterator_t<cov_function_t> prev = iter.peek_prev();
 	if ((*next && !strcmp((*next)->name(), fn->name())) ||
@@ -356,7 +356,7 @@ save_global_function_list(DB *db)
 	    label.append_string(fn->file()->minimal_name());
 	    label.append_string("]");
 	}
-	
+
 	ser.string(label);
 	ser.string(fn->file()->minimal_name());
     }
@@ -375,7 +375,7 @@ save_file_function_indexes(DB *db)
 {
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
-    	cov_file_t *f = *iter;
+	cov_file_t *f = *iter;
 	php_serializer_t ser;
 	int ret;
 
@@ -471,7 +471,7 @@ save_one_summary_f(DB *db, cov_scope_t *sc, const char *key)
     ser.next_key();
     serialise_ulong_array(&ser, cov::NUM_STATUS, stats->branches_by_status());
     ser.end_array();
-    
+
     if ((ret = db->put(db, 0, dbt(key), dbt(ser), 0)))
     {
 	db->err(db, ret, "save_one_summary_f");
@@ -502,7 +502,7 @@ save_summaries(DB *db)
     // Save a function scope object for each function
     for (list_iterator_t<cov_function_t> fniter = all_functions->first() ; *fniter ; ++fniter)
     {
-    	cov_function_t *fn = *fniter;
+	cov_function_t *fn = *fniter;
 	sc = new cov_function_scope_t(fn);
 	string_var key = g_strdup_printf("US%u", fntag(fn));
 	save_one_summary_f(db, sc, key);
@@ -719,7 +719,7 @@ save_reports(DB *db)
 
 	// PHP-serialise the report data
 	ser.stringl(buffer.data(), buffer.length());
-	
+
 	// Save the report data
 	key = g_strdup_printf("R%u", n);
 	if ((ret = db->put(db, 0, dbt(key), dbt(ser), 0)))
@@ -797,7 +797,7 @@ save_diagrams(DB *db)
 	di->get_bounds(&bounds);
 	sg->bounds(bounds.x1, bounds.y1,
 		   (bounds.x2 - bounds.x1), (bounds.y2 - bounds.y1));
-	
+
 	// Save the diagram data
 	key = g_strdup_printf("G%u", i);
 	if ((ret = db->put(db, 0, dbt(key), dbt(sg->data()), 0)))
@@ -842,22 +842,22 @@ static poptContext popt_context;
 static struct poptOption popt_options[] =
 {
     {
-    	"output-file",    	    	    	/* longname */
-	'f',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&output_tarball,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
+	"output-file",                          /* longname */
+	'f',                                    /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&output_tarball,                        /* arg */
+	0,                                      /* val 0=don't return */
 	"name of the output (in .tgz format), or - for stdout", /* descrip */
-	0	    	    	    	    	/* argDescrip */
+	0                                       /* argDescrip */
     },
     {
-    	"dump",					/* longname */
-	'\0',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&dump_mode,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"dump the entire database",		/* descrip */
-	0	    	    	    	    	/* argDescrip */
+	"dump",                                 /* longname */
+	'\0',                                   /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&dump_mode,                             /* arg */
+	0,                                      /* val 0=don't return */
+	"dump the entire database",             /* descrip */
+	0                                       /* argDescrip */
     },
     COV_POPT_OPTIONS
     POPT_AUTOHELP
@@ -868,24 +868,24 @@ static void
 parse_args(int argc, char **argv)
 {
     const char *file;
-    
+
     argv0 = argv[0];
-    
+
     popt_context = poptGetContext(PACKAGE, argc, (const char**)argv,
-    	    	    	    	  popt_options, 0);
+				  popt_options, 0);
     poptSetOtherOptionHelp(popt_context,
-    	    	           "[OPTIONS] [executable|source|directory]...");
+			   "[OPTIONS] [executable|source|directory]...");
 
     int rc;
     while ((rc = poptGetNextOpt(popt_context)) > 0)
-    	;
+	;
     if (rc < -1)
     {
-    	fprintf(stderr, "%s:%s at or near %s\n",
+	fprintf(stderr, "%s:%s at or near %s\n",
 	    argv[0],
 	    poptStrerror(rc),
 	    poptBadOption(popt_context, POPT_BADOPTION_NOALIAS));
-    	exit(1);
+	exit(1);
     }
 
     while ((file = poptGetArg(popt_context)) != 0)
@@ -915,7 +915,7 @@ log_level_to_str(GLogLevelFlags level)
     case G_LOG_LEVEL_INFO: return "INFO";
     case G_LOG_LEVEL_DEBUG: return "DEBUG";
     default:
-    	snprintf(buf, sizeof(buf), "%d", level);
+	snprintf(buf, sizeof(buf), "%d", level);
 	return buf;
     }
 }
@@ -928,11 +928,11 @@ log_func(
     gpointer user_data)
 {
     fprintf(stderr, "%s:%s:%s\n",
-    	(domain == 0 ? PACKAGE : domain),
+	(domain == 0 ? PACKAGE : domain),
 	log_level_to_str(level),
 	msg);
     if (level & G_LOG_FLAG_FATAL)
-    	exit(1);
+	exit(1);
 }
 
 #endif
@@ -989,7 +989,7 @@ create_database(void)
     create_source_symlinks(tempdir);
 
     const char *output_tarball_abs = (!strcmp(output_tarball, "-") ? "-" :
-			              file_make_absolute(output_tarball));
+				      file_make_absolute(output_tarball));
     systemf("cd \"%s\" ; tar -cvhzf \"%s\" *", tempdir, output_tarball_abs);
     systemf("/bin/rm -rf \"%s\"", tempdir);
 
@@ -1086,8 +1086,8 @@ main(int argc, char **argv)
 {
 #if DEBUG_GLIB
     g_log_set_handler("GLib",
-    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
-    	    	      log_func, /*user_data*/0);
+		      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
+		      log_func, /*user_data*/0);
 #endif
 
     parse_args(argc, argv);

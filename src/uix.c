@@ -1,24 +1,24 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2003 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #include "uix.h"
-#include <gdk/gdkx.h>	/* This is what we want to avoid in the main code */
+#include <gdk/gdkx.h>   /* This is what we want to avoid in the main code */
 
 CVSID("$Id: uix.c,v 1.8 2010-05-09 05:37:15 gnb Exp $");
 
@@ -29,13 +29,13 @@ xfont_get_prop(Display *display, XFontStruct *xfont, const char *name)
 {
     Atom atom;
     int i;
-    
+
     if ((atom = XInternAtom(display, name, /*only_if_exists*/True)) == None)
-    	return 0;
+	return 0;
 
     for (i = 0 ; i < xfont->n_properties ; i++)
     {
-    	XFontProp *fprop = &xfont->properties[i];
+	XFontProp *fprop = &xfont->properties[i];
 	if (fprop->name == atom)
 	    return fprop;
     }
@@ -47,9 +47,9 @@ static char *
 xfont_get_string_prop(Display *display, XFontStruct *xfont, const char *name)
 {
     XFontProp *fprop;
-    
+
     if ((fprop = xfont_get_prop(display, xfont, name)) == 0)
-    	return 0;
+	return 0;
     return XGetAtomName(display, fprop->card32);
 }
 
@@ -57,9 +57,9 @@ static unsigned long
 xfont_get_integer_prop(Display *display, XFontStruct *xfont, const char *name)
 {
     XFontProp *fprop;
-    
+
     if ((fprop = xfont_get_prop(display, xfont, name)) == 0)
-    	return 0;
+	return 0;
     return fprop->card32;
 }
 
@@ -86,9 +86,9 @@ uix_font_desc_get(uix_font_desc_t *desc, Display *display, XFontStruct *xfont)
     desc->resolution = xfont_get_integer_prop(display, xfont, "RESOLUTION_X");
     desc->spacing = xfont_get_string_prop(display, xfont, "SPACING");
     desc->charset_registry = xfont_get_string_prop(display, xfont,
-    	    	    	    	    	    	    "CHARSET_REGISTRY");
+						    "CHARSET_REGISTRY");
     desc->charset_encoding = xfont_get_string_prop(display, xfont,
-    	    	    	    	    	    	    "CHARSET_ENCODING");
+						    "CHARSET_ENCODING");
 }
 
 static void
@@ -114,10 +114,10 @@ uix_font_desc_load(const uix_font_desc_t *desc)
     const char *fields[16];
     char sizebuf[16];
     char resbuf[16];
-    
+
     /* -B&H-Lucida-Medium-R-Normal-Sans-12-120-75-75-P-71-ISO8859-1 */
     n = 0;
-    fields[n++] = "";	/* to get initial seperator */
+    fields[n++] = "";   /* to get initial seperator */
     fields[n++] = /*foundry*/anything;
     fields[n++] = desc->family;
     fields[n++] = safestr(desc->weight);
@@ -136,15 +136,15 @@ uix_font_desc_load(const uix_font_desc_t *desc)
     fields[n++] = safestr(desc->charset_encoding);
     fields[n++] = 0;
     assert(n == sizeof(fields)/sizeof(fields[0]));
-    
+
     fontname = g_strjoinv("-", (char **)fields);
 
     dprintf1(D_UICORE, "uix_font_desc_load: trying \"%s\"\n", fontname);
 
     font = gdk_font_load(fontname);
-    
+
     g_free(fontname);
-    
+
     return font;
 }
 
@@ -155,7 +155,7 @@ uix_find_fixed(const uix_font_desc_t *origdesc)
     int i;
     GdkFont *newfont;
     static const char *families[] =
-    	{
+	{
 	    "lucidatypewriter",
 	    "lucidasanstypewriter",
 	    "courier",
@@ -165,17 +165,17 @@ uix_find_fixed(const uix_font_desc_t *origdesc)
 
     tmpdesc = *origdesc;
     tmpdesc.spacing = (char *)"M";
-    
+
     /* first try everything the same except the spacing -- we might get lucky */
     if ((newfont = uix_font_desc_load(&tmpdesc)) != 0)
-    	return newfont;
+	return newfont;
 
     /* try the well known monospaced families */
     for (i = 0 ; families[i] != 0 ; i++)
     {
-    	tmpdesc.family = (char *)families[i];
+	tmpdesc.family = (char *)families[i];
 	if ((newfont = uix_font_desc_load(&tmpdesc)) != 0)
-    	    return newfont;
+	    return newfont;
     }
 
     /* set some fields to safe defaults and try the well-known families again */
@@ -183,11 +183,11 @@ uix_find_fixed(const uix_font_desc_t *origdesc)
     tmpdesc.slant = (char *)"R";
     for (i = 0 ; families[i] != 0 ; i++)
     {
-    	tmpdesc.family = (char *)families[i];
+	tmpdesc.family = (char *)families[i];
 	if ((newfont = uix_font_desc_load(&tmpdesc)) != 0)
-    	    return newfont;
+	    return newfont;
     }
-    
+
     return 0;
 }
 
@@ -204,20 +204,20 @@ uix_fixed_width_font(GdkFont *goldfont)
     printf("font properties:\n");
     for (i = 0 ; i < oldfont->n_properties ; i++)
     {
-    	XFontProp *fprop = &oldfont->properties[i];
-	
+	XFontProp *fprop = &oldfont->properties[i];
+
 	printf("name=%s value=%ld (%s)\n",
-	    	XGetAtomName(display, fprop->name),
+		XGetAtomName(display, fprop->name),
 		fprop->card32,
-	    	XGetAtomName(display, fprop->card32));
+		XGetAtomName(display, fprop->card32));
     }
 #endif
 
     uix_font_desc_get(&origdesc, display, oldfont);
-    
+
     if (strcasecmp(origdesc.spacing, "M"))
-    	newfont = uix_find_fixed(&origdesc);
-        
+	newfont = uix_find_fixed(&origdesc);
+
     uix_font_desc_free(&origdesc);
     return (newfont == 0 ? goldfont : newfont);
 }
@@ -252,7 +252,7 @@ x_error_handler(Display *display, XErrorEvent *event)
 	    errmsg, event->resourceid, event->serial,
 	    event->request_code, event->minor_code);
     fflush(stderr);
-    return 0;	/* return value igored */
+    return 0;   /* return value igored */
 }
 
 /* Called when we lose connection to the X server */
@@ -261,7 +261,7 @@ x_io_error_handler(Display *display)
 {
     fprintf(stderr, "ggcov: lost connection to the X server!!\n");
     fflush(stderr);
-    return 0;	/* return value igored */
+    return 0;   /* return value igored */
     /* Xlib will exit() */
 }
 

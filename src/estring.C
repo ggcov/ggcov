@@ -1,17 +1,17 @@
 /*
  * CANT - A C implementation of the Apache/Tomcat ANT build system
  * Copyright (c) 2001-2003 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -24,7 +24,7 @@ CVSID("$Id: estring.C,v 1.10 2010-05-09 05:37:15 gnb Exp $");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#define AVAIL_ROUND	    256
+#define AVAIL_ROUND         256
 
 void inline
 estring::expand_by(unsigned int dl)
@@ -32,8 +32,8 @@ estring::expand_by(unsigned int dl)
    if (length_ + dl + 1 > available_)
    {
 	available_ = ((length_ + dl + 1) + AVAIL_ROUND-1) & ~(AVAIL_ROUND-1);
-   	data_ = (data_ == 0 ?
-	    	    g_new(char, available_) :
+	data_ = (data_ == 0 ?
+		    g_new(char, available_) :
 		    g_renew(char, data_, available_));
    }
 }
@@ -104,7 +104,7 @@ estring::replace_string(
     const char *str)
 {
     if (str == 0)
-    	str = "";
+	str = "";
     replace_chars(start, len, str, strlen(str));
 }
 
@@ -125,15 +125,15 @@ estring::replace_chars(
     unsigned int buflen)
 {
     unsigned int remain;
-    
+
 #if 0
     fputs("estring::replace_chars: replacing \"", stderr);
     if (data_ != 0)
 	fwrite(data_+start, 1, len, stderr);
-    fputs("\" -> \"", stderr);    
+    fputs("\" -> \"", stderr);
     if (buf != 0)
 	fwrite(buf, 1, buflen, stderr);
-    fputs("\"\n", stderr);    
+    fputs("\"\n", stderr);
 #endif
 
     if (buflen > len)
@@ -143,10 +143,10 @@ estring::replace_chars(
 
     if ((remain = length_ - (start+len)) > 0)
     {
-    	/* have to move some chars at the end, up or down */
+	/* have to move some chars at the end, up or down */
 	memmove(data_+start+buflen, data_+start+len, remain);
     }
-    
+
     /* insert new chars */
     if (buflen > 0)
 	memmove(data_+start, (char*)buf, buflen);
@@ -193,12 +193,12 @@ estring::replace_all(const char *from, const char *to)
     int i;
 
     if (to == 0)
-    	to = "";
+	to = "";
     i = 0;
     while ((p = strstr(data_+i, from)) != 0)
     {
-    	i = (p - data_);
-    	replace_string(i, strlen(from), to);
+	i = (p - data_);
+	replace_string(i, strlen(from), to);
 	i += strlen(to);
     }
 }
@@ -283,7 +283,7 @@ void
 estring::chomp()
 {
     while (length_ > 0 && isspace(data_[length_-1]))
-    	data_[--length_] = '\0';
+	data_[--length_] = '\0';
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

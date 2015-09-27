@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2006 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -135,7 +135,7 @@ sourcewin_t::update_flows()
 
     cov_file_t *f;
     if ((f = cov_file_t::find(filename_)) == 0)
-    	return;
+	return;
 
     dprintf0(D_SOURCEWIN, "sourcewin_t::update_flows\n");
 
@@ -361,13 +361,13 @@ sourcewin_t::setup_text()
 
     text_tags_[cov::COVERED] =
 	ui_text_create_tag(text_, "covered", &prefs.covered_foreground);
-    
+
     text_tags_[cov::PARTCOVERED] =
 	ui_text_create_tag(text_, "partcovered", &prefs.partcovered_foreground);
-    
+
     text_tags_[cov::UNCOVERED] =
 	ui_text_create_tag(text_, "uncovered", &prefs.uncovered_foreground);
-    
+
     text_tags_[cov::UNINSTRUMENTED] =
 	ui_text_create_tag(text_, "uninstrumented", &prefs.uninstrumented_foreground);
 
@@ -408,10 +408,10 @@ sourcewin_t::sourcewin_t()
 {
     GladeXML *xml;
     GtkWidget *w;
-    
+
     /* load the interface & connect signals */
     xml = ui_load_tree("source");
-    
+
     set_window(glade_xml_get_widget(xml, "source"));
 
     text_ = glade_xml_get_widget(xml, "source_text");
@@ -592,20 +592,20 @@ fgets_tabexpand(char *buf, unsigned int maxlen, FILE *fp)
     int c;
     unsigned int len = 0, ns;
     static const char spaces[] = "        ";
-    
-    maxlen--;	/* allow for nul terminator */
-    
+
+    maxlen--;   /* allow for nul terminator */
+
     for (;;)
     {
-    	if ((c = getc(fp)) == EOF)
+	if ((c = getc(fp)) == EOF)
 	    return (len == 0 ? 0 : buf);
-	    
+
 	if (c == '\t')
 	{
 	    ns = 8-(len&7);
 	    if (len+ns >= maxlen)
 	    {
-	    	ungetc(c, fp);
+		ungetc(c, fp);
 		return buf;
 	    }
 	    memcpy(buf+len, spaces, ns);
@@ -616,16 +616,16 @@ fgets_tabexpand(char *buf, unsigned int maxlen, FILE *fp)
 	{
 	    if (len+1 == maxlen)
 	    {
-	    	ungetc(c, fp);
+		ungetc(c, fp);
 		return buf;
 	    }
 	    buf[len++] = c;
 	    buf[len] = '\0';
 	    if (c == '\n')
-	    	break;
+		break;
 	}
     }
-    
+
     return buf;
 }
 
@@ -637,11 +637,11 @@ pad(char *buf, unsigned int width, char c)
     char *p = buf;
 
     for ( ; *p && width > 0 ; p++, width--)
-    	;
+	;
     for ( ; width > 0 ; width--)
-    	*p++ = c;
+	*p++ = c;
     *p = '\0';
-    
+
     return buf;
 }
 
@@ -660,16 +660,16 @@ sourcewin_t::update()
     char blockbuf[32];
     char countbuf[32];
     char linebuf[1024];
-    
+
     update_title_buttons();
 
     if ((f = cov_file_t::find(filename_)) == 0)
-    	return;
+	return;
 
     if ((fp = fopen(filename_, "r")) == 0)
     {
-    	/* TODO: gui error report */
-    	perror(filename_);
+	/* TODO: gui error report */
+	perror(filename_);
 	return;
     }
 
@@ -679,31 +679,31 @@ sourcewin_t::update()
     lineno = 0;
     while (fgets_tabexpand(linebuf, sizeof(linebuf), fp) != 0)
     {
-    	++lineno;
-    	ln = f->nth_line(lineno);
-	
-    	/* choose colours */
+	++lineno;
+	ln = f->nth_line(lineno);
+
+	/* choose colours */
 	tag = 0;
 	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
 	    tag = text_tags_[ln->status()];
 
-    	/* generate strings */
-	
+	/* generate strings */
+
 	nstrs = 0;
-	
+
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_LINE])->active)
 	{
 	    snprintf(linenobuf, sizeof(linenobuf), "%*lu ",
-	    	      column_widths_[COL_LINE]-1, lineno);
+		      column_widths_[COL_LINE]-1, lineno);
 	    strs[nstrs++] = linenobuf;
 	}
-	
+
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_BLOCK])->active)
 	{
 	    ln->format_blocks(blockbuf, column_widths_[COL_BLOCK]-1);
 	    strs[nstrs++] = pad(blockbuf, column_widths_[COL_BLOCK], ' ');
 	}
-	
+
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_COUNT])->active)
 	{
 	    switch (ln->status())
@@ -711,7 +711,7 @@ sourcewin_t::update()
 	    case cov::COVERED:
 	    case cov::PARTCOVERED:
 		snprintf(countbuf, sizeof(countbuf), "%*llu",
-		    	 column_widths_[COL_COUNT]-1,
+			 column_widths_[COL_COUNT]-1,
 			 (unsigned long long)ln->count());
 		break;
 	    case cov::UNCOVERED:
@@ -719,11 +719,11 @@ sourcewin_t::update()
 		break;
 	    case cov::UNINSTRUMENTED:
 	    case cov::SUPPRESSED:
-	    	countbuf[0] = '\0';
+		countbuf[0] = '\0';
 		break;
 	    }
 	    strs[nstrs++] = pad(countbuf, column_widths_[COL_COUNT], ' ');
-    	}
+	}
 
 
 	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_SOURCE])->active)
@@ -731,10 +731,10 @@ sourcewin_t::update()
 	else
 	    strs[nstrs++] = "\n";
 
-    	for (i = 0 ; i < nstrs ; i++)
-    	    ui_text_add(text_, tag, strs[i], -1);
+	for (i = 0 ; i < nstrs ; i++)
+	    ui_text_add(text_, tag, strs[i], -1);
     }
-    
+
     fclose(fp);
 
     ui_text_end(text_);
@@ -760,35 +760,35 @@ sourcewin_t::update_title_buttons()
     GtkWidget *scrollw;
     int lpad, rpad, sbwidth;
     int i;
-    
+
     /*
      * Need the window to be realized so that the scrollbar has
      * its final width for our calculations.
      */
     if (!GTK_WIDGET_REALIZED(window_))
-    	gtk_widget_realize(window_);
-    
+	gtk_widget_realize(window_);
+
     /*
      * Set the left and right padding labels to just the right values
      * to align the title buttons with the main text window body.
      */
     scrollw = text_->parent;
     lpad = rpad = GTK_CONTAINER(scrollw)->border_width;
-    sbwidth = GTK_SCROLLED_WINDOW(scrollw)->vscrollbar->allocation.width + 
-    	      GTK_SCROLLED_WINDOW_GET_CLASS(scrollw)->scrollbar_spacing;
+    sbwidth = GTK_SCROLLED_WINDOW(scrollw)->vscrollbar->allocation.width +
+	      GTK_SCROLLED_WINDOW_GET_CLASS(scrollw)->scrollbar_spacing;
 
     switch (GTK_SCROLLED_WINDOW(scrollw)->window_placement)
     {
     case GTK_CORNER_TOP_LEFT:
     case GTK_CORNER_BOTTOM_LEFT:
-    	rpad += sbwidth;
+	rpad += sbwidth;
 	break;
     case GTK_CORNER_TOP_RIGHT:
     case GTK_CORNER_BOTTOM_RIGHT:
-    	lpad += sbwidth;
+	lpad += sbwidth;
 	break;
     }
-    
+
     gtk_widget_set_usize(left_pad_label_, lpad, /*height=whatever*/5);
     gtk_widget_set_usize(right_pad_label_, rpad, /*height=whatever*/5);
 
@@ -801,9 +801,9 @@ sourcewin_t::update_title_buttons()
 			 /*height=whatever*/5);
     for (i = COL_LINE ; i < NUM_COLS ; i++)
     {
-    	if (column_widths_[i] > 0)
+	if (column_widths_[i] > 0)
 	    gtk_widget_set_usize(title_buttons_[i],
-	    	    	         column_widths_[i] * font_width_,
+				 column_widths_[i] * font_width_,
 				 /*height=whatever*/5);
     }
 
@@ -861,7 +861,7 @@ sourcewin_t::set_filename(const char *filename, const char *display_fname)
 	delete_flows();
 #endif
 	populate_functions();
-    	update();
+	update();
     }
 }
 
@@ -871,7 +871,7 @@ void
 sourcewin_t::select_region(unsigned long startline, unsigned long endline)
 {
     dprintf2(D_SOURCEWIN, "sourcewin_t::select_region: startline=%ld endline=%ld\n",
-    	    	startline, endline);
+		startline, endline);
     ui_text_select_lines(text_, startline, endline);
 }
 
@@ -894,9 +894,9 @@ sourcewin_t::selected_function() const
     ui_text_get_selected_lines(text_, &loc.lineno, 0);
 
     if (loc.lineno == 0 ||
-    	(ln = cov_line_t::find(&loc)) == 0 ||
+	(ln = cov_line_t::find(&loc)) == 0 ||
 	(fn = ln->function()) == 0)
-    	return 0;
+	return 0;
     return fn;
 }
 
@@ -906,11 +906,11 @@ sourcewin_t *
 sourcewin_t::instance()
 {
     sourcewin_t *sw = 0;
-    
+
     if (prefs.reuse_srcwin)
-    	sw = instances_.head();
+	sw = instances_.head();
     if (sw == 0)
-    	sw = new sourcewin_t;
+	sw = new sourcewin_t;
 
     return sw;
 }
@@ -1095,19 +1095,19 @@ sourcewin_t::save_with_annotations(const char *filename)
 
     if ((fp = fopen(filename, "w")) == 0)
     {
-    	perror(filename);
+	perror(filename);
 	return FALSE;
     }
-    
+
     /* Generate header line */
     for (i = COL_LINE ; i < NUM_COLS ; i++)
     {
 	if (GTK_CHECK_MENU_ITEM(column_checks_[i])->active)
 	{
 	    if (column_widths_[i] > 0)
-	    	fprintf(fp, "%-*s ", column_widths_[i]-1, column_names_[i]);
+		fprintf(fp, "%-*s ", column_widths_[i]-1, column_names_[i]);
 	    else
-	    	fprintf(fp, "%s", column_names_[i]);
+		fprintf(fp, "%s", column_names_[i]);
 	}
     }
     fputc('\n', fp);
@@ -1119,11 +1119,11 @@ sourcewin_t::save_with_annotations(const char *filename)
 	{
 	    int j, n = column_widths_[i];
 	    if (n < 0)
-	    	n = 20;
+		n = 20;
 	    else
-	    	n--;
+		n--;
 	    for (j = 0 ; j < n ; j++)
-	    	fputc('-', fp);
+		fputc('-', fp);
 	    fputc(' ', fp);
 	}
     }
@@ -1141,7 +1141,7 @@ sourcewin_t::save_with_annotations(const char *filename)
      */
     if (fwrite(contents, 1, length, fp) < length)
     {
-    	perror("fwrite");
+	perror("fwrite");
 	g_free(contents);
 	fclose(fp);
 	return FALSE;

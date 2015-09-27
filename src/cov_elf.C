@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -33,19 +33,19 @@ CVSID("$Id: cov_elf.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
  * ELF executable's .dynamic section and parse them for required
  * dynamic libraries.
  */
- 
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #if BFD_ARCH_SIZE == 32
-#define elf_word_t	int32_t
-#define elf_uword_t	uint32_t
-#define elf_addr_t	uint32_t
-#define ELF_ADDR_FMT	"0x%08x"
+#define elf_word_t      int32_t
+#define elf_uword_t     uint32_t
+#define elf_addr_t      uint32_t
+#define ELF_ADDR_FMT    "0x%08x"
 #elif BFD_ARCH_SIZE == 64
-#define elf_word_t	int64_t
-#define elf_uword_t	uint64_t
-#define elf_addr_t	uint64_t
-#define ELF_ADDR_FMT	"0x%016lx"
+#define elf_word_t      int64_t
+#define elf_uword_t     uint64_t
+#define elf_addr_t      uint64_t
+#define ELF_ADDR_FMT    "0x%016lx"
 #else
 #error BFD architecture size not supported
 #endif
@@ -61,9 +61,9 @@ typedef struct
 
 /* The specific tags we need: copied from glibc's <elf.h> */
 #ifndef DT_NEEDED
-#define DT_NEEDED	1		/* Name of needed library */
-#define DT_RPATH	15		/* Library search path (deprecated) */
-#define DT_RUNPATH	29		/* Library search path */
+#define DT_NEEDED       1               /* Name of needed library */
+#define DT_RPATH        15              /* Library search path (deprecated) */
+#define DT_RUNPATH      29              /* Library search path */
 #endif
 
 class cov_elf_shlib_scanner_t : public cov_shlib_scanner_t
@@ -94,23 +94,23 @@ private:
 };
 
 COV_FACTORY_STATIC_REGISTER(cov_shlib_scanner_t,
-    	    	    	    cov_elf_shlib_scanner_t);
+			    cov_elf_shlib_scanner_t);
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_elf_shlib_scanner_t::~cov_elf_shlib_scanner_t()
 {
     unsigned int i;
-    
+
     if (dyns_ != 0)
-    	g_free(dyns_);
+	g_free(dyns_);
     if (strings_ != 0)
-    	g_free(strings_);
+	g_free(strings_);
     if (rpath_ != 0)
     {
-    	for (i = 0 ; i < rpath_->length() ; i++)
+	for (i = 0 ; i < rpath_->length() ; i++)
 	    g_free(rpath_->nth(i));
-    	delete rpath_;
+	delete rpath_;
     }
 }
 
@@ -124,11 +124,11 @@ cov_elf_shlib_scanner_t::strvalue(const cov_dyn_t *d) const
     case DT_NEEDED:
     case DT_RPATH:
     case DT_RUNPATH:
-    	if (d->value < string_size_)
+	if (d->value < string_size_)
 	    return strings_ + d->value;
-    	break;
+	break;
     }
-    
+
     return 0;
 }
 
@@ -143,7 +143,7 @@ cov_elf_shlib_scanner_t::tag_as_string(const cov_dyn_t *d) const
     case DT_RPATH: return "RPATH";
     case DT_RUNPATH: return "RUNPATH";
     }
-    
+
     snprintf(buf, sizeof(buf), "0x%x", (unsigned int)d->tag);
     return buf;
 }
@@ -169,13 +169,13 @@ cov_dyn_t *
 cov_elf_shlib_scanner_t::find_by_tag(elf_word_t tag) const
 {
     unsigned int i;
-    
+
     for (i = 0 ; i < num_dyns_ ; i++)
     {
-    	if (dyns_[i].tag == tag)
+	if (dyns_[i].tag == tag)
 	    return &dyns_[i];
     }
-    
+
     return 0;
 }
 
@@ -191,9 +191,9 @@ cov_elf_shlib_scanner_t::add_to_rpath(const char *path)
 
 	while ((dir = tok.next()) != 0)
 	{
-    	    if (rpath_ == 0)
+	    if (rpath_ == 0)
 		rpath_ = new ptrarray_t<char>;
-    	    rpath_->append(g_strdup(dir));
+	    rpath_->append(g_strdup(dir));
 	}
     }
 }
@@ -204,23 +204,23 @@ gboolean
 cov_elf_shlib_scanner_t::attach(cov_bfd_t *b)
 {
     cov_bfd_section_t *sec;
-    
+
     if (b->flavour() != bfd_target_elf_flavour)
-    	return FALSE;
+	return FALSE;
 
     if (!cov_shlib_scanner_t::attach(b))
-    	return FALSE;
+	return FALSE;
 
     if ((sec = cbfd_->find_section(".dynamic")) == 0 ||
-    	(dyns_ = (cov_dyn_t *)sec->get_contents(&num_dyns_)) == 0)
-    	return FALSE;
+	(dyns_ = (cov_dyn_t *)sec->get_contents(&num_dyns_)) == 0)
+	return FALSE;
     num_dyns_ /= sizeof(cov_dyn_t);
-    
+
     if ((sec = cbfd_->find_section(".dynstr")) == 0 ||
-    	(strings_ = (char *)sec->get_contents(&string_size_)) == 0)
+	(strings_ = (char *)sec->get_contents(&string_size_)) == 0)
     if (strings_ == 0)
-    	return FALSE;
-	
+	return FALSE;
+
     return TRUE;
 }
 
@@ -234,31 +234,31 @@ cov_elf_shlib_scanner_t::find_shlib(const char *name)
 
     if (rpath_ == 0)
     {
-    	cov_dyn_t *d;
+	cov_dyn_t *d;
 
 	add_to_rpath(getenv("LD_LIBRARY_PATH"));
-	
+
 	/* DT_RUNPATH obsoletes DT_RPATH */
 	if ((d = find_by_tag(DT_RUNPATH)) != 0)
-    	    add_to_rpath(strvalue(d));
+	    add_to_rpath(strvalue(d));
 	else if ((d = find_by_tag(DT_RPATH)) != 0)
-    	    add_to_rpath(strvalue(d));
+	    add_to_rpath(strvalue(d));
 
 	add_to_rpath("/lib:/usr/lib");
-	
+
 	if (debug_enabled(D_ELF|D_VERBOSE))
 	{
 	    duprintf0("Shared library search path is:\n");
 	    for (i = 0 ; i < rpath_->length() ; i++)
-	    	duprintf1("    \"%s\"\n", rpath_->nth(i));
+		duprintf1("    \"%s\"\n", rpath_->nth(i));
 	}
     }
-    
+
     /* TODO: run "ldconfig -p" and scan it for mappings */
 
     for (i = 0 ; i < rpath_->length()  ; i++)
     {
-        file = g_strconcat(rpath_->nth(i), "/", name, (char *)0);
+	file = g_strconcat(rpath_->nth(i), "/", name, (char *)0);
 	dprintf1(D_ELF|D_VERBOSE, "find_shlib: trying \"%s\"\n", file.data());
 	if (file_exists(file) == 0)
 	{
@@ -266,7 +266,7 @@ cov_elf_shlib_scanner_t::find_shlib(const char *name)
 	    return file.take();
 	}
     }
-    
+
     return 0;
 }
 
@@ -284,16 +284,16 @@ cov_elf_shlib_scanner_t::next()
 
     for ( ; dyni_ < num_dyns_ ; dyni_++)
     {
-    	d = &dyns_[dyni_];
+	d = &dyns_[dyni_];
 
 	dprintf3(D_ELF|D_VERBOSE,
-	    	 "%5u|%10s|%s\n",
+		 "%5u|%10s|%s\n",
 		 dyni_, tag_as_string(d), value_as_string(d));
 
-    	if (d->tag != DT_NEEDED ||
+	if (d->tag != DT_NEEDED ||
 	    d->value >= string_size_)
 	    continue;
-	    
+
 	name = strings_ + d->value;
 	if (*name == '/')
 	{
@@ -312,7 +312,7 @@ cov_elf_shlib_scanner_t::next()
 	}
     }
 
-    return 0;	/* end of iteration */
+    return 0;   /* end of iteration */
 }
 
 #endif /*HAVE_LIBBFD*/

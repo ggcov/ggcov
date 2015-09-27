@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -40,7 +40,7 @@ private:
 
     static hashtable_t<const char, char> *all_;
     const char *data_;
-    
+
 public:
     // default ctor
     cached_string()
@@ -50,59 +50,59 @@ public:
     // const initialisation ctor
     cached_string(const char *s)
     {
-    	data_ = get(s);
+	data_ = get(s);
     }
     // non-const initialisation ctor
     cached_string(char *s)
     {
-    	data_ = get(s);
+	data_ = get(s);
 	g_free(s);
     }
     // copy c'tor
     cached_string(const cached_string &o)
     {
-    	data_ = o.data_;
+	data_ = o.data_;
     }
-    // dtor    
+    // dtor
     ~cached_string()
     {
     }
 
     const char *data() const
     {
-    	return data_;
+	return data_;
     }
     operator const char *() const
     {
-    	return data_;
+	return data_;
     }
     // assignment operators
     const char *operator=(const char *s)
     {
-    	return data_ = get(s);
+	return data_ = get(s);
     }
     const char *operator=(char *s)
     {
-    	data_ = get(s);
+	data_ = get(s);
 	g_free(s);
 	return data_;
     }
     // equality operator
     int operator==(const char *s)
     {
-    	return (data_ == lookup(s));
+	return (data_ == lookup(s));
     }
 
     unsigned int length() const
     {
-    	return (data_ == 0 ? 0 : strlen(data_));
+	return (data_ == 0 ? 0 : strlen(data_));
     }
 
     // take() is pretty superfluous but it might
     // make converting string_var code easier.
     char *take()
     {
-    	char *d = (data_ == 0 ? 0 : g_strdup(data_));
+	char *d = (data_ == 0 ? 0 : g_strdup(data_));
 	data_ = 0;
 	return d;
     }

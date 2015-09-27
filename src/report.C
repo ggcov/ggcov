@@ -1,7 +1,7 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2011 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  *
  * TODO: attribution for decode-gcov.c
  *
@@ -9,12 +9,12 @@
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -93,46 +93,46 @@ report_summary_per_directory(FILE *fp, const char *)
     list_t<char> keys;
     char *key;
     int nlines = 0;
-    
+
     ht = new hashtable_t<char, cov_stats_t>;
-    
+
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
-    	dprintf1(D_REPORT, "report_summary_per_directory: [1] \"%s\"\n",
-	    	(*fiter)->minimal_name());
-		
+	dprintf1(D_REPORT, "report_summary_per_directory: [1] \"%s\"\n",
+		(*fiter)->minimal_name());
+
 	string_var dir = g_dirname((*fiter)->minimal_name());
 	if ((st = ht->lookup((char *)dir.data())) == 0)
 	{
 	    st = new cov_stats_t;
-    	    dprintf1(D_REPORT, "report_summary_per_directory: -> \"%s\"\n",
-	    	    	dir.data());
+	    dprintf1(D_REPORT, "report_summary_per_directory: -> \"%s\"\n",
+			dir.data());
 	    ht->insert(dir.take(), st);
 	    ndirs++;
 	}
 
-    	cov_file_scope_t fscope(*fiter);
+	cov_file_scope_t fscope(*fiter);
 	st->accumulate(fscope.get_stats());
     }
-    
+
     ht->keys(&keys);
 
     while ((key = keys.remove_head()) != 0)
     {
-    	dprintf1(D_REPORT, "report_summary_per_directory: [2] \"%s\"\n", key);
+	dprintf1(D_REPORT, "report_summary_per_directory: [2] \"%s\"\n", key);
 
 	st = ht->lookup(key);
 	if (ndirs > 1)
 	{
 	    if (nlines)
-	    	fputc('\n', fp);
+		fputc('\n', fp);
 	    nlines += print_summary(fp, st, key);
 	}
 	ht->remove(key);
 	g_free(key);
 	delete st;
     }
-    
+
     delete ht;
     return nlines;
 }
@@ -144,10 +144,10 @@ report_untested_functions_per_file(FILE *fp, const char *)
 {
     gboolean did_head1 = FALSE;
     int nlines = 0;
-    
+
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
-    	cov_file_t *f = (*fiter);
+	cov_file_t *f = (*fiter);
 	gboolean did_head2 = FALSE;
 
 	for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
@@ -155,26 +155,26 @@ report_untested_functions_per_file(FILE *fp, const char *)
 	    cov_function_t *fn = *fnitr;
 
 	    if (fn->status() != cov::UNCOVERED)
-	    	continue;
+		continue;
 
-    	    if (!did_head1)
+	    if (!did_head1)
 	    {
-	    	did_head1 = TRUE;
-    		fprintf(fp, "Uncovered functions\n");
-    		fprintf(fp, "===================\n");
+		did_head1 = TRUE;
+		fprintf(fp, "Uncovered functions\n");
+		fprintf(fp, "===================\n");
 		nlines += 2;
 	    }
-    	    if (!did_head2)
+	    if (!did_head2)
 	    {
-	    	did_head2 = TRUE;
-    		fprintf(fp, "%s\n", f->minimal_name());
+		did_head2 = TRUE;
+		fprintf(fp, "%s\n", f->minimal_name());
 		nlines++;
 	    }
 	    fprintf(fp, "  %s\n", fn->name());
 	    nlines++;
 	}
     }
-    
+
     return nlines;
 }
 
@@ -196,33 +196,33 @@ report_poorly_covered_functions_per_file(FILE *fp, const char *)
 
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
-    	cov_file_t *f = (*fiter);
+	cov_file_t *f = (*fiter);
 	gboolean did_head2 = FALSE;
 
 	for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
 	{
 	    const cov_function_t *fn = *fnitr;
-    	    cov_function_scope_t fnscope(fn);
+	    cov_function_scope_t fnscope(fn);
 	    double fraction;
-	    
+
 	    if (fnscope.status() != cov::PARTCOVERED)
-	    	continue;
+		continue;
 
 	    fraction = fnscope.get_stats()->blocks_fraction();
 	    if (fraction >= global_avg)
-	    	continue;
-		
-    	    if (!did_head1)
+		continue;
+
+	    if (!did_head1)
 	    {
-	    	did_head1 = TRUE;
-    		fprintf(fp, "Poorly covered functions\n");
-    		fprintf(fp, "========================\n");
+		did_head1 = TRUE;
+		fprintf(fp, "Poorly covered functions\n");
+		fprintf(fp, "========================\n");
 		nlines += 2;
 	    }
 	    if (!did_head2)
 	    {
-	    	did_head2 = TRUE;
-    		fprintf(fp, "%s\n", f->minimal_name());
+		did_head2 = TRUE;
+		fprintf(fp, "%s\n", f->minimal_name());
 		nlines++;
 	    }
 	    fprintf(fp, "  %s (%g%%)\n", fn->name(), fraction);
@@ -242,33 +242,33 @@ report_incompletely_covered_functions_per_file(FILE *fp, const char *)
 
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
-    	cov_file_t *f = (*fiter);
+	cov_file_t *f = (*fiter);
 	gboolean did_head2 = FALSE;
 
 	for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
 	{
 	    const cov_function_t *fn = *fnitr;
-    	    cov_function_scope_t fnscope(fn);
+	    cov_function_scope_t fnscope(fn);
 	    const cov_stats_t *st = fnscope.get_stats();
-	    
-	    if (fnscope.status() != cov::PARTCOVERED)
-	    	continue;
 
-    	    if (!did_head1)
+	    if (fnscope.status() != cov::PARTCOVERED)
+		continue;
+
+	    if (!did_head1)
 	    {
-	    	did_head1 = TRUE;
-    		fprintf(fp, "Incompletely covered functions\n");
-    		fprintf(fp, "==============================\n");
+		did_head1 = TRUE;
+		fprintf(fp, "Incompletely covered functions\n");
+		fprintf(fp, "==============================\n");
 		nlines += 2;
 	    }
 	    if (!did_head2)
 	    {
-	    	did_head2 = TRUE;
-    		fprintf(fp, "%s\n", f->minimal_name());
+		did_head2 = TRUE;
+		fprintf(fp, "%s\n", f->minimal_name());
 		nlines++;
 	    }
 	    fprintf(fp, "  %s (%ld/%ld uncovered blocks)\n",
-	    	    	fn->name(),
+			fn->name(),
 			(st->blocks_total() - st->blocks_executed()),
 			st->blocks_total());
 	    nlines++;
@@ -338,7 +338,7 @@ private:
 
     char *path(cov_file_t *f);
     void post_add_lines(xml_node_t *xparent, cov_file_t *f,
-		        unsigned int first, unsigned int last);
+			unsigned int first, unsigned int last);
     void setup_common();
     void setup_xdoc();
     void post_add_coverage_props(xml_node_t *, const cov_stats_t *, int);
@@ -431,7 +431,7 @@ void
 cob_report_t::add(cov_file_t *f)
 {
     if (f->minimal_name()[0] == '/')
-	return;	    /* not common, probably in /usr/include */
+	return;     /* not common, probably in /usr/include */
 
     string_var fpath = path(f);
     string_var ppath = g_dirname(fpath);
@@ -500,7 +500,7 @@ cob_report_t::post_add_method(xml_node_t *xmethods, cov_function_t *fn)
     const cov_location_t *first = fn->get_first_location();
     const cov_location_t *last = fn->get_last_location();
     if (first &&
-        last &&
+	last &&
 	!strcmp(first->filename, last->filename) &&
 	!strcmp(first->filename, fn->file()->name()))
 	post_add_lines(xmethod, fn->file(), first->lineno, last->lineno);
@@ -592,7 +592,7 @@ report_cobertura(FILE *fp, const char *filename)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-const report_t all_reports[] = 
+const report_t all_reports[] =
 {
 #define report(name, label, fname) { #name, label, report_##name, fname },
     report(summary_all,

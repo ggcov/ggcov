@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2004 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -65,12 +65,12 @@ cov_is_source_filename(const char *filename)
 	0
     };
     int i;
-    
+
     if ((ext = file_extension_c(filename)) == 0)
-    	return FALSE;
+	return FALSE;
     for (i = 0 ; recognised_exts[i] != 0 ; i++)
     {
-    	if (!strcmp(ext, recognised_exts[i]))
+	if (!strcmp(ext, recognised_exts[i]))
 	    return TRUE;
     }
     return FALSE;
@@ -98,7 +98,7 @@ cov_read_source_file_2(const char *fname, gboolean quiet)
 	delete f;
 	return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -117,7 +117,7 @@ static void
 cov_bfd_error_handler(const char *fmt, ...)
 {
     va_list args;
-    
+
     va_start(args, fmt);
     vfprintf(stderr, fmt, args);
     va_end(args);
@@ -132,7 +132,7 @@ cov_init(void)
     bfd_set_error_handler(cov_bfd_error_handler);
 #endif /* HAVE_LIBBFD */
 
-    new cov_callgraph_t();	// becomes singleton instance
+    new cov_callgraph_t();      // becomes singleton instance
     cov_file_t::init();
     cov_suppression_t::init_builtins();
 }
@@ -146,7 +146,7 @@ void
 cov_post_read(void)
 {
     list_iterator_t<cov_file_t> iter;
-    
+
     /* construct the list of filenames */
     cov_file_t::post_read();
 
@@ -168,7 +168,7 @@ gboolean
 cov_read_object_file(const char *exefilename)
 {
     return cov_read_one_object_file(exefilename, 0);
-}    
+}
 
 static gboolean
 cov_read_shlibs(cov_bfd_t *b, int depth)
@@ -179,12 +179,12 @@ cov_read_shlibs(cov_bfd_t *b, int depth)
     int successes = 0;
 
     dprintf1(D_FILES, "Scanning \"%s\" for shared libraries\n",
-    	     b->filename());
+	     b->filename());
 
     do
     {
-    	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
-    	if ((ss = factory.create()) != 0 && ss->attach(b))
+	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
+	if ((ss = factory.create()) != 0 && ss->attach(b))
 	    break;
 	delete ss;
 	ss = 0;
@@ -192,7 +192,7 @@ cov_read_shlibs(cov_bfd_t *b, int depth)
     while (factory.next());
 
     if (ss == 0)
-    	return FALSE;	/* no scanner can open this file */
+	return FALSE;   /* no scanner can open this file */
 
     /*
      * TODO: instead of using the first scanner that succeeds open()
@@ -200,11 +200,11 @@ cov_read_shlibs(cov_bfd_t *b, int depth)
      */
     while ((file = ss->next()) != 0)
     {
-    	dprintf1(D_FILES, "Trying filename %s\n", file.data());
+	dprintf1(D_FILES, "Trying filename %s\n", file.data());
 	if (cov_read_one_object_file(file, depth))
 	    successes++;
     }
-    
+
     delete ss;
     return (successes > 0);
 }
@@ -217,22 +217,22 @@ cov_read_one_object_file(const char *exefilename, int depth)
     string_var dir;
     string_var file;
     int successes = 0;
-    
+
     dprintf1(D_FILES, "Scanning object or exe file \"%s\"\n", exefilename);
 
     if ((b = new cov_bfd_t()) == 0)
-    	return FALSE;
+	return FALSE;
     if (!b->open(exefilename))
     {
-    	delete b;
+	delete b;
 	return FALSE;
     }
 
     cov_factory_t<cov_filename_scanner_t> factory;
     do
     {
-    	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
-    	if ((fs = factory.create()) != 0 && fs->attach(b))
+	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
+	if ((fs = factory.create()) != 0 && fs->attach(b))
 	    break;
 	delete fs;
 	fs = 0;
@@ -241,33 +241,33 @@ cov_read_one_object_file(const char *exefilename, int depth)
 
     if (fs == 0)
     {
-    	delete b;
-    	return FALSE;	/* no scanner can open this file */
+	delete b;
+	return FALSE;   /* no scanner can open this file */
     }
 
     dir = file_dirname(exefilename);
     cov_add_search_directory(dir);
-    
+
     /*
      * TODO: instead of using the first scanner that succeeds open()
      *       use the first one that returns any results.
      */
     while ((file = fs->next()) != 0)
     {
-    	dprintf1(D_FILES, "Trying filename %s\n", file.data());
+	dprintf1(D_FILES, "Trying filename %s\n", file.data());
 	if (cov_is_source_filename(file) &&
 	    file_is_regular(file) == 0 &&
 	    cov_read_source_file_2(file, /*quiet*/TRUE))
 	    successes++;
     }
-    
+
     delete fs;
-    
+
     successes += cov_read_shlibs(b, depth+1);
 
     if (depth == 0 && successes == 0)
-    	fprintf(stderr, "found no coveraged source files in executable \"%s\"\n",
-	    	exefilename);
+	fprintf(stderr, "found no coveraged source files in executable \"%s\"\n",
+		exefilename);
     delete b;
     return (successes > 0);
 }
@@ -295,16 +295,16 @@ cov_read_directory_2(
     struct dirent *de;
     int dirlen;
     unsigned int successes = 0;
-    
+
     estring child = dirname;
     dprintf1(D_FILES, "Scanning directory \"%s\"\n", child.data());
 
     if ((dir = opendir(dirname)) == 0)
     {
-    	perror(child.data());
-    	return 0;
+	perror(child.data());
+	return 0;
     }
-    
+
     while (child.last() == '/')
 	child.truncate_to(child.length()-1);
     if (!strcmp(child, "."))
@@ -312,17 +312,17 @@ cov_read_directory_2(
     else
 	child.append_char('/');
     dirlen = child.length();
-    
+
     while ((de = readdir(dir)) != 0)
     {
-    	if (!strcmp(de->d_name, ".") || 
+	if (!strcmp(de->d_name, ".") ||
 	    !strcmp(de->d_name, ".."))
 	    continue;
-	    
+
 	child.truncate_to(dirlen);
 	child.append_string(de->d_name);
-	
-    	if (file_is_regular(child) == 0 &&
+
+	if (file_is_regular(child) == 0 &&
 	    cov_is_source_filename(child))
 	    successes += cov_read_source_file_2(child, /*quiet*/TRUE);
 	else if (recursive &&
@@ -330,16 +330,16 @@ cov_read_directory_2(
 		 !directory_is_ignored(dirname, child))
 	    successes += cov_read_directory_2(child, recursive, /*quiet*/TRUE);
     }
-    
+
     closedir(dir);
     if (successes == 0 && !quiet)
     {
 	if (recursive)
-    	    fprintf(stderr, "found no coveraged source files in or under directory \"%s\"\n",
-	    	    dirname);
+	    fprintf(stderr, "found no coveraged source files in or under directory \"%s\"\n",
+		    dirname);
 	else
-    	    fprintf(stderr, "found no coveraged source files in directory \"%s\"\n",
-	    	    dirname);
+	    fprintf(stderr, "found no coveraged source files in directory \"%s\"\n",
+		    dirname);
     }
     return successes;
 }
@@ -352,7 +352,7 @@ cov_read_directory(const char *dirname, gboolean recursive)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static int recursive = FALSE;	/* needs to be int (not gboolean) for popt */
+static int recursive = FALSE;   /* needs to be int (not gboolean) for popt */
 static char *suppressed_calls = 0;
 static char *suppressed_ifdefs = 0;
 static char *suppressed_comment_lines = 0;
@@ -365,94 +365,94 @@ static int print_version_flag = FALSE;
 const struct poptOption cov_popt_options[] =
 {
     {
-    	"recursive",	    	    	    	/* longname */
-	'r',  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&recursive,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
+	"recursive",                            /* longname */
+	'r',                                    /* shortname */
+	POPT_ARG_NONE,                          /* argInfo */
+	&recursive,                             /* arg */
+	0,                                      /* val 0=don't return */
 	"recursively scan directories for source", /* descrip */
-	0	    	    	    	    	/* argDescrip */
+	0                                       /* argDescrip */
     },
     {
-	"suppress-call",	    	    	/* longname */
-	0,  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&suppressed_calls,			/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
+	"suppress-call",                        /* longname */
+	0,                                      /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&suppressed_calls,                      /* arg */
+	0,                                      /* val 0=don't return */
 	"suppress blocks which call this function", /* descrip */
-	0	    	    	    	    	/* argDescrip */
+	0                                       /* argDescrip */
     },
     {
-    	"suppress-ifdef",	    	    	/* longname */
-	'X',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&suppressed_ifdefs,     	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
+	"suppress-ifdef",                       /* longname */
+	'X',                                    /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&suppressed_ifdefs,                     /* arg */
+	0,                                      /* val 0=don't return */
 	"suppress source which is conditional on this cpp define", /* descrip */
-	0	    	    	    	    	/* argDescrip */
+	0                                       /* argDescrip */
     },
     {
-    	"suppress-comment",	    	    	/* longname */
-	'Y',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&suppressed_comment_lines,     	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
+	"suppress-comment",                     /* longname */
+	'Y',                                    /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&suppressed_comment_lines,              /* arg */
+	0,                                      /* val 0=don't return */
 	"suppress source on lines containing this comment", /* descrip */
-	0	    	    	    	    	/* argDescrip */
+	0                                       /* argDescrip */
     },
     {
-    	"suppress-comment-between",	   	/* longname */
-	'Z',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&suppressed_comment_ranges,     	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
+	"suppress-comment-between",             /* longname */
+	'Z',                                    /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&suppressed_comment_ranges,             /* arg */
+	0,                                      /* val 0=don't return */
 	"suppress source between lines containing these start and end comments", /* descrip */
-	0	    	    	    	    	/* argDescrip */
+	0                                       /* argDescrip */
     },
     {
-	"gcda-prefix",    	    	    	/* longname */
-	'p',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&gcda_prefix,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
+	"gcda-prefix",                          /* longname */
+	'p',                                    /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&gcda_prefix,                           /* arg */
+	0,                                      /* val 0=don't return */
 	"directory underneath which to find .da files", /* descrip */
-	0	    	    	    	    	/* argDescrip */
+	0                                       /* argDescrip */
     },
     {
-    	"object-directory",    	    	    	/* longname */
-	'o',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&object_dir,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
+	"object-directory",                     /* longname */
+	'o',                                    /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&object_dir,                            /* arg */
+	0,                                      /* val 0=don't return */
 	"directory in which to find .o,.bb,.bbg,.da files", /* descrip */
-	0	    	    	    	    	/* argDescrip */
+	0                                       /* argDescrip */
     },
     {
-	"solve-fuzzy",    	    	    	/* longname */
-	'F',  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	NULL,	         	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
+	"solve-fuzzy",                          /* longname */
+	'F',                                    /* shortname */
+	POPT_ARG_NONE,                          /* argInfo */
+	NULL,                                   /* arg */
+	0,                                      /* val 0=don't return */
 	"(silently ignored for compatibility)", /* descrip */
-	0	    	    	    	    	/* argDescrip */
+	0                                       /* argDescrip */
     },
     {
-    	"debug",	    	    	    	/* longname */
-	'D',  	    	    	    	    	/* shortname */
-	POPT_ARG_STRING,  	    	    	/* argInfo */
-	&debug_str,     	    	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"enable ggcov debugging features",  	/* descrip */
-	0	    	    	    	    	/* argDescrip */
+	"debug",                                /* longname */
+	'D',                                    /* shortname */
+	POPT_ARG_STRING,                        /* argInfo */
+	&debug_str,                             /* arg */
+	0,                                      /* val 0=don't return */
+	"enable ggcov debugging features",      /* descrip */
+	0                                       /* argDescrip */
     },
     {
-    	"version",	    	    	    	/* longname */
-	'v',  	    	    	    	    	/* shortname */
-	POPT_ARG_NONE,  	    	    	/* argInfo */
-	&print_version_flag,     	    	/* arg */
-	0,  	    	    	    	    	/* val 0=don't return */
-	"print version and exit",  	    	/* descrip */
-	0	    	    	    	    	/* argDescrip */
+	"version",                              /* longname */
+	'v',                                    /* shortname */
+	POPT_ARG_NONE,                          /* argInfo */
+	&print_version_flag,                    /* arg */
+	0,                                      /* val 0=don't return */
+	"print version and exit",               /* descrip */
+	0                                       /* argDescrip */
     },
     { 0, 0, 0, 0, 0, 0, 0 }
 };
@@ -461,11 +461,11 @@ void
 cov_post_args(void)
 {
     if (debug_str != 0)
-    	debug_set(debug_str);
+	debug_set(debug_str);
 
     if (print_version_flag)
     {
-    	fputs(PACKAGE " version " VERSION "\n", stdout);
+	fputs(PACKAGE " version " VERSION "\n", stdout);
 	exit(0);
     }
 
@@ -555,9 +555,9 @@ cov_read_files(const list_t<const char> &files)
 
     if (suppressed_ifdefs != 0)
     {
-    	tok_t tok(/*force copy*/(const char *)suppressed_ifdefs, ", \t");
+	tok_t tok(/*force copy*/(const char *)suppressed_ifdefs, ", \t");
 	const char *v;
-	
+
 	while ((v = tok.next()) != 0)
 	    new cov_suppression_t(v, cov_suppression_t::IFDEF,
 				  "commandline -X option");
@@ -565,9 +565,9 @@ cov_read_files(const list_t<const char> &files)
 
     if (suppressed_comment_lines != 0)
     {
-    	tok_t tok(/*force copy*/(const char *)suppressed_comment_lines, ", \t");
+	tok_t tok(/*force copy*/(const char *)suppressed_comment_lines, ", \t");
 	const char *v;
-	
+
 	while ((v = tok.next()) != 0)
 	    new cov_suppression_t(v, cov_suppression_t::COMMENT_LINE,
 				  "commandline -Y option");
@@ -575,9 +575,9 @@ cov_read_files(const list_t<const char> &files)
 
     if (suppressed_comment_ranges != 0)
     {
-    	tok_t tok(/*force copy*/(const char *)suppressed_comment_ranges, ", \t");
+	tok_t tok(/*force copy*/(const char *)suppressed_comment_ranges, ", \t");
 	const char *s, *e;
-	
+
 	while ((s = tok.next()) != 0)
 	{
 	    if ((e = tok.next()) == 0)
@@ -593,9 +593,9 @@ cov_read_files(const list_t<const char> &files)
     }
 
     cov_pre_read();
-    
+
     if (object_dir != 0)
-    	cov_add_search_directory(object_dir);
+	cov_add_search_directory(object_dir);
     if (gcda_prefix)
 	cov_file_t::set_gcda_prefix(gcda_prefix);
 
@@ -610,8 +610,8 @@ cov_read_files(const list_t<const char> &files)
 	    const char *filename = *itr;
 
 	    if (file_is_directory(filename) == 0)
-	    	cov_add_search_directory(filename);
-    	}
+		cov_add_search_directory(filename);
+	}
 
 	for (list_iterator_t<const char> itr = files.first() ; *itr ; ++itr)
 	{
@@ -634,8 +634,8 @@ cov_read_files(const list_t<const char> &files)
 	    }
 	    else
 	    {
-	    	fprintf(stderr, "%s: don't know how to handle this filename\n",
-		    	filename);
+		fprintf(stderr, "%s: don't know how to handle this filename\n",
+			filename);
 		exit(1);
 	    }
 	}
@@ -650,7 +650,7 @@ cov_read_files(const list_t<const char> &files)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static const char *status_names[cov::NUM_STATUS] = 
+static const char *status_names[cov::NUM_STATUS] =
 {
     "COVERED",
     "PARTCOVERED",
@@ -741,16 +741,16 @@ dump_block(FILE *fp, cov_block_t *b)
 
     fprintf(fp, "                OUT_ARCS {\n");
     for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
-    	dump_arc(fp, *aiter);
+	dump_arc(fp, *aiter);
     fprintf(fp, "                }\n");
 
     fprintf(fp, "                LOCATIONS {\n");
     for (list_iterator_t<cov_location_t> liter = b->locations().first() ; *liter ; ++liter)
     {
-    	cov_location_t *loc = *liter;
+	cov_location_t *loc = *liter;
 	cov_line_t *ln = cov_line_t::find(loc);
 	fprintf(fp, "                    %s:%ld %s\n",
-	    	loc->filename,
+		loc->filename,
 		loc->lineno,
 		status_names[ln->status()]);
     }
@@ -759,10 +759,10 @@ dump_block(FILE *fp, cov_block_t *b)
     fprintf(fp, "                PURE_CALLS {\n");
     for (list_iterator_t<cov_block_t::call_t> citer = b->pure_calls_.first() ; *citer ; ++citer)
     {
-    	cov_block_t::call_t *call = *citer;
+	cov_block_t::call_t *call = *citer;
 	fprintf(fp, "                    %s @ %s\n",
 		(call->name_.data() == 0 ? "-" : call->name_.data()),
-	    	call->location_.describe());
+		call->location_.describe());
     }
     fprintf(fp, "                }\n");
     fprintf(fp, "            }\n");
@@ -798,7 +798,7 @@ cov_dump(FILE *fp)
     if (debug_enabled(D_DUMP))
     {
 	if (fp == 0)
-    	    fp = stderr;
+	    fp = stderr;
 
 	for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
 	    dump_file(fp, *iter);

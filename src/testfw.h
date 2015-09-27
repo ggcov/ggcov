@@ -123,7 +123,7 @@ public:
     const char *name();
 };
 
-#define _PASTE(a,b)	a##b
+#define _PASTE(a,b)     a##b
 
 #define _TESTFN(rtype, name, role) \
     static rtype name(void) __attribute__((unused));\
@@ -132,7 +132,7 @@ public:
     static rtype name(void)
 
 #define TEST(name)  _TESTFN(void, name, testfn_t::RTEST)
-#define SETUP	    _TESTFN(int, setup, testfn_t::RSETUP)
+#define SETUP       _TESTFN(int, setup, testfn_t::RSETUP)
 #define TEARDOWN    _TESTFN(int, teardown, testfn_t::RTEARDOWN)
 
 class testrunner_t

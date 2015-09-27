@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -137,7 +137,7 @@ add(ui_combo_t *cbox, const char *label, gpointer data)
 		itr_valid = TRUE;
 	    }
 	    parent = itr;
-	    parent_valid = itr_valid;	// always TRUE
+	    parent_valid = itr_valid;   // always TRUE
 	}
 	gtk_tree_store_set(GTK_TREE_STORE(model), &itr,
 			   COL_DATA, data,
@@ -156,7 +156,7 @@ add(ui_combo_t *cbox, const char *label, gpointer data)
     }
 #else
     GtkWidget *item;
-    
+
     item = gtk_list_item_new_with_label(label);
     gtk_object_set_data(GTK_OBJECT(item), ui_combo_item_key, data);
     gtk_widget_show(item);
@@ -189,9 +189,9 @@ get_active(ui_combo_t *cbox)
     GtkList *listw = GTK_LIST(cbox->list);
 
     if (listw->selection == 0)
-    	return 0;
+	return 0;
     return gtk_object_get_data(GTK_OBJECT(listw->selection->data),
-    	    	    	       ui_combo_item_key);
+			       ui_combo_item_key);
 #endif
 }
 
@@ -218,11 +218,11 @@ set_active(ui_combo_t *cbox, gpointer data)
 #else
     GtkList *listw = GTK_LIST(cbox->list);
     GList *iter;
-    
+
     for (iter = listw->children ; iter != 0 ; iter = iter->next)
     {
-    	GtkWidget *item = (GtkWidget *)iter->data;
-	
+	GtkWidget *item = (GtkWidget *)iter->data;
+
 	if (gtk_object_get_data(GTK_OBJECT(item), ui_combo_item_key) == data)
 	{
 	    gtk_list_select_child(listw, item);
@@ -247,7 +247,7 @@ find_file(const char *path, const char *base)
     string_var file;
     const char *dir;
     struct stat sb;
-    
+
     while ((dir = tok.next()) != 0)
     {
 	file = g_strconcat(dir, "/", base, (char *)0);
@@ -255,7 +255,7 @@ find_file(const char *path, const char *base)
 	if (stat(file, &sb) == 0 && S_ISREG(sb.st_mode))
 	    return file.take();
     }
-    
+
     return 0;
 }
 
@@ -281,7 +281,7 @@ ui_register_callbacks(GladeXML *xml)
     for (i = 0 ; ui_simple_callbacks[i].name ; i++)
 	glade_xml_signal_connect(xml,
 				 ui_simple_callbacks[i].name,
-			         ui_simple_callbacks[i].func);
+				 ui_simple_callbacks[i].func);
     for (i = 0 ; ui_class_callbacks[i].name ; i++)
 	glade_xml_signal_connect_data(xml,
 				      ui_class_callbacks[i].name,
@@ -351,7 +351,7 @@ ui_load_tree(const char *root)
 #endif
 
     if (xml == 0)
-    	fatal("can't load Glade UI from file \"%s\"\n", filename);
+	fatal("can't load Glade UI from file \"%s\"\n", filename);
 
     /* connect the signals in the interface */
     ui_register_callbacks(xml);
@@ -368,13 +368,13 @@ ui_get_dummy_menu(GladeXML *xml, const char *name)
     GtkWidget *tearoff;
 
     dummy = glade_xml_get_widget(xml, name);
-    
+
     menu = dummy->parent;
-    
+
     tearoff = gtk_tearoff_menu_item_new();
     gtk_menu_append(GTK_MENU(menu), tearoff);
     gtk_widget_show(tearoff);
-    
+
     return menu;
 }
 
@@ -387,7 +387,7 @@ _ui_virtual_parent(GtkWidget *w)
 #if GTK2
 	return gtk_menu_get_attach_widget(GTK_MENU(w));
 #else
-    	return GTK_MENU(w)->parent_menu_item;
+	return GTK_MENU(w)->parent_menu_item;
 #endif
     return GTK_WIDGET(w)->parent;
 }
@@ -395,10 +395,10 @@ _ui_virtual_parent(GtkWidget *w)
 GtkWidget *
 ui_get_window(GtkWidget *w)
 {
-    for ( ; 
-    	 w != 0 && !GTK_IS_WINDOW(w) ;
+    for ( ;
+	 w != 0 && !GTK_IS_WINDOW(w) ;
 	 w = _ui_virtual_parent(w))
-    	;
+	;
     return w;
 }
 
@@ -417,24 +417,24 @@ ui_window_set_default_icon(GtkWidget *w)
     if (!GTK_WIDGET_REALIZED(w))
     {
 #if UI_DEBUG > 10
-    	fprintf(stderr, "ui_window_set_default_icon(w=0x%08lx): delaying until realized\n",
-	    	(unsigned)w);
+	fprintf(stderr, "ui_window_set_default_icon(w=0x%08lx): delaying until realized\n",
+		(unsigned)w);
 #endif
-    	/* delay self until realized */
+	/* delay self until realized */
 	gtk_signal_connect(GTK_OBJECT(w), "realize",
 	    GTK_SIGNAL_FUNC(ui_window_set_default_icon), 0);
 	/* don't bother disconnecting the signal, it will only ever fire once */
-    	return;
+	return;
     }
-    
+
 #if UI_DEBUG > 10
     fprintf(stderr, "ui_window_set_default_icon(w=0x%08lx)\n",
 	    (unsigned)w);
 #endif
-	    
+
     if (ui_default_icon.pm == 0)
-    	ui_default_icon.pm = gdk_pixmap_create_from_xpm_d(w->window,
-	    	    	    	&ui_default_icon.mask, 0,
+	ui_default_icon.pm = gdk_pixmap_create_from_xpm_d(w->window,
+				&ui_default_icon.mask, 0,
 				(char **)ui_default_icon.xpm);
     gdk_window_set_icon(w->window, 0,
 	ui_default_icon.pm, ui_default_icon.mask);
@@ -444,7 +444,7 @@ void
 ui_set_default_icon(const char * const *xpm_data)
 {
     ui_default_icon.xpm = xpm_data;
-    ui_default_icon.pm = 0; 	/* JIC */
+    ui_default_icon.pm = 0;     /* JIC */
 }
 
 
@@ -465,10 +465,10 @@ static void
 ui_on_windows_menu_activate(GtkWidget *w, gpointer userdata)
 {
     GtkWidget *win = (GtkWidget *)userdata;
-        
+
     dprintf1(D_UICORE, "ui_on_windows_menu_activate: %s\n",
-    	    	    	GTK_WINDOW(win)->title);
-			
+			GTK_WINDOW(win)->title);
+
     gdk_window_show(win->window);
     gdk_window_raise(win->window);
 }
@@ -477,41 +477,41 @@ static void
 ui_update_windows_menu(GtkWidget *menu)
 {
     GList *iter;
-    
+
     ui_delete_menu_items(menu);
-    
+
     for (iter = ui_windows_entries ; iter != 0 ; iter = iter->next)
     {
-    	ui_windows_entry_t *we = (ui_windows_entry_t *)iter->data;
-	
+	ui_windows_entry_t *we = (ui_windows_entry_t *)iter->data;
+
 	/*
 	 * Presumably a side effect of the callback will be
 	 * the creation of a new window which is registered
 	 * by calling ui_register_window().
 	 */
 	ui_menu_add_simple_item(menu, we->label,
-	    	    we->callback, we->userdata);
+		    we->callback, we->userdata);
     }
-    
+
     if (ui_windows_entries != 0)
 	ui_menu_add_seperator(menu);
-    
+
     for (iter = ui_windows ; iter != 0 ; iter = iter->next)
     {
-    	GtkWidget *win = (GtkWidget *)iter->data;
+	GtkWidget *win = (GtkWidget *)iter->data;
 	const char *title;
-	
+
 	if ((title = strchr(GTK_WINDOW(win)->title, ':')) != 0)
 	{
-	    title++;	/* skip colon */
+	    title++;    /* skip colon */
 	    while (*title && isspace(*title))
-	    	title++;    	    /* skip whitespace */
+		title++;            /* skip whitespace */
 	}
 	if (title == 0 || *title == '\0')
 	    title = GTK_WINDOW(win)->title;
-	
+
 	ui_menu_add_simple_item(menu, title,
-	    	    ui_on_windows_menu_activate, win);
+		    ui_on_windows_menu_activate, win);
     }
 }
 
@@ -519,9 +519,9 @@ static void
 ui_update_windows_menus(void)
 {
     GList *iter;
-    
+
     for (iter = ui_windows_menus ; iter != 0 ; iter = iter->next)
-    	ui_update_windows_menu((GtkWidget *)iter->data);
+	ui_update_windows_menu((GtkWidget *)iter->data);
 }
 
 static void
@@ -529,7 +529,7 @@ ui_on_window_destroy(GtkWidget *w, gpointer userdata)
 {
     ui_windows = g_list_remove(ui_windows, w);
     if (ui_windows == 0)
-    	gtk_main_quit();
+	gtk_main_quit();
     else
 	ui_update_windows_menus();
 }
@@ -538,13 +538,13 @@ void
 ui_register_window(GtkWidget *w)
 {
     ui_windows = g_list_append(ui_windows, w);
-    gtk_signal_connect(GTK_OBJECT(w), "destroy", 
-    	GTK_SIGNAL_FUNC(ui_on_window_destroy), 0);
+    gtk_signal_connect(GTK_OBJECT(w), "destroy",
+	GTK_SIGNAL_FUNC(ui_on_window_destroy), 0);
     ui_update_windows_menus();
-    
+
     if (GTK_WINDOW(w)->type == GTK_WINDOW_TOPLEVEL &&
-    	ui_default_icon.xpm != 0)
-    	ui_window_set_default_icon(w);
+	ui_default_icon.xpm != 0)
+	ui_window_set_default_icon(w);
 }
 
 static void
@@ -557,8 +557,8 @@ void
 ui_register_windows_menu(GtkWidget *menu)
 {
     ui_windows_menus = g_list_append(ui_windows_menus, menu);
-    gtk_signal_connect(GTK_OBJECT(menu), "destroy", 
-    	GTK_SIGNAL_FUNC(ui_on_windows_menu_destroy), 0);
+    gtk_signal_connect(GTK_OBJECT(menu), "destroy",
+	GTK_SIGNAL_FUNC(ui_on_windows_menu_destroy), 0);
     ui_update_windows_menu(menu);
 }
 
@@ -569,12 +569,12 @@ ui_register_windows_entry(
     gpointer userdata)
 {
     ui_windows_entry_t *we;
-    
+
     we = new(ui_windows_entry_t);
     we->label = g_strdup(label);
     we->callback = callback;
     we->userdata = userdata;
-    
+
     ui_windows_entries = g_list_append(ui_windows_entries, we);
     ui_update_windows_menus();
 }
@@ -598,20 +598,20 @@ ui_window_set_title(GtkWidget *w, const char *filename)
     /* Grab the original title, derived from the glade file */
     if ((proto = (char *)gtk_object_get_data(GTK_OBJECT(w), ui_title_key)) == 0)
     {
-    	proto = g_strdup(GTK_WINDOW(w)->title);
+	proto = g_strdup(GTK_WINDOW(w)->title);
 	gtk_object_set_data_full(GTK_OBJECT(w), ui_title_key, proto,
-	    	    	    	 ui_window_title_destroy);
+				 ui_window_title_destroy);
     }
 
     title.append_string(proto);
     title.replace_all("@FILE@", filename);
     title.replace_all("@VERSION@", VERSION);
-    
+
     gtk_window_set_title(GTK_WINDOW(w), title.data());
-        
+
     /* update windows menus if necessary */
     if (g_list_find(ui_windows, w))
-    	ui_update_windows_menus();
+	ui_update_windows_menus();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -620,18 +620,18 @@ void
 ui_delete_menu_items(GtkWidget *menu)
 {
     GList *list, *next;
-    
+
     for (list = gtk_container_children(GTK_CONTAINER(menu)) ;
-    	 list != 0 ;
+	 list != 0 ;
 	 list = next)
     {
-    	GtkWidget *child = (GtkWidget *)list->data;
+	GtkWidget *child = (GtkWidget *)list->data;
 	next = list->next;
 
-    	if (GTK_IS_TEAROFF_MENU_ITEM(child))
+	if (GTK_IS_TEAROFF_MENU_ITEM(child))
 	    continue;
-	    
-	gtk_widget_destroy(child);	
+
+	gtk_widget_destroy(child);
     }
 }
 
@@ -646,11 +646,11 @@ ui_menu_add_simple_item(
 
     butt = gtk_menu_item_new_with_label(label);
     gtk_menu_append(GTK_MENU(menu), butt);
-    gtk_signal_connect(GTK_OBJECT(butt), "activate", 
-    		       GTK_SIGNAL_FUNC(callback),
+    gtk_signal_connect(GTK_OBJECT(butt), "activate",
+		       GTK_SIGNAL_FUNC(callback),
 		       (gpointer)calldata);
     gtk_widget_show(butt);
-    
+
     return butt;
 }
 
@@ -662,10 +662,10 @@ ui_menu_add_seperator(GtkWidget *menu)
     butt = gtk_menu_item_new();
     gtk_menu_append(GTK_MENU(menu), butt);
     gtk_widget_show(butt);
-    
+
     return butt;
 }
-     
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 #if !GTK2
 /* column sorting is trivial in gtk2.x, extremely painful in gtk1.2 */
@@ -680,11 +680,11 @@ ui_clist_is_sortable_column(GtkCList *clist, int col)
 
     sortables = (GArray *)gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
     assert(sortables != 0);
-    
+
     for (i = 0 ; i < sortables->len ; i++)
-    	if (g_array_index(sortables, int, i) == col)
+	if (g_array_index(sortables, int, i) == col)
 	    return TRUE;
-	    
+
     return FALSE;   /* this column not sortable */
 }
 
@@ -699,17 +699,17 @@ ui_on_clist_click_column(GtkCList *clist, int col, gpointer userdata)
 {
     /* first, check this is a sortable column */
     if (!ui_clist_is_sortable_column(clist, col))
-    	return;     	/* this column not sortable */
+	return;         /* this column not sortable */
 
     /* now we can update the sort specifications */
     if (col == clist->sort_column)
 	/* toggle the sort direction */
-    	ui_clist_set_sort_type(clist, (clist->sort_type == GTK_SORT_ASCENDING ?
-	    	    	    	       GTK_SORT_DESCENDING : GTK_SORT_ASCENDING));
+	ui_clist_set_sort_type(clist, (clist->sort_type == GTK_SORT_ASCENDING ?
+				       GTK_SORT_DESCENDING : GTK_SORT_ASCENDING));
     else
 	/* make this the sortable column */
-    	ui_clist_set_sort_column(clist, col);
-	
+	ui_clist_set_sort_column(clist, col);
+
     /* update the order in the list */
     gtk_clist_sort(clist);
 }
@@ -723,40 +723,40 @@ ui_clist_init_column_arrow(GtkCList *clist, int col)
     GtkWidget *oldlabel;
     char *oldstr = 0;
     GArray *sortables;
-    
+
     oldlabel = gtk_clist_get_column_widget(clist, col);
     if (GTK_IS_BIN(oldlabel))
-    	oldlabel = GTK_BIN(oldlabel)->child;
+	oldlabel = GTK_BIN(oldlabel)->child;
     if (!GTK_IS_LABEL(oldlabel))
-    	return;
+	return;
     gtk_label_get(GTK_LABEL(oldlabel), &oldstr);
-    
+
     hbox = gtk_hbox_new(/*homogeneous*/FALSE, /*spacing*/4);
     gtk_widget_show(hbox);
-    
+
     label = gtk_label_new(oldstr);
     gtk_box_pack_start(GTK_BOX(hbox), label,
-    	    	       /*expand*/TRUE, /*fill*/TRUE, /*padding*/0);
+		       /*expand*/TRUE, /*fill*/TRUE, /*padding*/0);
     gtk_widget_show(label);
-    
+
     arrow = gtk_arrow_new(GTK_ARROW_DOWN,
-    	       (col == clist->sort_column ? GTK_SHADOW_OUT : GTK_SHADOW_NONE));
+	       (col == clist->sort_column ? GTK_SHADOW_OUT : GTK_SHADOW_NONE));
     gtk_box_pack_start(GTK_BOX(hbox), arrow,
-    	    	      /*expand*/FALSE, /*fill*/TRUE, /*padding*/0);
+		      /*expand*/FALSE, /*fill*/TRUE, /*padding*/0);
     gtk_widget_show(arrow);
-    
+
     gtk_clist_set_column_widget(clist, col, hbox);
     gtk_clist_column_title_active(clist, col);
-    
+
     /* Setup signal handler and update sortables array */
     sortables = (GArray *)gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
     if (sortables == 0)
     {
-    	sortables = g_array_new(/*zero_terminated*/FALSE, /*clear*/FALSE, sizeof(int));
-    	gtk_object_set_data_full(GTK_OBJECT(clist), ui_clist_arrow_key,
-	    	    	    	 sortables, ui_clist_sortables_destroy);
+	sortables = g_array_new(/*zero_terminated*/FALSE, /*clear*/FALSE, sizeof(int));
+	gtk_object_set_data_full(GTK_OBJECT(clist), ui_clist_arrow_key,
+				 sortables, ui_clist_sortables_destroy);
 	gtk_signal_connect(GTK_OBJECT(clist), "click_column",
-    	    	    	GTK_SIGNAL_FUNC(ui_on_clist_click_column), 0);
+			GTK_SIGNAL_FUNC(ui_on_clist_click_column), 0);
     }
     g_array_append_val(sortables, col);
 }
@@ -774,16 +774,16 @@ void
 ui_clist_set_sort_column(GtkCList *clist, int col)
 {
     GtkWidget *arrow;
-    
+
     if (!ui_clist_is_sortable_column(clist, col))
-    	return;
-	
+	return;
+
     if (ui_clist_is_sortable_column(clist, clist->sort_column))
     {
 	arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
 	gtk_arrow_set(GTK_ARROW(arrow), GTK_ARROW_DOWN, GTK_SHADOW_NONE);
     }
-    
+
     gtk_clist_set_sort_column(clist, col);
 
     arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
@@ -798,7 +798,7 @@ ui_clist_set_sort_type(GtkCList *clist, GtkSortType type)
     GtkWidget *arrow;
 
     if (!ui_clist_is_sortable_column(clist, clist->sort_column))
-    	return;
+	return;
 
     gtk_clist_set_sort_type(clist, type);
     arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
@@ -819,11 +819,11 @@ ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
 
     if (event->type == GDK_2BUTTON_PRESS &&
 	gtk_clist_get_selection_info(clist,
-	    	    	    	     (int)event->button.x,
+				     (int)event->button.x,
 				     (int)event->button.y,
 				     &row, &col))
     {
-    	dprintf2(D_UICORE, "ui_list_double_click_data: row=%d col=%d\n", row, col);
+	dprintf2(D_UICORE, "ui_list_double_click_data: row=%d col=%d\n", row, col);
 	return gtk_clist_get_row_data(clist, row);
     }
     return 0;
@@ -835,23 +835,23 @@ ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
     gpointer *data = 0;
 
     if (event->type == GDK_2BUTTON_PRESS &&
-    	gtk_tree_view_get_path_at_pos(tv,
-	    	    	    	     (int)event->button.x,
+	gtk_tree_view_get_path_at_pos(tv,
+				     (int)event->button.x,
 				     (int)event->button.y,
 				     &path, (GtkTreeViewColumn **)0,
 				     (gint *)0, (gint *)0))
     {
-    	if (debug_enabled(D_UICORE))
+	if (debug_enabled(D_UICORE))
 	{
-    	    string_var path_str = gtk_tree_path_to_string(path);
-    	    duprintf1("ui_list_double_click_data: path=\"%s\"\n",
-	    	    	    path_str.data());
-    	}
-    	model = gtk_tree_view_get_model(tv);
-    	gtk_tree_model_get_iter(model, &iter, path);
+	    string_var path_str = gtk_tree_path_to_string(path);
+	    duprintf1("ui_list_double_click_data: path=\"%s\"\n",
+			    path_str.data());
+	}
+	model = gtk_tree_view_get_model(tv);
+	gtk_tree_model_get_iter(model, &iter, path);
 	gtk_tree_model_get(model, &iter, column, &data, -1);
 	gtk_tree_path_free(path);
-	
+
 	return data;
     }
     return 0;
@@ -867,7 +867,7 @@ ui_list_set_column_visibility(GtkWidget *w, int col, gboolean vis)
     gtk_clist_set_column_visibility(GTK_CLIST(w), col, vis);
 #else
     gtk_tree_view_column_set_visible(
-    	    gtk_tree_view_get_column(GTK_TREE_VIEW(w), col),
+	    gtk_tree_view_get_column(GTK_TREE_VIEW(w), col),
 	    vis);
 #endif
 }
@@ -889,9 +889,9 @@ struct ui_text_tag_s
 
 typedef struct
 {
-    GList *tags;	    	/* list of tags */
-    int lineno;     	    	/* current line number */
-    GArray *offsets_by_line;	/* for selecting by line number */
+    GList *tags;                /* list of tags */
+    int lineno;                 /* current line number */
+    GArray *offsets_by_line;    /* for selecting by line number */
 } ui_text_data;
 
 static const char ui_text_data_key[] = "ui_text_data_key";
@@ -903,12 +903,12 @@ ui_text_on_destroy(GtkWidget *w, gpointer closure)
 
     while (td->tags != 0)
     {
-    	ui_text_tag *tag = (ui_text_tag *)td->tags->data;
-	
+	ui_text_tag *tag = (ui_text_tag *)td->tags->data;
+
 	g_free(tag->name);
 	g_free(tag);
-	
-    	td->tags = g_list_remove_link(td->tags, td->tags);
+
+	td->tags = g_list_remove_link(td->tags, td->tags);
     }
     g_array_free(td->offsets_by_line, /*free_segment*/TRUE);
     g_free(td);
@@ -919,15 +919,15 @@ ui_text_line_start(GtkText *text, ui_text_data *td)
 {
     unsigned int offset = gtk_text_get_length(text);
     dprintf2(D_UICORE|D_VERBOSE, "offsets_by_line[%d] = %d\n",
-    	td->offsets_by_line->len, offset);
+	td->offsets_by_line->len, offset);
     g_array_append_val(td->offsets_by_line, offset);
 }
 
 #endif /* !GTK2 */
 
 #if GTK2
-#define UI_TEXT_SCALE_FACTOR	1.1
-#define UI_TEXT_DEFAULT_SIZE	10240
+#define UI_TEXT_SCALE_FACTOR    1.1
+#define UI_TEXT_DEFAULT_SIZE    10240
 #endif
 
 void
@@ -950,7 +950,7 @@ ui_text_setup(GtkWidget *w)
     }
     if (ui_text_font_desc == 0)
     {
-    	ui_text_font_desc = pango_font_description_from_string("monospace");
+	ui_text_font_desc = pango_font_description_from_string("monospace");
 	confsection_t *cs = confsection_t::get("general");
 	gint size = cs->get_int("text_size", UI_TEXT_DEFAULT_SIZE);
 	pango_font_description_set_size(ui_text_font_desc, size);
@@ -962,7 +962,7 @@ ui_text_setup(GtkWidget *w)
 
 #else /* !GTK2 */
     ui_text_data *td;
-    
+
     assert(GTK_IS_TEXT(w));
 
     td = new(ui_text_data);
@@ -974,8 +974,8 @@ ui_text_setup(GtkWidget *w)
 				      /*clear*/TRUE,
 				      sizeof(unsigned int));
     gtk_object_set_data(GTK_OBJECT(w), ui_text_data_key, td);
-    gtk_signal_connect(GTK_OBJECT(w), "destroy", 
-    	GTK_SIGNAL_FUNC(ui_text_on_destroy), td);
+    gtk_signal_connect(GTK_OBJECT(w), "destroy",
+	GTK_SIGNAL_FUNC(ui_text_on_destroy), td);
 #endif /* !GTK2 */
 }
 
@@ -1042,21 +1042,21 @@ ui_text_create_tag(GtkWidget *w, const char *name, GdkColor *fg)
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
 
     return gtk_text_buffer_create_tag(buffer, name,
-    		"foreground-gdk",   	fg,
+		"foreground-gdk",       fg,
 		(char *)0);
 #else /* !GTK2 */
     ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-    	    	    	    	    	    	    	   ui_text_data_key);
+							   ui_text_data_key);
     ui_text_tag *tag;
-    
+
     tag = new(ui_text_tag);
     tag->name = g_strdup(name);
     tag->foreground = *fg;
     td->tags = g_list_prepend(td->tags, tag);
-    
+
     return tag;
 #endif /* !GTK2 */
-}   
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -1078,7 +1078,7 @@ ui_text_vscroll_restore(GtkWidget *w, gfloat vs)
 
     /* Work around rounding bug in gtk 2.0.2 */
     if (vs + tv->vadjustment->page_size + 0.5 > tv->vadjustment->upper)
-    	vs = tv->vadjustment->upper - tv->vadjustment->page_size - 0.5;
+	vs = tv->vadjustment->upper - tv->vadjustment->page_size - 0.5;
 
     gtk_adjustment_set_value(tv->vadjustment, vs);
 #else /* !GTK2 */
@@ -1098,7 +1098,7 @@ ui_text_begin(GtkWidget *w)
 #else /* !GTK2 */
     GtkText *text = GTK_TEXT(w);
     ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-    	    	    	    	    	    	    	   ui_text_data_key);
+							   ui_text_data_key);
 
     gtk_text_freeze(text);
     gtk_editable_delete_text(GTK_EDITABLE(text), 0, -1);
@@ -1116,25 +1116,25 @@ ui_text_add(GtkWidget *w, ui_text_tag *tag, const char *str, int len)
 
     gtk_text_buffer_get_end_iter(buffer, &end);
     gtk_text_buffer_insert_with_tags(buffer, &end, str, len,
-	    	    	    	     tag, (char*)0);
+				     tag, (char*)0);
 #else /* !GTK2 */
     GtkText *text = GTK_TEXT(w);
     ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-    	    	    	    	    	    	    	   ui_text_data_key);
+							   ui_text_data_key);
     const char *s, *e;
     GdkColor *fg = (tag == 0 ? 0 : &tag->foreground);
     GdkColor *bg = 0;
 
     if (len < 0)
-    	len = strlen(str);
+	len = strlen(str);
 
     /* parse the string for newlines so we can track line offsets */
     s = str;
     while (len > 0 && (e = strchr(s, '\n')) != 0)
     {
-    	e++;
+	e++;
 	gtk_text_insert(text, ui_text_font, fg, bg, s, (e-s));
-    	ui_text_line_start(text, td);
+	ui_text_line_start(text, td);
 	len -= (e-s);
 	s = e;
     }
@@ -1162,10 +1162,10 @@ ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endlin
 #ifdef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
     GtkTextIter start, end;
-    
+
     if (startline > 1)
-    	startline--;	    /* workaround gtk bug */
-    
+	startline--;        /* workaround gtk bug */
+
     gtk_text_buffer_get_iter_at_line(buffer, &start, startline);
     gtk_text_buffer_get_iter_at_line(buffer, &end, endline);
 
@@ -1188,39 +1188,39 @@ ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endlin
     /* move the cursor down to the start line */
     if (startline > 1)
 	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINES,
-    	    	    	      (gint)startline-1, FALSE);
+			      (gint)startline-1, FALSE);
     /* select down to the end line */
     if (endline == startline)
 	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINE_ENDS,
-    	    	    	      1, /*extend_selection*/TRUE);
+			      1, /*extend_selection*/TRUE);
     else
 	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINES,
-    	    	    	      (gint)(endline - startline + 1),
+			      (gint)(endline - startline + 1),
 			      /*extend_selection*/TRUE);
 #endif /* GTK2 && !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
 #else /* !GTK2 */
     ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-    	    	    	    	    	    	    	   ui_text_data_key);
+							   ui_text_data_key);
     int endoff;
-    
+
     assert(td->offsets_by_line->len > 0);
 
     if (startline < 1)
-    	startline = 1;
+	startline = 1;
     if (endline < 1)
-    	endline = startline;
+	endline = startline;
     if (startline > td->offsets_by_line->len)
-    	startline = td->offsets_by_line->len;
+	startline = td->offsets_by_line->len;
     if (endline > td->offsets_by_line->len)
-    	endline = td->offsets_by_line->len;
+	endline = td->offsets_by_line->len;
     if (startline > endline)
-    	return;
-	
+	return;
+
     assert(startline >= 1);
     assert(startline <= td->offsets_by_line->len);
     assert(endline >= 1);
     assert(endline <= td->offsets_by_line->len);
-    
+
     /* set endoff to the first location after the last line to be selected */
     if (endline == td->offsets_by_line->len)
 	endoff = -1;
@@ -1228,8 +1228,8 @@ ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endlin
 	endoff = g_array_index(td->offsets_by_line, unsigned int, endline)-1;
 
     gtk_editable_select_region(GTK_EDITABLE(w),
-    	    g_array_index(td->offsets_by_line, unsigned int, startline-1),
-    	    endoff);
+	    g_array_index(td->offsets_by_line, unsigned int, startline-1),
+	    endoff);
 #endif /* !GTK2 */
 }
 
@@ -1241,18 +1241,18 @@ ui_text_ensure_visible(GtkWidget *w, unsigned long line)
 #if GTK2
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
     GtkTextIter iter;
-    
+
     gtk_text_buffer_get_iter_at_line(buffer, &iter, line);
     gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(w), &iter,
-                                 0.0, FALSE, 0.0, 0.0);
+				 0.0, FALSE, 0.0, 0.0);
 #else
     /* This mostly works.  Not totally predictable but good enough for now */
     ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-    	    	    	    	    	    	    	   ui_text_data_key);
+							   ui_text_data_key);
     GtkAdjustment *adj = GTK_TEXT(w)->vadj;
 
     gtk_adjustment_set_value(adj,
-	    	adj->upper * (double)line / (double)td->offsets_by_line->len
+		adj->upper * (double)line / (double)td->offsets_by_line->len
 		    - adj->page_size/2.0);
 #endif
 }
@@ -1264,37 +1264,37 @@ static unsigned long
 ui_text_offset_to_lineno(ui_text_data *td, unsigned int offset)
 {
     unsigned int top, bottom;
-    
+
     if (offset == 0)
-    	return 0;
+	return 0;
 
     top = td->offsets_by_line->len-1;
     bottom = 0;
-    
+
     dprintf3(D_UICORE|D_VERBOSE,
-    	    "ui_text_offset_to_lineno: { offset=%u top=%u bottom=%u\n",
-    	    offset, top, bottom);
+	    "ui_text_offset_to_lineno: { offset=%u top=%u bottom=%u\n",
+	    offset, top, bottom);
 
     while (top - bottom > 1)
     {
-    	unsigned int mid = (top + bottom)/2;
+	unsigned int mid = (top + bottom)/2;
 	unsigned int midoff = g_array_index(td->offsets_by_line, unsigned int, mid);
-	
-    	dprintf4(D_UICORE|D_VERBOSE,
-	    	"ui_text_offset_to_lineno:     top=%d bottom=%d mid=%d midoff=%u\n",
-	    	 top, bottom, mid, midoff);
+
+	dprintf4(D_UICORE|D_VERBOSE,
+		"ui_text_offset_to_lineno:     top=%d bottom=%d mid=%d midoff=%u\n",
+		 top, bottom, mid, midoff);
 
 	if (midoff == offset)
 	    top = bottom = mid;
-    	else if (midoff < offset)
+	else if (midoff < offset)
 	    bottom = mid;
 	else
 	    top = mid;
     }
 
     dprintf2(D_UICORE|D_VERBOSE,
-    	    "ui_text_offset_to_lineno: offset=%u line=%u }\n",
-    	    offset, bottom);
+	    "ui_text_offset_to_lineno: offset=%u line=%u }\n",
+	    offset, bottom);
 
     return (unsigned long)bottom+1;
 }
@@ -1310,7 +1310,7 @@ ui_text_get_selected_lines(
 #if GTK2
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
     GtkTextIter start_iter, end_iter;
-    
+
     if (!gtk_text_buffer_get_selection_bounds(buffer, &start_iter, &end_iter))
     {
 	if (startp != 0)
@@ -1327,10 +1327,10 @@ ui_text_get_selected_lines(
     }
 #else /* !GTK2 */
     ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-    	    	    	    	    	    	    	   ui_text_data_key);
+							   ui_text_data_key);
 
     if (GTK_EDITABLE(w)->selection_start_pos == 0 &&
-    	GTK_EDITABLE(w)->selection_end_pos == 0)
+	GTK_EDITABLE(w)->selection_end_pos == 0)
     {
 	if (startp != 0)
 	    *startp = 0;
@@ -1341,10 +1341,10 @@ ui_text_get_selected_lines(
     {
 	if (startp != 0)
 	    *startp = ui_text_offset_to_lineno(td,
-	    	    		GTK_EDITABLE(w)->selection_start_pos);
+				GTK_EDITABLE(w)->selection_start_pos);
 	if (endp != 0)
 	    *endp = ui_text_offset_to_lineno(td,
-	    	    		GTK_EDITABLE(w)->selection_end_pos-1);
+				GTK_EDITABLE(w)->selection_end_pos-1);
     }
 #endif /* !GTK2 */
 }
@@ -1360,7 +1360,7 @@ ui_text_get_contents(GtkWidget *w)
 
     gtk_text_buffer_get_bounds(buffer, &start, &end);
     return gtk_text_buffer_get_text(buffer, &start, &end,
-                                    /*include_hidden_chars*/FALSE);
+				    /*include_hidden_chars*/FALSE);
 #else /* !GTK2 */
     return gtk_editable_get_chars(GTK_EDITABLE(w), 0, -1);
 #endif /* !GTK2 */
@@ -1382,7 +1382,7 @@ log_level_to_str(GLogLevelFlags level)
     case G_LOG_LEVEL_INFO: return "INFO";
     case G_LOG_LEVEL_DEBUG: return "DEBUG";
     default:
-    	snprintf(buf, sizeof(buf), "%d", level);
+	snprintf(buf, sizeof(buf), "%d", level);
 	return buf;
     }
 }
@@ -1395,24 +1395,24 @@ log_func(
     gpointer user_data)
 {
     fprintf(stderr, "%s:%s:%s\n",
-    	(domain == 0 ? PACKAGE : domain),
+	(domain == 0 ? PACKAGE : domain),
 	log_level_to_str(level),
 	msg);
     if (level & G_LOG_FLAG_FATAL)
-    	exit(1);
+	exit(1);
 }
 
 void
 ui_log_init(void)
 {
-    static const char * const domains[] = 
+    static const char * const domains[] =
 	{ "GLib", "GLib-GObject", "Gtk", "Gnome", "libglade", /*application*/0 };
     unsigned int i;
-    
+
     for (i = 0 ; i < sizeof(domains)/sizeof(domains[0]) ; i++)
 	g_log_set_handler(domains[i],
-    	    	      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
-    	    	      log_func, /*user_data*/0);
+		      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
+		      log_func, /*user_data*/0);
     uix_log_init();
 }
 

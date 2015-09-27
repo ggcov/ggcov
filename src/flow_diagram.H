@@ -41,21 +41,21 @@ private:
     enum arc_case_t
     {
 	AC_DOWN1,   /* arc down from one line to the next */
-	AC_UP1,	    /* arc up from one line to the previous */
+	AC_UP1,     /* arc up from one line to the previous */
 	AC_ACROSS1, /* arc from one rank to the next */
 	AC_DOWN,    /* more general arc downwards */
-	AC_UP,	    /* more general arc upwards */
+	AC_UP,      /* more general arc upwards */
 	AC_ACROSS   /* arc between vertically overlapping nodes **/
     };
 
     struct node_t
     {
 	cov_block_t *block_;
-	node_t *first_;		    /* first node_t for this block, holds rank_ */
-	node_t *next_, *prev_;	    /* circular list of node_t for this block */
+	node_t *first_;             /* first node_t for this block, holds rank_ */
+	node_t *next_, *prev_;      /* circular list of node_t for this block */
 	int first_idx_, last_idx_;
 	int rank_;
-	double x_, y_, w_, h_;	    /* in [0,1] space */
+	double x_, y_, w_, h_;      /* in [0,1] space */
 
 	gboolean
 	have_geometry() const
@@ -73,7 +73,7 @@ private:
 
 	double slotx(int slot) const;
 
-    	node_t(cov_block_t *b) : block_(b), first_idx_(-1), rank_(-1) {}
+	node_t(cov_block_t *b) : block_(b), first_idx_(-1), rank_(-1) {}
 	~node_t() {}
     };
     struct arc_t
@@ -130,7 +130,7 @@ private:
     ptrarray_t<node_t> *nodes_by_bindex_;   /* first node for block, by block index */
     int max_rank_;
     ptrarray_t<arc_t> *arcs_;
-    unsigned int num_slots_[2];	/* [0] left [1] right */
+    unsigned int num_slots_[2]; /* [0] left [1] right */
     /*
      * [0] left edge of whole diagram
      * [1] left edge of left arc slots area

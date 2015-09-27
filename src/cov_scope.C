@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003-2004 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -40,8 +40,8 @@ cov_scope_t::get_stats()
 {
     if (dirty_)
     {
-    	stats_.clear();
-    	status_ = calc_stats(&stats_);
+	stats_.clear();
+	status_ = calc_stats(&stats_);
 	dirty_ = FALSE;
     }
     return &stats_;
@@ -165,16 +165,16 @@ cov_range_scope_t::cov_range_scope_t(
 cov_range_scope_t::~cov_range_scope_t()
 {
     if (description_)
-    	g_free(description_);
+	g_free(description_);
 }
 
 void
 cov_range_scope_t::set_description()
 {
     if (file_)
-    	description_ = g_strdup_printf("%s:%lu-%lu",
-	    	    	    		file_->minimal_name(),
-	    	    	    		start_, end_);
+	description_ = g_strdup_printf("%s:%lu-%lu",
+					file_->minimal_name(),
+					start_, end_);
 }
 
 const char *
@@ -209,53 +209,53 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
      * Check inputs
      */
     if (start.lineno > end.lineno)
-    	return cov::SUPPRESSED;     	/* invalid range */
+	return cov::SUPPRESSED;         /* invalid range */
     if (start.lineno == 0 || end.lineno == 0)
-    	return cov::SUPPRESSED;     	/* invalid range */
+	return cov::SUPPRESSED;         /* invalid range */
     lastline = file_->num_lines();
     if (start.lineno > lastline)
-    	return cov::SUPPRESSED;     	/* range is outside file */
+	return cov::SUPPRESSED;         /* range is outside file */
     if (end.lineno > lastline)
-    	end.lineno = lastline;  /* clamp range to file */
-    
+	end.lineno = lastline;  /* clamp range to file */
+
     /*
      * Get blocklists for start and end.
      */
     do
     {
-    	startln = cov_line_t::find(&start);
+	startln = cov_line_t::find(&start);
     } while ((startln == 0 || !startln->blocks().head()) &&
-             ++start.lineno <= end.lineno);
-    
+	     ++start.lineno <= end.lineno);
+
     if (startln == 0 || !startln->blocks().head())
-    	return cov::SUPPRESSED;     	/* no executable lines in the given range */
+	return cov::SUPPRESSED;         /* no executable lines in the given range */
     assert(startln != 0);
     assert(startln->blocks().head());
 
     do
     {
-    	endln = cov_line_t::find(&end);
+	endln = cov_line_t::find(&end);
     } while ((endln == 0 || !endln->blocks().head()) &&
-    	     --end.lineno > start.lineno-1);
-    
+	     --end.lineno > start.lineno-1);
+
     assert(endln != 0);
     assert(endln->blocks().head());
     assert(start.lineno <= end.lineno);
-    
+
 
     /*
      * Iterate over the blocks between start and end,
      * gathering stats as we go.  Note that this can
      * span functions.
-     */    
+     */
     b = startln->blocks().head();
     bidx = b->bindex();
     fnidx = b->function()->findex();
-    
+
     do
     {
 	b = file_->nth_function(fnidx)->nth_block(bidx);
-    	b->calc_stats(stats);
+	b->calc_stats(stats);
 	if (++bidx == file_->nth_function(fnidx)->num_blocks())
 	{
 	    bidx = 0;
@@ -310,8 +310,8 @@ cov_compound_scope_t::calc_stats(cov_stats_t *stats)
 
     for (list_iterator_t<cov_scope_t> iter = children_.first() ; *iter ; ++iter)
     {
-    	// accumulate stats with caching
-    	if ((cstats = (*iter)->get_stats()) != 0)
+	// accumulate stats with caching
+	if ((cstats = (*iter)->get_stats()) != 0)
 	    stats->accumulate(cstats);
     }
 

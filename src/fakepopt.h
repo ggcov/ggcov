@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -41,11 +41,11 @@ struct poptOption
     const char *more_crap;
 };
 
-#define POPT_ARG_NONE	0
+#define POPT_ARG_NONE   0
 #define POPT_ARG_STRING 1
 #define POPT_ARG_INCLUDE_TABLE 4
 
-#define POPT_BADOPTION_NOALIAS	0
+#define POPT_BADOPTION_NOALIAS  0
 
 #define POPT_AUTOHELP
 #define POPT_TABLEEND { NULL, '\0', 0, 0, 0, NULL, NULL }
@@ -53,7 +53,7 @@ struct poptOption
 typedef struct _poptContext *poptContext;
 
 extern poptContext poptGetContext(const char *, int, const char **,
-    	    	    	    	  const struct poptOption *, int);
+				  const struct poptOption *, int);
 extern void poptSetOtherOptionHelp(poptContext, const char *);
 extern int poptGetNextOpt(poptContext);
 extern const char *poptGetArg(poptContext);

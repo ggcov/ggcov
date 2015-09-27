@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2004-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -30,9 +30,9 @@ class cpp_parser_t
 public:
     cpp_parser_t(const char *filename);
     virtual ~cpp_parser_t();
-    
+
     gboolean parse();
-    
+
 protected:
     virtual void depends_changed() = 0;
     virtual void handle_comment(const char *text) = 0;
@@ -40,26 +40,26 @@ protected:
 
     unsigned long lineno() const { return lineno_; }
     gboolean depends(const char *var) const;
-    
+
     void dump() const;
 
 private:
     struct depend_t
     {
-    	depend_t();
+	depend_t();
 	~depend_t();
 
-    	unsigned long lineno_;
+	unsigned long lineno_;
 	hashtable_t<const char, int> *deltas_;
     };
-            
+
     enum token_t
     {
-    	T_LEFT_PAREN = '(',
-    	T_RIGHT_PAREN = ')',
+	T_LEFT_PAREN = '(',
+	T_RIGHT_PAREN = ')',
 	T_BANG = '!',
 
-    	T_INCLUDE=256,
+	T_INCLUDE=256,
 	T_IF,
 	T_IFDEF,
 	T_IFNDEF,
@@ -71,10 +71,10 @@ private:
 	T_DEFINED,
 	T_LOG_AND,
 	T_LOG_OR,
-	
+
 	T_NUMBER,
 	T_IDENTIFIER,
-	
+
 	T_BOOL_EXPR,
 	T_LOG_OP,
 
@@ -107,7 +107,7 @@ private:
     estring line_;
     unsigned int index_;    /* index into line_ which xgetc() will next return */
     gboolean in_comment_;
-    estring comment_;	    /* text of all comments in the line, ws-separated */
+    estring comment_;       /* text of all comments in the line, ws-separated */
     char tokenbuf_[256];
     list_t<depend_t> depend_stack_;
 #define MAX_STACK   32

@@ -22,19 +22,19 @@
 
 CVSID("$Id: flow_diagram.C,v 1.7 2010-05-09 05:37:15 gnb Exp $");
 
-#define NODE_WIDTH	6.0
-#define HMARGIN		0.5
-#define HGAP		6.0
-#define LINE_HEIGHT	6.0
-#define VMARGIN		0.5
-#define VGAP		6.0
-#define SLOTGAP		3.0
-#define ARROW_SIZE	3.0
-#define ARROW_SHAPE	1.0, 1.0, 0.75
+#define NODE_WIDTH      6.0
+#define HMARGIN         0.5
+#define HGAP            6.0
+#define LINE_HEIGHT     6.0
+#define VMARGIN         0.5
+#define VGAP            6.0
+#define SLOTGAP         3.0
+#define ARROW_SIZE      3.0
+#define ARROW_SHAPE     1.0, 1.0, 0.75
 
 /* common denominator between SLOTGAP, NODE_WIDTH and HGAP */
-#define HQUANTUM	3.0
-#define HSLOTS(x)	((int)(((x)/HQUANTUM)+0.5))
+#define HQUANTUM        3.0
+#define HSLOTS(x)       ((int)(((x)/HQUANTUM)+0.5))
 
 /* return the arc slot nearest the centre of the node at the given rank */
 static inline int
@@ -111,7 +111,7 @@ flow_diagram_t::generate_nodes()
 
     if (first == 0 ||
 	first->lineno == 0 ||
-        last == 0 ||
+	last == 0 ||
 	last->lineno == 0 ||
 	last->lineno < first->lineno)
     {
@@ -647,31 +647,31 @@ flow_diagram_t::node_t::slotx(int slot) const
  * y coord of start and end of a direct arc
  *
  * `from' entirely right of `to': join closest corners
- * 	+------+
- *  	| from |
- *  	+------+
- * 		\
- * 		 +------+
- * 		 |  to  |
- * 		 +------+
+ *      +------+
+ *      | from |
+ *      +------+
+ *              \
+ *               +------+
+ *               |  to  |
+ *               +------+
  *
  * overlap: join vertically halfway across the overlap
- * 	+------+
- *  	| from |
- *  	+------+
- * 	     |
- * 	    +------+
- * 	    |  to  |
- * 	    +------+
+ *      +------+
+ *      | from |
+ *      +------+
+ *           |
+ *          +------+
+ *          |  to  |
+ *          +------+
  *
  * `to' entirely right of `from': join closest corners
- * 		 +------+
- * 		 | from |
- * 		 +------+
- * 		/
- * 	+------+
- * 	|  to  |
- * 	+------+
+ *               +------+
+ *               | from |
+ *               +------+
+ *              /
+ *      +------+
+ *      |  to  |
+ *      +------+
  */
 
 double
@@ -726,29 +726,29 @@ flow_diagram_t::arc_t::direct_tox() const
  * y coord of start and end of a direct arc
  *
  * `to' entirely below `from': join closest corners
- * 	+------+
- * 	| from |
- * 	+------+
- *		\
- * 		 +------+
- * 		 |  to  |
- * 		 +------+
+ *      +------+
+ *      | from |
+ *      +------+
+ *              \
+ *               +------+
+ *               |  to  |
+ *               +------+
  *
  * overlap: join horizontally halfway down the overlap
- * 	+------+
- * 	| from | +------+
- * 	|      |-|      |
- * 	+------+ |  to  |
- * 		 +------+
+ *      +------+
+ *      | from | +------+
+ *      |      |-|      |
+ *      +------+ |  to  |
+ *               +------+
  *
  * `from' entirely below `to': join closest corners
- * 		 +------+
- * 		 |  to  |
- * 		 +------+
- *		/
- * 	+------+
- * 	| from |
- * 	+------+
+ *               +------+
+ *               |  to  |
+ *               +------+
+ *              /
+ *      +------+
+ *      | from |
+ *      +------+
  */
 
 double

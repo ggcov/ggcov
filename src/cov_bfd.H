@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -45,33 +45,33 @@ class cov_bfd_section_t
 public:
     const char *name() const
     {
-    	return ((asection *)this)->name;
+	return ((asection *)this)->name;
     }
-    
+
     cov_bfd_t *owner() const
     {
-        return (cov_bfd_t *)((asection *)this)->owner->usrdata;
+	return (cov_bfd_t *)((asection *)this)->owner->usrdata;
     }
 
     arelent **get_relocs(unsigned int *lenp);
-    
+
     unsigned char *get_contents(bfd_size_type *lenp);
     unsigned char *get_contents(unsigned long startaddr, unsigned long length);
 
     gboolean find_nearest_line(unsigned long address,
-    	    	    	       cov_location_t *locp/*return*/,
+			       cov_location_t *locp/*return*/,
 			       const char **functionp/*return*/);
-			       
+
     unsigned long raw_size() const
     {
 #ifdef HAVE_BFD_ASECTION_RAWSIZE
-    	return ((asection *)this)->rawsize;
+	return ((asection *)this)->rawsize;
 #else
-    	return ((asection *)this)->_raw_size;
+	return ((asection *)this)->_raw_size;
 #endif
     }
     const asymbol *find_symbol_by_value(unsigned long val,
-				        unsigned int flagsmask,
+					unsigned int flagsmask,
 					unsigned int flagsmatch);
 };
 
@@ -80,23 +80,23 @@ class cov_bfd_t
 public:
     cov_bfd_t();
     ~cov_bfd_t();
-    
+
     gboolean open(const char *filename);
     gboolean open(const char *filename, FILE *);
     const char *filename() const;
 
     gboolean big_endian() const
     {
-    	return bfd_big_endian(abfd_);
+	return bfd_big_endian(abfd_);
     }
     gboolean little_endian() const
     {
-    	return bfd_little_endian(abfd_);
+	return bfd_little_endian(abfd_);
     }
-    
+
     unsigned int num_symbols();
     const asymbol *nth_symbol(unsigned int);
-    
+
     unsigned int num_code_sections();
     cov_bfd_section_t *nth_code_section(unsigned int);
 
@@ -106,10 +106,10 @@ public:
     static void dump_symbol(unsigned int idx, asymbol *sym);
     static void dump_reloc(unsigned int idx, arelent *rel);
 
-    
+
     enum bfd_flavour flavour() const
     {
-    	return bfd_get_flavour(abfd_);
+	return bfd_get_flavour(abfd_);
     }
     enum bfd_architecture architecture() const
     {
@@ -138,7 +138,7 @@ private:
 
     unsigned int num_code_sections_;
     asection **code_sections_;
-    
+
     friend class cov_bfd_section_t;
 };
 
@@ -156,15 +156,15 @@ class cov_bfd_section_t
 {
 public:
     arelent **get_relocs(unsigned int *lenp) { return 0; }
-    
+
     unsigned char *get_contents(bfd_size_type *lenp) { return 0; }
     unsigned char *get_contents(unsigned long startaddr, unsigned long length) { return 0; }
 
     gboolean find_nearest_line(unsigned long address,
-    	    	    	       cov_location_t *locp/*return*/,
+			       cov_location_t *locp/*return*/,
 			       const char **functionp/*return*/)
     { return FALSE; }
-			       
+
     unsigned long raw_size() const { return 0; }
 };
 
@@ -172,9 +172,9 @@ class cov_bfd_t
 {
 public:
     cov_bfd_t() {}
-    
+
     ~cov_bfd_t() {}
-    
+
     gboolean open(const char *filename)
     {
 	dprintf1(D_CGRAPH, "ggcov was compiled without the BFD library, "
@@ -182,11 +182,11 @@ public:
 	return FALSE;
     }
     const char *filename() const { return 0; }
-    
+
     unsigned int num_symbols() { return 0; }
-    
+
     const asymbol *nth_symbol(unsigned int) { return 0; }
-    
+
     unsigned int num_code_sections() { return 0; }
     cov_bfd_section_t *nth_code_section(unsigned int) { return 0; }
 

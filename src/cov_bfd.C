@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003-2004 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -62,11 +62,11 @@ cov_bfd_t::~cov_bfd_t()
     if (abfd_ != 0)
 	bfd_close(abfd_);
     if (symbols_ != 0)
-    	g_free(symbols_);
+	g_free(symbols_);
     if (sorted_symbols_ != 0)
-    	g_free(sorted_symbols_);
+	g_free(sorted_symbols_);
     if (code_sections_ != 0)
-    	g_free(code_sections_);
+	g_free(code_sections_);
 }
 
 
@@ -77,8 +77,8 @@ cov_bfd_t::post_open()
 {
     if (!bfd_check_format(abfd_, bfd_object))
     {
-    	/* TODO */
-    	bfd_perror(bfd_get_filename(abfd_));
+	/* TODO */
+	bfd_perror(bfd_get_filename(abfd_));
 	bfd_close(abfd_);
 	abfd_ = 0;
 	return FALSE;
@@ -91,7 +91,7 @@ cov_bfd_t::post_open()
 #endif
 
     abfd_->usrdata = this;
-    
+
     return TRUE;
 }
 
@@ -100,8 +100,8 @@ cov_bfd_t::open(const char *filename)
 {
     if ((abfd_ = bfd_openr(filename, /*target*/0)) == 0)
     {
-    	/* TODO */
-    	bfd_perror(filename);
+	/* TODO */
+	bfd_perror(filename);
 	return FALSE;
     }
     return post_open();
@@ -112,8 +112,8 @@ cov_bfd_t::open(const char *filename, FILE *fp)
 {
     if ((abfd_ = bfd_openstreamr(filename, /*target*/0, fp)) == 0)
     {
-    	/* TODO */
-    	bfd_perror(filename);
+	/* TODO */
+	bfd_perror(filename);
 	return FALSE;
     }
     return post_open();
@@ -133,11 +133,11 @@ cov_bfd_t::find_section(const char *secname)
     asection *sec;
 
     if (abfd_ == 0)
-    	return 0;
+	return 0;
     if ((sec = bfd_get_section_by_name(abfd_, secname)) == 0)
     {
-    	/* TODO */
-//    	fprintf(stderr, "%s: no %s section\n", filename(), secname);
+	/* TODO */
+//      fprintf(stderr, "%s: no %s section\n", filename(), secname);
 	return 0;
     }
     return (cov_bfd_section_t *)sec;
@@ -173,11 +173,11 @@ cov_bfd_t::get_symbols()
 
     if (debug_enabled(D_CGRAPH|D_VERBOSE))
     {
-        unsigned int i;
+	unsigned int i;
 	for (i = 0 ; i < num_symbols_ ; i++)
 	    cov_bfd_t::dump_symbol(i, symbols_[i]);
     }
-    
+
     return TRUE;
 }
 
@@ -185,9 +185,9 @@ unsigned int
 cov_bfd_t::num_symbols()
 {
     if (abfd_ == 0)
-    	return 0;
+	return 0;
     if (!have_symbols_ && !get_symbols())
-    	return 0;
+	return 0;
     return num_symbols_;
 }
 
@@ -195,9 +195,9 @@ const asymbol *
 cov_bfd_t::nth_symbol(unsigned int i)
 {
     if (abfd_ == 0)
-    	return 0;
+	return 0;
     if (!have_symbols_ && !get_symbols())
-    	return 0;
+	return 0;
     return (symbols_ == 0 || i >= num_symbols_ ? 0 : symbols_[i]);
 }
 
@@ -215,8 +215,8 @@ cov_bfd_t::get_code_sections()
     have_code_sections_ = true;
 
     if (abfd_ == 0)
-    	return FALSE;
-	
+	return FALSE;
+
     dprintf1(D_CGRAPH, "Gathering code sections from %s\n", filename());
 
     code_sections_ = g_new(asection*, abfd_->section_count);
@@ -228,10 +228,10 @@ cov_bfd_t::get_code_sections()
 	if ((sec->flags & codesectype) != codesectype)
 	{
 	    dprintf0(D_CGRAPH|D_VERBOSE, "skipping\n");
-    	    continue;
+	    continue;
 	}
 	dprintf0(D_CGRAPH|D_VERBOSE, "is code section\n");
-    	code_sections_[num_code_sections_++] = sec;
+	code_sections_[num_code_sections_++] = sec;
     }
 
     return TRUE;
@@ -241,9 +241,9 @@ unsigned int
 cov_bfd_t::num_code_sections()
 {
     if (abfd_ == 0)
-    	return 0;
+	return 0;
     if (!have_code_sections_ && !get_code_sections())
-    	return 0;
+	return 0;
     return num_code_sections_;
 }
 
@@ -251,11 +251,11 @@ cov_bfd_section_t *
 cov_bfd_t::nth_code_section(unsigned int i)
 {
     if (abfd_ == 0)
-    	return 0;
+	return 0;
     if (!have_code_sections_ && !get_code_sections())
-    	return 0;
+	return 0;
     return (code_sections_ == 0 || i >= num_code_sections_ ? 0 :
-    	    (cov_bfd_section_t *)code_sections_[i]);
+	    (cov_bfd_section_t *)code_sections_[i]);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -284,7 +284,7 @@ cov_bfd_t::dump_symbol(unsigned int idx, asymbol *sym)
     if (!idx)
 	duprintf0("index|value   |flags|type|section   |name\n");
     if (sym == 0)
-    	return;
+	return;
 
     string_var dem = demangle(sym->name);
 
@@ -305,11 +305,11 @@ cov_bfd_t::dump_reloc(unsigned int idx, arelent *rel)
 {
     if (!idx)
     {
-    	duprintf0("relocation                              |symbol\n");
-    	duprintf0("index|address |addend  |type            |flags|type|name\n");
+	duprintf0("relocation                              |symbol\n");
+	duprintf0("index|address |addend  |type            |flags|type|name\n");
     }
     if (rel == 0)
-    	return;
+	return;
 
     asymbol *sym = *rel->sym_ptr_ptr;
     string_var name_dem = demangle(sym->name);
@@ -340,7 +340,7 @@ cov_bfd_section_t::get_contents(bfd_size_type *lenp)
     size = bfd_section_size(sec->owner, sec);
     contents = get_contents(0, size);
     if (lenp != 0)
-    	*lenp = size;
+	*lenp = size;
     return contents;
 }
 
@@ -353,8 +353,8 @@ cov_bfd_section_t::get_contents(unsigned long startaddr, unsigned long length)
     contents = (unsigned char *)gnb_xmalloc(length);
     if (!bfd_get_section_contents(sec->owner, sec, contents, startaddr, length))
     {
-    	/* TODO */
-    	bfd_perror(owner()->filename());
+	/* TODO */
+	bfd_perror(owner()->filename());
 	free(contents);
 	return 0;
     }
@@ -382,9 +382,9 @@ cov_bfd_section_t::get_relocs(unsigned int *lenp)
     cov_bfd_t *b = owner();
     arelent **relocs;
     unsigned int nrelocs;
-    
+
     if (!b->have_symbols_ && !b->get_symbols())
-    	return FALSE;
+	return FALSE;
 
     dprintf1(D_CGRAPH, "Reading relocs from %s\n", b->filename());
 
@@ -403,9 +403,9 @@ cov_bfd_section_t::get_relocs(unsigned int *lenp)
      * increasing address order, so ensure this is true.
      */
     qsort(relocs, nrelocs, sizeof(arelent*), compare_arelentp);
-    
+
     if (lenp != 0)
-    	*lenp = nrelocs;
+	*lenp = nrelocs;
     return relocs;
 }
 
@@ -422,23 +422,23 @@ cov_bfd_section_t::find_nearest_line(
     const char *filename = 0;
     const char *function = 0;
     unsigned int lineno = 0;
-    
+
     if (b == 0 || b->abfd_ == 0)
-    	return 0;
+	return 0;
     if (!b->have_symbols_ && !b->get_symbols())
-    	return FALSE;
+	return FALSE;
     if (!bfd_find_nearest_line(sec->owner, sec, b->symbols_, address,
-		    	       &filename, &function, &lineno))
-    	return FALSE;
+			       &filename, &function, &lineno))
+	return FALSE;
 
     if (locp != 0)
     {
-    	locp->filename = (char *)filename;
+	locp->filename = (char *)filename;
 	locp->lineno = (unsigned long)lineno;
     }
     if (functionp != 0)
-    	*functionp = function;
-    
+	*functionp = function;
+
     return TRUE;
 }
 

@@ -98,7 +98,7 @@ const char *
 testfn_t::suite()
 {
     if (suite_)
-	return suite_;	/* cached */
+	return suite_;  /* cached */
 
     /* convert the .suite_ string from a filenames
      * to a suite name */
@@ -264,7 +264,7 @@ testrunner_t::_check(int pass, const char *file, int line, const char *fmt, ...)
 
     if (!pass || current_->verbose_)
 	fprintf(stderr, "%s:%d: %s: %s\n",
-	        file, line, (pass ? "passed" : "FAILED"), buf);
+		file, line, (pass ? "passed" : "FAILED"), buf);
 
     if (!pass)
     {

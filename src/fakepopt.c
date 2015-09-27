@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2003 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -44,7 +44,7 @@ struct _poptContext
     const char **files;
     int filei;
     gboolean file_mode;
-    
+
     char *other_option_help;
 
     const struct poptOption *options;
@@ -61,13 +61,13 @@ poptGetContext(
     int flags)
 {
     poptContext con;
-    
+
     con = g_new0(struct _poptContext, 1);
 
     con->argc = argc;
     con->argv = argv;
     con->argi = 0;  /* points at last argument visited */
-    
+
     con->nfiles = 0;
     con->files = g_new0(const char *, con->argc);
     con->filei = 0;
@@ -147,7 +147,7 @@ static int
 handle_option(poptContext con, const struct poptOption *opt, const char *val)
 {
     if (opt == 0)
-    	return -2;  /* unknown option */
+	return -2;  /* unknown option */
     assert(opt->value_ptr != 0);
     assert(opt->value == 0);
     switch (opt->type)
@@ -176,37 +176,37 @@ poptGetNextOpt(poptContext con)
     int rc;
     const char *val;
     const struct poptOption *opt;
-    
+
     for (;;)
     {
 	arg = con->argv[++con->argi];
 	if (arg == 0)
-    	    return -1;  /* end of arguments */
+	    return -1;  /* end of arguments */
 	con->current = arg;
 
-    	if (con->file_mode || arg[0] != '-')
+	if (con->file_mode || arg[0] != '-')
 	{
-    	    con->files[con->nfiles++] = arg;
+	    con->files[con->nfiles++] = arg;
 	}
 	else if (arg[0] == '-' && arg[1] == '-')
 	{
 	    if (arg[2] == '\0')
 	    {
-	    	/* handle '--' */
-	    	con->file_mode = TRUE;
-	    	continue;
+		/* handle '--' */
+		con->file_mode = TRUE;
+		continue;
 	    }
 	    val = 0;
 	    opt = find_long_option(con->options, arg+2, &val);
 	    if ((rc = handle_option(con, opt, val)))
-	    	return rc;
+		return rc;
 	}
 	else
 	{
 	    for (arg++ ; *arg ; arg++)
 	    {
 		if ((rc = handle_option(con, find_short_option(con->options, *arg), 0)))
-	    	    return rc;
+		    return rc;
 	    }
 	}
     }
@@ -218,7 +218,7 @@ const char *
 poptGetArg(poptContext con)
 {
     if (con->filei >= con->nfiles)
-    	return 0;
+	return 0;
     return con->files[con->filei++];
 }
 
@@ -245,7 +245,7 @@ void
 poptFreeContext(poptContext con)
 {
     if (con->other_option_help != 0)
-    	free(con->other_option_help);
+	free(con->other_option_help);
     free(con->files);
     free(con);
 }

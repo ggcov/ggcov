@@ -23,25 +23,25 @@ TEST(const_string_ctor_copies_the_memory)
     p = t.next();
     check(p != 0);
     check(!strcmp(p, "one"));
-    check(!(p >= buf_start && p <= buf_end));	// buf was copied
+    check(!(p >= buf_start && p <= buf_end));   // buf was copied
     check(is_heap(p));
 
     p = t.next();
     check(p != 0);
     check(!strcmp(p, "two"));
-    check(!(p >= buf_start && p <= buf_end));	// buf was copied
+    check(!(p >= buf_start && p <= buf_end));   // buf was copied
     check(is_heap(p));
 
     p = t.next();
     check(p != 0);
     check(!strcmp(p, "three"));
-    check(!(p >= buf_start && p <= buf_end));	// buf was copied
+    check(!(p >= buf_start && p <= buf_end));   // buf was copied
     check(is_heap(p));
 
     p = t.next();
     check(p != 0);
     check(!strcmp(p, "four"));
-    check(!(p >= buf_start && p <= buf_end));	// buf was copied
+    check(!(p >= buf_start && p <= buf_end));   // buf was copied
     check(is_heap(p));
 
     p = t.next();
@@ -59,19 +59,19 @@ TEST(non_const_string_c_tor_takes_the_memory_over)
     p = t.next();
     check(p != 0);
     check(!strcmp(p, "five"));
-    check((p >= buf_start && p <= buf_end));	// buf was not copied
+    check((p >= buf_start && p <= buf_end));    // buf was not copied
     check(is_heap(p));
 
     p = t.next();
     check(p != 0);
     check(!strcmp(p, "six"));
-    check((p >= buf_start && p <= buf_end));	// buf was not copied
+    check((p >= buf_start && p <= buf_end));    // buf was not copied
     check(is_heap(p));
 
     p = t.next();
     check(p != 0);
     check(!strcmp(p, "seven"));
-    check((p >= buf_start && p <= buf_end));	// buf was not copied
+    check((p >= buf_start && p <= buf_end));    // buf was not copied
     check(is_heap(p));
 
     p = t.next();

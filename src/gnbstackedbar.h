@@ -26,7 +26,7 @@
  * Modified by the GTK+ Team and others 1997-1999.  See the AUTHORS
  * file for a list of people on the GTK+ Team.  See the ChangeLog
  * files for a list of changes.  These files are distributed with
- * GTK+ at ftp://ftp.gtk.org/pub/gtk/. 
+ * GTK+ at ftp://ftp.gtk.org/pub/gtk/.
  */
 
 #ifndef __GNBSTACKEDBAR_H__
@@ -42,21 +42,21 @@ extern "C" {
 #endif /* __cplusplus */
 
 
-#define GNB_TYPE_STACKED_BAR	    	(gnb_stacked_bar_get_type ())
+#define GNB_TYPE_STACKED_BAR            (gnb_stacked_bar_get_type ())
 #define GNB_STACKED_BAR(obj)            (GTK_CHECK_CAST ((obj), GNB_TYPE_STACKED_BAR, GnbStackedBar))
 #define GNB_STACKED_BAR_CLASS(klass)    (GTK_CHECK_CLASS_CAST ((klass), GNB_TYPE_STACKED_BAR, GnbStackedBarClass))
 #define GNB_IS_STACKED_BAR(obj)         (GTK_CHECK_TYPE ((obj), GNB_TYPE_STACKED_BAR))
 #define GNB_IS_STACKED_BAR_CLASS(klass) (GTK_CHECK_CLASS_TYPE ((klass), GNB_TYPE_STACKED_BAR))
 
 
-typedef struct _GnbStackedBar       	GnbStackedBar;
-typedef struct _GnbStackedBarMetric 	GnbStackedBarMetric;
-typedef struct _GnbStackedBarClass  	GnbStackedBarClass;
+typedef struct _GnbStackedBar           GnbStackedBar;
+typedef struct _GnbStackedBarMetric     GnbStackedBarMetric;
+typedef struct _GnbStackedBarClass      GnbStackedBarClass;
 
 struct _GnbStackedBarMetric
 {
-    unsigned long value;    	/* client value */
-    guint length;     	    	/* length in pixels */
+    unsigned long value;        /* client value */
+    guint length;               /* length in pixels */
     GdkColor color;
     GdkGC *gc;
     gboolean color_set;
@@ -70,7 +70,7 @@ struct _GnbStackedBar
     guint nmetrics;
     GnbStackedBarMetric *metrics;
     GdkPixmap *offscreen_pixmap;
-    
+
     /* orientation is hardcoded for GTK_PROGRESS_LEFT_TO_RIGHT */
 };
 
@@ -84,18 +84,18 @@ GtkType    gnb_stacked_bar_get_type             (void);
 GtkWidget* gnb_stacked_bar_new                  (void);
 
 
-void	   gnb_stacked_bar_set_num_metrics 	(GnbStackedBar *sbar,
-    	    	    	    	    	    	 guint nmetrics);
-void       gnb_stacked_bar_set_metric_color 	(GnbStackedBar *sbar,
-    	    	    	    	    	    	 guint metric,
-    	    	    	    	    	    	 const GdkColor *);
-void       gnb_stacked_bar_set_metric_colors 	(GnbStackedBar *sbar,
-    	    	    	    	    	    	 const GdkColor **);
-void       gnb_stacked_bar_set_metric_value 	(GnbStackedBar *sbar,
-    	    	    	    	    	    	 guint metric,
-    	    	    	    	    	    	 unsigned long value);
-void       gnb_stacked_bar_set_metric_values 	(GnbStackedBar *sbar,
-    	    	    	    	    	    	 const unsigned long *values);
+void       gnb_stacked_bar_set_num_metrics      (GnbStackedBar *sbar,
+						 guint nmetrics);
+void       gnb_stacked_bar_set_metric_color     (GnbStackedBar *sbar,
+						 guint metric,
+						 const GdkColor *);
+void       gnb_stacked_bar_set_metric_colors    (GnbStackedBar *sbar,
+						 const GdkColor **);
+void       gnb_stacked_bar_set_metric_value     (GnbStackedBar *sbar,
+						 guint metric,
+						 unsigned long value);
+void       gnb_stacked_bar_set_metric_values    (GnbStackedBar *sbar,
+						 const unsigned long *values);
 
 #ifdef __cplusplus
 }

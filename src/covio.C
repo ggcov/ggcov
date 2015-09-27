@@ -1,17 +1,17 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
  * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
- * 
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -28,13 +28,13 @@ covio_t::~covio_t()
 {
     if (ownfp_ && fp_ != 0)
     {
-    	fclose(fp_);
+	fclose(fp_);
 	fp_ = 0;
     }
     if (ownbuf_ && buf_ != 0)
     {
-    	g_free(buf_);
-    	buf_ = 0;
+	g_free(buf_);
+	buf_ = 0;
     }
 }
 
@@ -44,7 +44,7 @@ gboolean
 covio_t::open_read()
 {
     if (fp_ != 0)
-    	return TRUE;
+	return TRUE;
     ownfp_ = TRUE;
     return (fp_ = fopen(fn_, "r")) != NULL;
 }
@@ -56,12 +56,12 @@ gboolean
 covio_t::read_lu32(gnb_u32_t &wr)
 {
     gnb_u32_t w;
-    
+
     w = (unsigned int)fgetc(fp_) & 0xff;
     w |= ((unsigned int)fgetc(fp_) & 0xff) << 8;
     w |= ((unsigned int)fgetc(fp_) & 0xff) << 16;
     w |= ((unsigned int)fgetc(fp_) & 0xff) << 24;
-    
+
     wr = w;
 
     dprintf1(D_IO|D_VERBOSE, "covio_t::read_lu32() = 0x%08lx\n",
@@ -75,12 +75,12 @@ gboolean
 covio_t::read_bu32(gnb_u32_t &wr)
 {
     gnb_u32_t w;
-    
+
     w  = ((unsigned int)fgetc(fp_) & 0xff) << 24;
     w |= ((unsigned int)fgetc(fp_) & 0xff) << 16;
     w |= ((unsigned int)fgetc(fp_) & 0xff) << 8;
     w |= (unsigned int)fgetc(fp_) & 0xff;
-    
+
     wr = w;
 
     dprintf1(D_IO|D_VERBOSE, "covio_t::read_bu32() = 0x%08lx\n",
@@ -96,12 +96,12 @@ gboolean
 covio_t::read_lu64(gnb_u64_t &wr)
 {
     gnb_u64_t w;
-    
+
     w = (gnb_u64_t)fgetc(fp_) & 0xff;
     w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 8;
     w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 16;
     w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 24;
-    
+
     w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 32;
     w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 40;
     w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 48;
@@ -119,7 +119,7 @@ gboolean
 covio_t::read_bu64(gnb_u64_t &wr)
 {
     gnb_u64_t w;
-    
+
     w  = ((gnb_u64_t)fgetc(fp_) & 0xff) << 56;
     w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 48;
     w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 40;
@@ -145,13 +145,13 @@ covio_t::read_string_len(estring &e, gnb_u32_t len)
 {
     e.truncate_to(0);
     if (len == 0)
-    	return TRUE;	/* valid empty string */
+	return TRUE;    /* valid empty string */
 
     e.truncate_to(len+1);
     char *buf = (char *)e.data();
     if (fread(buf, 1, len, fp_) != len)
-	return FALSE;   	    	/* short file */
-    buf[len] = '\0';	/* JIC */
+	return FALSE;                   /* short file */
+    buf[len] = '\0';    /* JIC */
     dprintf2(D_IO|D_VERBOSE, "covio_t::read_string_len(%d) = \"%s\"\n", len, buf);
     return TRUE;
 }
@@ -166,20 +166,20 @@ covio_t::read_bbstring(estring &buf, gnb_u32_t endtag)
 
     while (read_lu32(t))
     {
-    	if (t == endtag)
+	if (t == endtag)
 	{
 	    buf.trim_nuls();
 	    return TRUE;
 	}
-	    
+
 	/* pick apart tag as chars and add them to the buf */
 	buf.append_char(t & 0xff);
 	buf.append_char((t>>8) & 0xff);
 	buf.append_char((t>>16) & 0xff);
 	buf.append_char((t>>24) & 0xff);
     }
-    
-    return FALSE;   	/* short file */
+
+    return FALSE;       /* short file */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -249,7 +249,7 @@ public:
 	gnb_u32_t len;
 
 	if (!io.read_lu32(len))
-    	    return FALSE;   	    	/* short file */
+	    return FALSE;               /* short file */
 	return io.read_string_len(e, len ? (len + 4) & ~0x3 : 0);
     }
 };
@@ -275,7 +275,7 @@ public:
     /*
      * gcc33 format:
      * big-endian length = 0, OR
-     * big-endian length, string bytes, NUL, 0-3 pads 
+     * big-endian length, string bytes, NUL, 0-3 pads
      * note: length in bytes excludes NUL and pads
      */
     gboolean read_string(covio_t &io, estring &e)
@@ -283,7 +283,7 @@ public:
 	gnb_u32_t len;
 
 	if (!io.read_bu32(len))
-    	    return FALSE;   	    	/* short file */
+	    return FALSE;               /* short file */
 	return io.read_string_len(e, len ? (len + 4) & ~0x3 : 0);
     }
 };
@@ -318,7 +318,7 @@ public:
 	gnb_u32_t len;
 
 	if (!io.read_lu32(len))
-    	    return FALSE;   	    	/* short file */
+	    return FALSE;               /* short file */
 	return io.read_string_len(e, len << 2);
     }
 };
@@ -342,7 +342,7 @@ public:
 	gnb_u32_t lo, hi;
 
 	if (!io.read_bu32(lo) || !io.read_bu32(hi))
-    	    return FALSE;
+	    return FALSE;
 	wr = (gnb_u64_t)lo | ((gnb_u64_t)hi)<<32;
 	return TRUE;
     }
@@ -358,7 +358,7 @@ public:
 	gnb_u32_t len;
 
 	if (!io.read_bu32(len))
-    	    return FALSE;   	    	/* short file */
+	    return FALSE;               /* short file */
 	return io.read_string_len(e, len << 2);
     }
 };
@@ -369,13 +369,13 @@ void
 covio_t::set_format(covio_t::format_t f)
 {
     static covio_fmt_t *formats[FORMAT_NUM];
-    
+
     if (formats[0] == 0)
     {
-    	formats[FORMAT_OLD] = new covio_fmt_old_t;
-    	formats[FORMAT_GCC33] = new covio_fmt_gcc33_t;
-    	formats[FORMAT_GCC34L] = new covio_fmt_gcc34l_t;
-    	formats[FORMAT_GCC34B] = new covio_fmt_gcc34b_t;
+	formats[FORMAT_OLD] = new covio_fmt_old_t;
+	formats[FORMAT_GCC33] = new covio_fmt_gcc33_t;
+	formats[FORMAT_GCC34L] = new covio_fmt_gcc34l_t;
+	formats[FORMAT_GCC34B] = new covio_fmt_gcc34b_t;
     }
     format_ = formats[f];
 }
