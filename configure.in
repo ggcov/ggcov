@@ -28,23 +28,6 @@ AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 RPM_SPEC_CONFIGURE_ARGS=
 
-dnl Enabling debugging code
-dnl This is mostly straight out of the automake manual.
-AC_MSG_CHECKING(whether to enable debugging code)
-AC_ARG_ENABLE(debug,
-[  --enable-debug          Turn on debugging code],[
-case "${enableval}" in
-yes|no)
-    debug=${enableval}
-    ;;
-*)
-    AC_MSG_ERROR(bad value ${enableval} for --enable-debug)
-    ;;
-esac
-],[debug=no])
-AC_MSG_RESULT($debug)
-AM_CONDITIONAL(DEBUG, test x$debug = xyes)
-
 dnl Disable the GUI (useful for testing on headless platforms)
 AC_MSG_CHECKING(whether to enable the GUI)
 AC_ARG_ENABLE(gui,
@@ -150,11 +133,6 @@ AC_PROG_CC
 AM_PROG_CC_C_O
 AC_PROG_CXX
 LT_INIT([shared disable-static])
-
-if test x$debug = xyes ; then
-##   CFLAGS="$CFLAGS -DGTK_DISABLE_DEPRECATED=1 -DGLIB_DISABLE_DEPRECATED=1"
-    echo "debug mode on"
-fi
 
 dnl Stuff for gettext
 dnl ALL_LINGUAS="la"

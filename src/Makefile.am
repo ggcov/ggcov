@@ -95,7 +95,7 @@ ggcov_SOURCES=	$(gui_SOURCES) $(LIBCOV_STATIC_SOURCES) glade_callbacks.c
 INCLUDES=	$(BASEINCLUDES) -DPKGDATADIR="\"$(pkgdatadir)\"" \
 		-DPREFIX="\"$(prefix)\"" -DDATADIR="\"$(datadir)\"" \
 		-DLIBDIR="\"$(libdir)\"" -DSYSCONFDIR="\"$(sysconfdir)\"" \
-		-DDEBUG=$(DEBUG) -DUI_DEBUG=$(UI_DEBUG)
+		-DUI_DEBUG=$(UI_DEBUG)
 ggcov_LDADD=	libcov.a libcommon.a $(GGCOV_GUI_LIBS) $(BFD_LIBS)
 CLI_LIBS=	libcov.a libcommon.a $(GGCOV_CLI_LIBS) $(BFD_LIBS)
 
@@ -111,13 +111,6 @@ ggcov_webdb_SOURCES= \
 		$(LIBCOV_STATIC_SOURCES)
 ggcov_webdb_CPPFLAGS=	$(DB_CPPFLAGS)
 ggcov_webdb_LDADD=	$(CLI_LIBS) $(DB_LIBS)
-
-# Note this is an automake conditional *not* a gmake conditional
-if DEBUG
-DEBUG=1
-else
-DEBUG=0
-endif
 
 UI_DEBUG=0
 
