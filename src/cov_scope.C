@@ -261,7 +261,8 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
 	    bidx = 0;
 	    ++fnidx;
 	}
-    } while (b != endln->blocks().head());
+    } while (b != endln->blocks().head() &&
+	     fnidx < file_->num_functions());
 
     return stats->status_by_blocks();
 }
