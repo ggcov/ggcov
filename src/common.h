@@ -243,13 +243,10 @@ void operator delete(void *);
  * otherwise fall back to other less modern & portable techniques.
   */
 
-#if HAVE_STDINT_H
-typedef uint32_t                gnb_u32_t;
-typedef uint64_t                gnb_u64_t;
-#else
+#if !HAVE_STDINT_H
 /* works on 32 bit machines with gcc */
-typedef unsigned long           gnb_u32_t;
-typedef unsigned long long      gnb_u64_t;
+typedef unsigned long           uint32_t;
+typedef unsigned long long      uint64_t;
 #endif
 
 /* These work for 32 bit machines */
@@ -261,8 +258,8 @@ typedef unsigned long long      gnb_u64_t;
 #define GNB_U64_XFMT            "%016llx"
 
 /* Comparison functions, for sorting */
-extern int u32cmp(gnb_u32_t, gnb_u32_t);
-extern int u64cmp(gnb_u64_t, gnb_u64_t);
+extern int u32cmp(uint32_t, uint32_t);
+extern int u64cmp(uint64_t, uint64_t);
 
 extern void timing_impl(const char *func, unsigned int line,
 			const char *detail);

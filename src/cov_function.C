@@ -52,7 +52,7 @@ cov_function_t::set_name(const char *name)
 }
 
 void
-cov_function_t::set_id(gnb_u64_t id)
+cov_function_t::set_id(uint64_t id)
 {
     assert(id_ == 0);
     id_ = id;

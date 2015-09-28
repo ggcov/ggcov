@@ -206,7 +206,7 @@ private:
     gboolean read_oldplus_bbg_file(covio_t *);
     void infer_compilation_directory(const char *abspath);
     const char *make_absolute(const char *filename) const;
-    gboolean read_gcc3_bbg_file(covio_t *io, gnb_u32_t expect_version,
+    gboolean read_gcc3_bbg_file(covio_t *io, uint32_t expect_version,
 				covio_t::format_t);
     gboolean read_gcc33_bbg_file(covio_t *);
     gboolean read_gcc34l_bbg_file(covio_t *);
@@ -214,7 +214,7 @@ private:
     gboolean read_bbg_file(covio_t *);
     gboolean read_old_da_file(covio_t *);
     gboolean read_oldplus_da_file(covio_t *);
-    gboolean read_gcc3_da_file(covio_t *io, gnb_u32_t expect_magic,
+    gboolean read_gcc3_da_file(covio_t *io, uint32_t expect_magic,
 			       covio_t::format_t);
     gboolean read_gcc33_da_file(covio_t *);
     gboolean read_gcc34l_da_file(covio_t *);
@@ -252,12 +252,12 @@ private:
     gboolean finalised_;    /* data read & post-read connections made */
     gboolean has_locations_;/* any locations added */
     const format_rec_t *format_;
-    gnb_u32_t format_version_;  /* file format version */
-    gnb_u32_t features_;        /* FF_* flags */
+    uint32_t format_version_;  /* file format version */
+    uint32_t features_;        /* FF_* flags */
     ptrarray_t<cov_function_t> *functions_;
     hashtable_t<const char, cov_function_t> *functions_by_name_;
     /* extra hashtable needed for RH-hacked gcc3.4 formats */
-    hashtable_t<gnb_u64_t, cov_function_t> *functions_by_id_;
+    hashtable_t<uint64_t, cov_function_t> *functions_by_id_;
     ptrarray_t<cov_line_t> *lines_;
     cov_line_t *null_line_; /* returned for all uninstrumented lines */
 

@@ -102,7 +102,7 @@ operator delete(void *p)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 int
-u32cmp(gnb_u32_t ul1, gnb_u32_t ul2)
+u32cmp(uint32_t ul1, uint32_t ul2)
 {
     if (ul1 > ul2)
 	return 1;
@@ -112,7 +112,7 @@ u32cmp(gnb_u32_t ul1, gnb_u32_t ul2)
 }
 
 int
-u64cmp(gnb_u64_t ull1, gnb_u64_t ull2)
+u64cmp(uint64_t ull1, uint64_t ull2)
 {
     if (ull1 > ull2)
 	return 1;

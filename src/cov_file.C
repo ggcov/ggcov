@@ -41,10 +41,10 @@ int cov_file_t::common_len_;
 void *cov_file_t::files_model_;
 
 #define _NEW_VERSION(major, minor, release) \
-	(((gnb_u32_t)('0'+(major))<<24)| \
-	 ((gnb_u32_t)('0'+(minor)/10)<<16)| \
-	 ((gnb_u32_t)('0'+(minor)%10)<<8)| \
-	 ((gnb_u32_t)(release)))
+	(((uint32_t)('0'+(major))<<24)| \
+	 ((uint32_t)('0'+(minor)/10)<<16)| \
+	 ((uint32_t)('0'+(minor)%10)<<8)| \
+	 ((uint32_t)(release)))
 #define BBG_VERSION_GCC34       _NEW_VERSION(3,4,'*')
 #define BBG_VERSION_GCC33       _NEW_VERSION(3,3,'p')
 
@@ -63,7 +63,7 @@ cov_file_t::cov_file_t(const char *name, const char *relpath)
 
     functions_ = new ptrarray_t<cov_function_t>();
     functions_by_name_ = new hashtable_t<const char, cov_function_t>;
-    functions_by_id_ = new hashtable_t<gnb_u64_t, cov_function_t>;
+    functions_by_id_ = new hashtable_t<uint64_t, cov_function_t>;
     lines_ = new ptrarray_t<cov_line_t>();
     null_line_ = new cov_line_t();
 
@@ -494,7 +494,7 @@ cov_file_t::solve()
 gboolean
 cov_file_t::read_bb_file(covio_t *io)
 {
-    gnb_u32_t tag;
+    uint32_t tag;
     estring funcname;
     estring filename;
     cov_function_t *fn = 0;
@@ -608,7 +608,7 @@ cov_file_t::read_bb_file(covio_t *io)
 int
 cov_file_t::skip_oldplus_func_header(covio_t *io, const char *prefix)
 {
-    gnb_u32_t crud;
+    uint32_t crud;
     estring funcname;
 
     if (!io->read_u32(crud))
@@ -636,10 +636,10 @@ cov_file_t::skip_oldplus_func_header(covio_t *io, const char *prefix)
 gboolean
 cov_file_t::read_old_bbg_function(covio_t *io)
 {
-    gnb_u32_t nblocks, totnarcs, narcs;
-    gnb_u32_t bidx, aidx;
-    gnb_u32_t dest, flags;
-    gnb_u32_t sep;
+    uint32_t nblocks, totnarcs, narcs;
+    uint32_t bidx, aidx;
+    uint32_t dest, flags;
+    uint32_t sep;
     cov_arc_t *a;
     cov_function_t *fn;
 
@@ -774,18 +774,18 @@ cov_file_t::read_oldplus_bbg_file(covio_t *io)
    file.  Values [41..9f] for those in the bbg file and [a1..ff] for
    the data file.  */
 
-#define GCOV_TAG_FUNCTION        ((gnb_u32_t)0x01000000)
-#define GCOV_TAG_BLOCKS          ((gnb_u32_t)0x01410000)
-#define GCOV_TAG_ARCS            ((gnb_u32_t)0x01430000)
-#define GCOV_TAG_LINES           ((gnb_u32_t)0x01450000)
-#define GCOV_TAG_COUNTER_BASE    ((gnb_u32_t)0x01a10000)
-#define GCOV_TAG_OBJECT_SUMMARY  ((gnb_u32_t)0xa1000000)
-#define GCOV_TAG_PROGRAM_SUMMARY ((gnb_u32_t)0xa3000000)
+#define GCOV_TAG_FUNCTION        ((uint32_t)0x01000000)
+#define GCOV_TAG_BLOCKS          ((uint32_t)0x01410000)
+#define GCOV_TAG_ARCS            ((uint32_t)0x01430000)
+#define GCOV_TAG_LINES           ((uint32_t)0x01450000)
+#define GCOV_TAG_COUNTER_BASE    ((uint32_t)0x01a10000)
+#define GCOV_TAG_OBJECT_SUMMARY  ((uint32_t)0xa1000000)
+#define GCOV_TAG_PROGRAM_SUMMARY ((uint32_t)0xa3000000)
 
 static const struct
 {
     const char *name;
-    gnb_u32_t value;
+    uint32_t value;
 }
 gcov_tags[] =
 {
@@ -800,7 +800,7 @@ gcov_tags[] =
 };
 
 static const char *
-gcov_tag_as_string(gnb_u32_t tag)
+gcov_tag_as_string(uint32_t tag)
 {
     int i;
 
@@ -902,7 +902,7 @@ cov_file_t::make_absolute(const char *filename) const
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static gboolean
-decode_new_version(gnb_u32_t ver, unsigned int *major,
+decode_new_version(uint32_t ver, unsigned int *major,
 		   unsigned int *minor, unsigned char *rel)
 {
     unsigned char b;
@@ -932,22 +932,22 @@ decode_new_version(gnb_u32_t ver, unsigned int *major,
 
 gboolean
 cov_file_t::read_gcc3_bbg_file(covio_t *io,
-			       gnb_u32_t expect_version,
+			       uint32_t expect_version,
 			       covio_t::format_t ioformat)
 {
-    gnb_u32_t tag, length;
+    uint32_t tag, length;
     cov_function_t *fn = 0;
     const char *filename = NULL;
     estring funcname;
-    gnb_u32_t tmp;
+    uint32_t tmp;
     unsigned int nblocks = 0;
-    gnb_u32_t bidx, last_bidx = (exit_block_is_1() ? 1 : 0);
+    uint32_t bidx, last_bidx = (exit_block_is_1() ? 1 : 0);
     unsigned int nlines = 0;
     cov_arc_t *a;
-    gnb_u32_t dest, flags;
-    gnb_u32_t line, last_line = 0;
+    uint32_t dest, flags;
+    uint32_t line, last_line = 0;
     unsigned int len_unit = 1;
-    gnb_u64_t funcid = 0;
+    uint64_t funcid = 0;
 
     io->set_format(ioformat);
 
@@ -1271,8 +1271,8 @@ cov_file_t::discover_format(covio_t *io)
 gboolean
 cov_file_t::read_old_da_file(covio_t *io)
 {
-    gnb_u64_t nents;
-    gnb_u64_t ent;
+    uint64_t nents;
+    uint64_t ent;
 
     io->set_format(covio_t::FORMAT_OLD);
     io->read_u64(nents);
@@ -1340,9 +1340,9 @@ cov_file_t::read_old_da_file(covio_t *io)
 gboolean
 cov_file_t::read_oldplus_da_file(covio_t *io)
 {
-    gnb_u32_t crud;
-    gnb_u32_t file_narcs;
-    gnb_u64_t ent;
+    uint32_t crud;
+    uint32_t file_narcs;
+    uint64_t ent;
     unsigned int actual_narcs;
 
     io->set_format(covio_t::FORMAT_OLD);
@@ -1420,24 +1420,24 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #define _DA_MAGIC(a,b,c,d) \
-	(((gnb_u32_t)a<<24)| \
-	 ((gnb_u32_t)b<<16)| \
-	 ((gnb_u32_t)c<<8)| \
-	 ((gnb_u32_t)d))
+	(((uint32_t)a<<24)| \
+	 ((uint32_t)b<<16)| \
+	 ((uint32_t)c<<8)| \
+	 ((uint32_t)d))
 
 #define DA_GCC34_MAGIC      _DA_MAGIC('g','c','d','a')  /* also 4.0 */
 #define DA_GCC33_MAGIC      _DA_MAGIC('g','c','o','v')
 
 gboolean
 cov_file_t::read_gcc3_da_file(covio_t *io,
-			      gnb_u32_t expect_magic,
+			      uint32_t expect_magic,
 			      covio_t::format_t ioformat)
 {
-    gnb_u32_t magic, version;
-    gnb_u32_t tag, length;
+    uint32_t magic, version;
+    uint32_t tag, length;
     cov_function_t *fn = 0;
-    gnb_u64_t count;
-    gnb_u32_t tmp;
+    uint64_t count;
+    uint32_t tmp;
     unsigned int len_unit = 1;
 
     io->set_format(ioformat);
@@ -1477,7 +1477,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 	case GCOV_TAG_FUNCTION:
 	    if ((features_ & FF_FNCHECKSUM2))
 	    {
-		gnb_u64_t funcid;
+		uint64_t funcid;
 		if (!io->read_u64(funcid) ||        // ident, lineno_checksum
 		    !io->read_u32(tmp))             // cfg_checksum
 		    fn = 0;
@@ -1486,7 +1486,7 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 	    }
 	    else if ((features_ & FF_FUNCIDS))
 	    {
-		gnb_u64_t funcid;
+		uint64_t funcid;
 		if (!io->read_u64(funcid))
 		    fn = 0;
 		else if ((fn = functions_by_id_->lookup(&funcid)) == 0)

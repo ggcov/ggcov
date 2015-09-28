@@ -53,9 +53,9 @@ covio_t::open_read()
 
     /* old & gcc34l formats: 32 bit little-endian */
 gboolean
-covio_t::read_lu32(gnb_u32_t &wr)
+covio_t::read_lu32(uint32_t &wr)
 {
-    gnb_u32_t w;
+    uint32_t w;
 
     w = (unsigned int)fgetc(fp_) & 0xff;
     w |= ((unsigned int)fgetc(fp_) & 0xff) << 8;
@@ -72,9 +72,9 @@ covio_t::read_lu32(gnb_u32_t &wr)
 
     /* gcc33 & gcc34b formats: saved as 32 bit big-endian */
 gboolean
-covio_t::read_bu32(gnb_u32_t &wr)
+covio_t::read_bu32(uint32_t &wr)
 {
-    gnb_u32_t w;
+    uint32_t w;
 
     w  = ((unsigned int)fgetc(fp_) & 0xff) << 24;
     w |= ((unsigned int)fgetc(fp_) & 0xff) << 16;
@@ -93,19 +93,19 @@ covio_t::read_bu32(gnb_u32_t &wr)
 
     /* old format: saved as 64 bit little-endian */
 gboolean
-covio_t::read_lu64(gnb_u64_t &wr)
+covio_t::read_lu64(uint64_t &wr)
 {
-    gnb_u64_t w;
+    uint64_t w;
 
-    w = (gnb_u64_t)fgetc(fp_) & 0xff;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 8;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 16;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 24;
+    w = (uint64_t)fgetc(fp_) & 0xff;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 8;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 16;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 24;
 
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 32;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 40;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 48;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 56;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 32;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 40;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 48;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 56;
 
     wr = w;
 
@@ -116,19 +116,19 @@ covio_t::read_lu64(gnb_u64_t &wr)
 
     /* gcc33 format: saved as 64 bit big-endian */
 gboolean
-covio_t::read_bu64(gnb_u64_t &wr)
+covio_t::read_bu64(uint64_t &wr)
 {
-    gnb_u64_t w;
+    uint64_t w;
 
-    w  = ((gnb_u64_t)fgetc(fp_) & 0xff) << 56;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 48;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 40;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 32;
+    w  = ((uint64_t)fgetc(fp_) & 0xff) << 56;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 48;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 40;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 32;
 
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 24;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 16;
-    w |= ((gnb_u64_t)fgetc(fp_) & 0xff) << 8;
-    w |= (gnb_u64_t)fgetc(fp_) & 0xff;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 24;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 16;
+    w |= ((uint64_t)fgetc(fp_) & 0xff) << 8;
+    w |= (uint64_t)fgetc(fp_) & 0xff;
 
     wr = w;
 
@@ -141,7 +141,7 @@ covio_t::read_bu64(gnb_u64_t &wr)
 
 /* gcc33, gcc34l, gcc34b formats: read padded NUL terminated string */
 gboolean
-covio_t::read_string_len(estring &e, gnb_u32_t len)
+covio_t::read_string_len(estring &e, uint32_t len)
 {
     e.truncate_to(0);
     if (len == 0)
@@ -159,9 +159,9 @@ covio_t::read_string_len(estring &e, gnb_u32_t len)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /* old .bb format: string bytes, 0-3 pad bytes, following by some magic tag */
 gboolean
-covio_t::read_bbstring(estring &buf, gnb_u32_t endtag)
+covio_t::read_bbstring(estring &buf, uint32_t endtag)
 {
-    gnb_u32_t t;
+    uint32_t t;
     buf.truncate_to(0);
 
     while (read_lu32(t))
@@ -233,12 +233,12 @@ public:
     covio_fmt_old_t() {}
     ~covio_fmt_old_t() {}
 
-    gboolean read_u32(covio_t &io, gnb_u32_t &wr)
+    gboolean read_u32(covio_t &io, uint32_t &wr)
     {
 	return io.read_lu32(wr);
     }
 
-    gboolean read_u64(covio_t &io, gnb_u64_t &wr)
+    gboolean read_u64(covio_t &io, uint64_t &wr)
     {
 	return io.read_lu64(wr);
     }
@@ -246,7 +246,7 @@ public:
     /* oldplus format: little-endian int32 length, then string bytes, terminating nul, 0-3 pad bytes */
     gboolean read_string(covio_t &io, estring &e)
     {
-	gnb_u32_t len;
+	uint32_t len;
 
 	if (!io.read_lu32(len))
 	    return FALSE;               /* short file */
@@ -262,12 +262,12 @@ public:
     covio_fmt_gcc33_t() {}
     ~covio_fmt_gcc33_t() {}
 
-    gboolean read_u32(covio_t &io, gnb_u32_t &wr)
+    gboolean read_u32(covio_t &io, uint32_t &wr)
     {
 	return io.read_bu32(wr);
     }
 
-    gboolean read_u64(covio_t &io, gnb_u64_t &wr)
+    gboolean read_u64(covio_t &io, uint64_t &wr)
     {
 	return io.read_bu64(wr);
     }
@@ -280,7 +280,7 @@ public:
      */
     gboolean read_string(covio_t &io, estring &e)
     {
-	gnb_u32_t len;
+	uint32_t len;
 
 	if (!io.read_bu32(len))
 	    return FALSE;               /* short file */
@@ -296,13 +296,13 @@ public:
     covio_fmt_gcc34l_t() {}
     ~covio_fmt_gcc34l_t() {}
 
-    gboolean read_u32(covio_t &io, gnb_u32_t &wr)
+    gboolean read_u32(covio_t &io, uint32_t &wr)
     {
 	return io.read_lu32(wr);
     }
 
     /* gcc34l format: lu32 lo, lu32 hi => lu64 */
-    gboolean read_u64(covio_t &io, gnb_u64_t &wr)
+    gboolean read_u64(covio_t &io, uint64_t &wr)
     {
 	return io.read_lu64(wr);
     }
@@ -315,7 +315,7 @@ public:
      */
     gboolean read_string(covio_t &io, estring &e)
     {
-	gnb_u32_t len;
+	uint32_t len;
 
 	if (!io.read_lu32(len))
 	    return FALSE;               /* short file */
@@ -331,19 +331,19 @@ public:
     covio_fmt_gcc34b_t() {}
     ~covio_fmt_gcc34b_t() {}
 
-    gboolean read_u32(covio_t &io, gnb_u32_t &wr)
+    gboolean read_u32(covio_t &io, uint32_t &wr)
     {
 	return io.read_bu32(wr);
     }
 
     /* gcc34b format: bu32 lo, bu32 hi */
-    gboolean read_u64(covio_t &io, gnb_u64_t &wr)
+    gboolean read_u64(covio_t &io, uint64_t &wr)
     {
-	gnb_u32_t lo, hi;
+	uint32_t lo, hi;
 
 	if (!io.read_bu32(lo) || !io.read_bu32(hi))
 	    return FALSE;
-	wr = (gnb_u64_t)lo | ((gnb_u64_t)hi)<<32;
+	wr = (uint64_t)lo | ((uint64_t)hi)<<32;
 	return TRUE;
     }
 
@@ -355,7 +355,7 @@ public:
      */
     gboolean read_string(covio_t &io, estring &e)
     {
-	gnb_u32_t len;
+	uint32_t len;
 
 	if (!io.read_bu32(len))
 	    return FALSE;               /* short file */

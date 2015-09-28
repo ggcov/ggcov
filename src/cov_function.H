@@ -112,7 +112,7 @@ private:
     ~cov_function_t();
 
     void set_name(const char *name);
-    void set_id(gnb_u64_t); /* needed for gcc 4.0 and hacked-up RH gcc 3.4 file formats */
+    void set_id(uint64_t); /* needed for gcc 4.0 and hacked-up RH gcc 3.4 file formats */
     cov_block_t *add_block();
     void suppress(const cov_suppression_t *);
     void finalise();
@@ -125,7 +125,7 @@ private:
     }
 
     cached_string name_;
-    gnb_u64_t id_;
+    uint64_t id_;
     unsigned int idx_;      /* serial number in file */
     cov_file_t *file_;
     linkage_t linkage_;

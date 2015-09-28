@@ -54,8 +54,8 @@ public:
     }
 
     /* These functions return TRUE unless EOF */
-    virtual gboolean read_u32(covio_t &, gnb_u32_t &) = 0;
-    virtual gboolean read_u64(covio_t &, gnb_u64_t &) = 0;
+    virtual gboolean read_u32(covio_t &, uint32_t &) = 0;
+    virtual gboolean read_u64(covio_t &, uint64_t &) = 0;
     virtual gboolean read_string(covio_t &, estring &) = 0;
 };
 
@@ -135,12 +135,12 @@ public:
     gboolean eof() const { return feof(fp_); }
 
     /* Reads an old format .bb string up to the given tag & returns a new string */
-    gboolean read_bbstring(estring &, gnb_u32_t endtag);
-    gboolean read_u32(gnb_u32_t &v)
+    gboolean read_bbstring(estring &, uint32_t endtag);
+    gboolean read_u32(uint32_t &v)
     {
 	return format_->read_u32(*this, v);
     }
-    gboolean read_u64(gnb_u64_t &v)
+    gboolean read_u64(uint64_t &v)
     {
 	return format_->read_u64(*this, v);
     }
@@ -170,13 +170,13 @@ private:
     covio_fmt_t *format_;
 
     /* These functions return TRUE unless EOF */
-    gboolean read_lu32(gnb_u32_t&); /* little-endian 32b */
-    gboolean read_bu32(gnb_u32_t&); /* big-endian 32b */
-    gboolean read_lu64(gnb_u64_t&); /* little-endian 64b */
-    gboolean read_bu64(gnb_u64_t&); /* big-endian 64b */
+    gboolean read_lu32(uint32_t&); /* little-endian 32b */
+    gboolean read_bu32(uint32_t&); /* big-endian 32b */
+    gboolean read_lu64(uint64_t&); /* little-endian 64b */
+    gboolean read_bu64(uint64_t&); /* big-endian 64b */
 
     /* the given byte length into a new string */
-    gboolean read_string_len(estring &e, gnb_u32_t len);
+    gboolean read_string_len(estring &e, uint32_t len);
 
     friend class covio_fmt_old_t;
     friend class covio_fmt_gcc33_t;
