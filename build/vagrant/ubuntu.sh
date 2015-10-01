@@ -20,4 +20,9 @@ ee=`apt-get install --print-uris libiberty-dev | grep '^E: Unable to locate pack
 update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-<%= @gcc_version %> \
     60 --slave /usr/bin/g++ g++ /usr/bin/g++-<%= @gcc_version %>
 <% end %>
-tasksel install gnome-desktop --new-install
+
+# this trick from
+# http://people.skolelinux.org/pere/blog/Calling_tasksel_like_the_installer__while_still_getting_useful_output.html
+export DEBIAN_FRONTEND=noninteractive
+cmd="$(tasksel --test --new-install install gnome-desktop | sed 's/debconf-apt-progress -- //')"
+$cmd
