@@ -58,8 +58,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |global_config|
 	    # Remove the default Vagrant directory sync
 	    config.vm.synced_folder ".", "/vagrant", disabled: true
 
-	    config.vm.synced_folder ".", "/build/ggcov-nfs", type: "nfs", nfs_udp: false
-	    config.bindfs.bind_folder "/build/ggcov-nfs", "/build/ggcov", owner: "vagrant", group: "vagrant"
+	    config.vm.synced_folder ".", "/build/ggcov", type: "virtualbox", owner: "vagrant", group: "vagrant"
 
 	    config.vm.hostname = name
 	    config.vm.network "private_network", type: "dhcp"
