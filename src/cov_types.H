@@ -146,6 +146,30 @@ struct cov
 	NUM_STATUS=5
     };
 
+    static status_t merge(status_t a, status_t b)
+    {
+	if (a == b)
+	    return a;
+	status_t smax = MAX(a, b);
+	status_t smin = MIN(a, b);
+	switch (smax)
+	{
+	case COVERED:
+	    return COVERED; /* NOTREACHED */
+	case PARTCOVERED:
+	case UNCOVERED:
+	    return PARTCOVERED;
+	case SUPPRESSED:
+	    /* This would be a lot cleaner if SUPPRESSED and
+	     * UNINSTRUMENTED were the other way around, but
+	     * I don't have the courage to fix that right now */
+	    return (smin == UNINSTRUMENTED ? SUPPRESSED : smin);
+	case UNINSTRUMENTED:
+	    return smin;
+	}
+	return a;   /* NOTREACHED */
+    }
+
 private:
     cov() { }    /* prevent instantiation */
 };
