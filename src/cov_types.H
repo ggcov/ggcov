@@ -421,16 +421,18 @@ public:
 	    return cov::PARTCOVERED;
     }
 
+    void add_block(cov::status_t st) { blocks_[st]++; }
+    void add_line(cov::status_t st) { lines_[st]++; }
+    void add_function(cov::status_t st) { functions_[st]++; }
+    void add_call(cov::status_t st) { calls_[st]++; }
+    void add_branch(cov::status_t st) { branches_[st]++; }
+
 private:
     unsigned long blocks_[cov::NUM_STATUS];
     unsigned long lines_[cov::NUM_STATUS];
     unsigned long functions_[cov::NUM_STATUS];
     unsigned long calls_[cov::NUM_STATUS];
     unsigned long branches_[cov::NUM_STATUS];
-
-    friend class cov_block_t;
-    friend class cov_function_t;
-    friend class cov_file_t;
 };
 
 

@@ -237,9 +237,9 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
 		continue;       /* control flow does not branch */
 
 	    if (a->is_call())
-		mine.calls_[a->status()]++;
+		mine.add_call(a->status());
 	    else
-		mine.branches_[a->status()]++;
+		mine.add_branch(a->status());
 	}
 
 	/*
@@ -265,7 +265,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
 		continue;
 	    }
 
-	    mine.lines_[st]++;
+	    mine.add_line(st);
 	    bits |= (1<<st);
 	}
 
@@ -286,7 +286,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
     /*
      * Calculate block coverage
      */
-    stats->blocks_[st]++;
+    stats->add_block(st);
 
     return st;
 }

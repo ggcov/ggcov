@@ -228,7 +228,7 @@ cov_function_t::calc_stats(cov_stats_t *stats) const
 	st = mine.status_by_lines();
     }
 
-    stats->functions_[st]++;
+    stats->add_function(st);
 
     return st;
 }
