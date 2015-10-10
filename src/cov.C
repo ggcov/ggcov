@@ -458,6 +458,12 @@ const struct poptOption cov_popt_options[] =
 };
 
 void
+cov_set_recursive(int v)
+{
+    recursive = v;
+}
+
+void
 cov_post_args(void)
 {
     if (debug_str != 0)

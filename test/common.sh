@@ -56,6 +56,7 @@ TESTBASEDIR=`/bin/pwd`
 #   ERROR   something went wrong with the test, exiting immediately
 #
 RESULT=
+SILENT=no
 LOG=log
 if [ -n "$RPLATFORM" ]; then
     PLATFORM="$RPLATFORM"
@@ -84,6 +85,7 @@ _resmsg ()
 {
     local res="$1"
     shift
+    [ "$SILENT" = yes ] && return
     echo "$res: ($TEST$SUBTEST) $*"
     [ -n "$LOG" ] && echo "$res: ($TEST$SUBTEST) $*" 1>&3
 }
@@ -121,6 +123,12 @@ _resonexit ()
 
 pass ()
 {
+    _result PASS
+}
+
+silentpass()
+{
+    SILENT=yes
     _result PASS
 }
 
@@ -291,13 +299,14 @@ need_files ()
 compile_c ()
 {
     local cfile=
-    local cflags="$CWARNFLAGS $CCOVFLAGS $CDEFINES"
+    local covered=yes
 
     vcmd "compile_c $*"
 
     while [ $# -gt 0 ] ; do
     	case "$1" in
 	-d*|-f*|-m*|-I*|-D*) cflags="$cflags $1" ;;
+	--no-coverage) covered=no ;;
 	-*) fatal "compile_c: unknown flag \"$1\"" ;;
 	*)
 	    [ -n "$cfile" ] && fatal "compile_c: too many cfiles given"
@@ -308,6 +317,12 @@ compile_c ()
     done
 
     [ -z "$cfile" ] && fatal "compile_c: no cfile given"
+    local cflags=
+    if [ $covered = yes ] ; then
+	cflags="$CWARNFLAGS $CCOVFLAGS $CDEFINES"
+    else
+	cflags="$CWARNFLAGS $CDEFINES"
+    fi
 
     vncdo $CC $cflags -c $cfile || fatal "can't compile $cfile"
 }

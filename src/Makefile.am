@@ -142,6 +142,7 @@ noinst_PROGRAMS=	testrunner mangletest \
 			popttest
 
 testrunner_SOURCES=	testrunner.c testfw.c testfw.h \
+			teststarter.c teststarter.h \
 			filetest.c \
 			phptest.C php_serializer.C \
 			estringtest.c \
