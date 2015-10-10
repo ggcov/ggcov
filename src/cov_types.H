@@ -193,16 +193,51 @@ public:
 	memset(this, 0, sizeof(*this));
     }
 
+private:
+    void
+    accumulate_rows(const cov_stats_t *st, unsigned int firstrow, unsigned int nrows)
+    {
+	unsigned int i;
+	unsigned int ncounts = nrows * cov::NUM_STATUS;
+	unsigned long *uthis = ((unsigned long *)this) + firstrow * cov::NUM_STATUS;
+	unsigned long *ust = ((unsigned long *)st) + firstrow * cov::NUM_STATUS;
+
+	for (i = 0 ; i < ncounts ; i++)
+	    *uthis++ += *ust++;
+    }
+
+public:
     void
     accumulate(const cov_stats_t *st)
     {
-	unsigned int i;
-	unsigned long *uthis = (unsigned long *)this;
-	unsigned long *ust = (unsigned long *)st;
-
-	for (i = 0 ; i < sizeof(*this)/sizeof(unsigned long) ; i++)
-	    *uthis++ += *ust++;
+	accumulate_rows(st, 0, NUM_ROWS);
     }
+    void
+    accumulate_blocks(const cov_stats_t *st)
+    {
+	accumulate_rows(st, BLOCKS_ROW, 1);
+    }
+    void
+    accumulate_lines(const cov_stats_t *st)
+    {
+	accumulate_rows(st, LINES_ROW, 1);
+    }
+    void
+    accumulate_functions(const cov_stats_t *st)
+    {
+	accumulate_rows(st, FUNCTIONS_ROW, 1);
+    }
+    void
+    accumulate_calls(const cov_stats_t *st)
+    {
+	accumulate_rows(st, CALLS_ROW, 1);
+    }
+    void
+    accumulate_branches(const cov_stats_t *st)
+    {
+	accumulate_rows(st, BRANCHES_ROW, 1);
+    }
+
 
     /* there are no partial blocks; blocks are the unit of coverage */
     unsigned long blocks_executed() const
@@ -394,7 +429,7 @@ public:
     }
 
     /* Used in calculating status for aggregated objects like functions */
-    cov::status_t status_by_blocks()
+    cov::status_t status_by_blocks() const
     {
 	unsigned long ntot = blocks_total();
 
@@ -407,7 +442,7 @@ public:
 	else
 	    return cov::PARTCOVERED;
     }
-    cov::status_t status_by_lines()
+    cov::status_t status_by_lines() const
     {
 	unsigned long ntot = lines_total();
 
@@ -437,6 +472,14 @@ public:
     void dump(FILE *fp) const;
 
 private:
+    enum {
+	BLOCKS_ROW,
+	LINES_ROW,
+	FUNCTIONS_ROW,
+	CALLS_ROW,
+	BRANCHES_ROW,
+	NUM_ROWS
+    };
     unsigned long blocks_[cov::NUM_STATUS];
     unsigned long lines_[cov::NUM_STATUS];
     unsigned long functions_[cov::NUM_STATUS];
