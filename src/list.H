@@ -111,11 +111,11 @@ public:
     }
 
 
-    int operator==(T *item)
+    int operator==(T *item) const
     {
 	return (item == (elem_ == 0 ? 0 : (T *)elem_->data));
     }
-    int operator!=(T *item)
+    int operator!=(T *item) const
     {
 	return (item != (elem_ == 0 ? 0 : (T *)elem_->data));
     }
