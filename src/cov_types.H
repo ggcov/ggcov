@@ -427,6 +427,15 @@ public:
     void add_call(cov::status_t st) { calls_[st]++; }
     void add_branch(cov::status_t st) { branches_[st]++; }
 
+    /* for testing */
+    int operator==(const cov_stats_t &o) const
+    {
+	return memcmp(this, &o, sizeof(*this)) == 0;
+    }
+
+    /* for testing */
+    void dump(FILE *fp) const;
+
 private:
     unsigned long blocks_[cov::NUM_STATUS];
     unsigned long lines_[cov::NUM_STATUS];

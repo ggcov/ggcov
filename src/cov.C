@@ -816,4 +816,26 @@ cov_dump(FILE *fp)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void dump_row(FILE *fp, const char *key, const unsigned long *row)
+{
+    int i;
+    fprintf(fp, "    %s: [", key);
+    for (i = 0 ; i < cov::NUM_STATUS ; i++)
+	fprintf(fp, "%s%lu", (i ? ", " : ""), row[i]);
+    fprintf(fp, "]\n");
+}
+
+void cov_stats_t::dump(FILE *fp) const
+{
+    fprintf(fp, "cov_stats_t {\n");
+    dump_row(fp, "blocks", blocks_);
+    dump_row(fp, "lines", lines_);
+    dump_row(fp, "functions", functions_);
+    dump_row(fp, "calls", calls_);
+    dump_row(fp, "branches", branches_);
+    fprintf(fp, "}\n");
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
