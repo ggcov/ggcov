@@ -19,12 +19,36 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <memory.h>
 #include <malloc.h>
+#include <sys/wait.h>
+#include <errno.h>
 #include "testfw.h"
 
 testfn_t *testfn_t::head_, **testfn_t::tailp_ = &head_;
+static int status_pipe = -1;
+
+#define STATUS_LEN  2048
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void _dmsg(const char *fn, const char *fmt, ...)
+{
+    if (testrunner_t::verbose())
+    {
+	fprintf(stderr, "%s %d ", fn, getpid());
+	va_list args;
+	va_start(args, fmt);
+	vfprintf(stderr, fmt, args);
+	va_end(args);
+	fputc('\n', stderr);
+    }
+}
+
+#define dmsg(...) \
+    _dmsg(__FUNCTION__, __VA_ARGS__)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /* memory allocation wrappers */
@@ -72,9 +96,96 @@ _testfw_strdup(const char *s)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static int
+retry_write(int fd, const char *buf, size_t len)
+{
+    while (len > 0)
+    {
+	int n = write(fd, buf, len);
+	if (n < 0)
+	{
+	    perror("write");
+	    return -1;
+	}
+	buf += n;
+	len -= n;
+    }
+    return 0;
+}
+
+/* Read an fd until it returns EOF
+ * or we run out of buffer space.  The
+ * buffer is always a NUL-terminated
+ * string afterwards. */
+static int
+read_status(char *buf, size_t len, int fd)
+{
+    len--;  /* allow for trailing nul */
+    buf[0] = '\0';
+    int nread = 0;
+    for (;;)
+    {
+	int n = read(fd, buf, len);
+	if (n < 0)
+	{
+	    perror("read");
+	    return -1;
+	}
+	if (n == 0)
+	    break;
+	nread += n;
+	buf += n;
+	len -= n;
+	buf[0] = '\0';
+    }
+    return nread;
+}
+
+/* Wait for the given child pid to finish and do some
+ * diagnosis on the status.  Returns 0 if the process
+ * exited normally, > 0 if the process exited abnormally,
+ * or < 0 on error.  Prints to stderr on error. */
+static int
+wait_for_child(pid_t child)
+{
+    for (;;)
+    {
+	int status;
+	pid_t found = waitpid(child, &status, 0);
+	if (found < 0)
+	{
+	    int e = errno;
+	    if (errno != ESRCH)
+		perror("waitpid");
+	    return -e;
+	}
+	if (found != child)
+	{
+	    dmsg("waitpid returned unexpected pid %s, ignoring", found);
+	    continue;
+	}
+	if (WIFEXITED(status))
+	{
+	    dmsg("Child process exited with code %d", WEXITSTATUS(status));
+	    return WEXITSTATUS(status);
+	}
+	if (WIFSIGNALED(status))
+	{
+	    dmsg("Child process terminated by signal %d", WTERMSIG(status));
+	    return 128+WTERMSIG(status);
+	}
+	dmsg("Spurious return from waitpid, ignoring");
+    }
+    return -1;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 void
 testfn_t::run()
 {
+    if (before_)
+	before_->run();
     if (role_ == RTEST)
     {
 	if (testrunner_t::current_->verbose_)
@@ -92,6 +203,8 @@ testfn_t::run()
 	    exit(1);
 	}
     }
+    if (after_)
+	after_->run();
 }
 
 const char *
@@ -140,7 +253,9 @@ testrunner_t *testrunner_t::current_ = 0;
 testrunner_t::testrunner_t()
  :  verbose_(0),
     scheduled_(0),
-    nscheduled_(0)
+    nscheduled_(0),
+    nrun_(0),
+    npass_(0)
 {
 }
 
@@ -152,9 +267,6 @@ testrunner_t::~testrunner_t()
 void
 testrunner_t::schedule(testfn_t *fn)
 {
-    testfn_t *setup = 0, *teardown = 0;
-    int n;
-
     /* not very efficient, but who cares, it's more
      * important to be correct in the test framework */
 
@@ -163,25 +275,14 @@ testrunner_t::schedule(testfn_t *fn)
 	if (strcmp(ff->suite(), fn->suite()))
 	    continue;
 	if (ff->role_ == testfn_t::RSETUP)
-	    setup = ff;
+	    fn->before_ = ff;
 	else if (ff->role_ == testfn_t::RTEARDOWN)
-	    teardown = ff;
+	    fn->after_ = ff;
     }
 
-    n = 1;
-    if (setup)
-	n++;
-    if (teardown)
-	n++;
-
     scheduled_ = (testfn_t **)_testfw_realloc(scheduled_,
-					      sizeof(testfn_t *) * (nscheduled_+n));
-
-    if (setup)
-	scheduled_[nscheduled_++] = setup;
+					      sizeof(testfn_t *) * (nscheduled_+1));
     scheduled_[nscheduled_++] = fn;
-    if (teardown)
-	scheduled_[nscheduled_++] = teardown;
 }
 
 void
@@ -235,7 +336,92 @@ testrunner_t::schedule(const char *arg)
     return r;
 }
 
+#ifndef PIPE_READ
+#define PIPE_READ 0
+#endif
+#ifndef PIPE_WRITE
+#define PIPE_WRITE 1
+#endif
+
 void
+testrunner_t::run_test(testfn_t *fn)
+{
+    running_ = fn;
+    nrun_++;
+
+    int pipefd[2];
+    if (pipe(pipefd) < 0)
+    {
+	perror("pipe");
+	return;
+    }
+
+    dmsg("Forking");
+    pid_t pid = fork();
+    if (pid < 0)
+    {
+	perror("fork");
+	close(pipefd[PIPE_READ]);
+	close(pipefd[PIPE_WRITE]);
+	running_ = 0;
+	return;
+    }
+    if (pid == 0)
+    {
+	/* child process - return and run the test code, dtor will exit. */
+	dmsg("In child process");
+	close(pipefd[PIPE_READ]);
+	/* record the write end of the status pipe for _check() */
+	status_pipe = pipefd[PIPE_WRITE];
+	/* run the fixtures and test function */
+	fn->run();
+	/* send a success message */
+	char buf[STATUS_LEN];
+	snprintf(buf, sizeof(buf), "+PASS %s.%s", fn->suite(), fn->name());
+	retry_write(status_pipe, buf, strlen(buf));
+	dmsg("Child process exiting normally");
+	exit(0);
+    }
+    else
+    {
+	/* parent process - read status and wait for the child to finish */
+	dmsg("In parent process");
+	close(pipefd[PIPE_WRITE]);
+
+	/* we expect at most one status line, from either a
+	 * _check() failure or a successful test.  */
+	char buf[STATUS_LEN];
+	if (read_status(buf, sizeof(buf), pipefd[PIPE_READ]) < 0)
+	{
+	    running_ = 0;
+	    return;
+	}
+	close(pipefd[PIPE_READ]);
+
+	/* wait the for child process to exit */
+	int r = wait_for_child(pid);
+
+	/* diagnose test failure */
+	if (r < 0 && r != -ESRCH)
+	{
+	    running_ = 0;
+	    return;
+	}
+	if (r == 0 && buf[0] == '+')
+	{
+	    fprintf(stderr, "PASS %s.%s\n", fn->suite(), fn->name());
+	    npass_++;
+	}
+	else if (buf[0] != '\0')
+	{
+	    fprintf(stderr, "Test %s.%s failed:\n", fn->suite(), fn->name());
+	    fputs(buf+1, stderr);
+	}
+    }
+    running_ = 0;
+}
+
+int
 testrunner_t::run()
 {
     if (!nscheduled_)
@@ -248,27 +434,46 @@ testrunner_t::run()
 
     current_ = this;
     for (unsigned int i = 0 ; i < nscheduled_ ; i++)
-	scheduled_[i]->run();
+    {
+	run_test(scheduled_[i]);
+    }
     current_ = 0;
+
+    fprintf(stderr, "%u/%u tests passed\n", npass_, nrun_);
+    return (npass_ == nrun_);
+}
+
+testfn_t *testrunner_t::running()
+{
+    return current_ ? current_->running_ : 0;
 }
 
 void
 testrunner_t::_check(int pass, const char *file, int line, const char *fmt, ...)
 {
     va_list args;
-    char buf[2048];
+    char buf[STATUS_LEN];
+
+    /* build a status line.  1st char is a code which
+     * is interpreted in run_test() above. */
+
+    snprintf(buf, sizeof(buf)-2, "%c%s:%d: %s: ",
+	    (pass ? '+' : '-'), file, line, (pass ? "passed" : "FAILED"));
 
     va_start(args, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, args);
+    vsnprintf(buf+strlen(buf), sizeof(buf)-2-strlen(buf), fmt, args);
     va_end(args);
 
-    if (!pass || current_->verbose_)
-	fprintf(stderr, "%s:%d: %s: %s\n",
-		file, line, (pass ? "passed" : "FAILED"), buf);
+    strcat(buf, "\n");
+
+    if (current_->verbose_)
+	fputs(buf+1, stderr);
 
     if (!pass)
     {
 	fflush(stderr);
+	if (status_pipe >= 0)
+	    retry_write(status_pipe, buf, strlen(buf));
 	abort();
 	/*NOTREACHED*/
     }

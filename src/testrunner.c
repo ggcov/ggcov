@@ -44,7 +44,8 @@ main(int argc, char **argv)
 	    fprintf(stderr, "Unknown suite or name: %s\n", argv[i]);
     }
 
-    runner.run();
+    if (!runner.run())
+	return 1;
 
     return 0;
 }

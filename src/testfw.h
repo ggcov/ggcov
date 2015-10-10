@@ -91,6 +91,8 @@ private:
     enum role_t role_;
     testfn_t *next_;
     static testfn_t *head_, **tailp_;
+    testfn_t *before_;
+    testfn_t *after_;
 
     void run();
 
@@ -108,7 +110,9 @@ public:
 	suite_(0),
 	function_(function),
 	role_(role),
-	next_(0)
+	next_(0),
+	before_(0),
+	after_(0)
     {
 	*tailp_ = this;
 	tailp_ = &next_;
@@ -120,7 +124,7 @@ public:
     }
 
     const char *suite();
-    const char *name();
+    const char *name() { return name_; }
 };
 
 #define _PASTE(a,b)     a##b
@@ -141,10 +145,14 @@ private:
     int verbose_;
     testfn_t **scheduled_;
     unsigned int nscheduled_;
+    testfn_t *running_;
     static testrunner_t *current_;
+    unsigned int nrun_;
+    unsigned int npass_;
 
     void schedule(testfn_t *fn);
     int schedule_matching(const char *suite, const char *name);
+    void run_test(testfn_t *fn);
 
     friend class testfn_t;
 
@@ -157,7 +165,9 @@ public:
     void set_verbose(int v);
     void list();
     int schedule(const char *arg);
-    void run();
+    int run();
+    static testfn_t *running();
+    static int verbose() { return current_ ? current_->verbose_ : 0; }
 };
 
 #endif /* __GGCOV_TESTFW_H__ */
