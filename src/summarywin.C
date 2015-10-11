@@ -254,7 +254,7 @@ summarywin_t::spin_update()
 			     /*upper*/ end_,
 			     /*step_increment*/ 1,
 			     /*page_increment*/ 1,
-			     /*page_size*/ 1);
+			     /*page_size*/ 0);
 
     adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(range_end_spin_));
     gtk_adjustment_configure(adj,
@@ -263,7 +263,7 @@ summarywin_t::spin_update()
 			     /*upper*/ end_,
 			     /*step_increment*/ 1,
 			     /*page_increment*/ 1,
-			     /*page_size*/ 1);
+			     /*page_size*/ 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

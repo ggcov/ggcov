@@ -881,7 +881,7 @@
 	      <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 	      <property name="snap_to_ticks">False</property>
 	      <property name="wrap">False</property>
-	      <property name="adjustment">1 0 100 1 10 10</property>
+	      <property name="adjustment">1 0 100 1 0 0</property>
 	      <signal name="changed" handler="summarywin_t::on_range_start_spin_changed"/>
 	    </widget>
 	    <packing>
@@ -903,7 +903,7 @@
 	      <property name="update_policy">GTK_UPDATE_ALWAYS</property>
 	      <property name="snap_to_ticks">False</property>
 	      <property name="wrap">False</property>
-	      <property name="adjustment">1 0 100 1 10 10</property>
+	      <property name="adjustment">1 0 100 1 0 0</property>
 	      <signal name="changed" handler="summarywin_t::on_range_end_spin_changed"/>
 	    </widget>
 	    <packing>
