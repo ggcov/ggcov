@@ -465,7 +465,20 @@ public:
     /* for testing */
     int operator==(const cov_stats_t &o) const
     {
-	return memcmp(this, &o, sizeof(*this)) == 0;
+	/* Avoid comparing uninstrumented and suppressed counts; they're
+	 * deliberately not reported anywhere and can differ spuriously
+	 * when cov_stats_t are created by different methods, e.g. by
+	 * line vs by block. */
+	return !memcmp(blocks_, o.blocks_,
+		      sizeof(blocks_[0]) * (int)cov::UNINSTRUMENTED) &&
+	       !memcmp(lines_, o.lines_,
+		      sizeof(lines_[0]) * (int)cov::UNINSTRUMENTED) &&
+	       !memcmp(functions_, o.functions_,
+		      sizeof(functions_[0]) * (int)cov::UNINSTRUMENTED) &&
+	       !memcmp(calls_, o.calls_,
+		      sizeof(calls_[0]) * (int)cov::UNINSTRUMENTED) &&
+	       !memcmp(branches_, o.branches_,
+		      sizeof(branches_[0]) * (int)cov::UNINSTRUMENTED);
     }
 
     /* for testing */
