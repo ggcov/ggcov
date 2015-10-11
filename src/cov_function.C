@@ -223,7 +223,12 @@ cov_function_t::calc_stats(cov_stats_t *stats) const
 	/* skip the psuedo-blocks which don't correspond to code */
 	assert(num_blocks() >= 2);
 	for (bidx = first_real_block() ; bidx <= last_real_block() ; bidx++)
-	    nth_block(bidx)->calc_stats(&mine);
+	{
+	    cov_block_t *b = nth_block(bidx);
+	    if (!b->locations().head())
+		continue;
+	    b->calc_stats(&mine);
+	}
 	stats->accumulate(&mine);
 	st = mine.status_by_lines();
     }
