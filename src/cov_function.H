@@ -107,6 +107,8 @@ public:
     unsigned int first_real_block() const;
     unsigned int last_real_block() const;
 
+    cov::status_t calc_stats(cov_stats_t *) const;
+
 private:
     cov_function_t();
     ~cov_function_t();
@@ -118,7 +120,6 @@ private:
     void finalise();
     gboolean reconcile_calls();
     gboolean solve();
-    cov::status_t calc_stats(cov_stats_t *) const;
     void set_linkage(linkage_t ll)
     {
 	linkage_ = ll;

@@ -184,87 +184,61 @@ cov_range_scope_t::describe() const
 }
 
 
-/*
- * TODO: the method used here is completely wrong and doesn't
- * handle inline functions or functions in #included source
- * properly.  Now that we have per-line records stored in an
- * array on the cov_file_t we should use that instead.
- */
 cov::status_t
 cov_range_scope_t::calc_stats(cov_stats_t *stats)
 {
-    cov_location_t start, end;
-    cov_block_t *b;
-    unsigned fnidx, bidx;
-    unsigned long lastline;
-    cov_line_t *startln, *endln;
-
-    assert(file_ != 0);
-
-    start.lineno = start_;
-    end.lineno = end_;
-    end.filename = start.filename = (char *)file_->name();
-
     /*
      * Check inputs
      */
-    if (start.lineno > end.lineno)
+    if (start_ > end_)
 	return cov::SUPPRESSED;         /* invalid range */
-    if (start.lineno == 0 || end.lineno == 0)
+    if (start_ == 0 || end_ == 0)
 	return cov::SUPPRESSED;         /* invalid range */
-    lastline = file_->num_lines();
-    if (start.lineno > lastline)
+    unsigned int lastline = file_->num_lines();
+    if (start_ > lastline)
 	return cov::SUPPRESSED;         /* range is outside file */
-    if (end.lineno > lastline)
-	end.lineno = lastline;  /* clamp range to file */
+    if (end_ > lastline)
+	end_ = lastline;		/* clamp range to file */
 
-    /*
-     * Get blocklists for start and end.
-     */
-    do
+    /* we treat this as a set */
+    hashtable_t<void, void> *blocks_seen = new hashtable_t<void, void>;
+    /* we treat this as a set */
+    hashtable_t<void, void> *functions_seen = new hashtable_t<void, void>;
+    cov_stats_t block_stats;
+    cov_stats_t function_stats;
+    cov_stats_t line_stats;
+    cov_file_t::line_iterator_t start_itr(file_, start_);
+    cov_file_t::line_iterator_t end_itr(file_, end_+1);
+    for (cov_file_t::line_iterator_t itr = start_itr ; itr != end_itr ; ++itr)
     {
-	startln = cov_line_t::find(&start);
-    } while ((startln == 0 || !startln->blocks().head()) &&
-	     ++start.lineno <= end.lineno);
-
-    if (startln == 0 || !startln->blocks().head())
-	return cov::SUPPRESSED;         /* no executable lines in the given range */
-    assert(startln != 0);
-    assert(startln->blocks().head());
-
-    do
-    {
-	endln = cov_line_t::find(&end);
-    } while ((endln == 0 || !endln->blocks().head()) &&
-	     --end.lineno > start.lineno-1);
-
-    assert(endln != 0);
-    assert(endln->blocks().head());
-    assert(start.lineno <= end.lineno);
-
-
-    /*
-     * Iterate over the blocks between start and end,
-     * gathering stats as we go.  Note that this can
-     * span functions.
-     */
-    b = startln->blocks().head();
-    bidx = b->bindex();
-    fnidx = b->function()->findex();
-
-    do
-    {
-	b = file_->nth_function(fnidx)->nth_block(bidx);
-	b->calc_stats(stats);
-	if (++bidx == file_->nth_function(fnidx)->num_blocks())
+	cov_line_t *line = itr.line();
+	line_stats.add_line(line->status());
+	for (list_iterator_t<cov_block_t> bitr = line->blocks().first() ; *bitr ; ++bitr)
 	{
-	    bidx = 0;
-	    ++fnidx;
+	    cov_block_t *b = *bitr;
+	    if (!blocks_seen->lookup(b))
+	    {
+		b->calc_stats(&block_stats);
+		blocks_seen->insert(b, b);
+		cov_function_t *f = b->function();
+		if (!functions_seen->lookup(f))
+		{
+		    f->calc_stats(&function_stats);
+		    functions_seen->insert(f, f);
+		}
+	    }
 	}
-    } while (b != endln->blocks().head() &&
-	     fnidx < file_->num_functions());
+    }
 
-    return stats->status_by_blocks();
+    stats->accumulate_blocks(&block_stats);
+    stats->accumulate_lines(&line_stats);
+    stats->accumulate_functions(&function_stats);
+    stats->accumulate_calls(&block_stats);
+    stats->accumulate_branches(&block_stats);
+
+    delete blocks_seen;
+    delete functions_seen;
+    return stats->status_by_lines();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
