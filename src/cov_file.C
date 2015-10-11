@@ -2169,4 +2169,30 @@ cov_file_t::read(gboolean quiet)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+cov_file_t::line_iterator_t::line_iterator_t(const cov_file_t *file, unsigned int lineno)
+ :  file_(file)
+{
+    loc_.filename = (char *)file_->name();
+    loc_.lineno = lineno;
+}
+
+cov_file_t::line_iterator_t::~line_iterator_t()
+{
+}
+
+cov_file_t::line_iterator_t cov_file_t::lines_begin() const
+{
+    line_iterator_t itr(this, 1U);
+    return itr;
+}
+
+/* returns an iterator pointing 1 past the last line */
+cov_file_t::line_iterator_t cov_file_t::lines_end() const
+{
+    line_iterator_t itr(this, num_lines()+1);
+    return itr;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

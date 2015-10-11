@@ -123,6 +123,44 @@ public:
      */
     cov_line_t *nth_line(unsigned int n) const;
 
+    class line_iterator_t
+    {
+    public:
+	line_iterator_t(const cov_file_t *, unsigned int);
+	line_iterator_t(const line_iterator_t &o)
+	 :  file_(o.file_), loc_(o.loc_) {}
+	~line_iterator_t();
+	line_iterator_t &operator++()
+	{
+	    loc_.lineno++;
+	    return *this;
+	}
+	int operator==(const line_iterator_t &o) const
+	{
+	    return (file_ == o.file_ &&
+		    loc_.lineno == o.loc_.lineno);
+	}
+	int operator!=(const line_iterator_t &o) const
+	{
+	    return !operator==(o);
+	}
+	const cov_location_t &location() const
+	{
+	    return loc_;
+	}
+	cov_line_t *line()
+	{
+	    return file_->nth_line(loc_.lineno);
+	}
+
+    private:
+	const cov_file_t *file_;
+	cov_location_t loc_;
+    };
+
+    line_iterator_t lines_begin() const;
+    line_iterator_t lines_end() const;
+
 private:
     cov_file_t(const char *name, const char *relpath);
     ~cov_file_t();
