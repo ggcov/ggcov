@@ -59,6 +59,10 @@ cov_block_t::describe() const
     static estring buf;
     buf.truncate();
     buf.append_printf("%s:%d", function_->name(), idx_);
+    if (idx_ == function_->entry_block())
+	buf.append_string("[entry]");
+    else if (idx_ == function_->exit_block())
+	buf.append_string("[exit]");
     return buf.data();
 }
 
