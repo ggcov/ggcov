@@ -31,6 +31,7 @@
 CVSID("$Id: cov.C,v 1.31 2010-05-09 05:37:14 gnb Exp $");
 
 static gboolean cov_read_one_object_file(const char *exefilename, int depth);
+static void cov_calculate_duplicate_counts(void);
 extern char *argv0;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -157,6 +158,8 @@ cov_post_read(void)
 	callgraph->add_nodes(*iter);
     for (iter = cov_file_t::first() ; *iter ; ++iter)
 	callgraph->add_arcs(*iter);
+
+    cov_calculate_duplicate_counts();
 
     /* emit an MVC notification */
     mvc_changed(cov_file_t::files_model(), 1);
@@ -348,6 +351,38 @@ unsigned int
 cov_read_directory(const char *dirname, gboolean recursive)
 {
     return cov_read_directory_2(dirname, recursive, /*quiet*/FALSE);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void
+cov_calculate_duplicate_counts(void)
+{
+    hashtable_t<const char, void> *dupcount_by_name = new hashtable_t<const char, void>();
+
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
+    {
+	for (ptrarray_iterator_t<cov_function_t> fnitr = (*iter)->functions().first() ; *fnitr ; ++fnitr)
+	{
+	    cov_function_t *fn = *fnitr;
+	    void *value = NULL;
+	    if (dupcount_by_name->lookup_extended(fn->name(), (const char *)NULL, &value))
+		dupcount_by_name->insert(fn->name(), (void *)(((unsigned long)value)+1));
+	    else
+		dupcount_by_name->insert(fn->name(), (void *)1UL);
+	}
+    }
+
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
+    {
+	for (ptrarray_iterator_t<cov_function_t> fnitr = (*iter)->functions().first() ; *fnitr ; ++fnitr)
+	{
+	    cov_function_t *fn = *fnitr;
+	    fn->set_dup_count((unsigned long)dupcount_by_name->lookup(fn->name()));
+	}
+    }
+
+    delete dupcount_by_name;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -783,6 +818,7 @@ dump_function(FILE *fp, cov_function_t *fn)
     fprintf(fp, "            LINKAGE=%s\n", linkage_names[fn->linkage()]);
     for (ptrarray_iterator_t<cov_block_t> itr = fn->blocks().first() ; *itr ; ++itr)
 	dump_block(fp, *itr);
+    fprintf(fp, "            DUP_COUNT=%u\n", fn->dup_count());
     fprintf(fp, "    }\n");
 }
 

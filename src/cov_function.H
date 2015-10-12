@@ -35,6 +35,10 @@ public:
     {
 	return name_;
     }
+    /* Returns a pointer to a static buffer which will
+     * be overwritten on the next call. */
+    const char *unambiguous_name() const;
+
     cov::status_t status() const
     {
 	cov_stats_t stats;
@@ -109,6 +113,9 @@ public:
 
     cov::status_t calc_stats(cov_stats_t *) const;
 
+    void set_dup_count(unsigned int v) { dup_count_ = v; }
+    unsigned int dup_count() const { return dup_count_; }
+
 private:
     cov_function_t();
     ~cov_function_t();
@@ -132,6 +139,7 @@ private:
     linkage_t linkage_;
     const cov_suppression_t *suppression_;
     ptrarray_t<cov_block_t> *blocks_;
+    unsigned int dup_count_;
 
     friend class cov_file_t;
     friend class cov_function_scope_t;

@@ -81,6 +81,9 @@ struct callswin_call_t
 	    case COL_FROM:
 		r =  strcmp(safestr(a->from_->name()),
 			    safestr(b->from_->name()));
+		if (!r)
+		    r =  strcmp(safestr(a->from_->file()->name()),
+				safestr(b->from_->file()->name()));
 		break;
 
 	    case COL_TO:
@@ -273,7 +276,7 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 	    snprintf(linebuf, sizeof(linebuf), "%lu", loc->lineno);
 	text[COL_LINE] = linebuf;
 
-	text[COL_FROM] = (char *)from_fn->name();
+	text[COL_FROM] = (char *)from_fn->unambiguous_name();
 	if ((text[COL_TO] = (char *)itr->name()) == 0)
 	    text[COL_TO] = "(unknown)";
 

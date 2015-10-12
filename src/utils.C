@@ -31,7 +31,6 @@ populate_function_combo(
     gboolean add_all_item,
     const cov_function_t **currentp)
 {
-    estring label;
     static const char all_functions[] = N_("All Functions");
 
     clear(cbox);
@@ -45,21 +44,7 @@ populate_function_combo(
 	if (currentp != 0 && *currentp == 0)
 	    *currentp = fn;
 
-	label.truncate();
-	label.append_string(fn->name());
-
-	/* see if we need to present some more scope to uniquify the name */
-	list_iterator_t<cov_function_t> next = iter.peek_next();
-	list_iterator_t<cov_function_t> prev = iter.peek_prev();
-	if ((*next && !strcmp((*next)->name(), fn->name())) ||
-	    (*prev && !strcmp((*prev)->name(), fn->name())))
-	{
-	    label.append_string(" (");
-	    label.append_string(fn->file()->minimal_name());
-	    label.append_string(")");
-	}
-
-	add(cbox, label.data(), fn);
+	add(cbox, fn->unambiguous_name(), fn);
     }
     done(cbox);
 

@@ -108,6 +108,11 @@ struct cov_callnode_t
 
     static int compare_by_name(const cov_callnode_t **a, const cov_callnode_t **b);
     static int compare_by_name_and_file(const cov_callnode_t *cna, const cov_callnode_t *cnb);
+
+    const char *unambiguous_name() const
+    {
+	return function ? function->unambiguous_name() : name.data();
+    }
 };
 
 /*

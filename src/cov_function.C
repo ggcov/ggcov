@@ -26,6 +26,13 @@ CVSID("$Id: cov_function.C,v 1.26 2010-05-09 05:37:15 gnb Exp $");
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_function_t::cov_function_t()
+ :  id_(0ULL),
+    idx_(0U),
+    file_(NULL),
+    linkage_(UNKNOWN),
+    suppression_(NULL),
+    blocks_(NULL),
+    dup_count_(0U)
 {
     blocks_ = new ptrarray_t<cov_block_t>();
 }
@@ -40,6 +47,17 @@ cov_function_t::~cov_function_t()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+const char *
+cov_function_t::unambiguous_name() const
+{
+    static estring buf;
+    buf.truncate();
+    buf.append_string(name_);
+    if (dup_count_ > 1)
+	buf.append_printf(" (%s)", file_->minimal_name());
+    return buf.data();
+}
 
 void
 cov_function_t::set_name(const char *name)

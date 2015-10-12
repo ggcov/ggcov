@@ -320,7 +320,7 @@ functionswin_t::update()
 		       stats->branches_executed(), stats->branches_total());
 	text[COL_BRANCHES] = branches_pc_buf;
 
-	text[COL_FUNCTION] = (char *)(*iter)->function()->name();
+	text[COL_FUNCTION] = (char *)(*iter)->function()->unambiguous_name();
 
 	color = foregrounds_by_status[(*iter)->function()->status()];
 

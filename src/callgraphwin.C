@@ -70,7 +70,15 @@ callgraphwin_descendants_compare(GtkCList *clist, const void *ptr1, const void *
 	return u64cmp(ca1->count, ca2->count);
 
     case COL_NAME:
-	return strcmp(ca1->to->name, ca2->to->name);
+	int r = strcmp(ca1->to->name, ca2->to->name);
+	if (!r)
+	{
+	    cov_function_t *f1 = ca1->to->function;
+	    cov_function_t *f2 = ca2->to->function;
+	    if (f1 && f2)
+		r = strcmp(f1->file()->name(), f2->file()->name());
+	}
+	return r;
 
     default:
 	return 0;
@@ -193,16 +201,11 @@ callgraphwin_t::~callgraphwin_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-/*
- * TODO: invert this function and make the loop with the unambiguous
- * label building a library function which calls a callback.
- */
 #if GTK2
 void
 callgraphwin_t::populate_function_combo(GtkComboBox *combo)
 {
     list_t<cov_callnode_t> list;
-    estring label;
 
     clear(combo);
 
@@ -217,25 +220,7 @@ callgraphwin_t::populate_function_combo(GtkComboBox *combo)
     for (list_iterator_t<cov_callnode_t> itr = list.first() ; *itr ; ++itr)
     {
 	cov_callnode_t *cn = *itr;
-
-	label.truncate();
-	label.append_string(cn->name);
-
-	/* see if we need to present some more scope to uniquify the name */
-	list_iterator_t<cov_callnode_t> next = itr.peek_next();
-	list_iterator_t<cov_callnode_t> prev = itr.peek_prev();
-	if ((*next && !strcmp((*next)->name, cn->name)) ||
-	    (*prev && !strcmp((*prev)->name, cn->name)))
-	{
-	    label.append_string(" (");
-	    if (cn->function != 0)
-		label.append_string(cn->function->file()->minimal_name());
-	    else
-		label.append_string("library");
-	    label.append_string(")");
-	}
-
-	add(combo, label.data(), cn);
+	add(combo, cn->unambiguous_name(), cn);
     }
     done(combo);
 
@@ -246,7 +231,6 @@ void
 callgraphwin_t::populate_function_combo(GtkCombo *combo)
 {
     list_t<cov_callnode_t> list;
-    estring label;
 
     ui_combo_clear(combo);    /* stupid glade2 */
 
@@ -261,25 +245,7 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
     for (list_iterator_t<cov_callnode_t> itr = list.first() ; *itr ; ++itr)
     {
 	cov_callnode_t *cn = *itr;
-
-	label.truncate();
-	label.append_string(cn->name);
-
-	/* see if we need to present some more scope to uniquify the name */
-	list_iterator_t<cov_callnode_t> next = itr.peek_next();
-	list_iterator_t<cov_callnode_t> prev = itr.peek_prev();
-	if ((*next && !strcmp((*next)->name, cn->name)) ||
-	    (*prev && !strcmp((*prev)->name, cn->name)))
-	{
-	    label.append_string(" (");
-	    if (cn->function != 0)
-		label.append_string(cn->function->file()->minimal_name());
-	    else
-		label.append_string("library");
-	    label.append_string(")");
-	}
-
-	ui_combo_add_data(combo, label.data(), cn);
+	ui_combo_add_data(combo, cn->unambiguous_name(), cn);
     }
 
     list.remove_all();
@@ -360,7 +326,7 @@ callgraphwin_t::update_clist(GtkWidget *clist, list_t<cov_callarc_t> &arcs, gboo
 		    /*numerator*/ca->count, /*denominator*/total);
 	text[COL_COUNT] = countbuf;
 
-	text[COL_NAME] = (char *)(isin ? ca->from : ca->to)->name.data();
+	text[COL_NAME] = (char *)(isin ? ca->from : ca->to)->unambiguous_name();
 
 #if !GTK2
 	row = gtk_clist_prepend(GTK_CLIST(clist), text);
@@ -390,11 +356,7 @@ callgraphwin_t::update()
     dprintf0(D_GRAPHWIN, "callgraphwin_t::update\n");
     gtk_widget_set_sensitive(function_view_, (cn->function != 0));
 
-    estring title;
-    title.append_string(cn->name);
-    if (cn->function)
-	title.append_printf(" (%s)", cn->function->file()->minimal_name());
-    set_title(title);
+    set_title(cn->unambiguous_name());
 
     update_clist(ancestors_clist_, cn->in_arcs, TRUE);
     update_clist(descendants_clist_, cn->out_arcs, FALSE);
