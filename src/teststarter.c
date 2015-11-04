@@ -245,12 +245,13 @@ int test_starter_t::start()
 	cov_set_recursive(TRUE);
 	files.append(g_strdup(builddir_.data()));
     }
-    cov_read_files(files);
+    r = cov_read_files(files);
 
     for (list_iterator_t<const char> citr = files.first() ; *citr ; ++citr)
 	g_free((char *)*citr);
 
-    return 0;
+    /* fail if cov_read_files() failed or found no files */
+    return (r <= 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

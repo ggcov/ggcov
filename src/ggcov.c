@@ -289,7 +289,7 @@ windows[] =
 };
 
 static void
-ui_create(const char *full_argv0)
+ui_create(const char *full_argv0, int successes)
 {
     /*
      * If we're being run from the source directory, fiddle the
@@ -322,9 +322,9 @@ ui_create(const char *full_argv0)
 
     prefs.load();
 
-    if (!files.head())
+    if (!successes)
     {
-	/* Nothing on commandline...show the File->Open dialog to get some */
+	/* No files discovered from commandline...show the File->Open dialog to get some */
 	on_file_open_activate(0, 0);
 	while (!*cov_file_t::first())
 	    gtk_main_iteration();
@@ -481,10 +481,12 @@ main(int argc, char **argv)
 #endif
 
     parse_args(argc, argv);
-    cov_read_files(files);
+    int r = cov_read_files(files);
+    if (r < 0)
+	exit(1);    /* error message in cov_read_files() */
 
     cov_dump(stderr);
-    ui_create(argv[0]);
+    ui_create(argv[0], r);
     gtk_main();
 
     return 0;

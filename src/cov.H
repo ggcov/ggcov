@@ -70,6 +70,6 @@ extern const struct poptOption cov_popt_options[];
 
 void cov_set_recursive(int v);
 extern void cov_post_args(void);
-extern void cov_read_files(const list_t<const char> &files);
+extern int cov_read_files(const list_t<const char> &files);
 
 #endif /* _ggcov_cov_H_ */

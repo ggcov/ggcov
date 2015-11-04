@@ -573,7 +573,11 @@ main(int argc, char **argv)
 #endif
 
     parse_args(argc, argv);
-    cov_read_files(files);
+    int r = cov_read_files(files);
+    if (r < 0)
+	exit(1);    /* error message in cov_read_files() */
+    if (r == 0)
+	exit(0);    /* error message in cov_read_files() */
 
     cov_dump(stderr);
 

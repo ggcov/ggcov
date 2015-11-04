@@ -569,7 +569,20 @@ cov_post_args(void)
 }
 
 
-void
+/*
+ * Read coverage data discovered by following the given list
+ * of filenames.  Each file can be a C source file, a directory
+ * recursively containing other files, an object file, or an
+ * executable.  If no files are specified, the current working
+ * directory is read (recursively if the -r commandline option
+ * was used).
+ *
+ * Also applies the various global parameters set by commandline
+ * options.
+ *
+ * Returns number of files successfully read, or -1 on error.
+ */
+int
 cov_read_files(const list_t<const char> &files)
 {
     unsigned int successes = 0;
@@ -624,7 +637,7 @@ cov_read_files(const list_t<const char> &files)
 	    if ((e = tok.next()) == 0)
 	    {
 		fprintf(stderr, "%s: -Z option requires pairs of words\n", argv0);
-		exit(1);
+		return -1;
 	    }
 	    cov_suppression_t *sup;
 	    sup = new cov_suppression_t(s, cov_suppression_t::COMMENT_RANGE,
@@ -677,15 +690,16 @@ cov_read_files(const list_t<const char> &files)
 	    {
 		fprintf(stderr, "%s: don't know how to handle this filename\n",
 			filename);
-		exit(1);
+		return -1;
 	    }
 	}
     }
 
     if (!successes && !cov_file_t::length())
-	exit(1);
+	return 0;   /* return 0 so we can pop up a file choice dialog */
 
     cov_post_read();
+    return successes;
 }
 
 
