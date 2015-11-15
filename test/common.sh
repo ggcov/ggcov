@@ -312,6 +312,7 @@ compile_c ()
 
     vcmd "compile_c $*"
 
+    local cflags=
     while [ $# -gt 0 ] ; do
     	case "$1" in
 	-d*|-f*|-m*|-I*|-D*) cflags="$cflags $1" ;;
@@ -326,11 +327,10 @@ compile_c ()
     done
 
     [ -z "$cfile" ] && fatal "compile_c: no cfile given"
-    local cflags=
     if [ $covered = yes ] ; then
-	cflags="$CWARNFLAGS $CCOVFLAGS $CDEFINES"
+	cflags="$cflags $CWARNFLAGS $CCOVFLAGS $CDEFINES"
     else
-	cflags="$CWARNFLAGS $CDEFINES"
+	cflags="$cflags $CWARNFLAGS $CDEFINES"
     fi
 
     vncdo $CC $cflags -c $cfile || fatal "can't compile $cfile"
