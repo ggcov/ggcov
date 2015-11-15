@@ -271,6 +271,15 @@ _srcfile ()
     esac
 }
 
+_link_or_copy ()
+{
+    local src="$1"
+    local dst="$2"
+    if ! vdo ln $src $dst ; then
+	vdo cp $src $dst || fatal "Can't link or copy $src to $dst"
+    fi
+}
+
 # Ensure the given files exist at the given paths relative to
 # the current directory, if necessary linking them from $srcdir
 # Used where the pathname matters, e.g. C source files.
@@ -288,7 +297,7 @@ need_files ()
 		    vdo mkdir -p $d || fatal "Can't build directory $d"
 		fi
 		if [ ! -e $path ]; then
-		    vdo ln $(_srcfile ${_DDOWN:+x}$f) $path || fatal "Can't link source file to $path"
+		    _link_or_copy $(_srcfile ${_DDOWN:+x}$f) $path
 		fi
 	    done
 	fi
