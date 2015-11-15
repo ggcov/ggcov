@@ -91,12 +91,12 @@ public:
 	return (valid() ? (*array_)[i_] : 0);
     }
 
-    list_iterator_t<T> peek_next() const
+    ptrarray_iterator_t<T> peek_next() const
     {
 	return ptrarray_iterator_t<T>(array_, i_+1);
     }
 
-    list_iterator_t<T> peek_prev() const
+    ptrarray_iterator_t<T> peek_prev() const
     {
 	return ptrarray_iterator_t<T>(array_, i_-1);
     }
@@ -149,7 +149,7 @@ public:
     unsigned int append(T *p)
     {
 	unsigned int i = len;
-	g_ptr_array_add(this, p);
+	g_ptr_array_add(this, (gpointer)p);
 	return i;
     }
 
@@ -159,7 +159,7 @@ public:
     }
     gboolean remove(T *p)
     {
-	return g_ptr_array_remove(this, p);
+	return g_ptr_array_remove(this, (gpointer)p);
     }
     void set(unsigned i, T *p)
     {
