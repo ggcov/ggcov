@@ -33,6 +33,9 @@ CVSID("$Id: fakepopt.c,v 1.5 2010-05-09 05:37:15 gnb Exp $");
 extern "C" {
 #endif
 
+typedef void (*poptCallbackFn)(poptContext, enum poptCallbackReason,
+				const struct poptOption*, const char *, void *);
+
 struct _poptContext
 {
     int argc;
@@ -49,6 +52,9 @@ struct _poptContext
 
     const struct poptOption *options;
 };
+
+#define is_end(opt) \
+    (opt->longName == NULL && opt->shortName == '\0' && opt->argInfo == 0)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -89,30 +95,38 @@ poptSetOtherOptionHelp(poptContext con, const char *help)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static const struct poptOption *
-find_long_option(const struct poptOption *opt, const char *name, const char **valp)
+find_long_option(const struct poptOption *opt, const char *name, const char **valp,
+		 poptCallbackFn *callbackp, void **callback_datap)
 {
     const struct poptOption *o;
     int len;
 
-    for ( ; opt->long_name || opt->short_name ; opt++)
+    *callbackp = NULL;
+    *callback_datap = NULL;
+    for ( ; !is_end(opt) ; opt++)
     {
-	switch (opt->type)
+	switch (opt->argInfo)
 	{
+	case POPT_ARG_CALLBACK:
+	    *callbackp = (poptCallbackFn)opt->arg;
+	    *callback_datap = (void *)opt->descrip;
+	    break;
 	case POPT_ARG_INCLUDE_TABLE:
-	    o = find_long_option((const struct poptOption *)opt->value_ptr, name, valp);
+	    o = find_long_option((const struct poptOption *)opt->arg, name, valp,
+				 callbackp, callback_datap);
 	    if (o != 0)
 		return o;
 	    break;
 	default:
-	    len = strlen(opt->long_name);
-	    if (!strncmp(name, opt->long_name, len) && name[len] == '=')
+	    len = strlen(opt->longName);
+	    if (!strncmp(name, opt->longName, len) && name[len] == '=')
 	    {
 		*valp = name+len+1;
 		return opt;
 	    }
 	    /* fall through */
 	case POPT_ARG_NONE:
-	    if (!strcmp(name, opt->long_name))
+	    if (!strcmp(name, opt->longName))
 		return opt;
 	    break;
 	}
@@ -121,21 +135,29 @@ find_long_option(const struct poptOption *opt, const char *name, const char **va
 }
 
 static const struct poptOption *
-find_short_option(const struct poptOption *opt, char name)
+find_short_option(const struct poptOption *opt, char name,
+		  poptCallbackFn *callbackp, void **callback_datap)
 {
     const struct poptOption *o;
 
-    for ( ; opt->long_name || opt->short_name ; opt++)
+    *callbackp = NULL;
+    *callback_datap = NULL;
+    for ( ; !is_end(opt) ; opt++)
     {
-	switch (opt->type)
+	switch (opt->argInfo)
 	{
+	case POPT_ARG_CALLBACK:
+	    *callbackp = (poptCallbackFn)opt->arg;
+	    *callback_datap = (void *)opt->descrip;
+	    break;
 	case POPT_ARG_INCLUDE_TABLE:
-	    o = find_short_option((const struct poptOption *)opt->value_ptr, name);
+	    o = find_short_option((const struct poptOption *)opt->arg, name,
+				  callbackp, callback_datap);
 	    if (o != 0)
 		return o;
 	    break;
 	default:
-	    if (name == opt->short_name)
+	    if (name == opt->shortName)
 		return opt;
 	    break;
 	}
@@ -144,17 +166,23 @@ find_short_option(const struct poptOption *opt, char name)
 }
 
 static int
-handle_option(poptContext con, const struct poptOption *opt, const char *val)
+handle_option(poptContext con, const struct poptOption *opt, const char *val,
+	      poptCallbackFn callback, void *callback_data)
 {
     if (opt == 0)
 	return -2;  /* unknown option */
-    assert(opt->value_ptr != 0);
-    assert(opt->value == 0);
-    switch (opt->type)
+    if (callback)
+    {
+	callback(con, POPT_CALLBACK_REASON_OPTION, opt, val, callback_data);
+	return 0;
+    }
+    assert(opt->arg != 0);
+    assert(opt->val == 0);
+    switch (opt->argInfo)
     {
     case POPT_ARG_NONE:
 	assert(val == 0);
-	*(int *)opt->value_ptr = TRUE;
+	*(int *)opt->arg = TRUE;
 	break;
     case POPT_ARG_STRING:
 	if (val == 0)
@@ -163,10 +191,10 @@ handle_option(poptContext con, const struct poptOption *opt, const char *val)
 	    if (val == 0)
 		return -3; /* no value */
 	}
-	*(const char **)opt->value_ptr = val;
+	*(const char **)opt->arg = val;
 	break;
     }
-    return opt->value;
+    return opt->val;
 }
 
 int
@@ -176,6 +204,8 @@ poptGetNextOpt(poptContext con)
     int rc;
     const char *val;
     const struct poptOption *opt;
+    poptCallbackFn callback = NULL;
+    void *callback_data = NULL;
 
     for (;;)
     {
@@ -197,15 +227,17 @@ poptGetNextOpt(poptContext con)
 		continue;
 	    }
 	    val = 0;
-	    opt = find_long_option(con->options, arg+2, &val);
-	    if ((rc = handle_option(con, opt, val)))
+	    opt = find_long_option(con->options, arg+2, &val,
+				   &callback, &callback_data);
+	    if ((rc = handle_option(con, opt, val, callback, callback_data)))
 		return rc;
 	}
 	else
 	{
 	    for (arg++ ; *arg ; arg++)
 	    {
-		if ((rc = handle_option(con, find_short_option(con->options, *arg), 0)))
+		opt = find_short_option(con->options, *arg, &callback, &callback_data);
+		if ((rc = handle_option(con, opt, 0, callback, callback_data)))
 		    return rc;
 	    }
 	}

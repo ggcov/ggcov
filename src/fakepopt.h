@@ -32,23 +32,28 @@ extern "C" {
 
 struct poptOption
 {
-    const char *long_name;
-    char short_name;
-    int type;
-    void *value_ptr;
-    int value;
-    const char *crap;
-    const char *more_crap;
+    const char *longName;
+    char shortName;
+    unsigned int argInfo;
+    void *arg;
+    int val;
+    const char *descrip;
+    const char *argDescrip;
 };
 
-#define POPT_ARG_NONE   0
-#define POPT_ARG_STRING 1
-#define POPT_ARG_INCLUDE_TABLE 4
+#define POPT_ARG_NONE		0U
+#define POPT_ARG_STRING		1U
+#define POPT_ARG_INCLUDE_TABLE	4U
+#define POPT_ARG_CALLBACK	5U
 
 #define POPT_BADOPTION_NOALIAS  0
 
 #define POPT_AUTOHELP
 #define POPT_TABLEEND { NULL, '\0', 0, 0, 0, NULL, NULL }
+
+enum poptCallbackReason {
+    POPT_CALLBACK_REASON_OPTION=2
+};
 
 typedef struct _poptContext *poptContext;
 
