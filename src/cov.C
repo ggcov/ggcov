@@ -89,7 +89,7 @@ cov_read_source_file_2(const char *fname, gboolean quiet)
     if ((f = cov_file_t::find(filename)) != 0)
     {
 	// already seen this file, no drama
-	return FALSE;
+	return TRUE;
     }
 
     f = new cov_file_t(filename, fname);
