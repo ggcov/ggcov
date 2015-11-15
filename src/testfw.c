@@ -34,9 +34,10 @@ static int status_pipe = -1;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void _dmsg(const char *fn, const char *fmt, ...)
+void
+testrunner_t::_dmsg(const char *fn, const char *fmt, ...)
 {
-    if (testrunner_t::verbose())
+    if (verbose())
     {
 	fprintf(stderr, "%s %d ", fn, getpid());
 	va_list args;
@@ -46,9 +47,6 @@ static void _dmsg(const char *fn, const char *fmt, ...)
 	fputc('\n', stderr);
     }
 }
-
-#define dmsg(...) \
-    _dmsg(__FUNCTION__, __VA_ARGS__)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /* memory allocation wrappers */

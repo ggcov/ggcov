@@ -168,6 +168,10 @@ public:
     int run();
     static testfn_t *running();
     static int verbose() { return current_ ? current_->verbose_ : 0; }
+    static void _dmsg(const char *fn, const char *fmt, ...);
 };
+
+#define dmsg(...) \
+    testrunner_t::_dmsg(__FUNCTION__, __VA_ARGS__)
 
 #endif /* __GGCOV_TESTFW_H__ */
