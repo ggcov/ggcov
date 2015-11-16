@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
+ * Copyright (c) 2005-2015 Greg Banks <gnb@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include "php_scenegen.H"
 #include "callgraph_diagram.H"
 #include "lego_diagram.H"
-#include "fakepopt.h"
+#include "argparse.H"
 #include <db.h>
 
 CVSID("$Id: ggcov-webdb.c,v 1.11 2010-05-09 05:37:15 gnb Exp $");
@@ -48,10 +48,6 @@ CVSID("$Id: ggcov-webdb.c,v 1.11 2010-05-09 05:37:15 gnb Exp $");
 #endif
 
 char *argv0;
-static list_t<const char> files;            /* incoming specification from commandline */
-
-static char *dump_mode = NULL;
-static const char *output_tarball = "ggcov.webdb.tgz";
 
 static hashtable_t<void, unsigned int> *file_index;
 static hashtable_t<void, unsigned int> *function_index;
@@ -838,62 +834,37 @@ create_source_symlinks(const char *tempdir)
  * parse arguments in a way which avoids potentially buggy duplicate
  * specification of options, i.e. we simulate popt in fakepopt.c!
  */
-static poptContext popt_context;
-static struct poptOption popt_options[] =
+
+class webdb_params_t : public cov_project_params_t
 {
+public:
+    webdb_params_t();
+    ~webdb_params_t();
+
+    ARGPARSE_STRING_PROPERTY(output_tarball);
+    ARGPARSE_STRING_PROPERTY(dump_mode);
+
+protected:
+    void setup_parser(argparse::parser_t &parser)
     {
-	"output-file",                          /* longname */
-	'f',                                    /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&output_tarball,                        /* arg */
-	0,                                      /* val 0=don't return */
-	"name of the output (in .tgz format), or - for stdout", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"dump",                                 /* longname */
-	'\0',                                   /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&dump_mode,                             /* arg */
-	0,                                      /* val 0=don't return */
-	"dump the entire database",             /* descrip */
-	0                                       /* argDescrip */
-    },
-    COV_POPT_OPTIONS
-    POPT_AUTOHELP
-    POPT_TABLEEND
+	cov_project_params_t::setup_parser(parser);
+	parser.add_option('f', "output-file")
+	      .description("name of the output (in .tgz format), or - for stdout")
+	      .setter((argparse::arg_setter_t)&webdb_params_t::set_output_tarball);
+	parser.add_option('\0', "dump")
+	      .description("dump the entire database")
+	      .setter((argparse::arg_setter_t)&webdb_params_t::set_dump_mode);
+	parser.set_other_option_help("[OPTIONS] [executable|source|directory]...");
+    }
 };
 
-static void
-parse_args(int argc, char **argv)
+webdb_params_t::webdb_params_t()
+ :  output_tarball_("ggcov.webdb.tgz")
 {
-    const char *file;
+}
 
-    argv0 = argv[0];
-
-    popt_context = poptGetContext(PACKAGE, argc, (const char**)argv,
-				  popt_options, 0);
-    poptSetOtherOptionHelp(popt_context,
-			   "[OPTIONS] [executable|source|directory]...");
-
-    int rc;
-    while ((rc = poptGetNextOpt(popt_context)) > 0)
-	;
-    if (rc < -1)
-    {
-	fprintf(stderr, "%s:%s at or near %s\n",
-	    argv[0],
-	    poptStrerror(rc),
-	    poptBadOption(popt_context, POPT_BADOPTION_NOALIAS));
-	exit(1);
-    }
-
-    while ((file = poptGetArg(popt_context)) != 0)
-	files.append(file);
-
-    poptFreeContext(popt_context);
-
-    cov_post_args();
+webdb_params_t::~webdb_params_t()
+{
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -939,14 +910,14 @@ log_func(
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
-create_database(void)
+create_database(const webdb_params_t &params)
 {
     char *tempdir;
     char *webdb_file;
     DB *db;
     int ret;
 
-    cov_read_files(files);
+    cov_read_files(params);
 
     tempdir = g_strdup_printf("%s/ggcov-web-%d.d", get_tmpdir(), (int)getpid());
     webdb_file = g_strconcat(tempdir, "/", "ggcov.webdb", (char*)0);
@@ -988,6 +959,7 @@ create_database(void)
 
     create_source_symlinks(tempdir);
 
+    const char *output_tarball = params.get_output_tarball();
     const char *output_tarball_abs = (!strcmp(output_tarball, "-") ? "-" :
 				      file_make_absolute(output_tarball));
     systemf("cd \"%s\" ; tar -cvhzf \"%s\" *", tempdir, output_tarball_abs);
@@ -999,9 +971,9 @@ create_database(void)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
-dump_database(const char *mode)
+dump_database(const webdb_params_t &params)
 {
-    char *webdb_file;
+    const char *webdb_file;
     DB *db;
     DBC *dbc;
     DBT key, value;
@@ -1009,13 +981,14 @@ dump_database(const char *mode)
     gboolean key_flag = FALSE;
     gboolean value_flag = FALSE;
 
-    if (files.length() != 1)
+    if (params.num_files() != 1)
     {
 	fprintf(stderr, "dump_database: must provide a .webdb filename\n");
 	exit(1);
     }
-    webdb_file = (char *)files.head();
+    webdb_file = params.nth_file(0);
 
+    const char *mode = params.get_dump_mode();
     for ( ; *mode ; mode++)
     {
 	switch (*mode)
@@ -1090,12 +1063,14 @@ main(int argc, char **argv)
 		      log_func, /*user_data*/0);
 #endif
 
-    parse_args(argc, argv);
+    webdb_params_t params;
+    argparse::parser_t parser(params);
+    parser.parse(argc, argv);
 
-    if (dump_mode != NULL)
-	return dump_database(dump_mode);
+    if (params.get_dump_mode() != NULL)
+	return dump_database(params);
     else
-	return create_database();
+	return create_database(params);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

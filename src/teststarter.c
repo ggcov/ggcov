@@ -231,24 +231,22 @@ int test_starter_t::start()
     if (r)
 	return r;
 
-    list_t<const char> files;
+    cov_project_params_t params;
+
     for (list_iterator_t<char> itr = root_files_.first() ; *itr ; ++itr)
     {
 	estring e;
 	e.append_string(builddir_.data());
 	e.append_string("/");
 	e.append_string(*itr);
-	files.append(e.take());
+	params.add_file(e);
     }
-    if (!files.head())
+    if (!params.num_files())
     {
-	cov_set_recursive(TRUE);
-	files.append(g_strdup(builddir_.data()));
+	params.set_recursive();
+	params.add_file(builddir_);
     }
-    r = cov_read_files(files);
-
-    for (list_iterator_t<const char> citr = files.first() ; *citr ; ++citr)
-	g_free((char *)*citr);
+    r = cov_read_files(params);
 
     /* fail if cov_read_files() failed or found no files */
     return (r <= 0);

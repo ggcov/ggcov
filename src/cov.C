@@ -387,188 +387,6 @@ cov_calculate_duplicate_counts(void)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static int recursive = FALSE;   /* needs to be int (not gboolean) for popt */
-static char *suppressed_calls = 0;
-static char *suppressed_ifdefs = 0;
-static char *suppressed_comment_lines = 0;
-static char *suppressed_comment_ranges = 0;
-static char *object_dir = 0;
-static char *gcda_prefix = 0;
-static const char *debug_str = 0;
-static int print_version_flag = FALSE;
-
-const struct poptOption cov_popt_options[] =
-{
-    {
-	"recursive",                            /* longname */
-	'r',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&recursive,                             /* arg */
-	0,                                      /* val 0=don't return */
-	"recursively scan directories for source", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"suppress-call",                        /* longname */
-	0,                                      /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&suppressed_calls,                      /* arg */
-	0,                                      /* val 0=don't return */
-	"suppress blocks which call this function", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"suppress-ifdef",                       /* longname */
-	'X',                                    /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&suppressed_ifdefs,                     /* arg */
-	0,                                      /* val 0=don't return */
-	"suppress source which is conditional on this cpp define", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"suppress-comment",                     /* longname */
-	'Y',                                    /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&suppressed_comment_lines,              /* arg */
-	0,                                      /* val 0=don't return */
-	"suppress source on lines containing this comment", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"suppress-comment-between",             /* longname */
-	'Z',                                    /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&suppressed_comment_ranges,             /* arg */
-	0,                                      /* val 0=don't return */
-	"suppress source between lines containing these start and end comments", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"gcda-prefix",                          /* longname */
-	'p',                                    /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&gcda_prefix,                           /* arg */
-	0,                                      /* val 0=don't return */
-	"directory underneath which to find .da files", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"object-directory",                     /* longname */
-	'o',                                    /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&object_dir,                            /* arg */
-	0,                                      /* val 0=don't return */
-	"directory in which to find .o,.bb,.bbg,.da files", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"solve-fuzzy",                          /* longname */
-	'F',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	NULL,                                   /* arg */
-	0,                                      /* val 0=don't return */
-	"(silently ignored for compatibility)", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"debug",                                /* longname */
-	'D',                                    /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&debug_str,                             /* arg */
-	0,                                      /* val 0=don't return */
-	"enable ggcov debugging features",      /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"version",                              /* longname */
-	'v',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&print_version_flag,                    /* arg */
-	0,                                      /* val 0=don't return */
-	"print version and exit",               /* descrip */
-	0                                       /* argDescrip */
-    },
-    { 0, 0, 0, 0, 0, 0, 0 }
-};
-
-void
-cov_set_recursive(int v)
-{
-    recursive = v;
-}
-
-void
-cov_post_args(void)
-{
-    if (debug_str != 0)
-	debug_set(debug_str);
-
-    if (print_version_flag)
-    {
-	fputs(PACKAGE " version " VERSION "\n", stdout);
-	exit(0);
-    }
-
-    if (debug_enabled(D_DUMP|D_VERBOSE))
-    {
-	string_var token_str = debug_enabled_tokens();
-
-	duprintf1("cov_post_args: recursive=%d\n", recursive);
-	duprintf1("cov_post_args: suppressed_calls=%s\n", suppressed_calls);
-	duprintf1("cov_post_args: suppressed_ifdefs=%s\n", suppressed_ifdefs);
-	duprintf1("cov_post_args: suppressed_comment_lines=%s\n", suppressed_comment_lines);
-	duprintf1("cov_post_args: suppressed_comment_ranges=%s\n", suppressed_comment_ranges);
-	duprintf2("cov_post_args: debug = 0x%lx (%s)\n", debug, token_str.data());
-
-	static const struct { const char *name; int value; } build_options[] =
-	{
-	    { "HAVE_LIBBFD",
-	    #ifdef HAVE_LIBBFD
-	    1
-	    #endif
-	    }, { "HAVE_LIBPOPT",
-	    #ifdef HAVE_LIBPOPT
-	    1
-	    #endif
-	    }, { "HAVE_LIBGCONF",
-	    #ifdef HAVE_LIBGCONF
-	    1
-	    #endif
-	    }, { "COV_I386",
-	    #ifdef COV_I386
-	    1
-	    #endif
-	    }, { "COV_AMD64",
-	    #ifdef COV_AMD64
-	    1
-	    #endif
-	    }, { "UI_DEBUG",
-	    #ifdef UI_DEBUG
-	    1
-	    #endif
-	    }, { "HAVE_GNOME_PROGRAM_INIT",
-	    #ifdef HAVE_GNOME_PROGRAM_INIT
-	    1
-	    #endif
-	    }, { "HAVE_GTK_TEXT_BUFFER_SELECT_RANGE",
-	    #ifdef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
-	    1
-	    #endif
-	    }, { "HAVE_G_HASH_TABLE_ITER",
-	    #ifdef HAVE_G_HASH_TABLE_ITER
-	    1
-	    #endif
-	    }, { NULL, 0 }
-	};
-	duprintf0("cov_post_args: built with");
-	for (int i = 0 ; build_options[i].name ; i++)
-	    duprintf2(" %s%s", build_options[i].value ? "" : "!", build_options[i].name);
-	duprintf0("\n");
-    }
-}
-
-
 /*
  * Read coverage data discovered by following the given list
  * of filenames.  Each file can be a C source file, a directory
@@ -583,23 +401,15 @@ cov_post_args(void)
  * Returns number of files successfully read, or -1 on error.
  */
 int
-cov_read_files(const list_t<const char> &files)
+cov_read_files(const cov_project_params_t &params)
 {
     unsigned int successes = 0;
 
-    if (debug_enabled(D_DUMP|D_VERBOSE))
-    {
-	duprintf0("cov_post_args: files = ");
-	for (list_iterator_t<const char> itr = files.first() ; *itr ; ++itr)
-	    duprintf1(" \"%s\"", *itr);
-	duprintf0(" }\n");
-    }
-
     cov_init();
 
-    if (suppressed_calls != 0)
+    if (params.get_suppressed_calls() != 0)
     {
-	tok_t tok(/*force copy*/(const char *)suppressed_calls, ", \t");
+	tok_t tok(params.get_suppressed_calls(), ", \t");
 	const char *v;
 
 	while ((v = tok.next()) != 0)
@@ -607,9 +417,9 @@ cov_read_files(const list_t<const char> &files)
 				  "commandline --suppress-call option");
     }
 
-    if (suppressed_ifdefs != 0)
+    if (params.get_suppressed_ifdefs() != 0)
     {
-	tok_t tok(/*force copy*/(const char *)suppressed_ifdefs, ", \t");
+	tok_t tok(params.get_suppressed_ifdefs(), ", \t");
 	const char *v;
 
 	while ((v = tok.next()) != 0)
@@ -617,9 +427,9 @@ cov_read_files(const list_t<const char> &files)
 				  "commandline -X option");
     }
 
-    if (suppressed_comment_lines != 0)
+    if (params.get_suppressed_comment_lines() != 0)
     {
-	tok_t tok(/*force copy*/(const char *)suppressed_comment_lines, ", \t");
+	tok_t tok(params.get_suppressed_comment_lines(), ", \t");
 	const char *v;
 
 	while ((v = tok.next()) != 0)
@@ -627,9 +437,9 @@ cov_read_files(const list_t<const char> &files)
 				  "commandline -Y option");
     }
 
-    if (suppressed_comment_ranges != 0)
+    if (params.get_suppressed_comment_ranges() != 0)
     {
-	tok_t tok(/*force copy*/(const char *)suppressed_comment_ranges, ", \t");
+	tok_t tok(params.get_suppressed_comment_ranges(), ", \t");
 	const char *s, *e;
 
 	while ((s = tok.next()) != 0)
@@ -648,18 +458,18 @@ cov_read_files(const list_t<const char> &files)
 
     cov_pre_read();
 
-    if (object_dir != 0)
-	cov_add_search_directory(object_dir);
-    if (gcda_prefix)
-	cov_file_t::set_gcda_prefix(gcda_prefix);
+    if (params.get_object_directory())
+	cov_add_search_directory(params.get_object_directory());
+    if (params.get_gcda_prefix())
+	cov_file_t::set_gcda_prefix(params.get_gcda_prefix());
 
-    if (!files.head())
+    if (!params.num_files())
     {
-	successes += cov_read_directory(".", recursive);
+	successes += cov_read_directory(".", params.get_recursive());
     }
     else
     {
-	for (list_iterator_t<const char> itr = files.first() ; *itr ; ++itr)
+	for (argparse::params_t::file_iterator_t itr = params.file_iter() ; *itr ; ++itr)
 	{
 	    const char *filename = *itr;
 
@@ -667,13 +477,13 @@ cov_read_files(const list_t<const char> &files)
 		cov_add_search_directory(filename);
 	}
 
-	for (list_iterator_t<const char> itr = files.first() ; *itr ; ++itr)
+	for (argparse::params_t::file_iterator_t itr = params.file_iter() ; *itr ; ++itr)
 	{
 	    const char *filename = *itr;
 
 	    if (file_is_directory(filename) == 0)
 	    {
-		successes += cov_read_directory(filename, recursive);
+		successes += cov_read_directory(filename, params.get_recursive());
 	    }
 	    else if (errno != ENOTDIR)
 	    {

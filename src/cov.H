@@ -29,6 +29,7 @@
 #include "cov_scope.H"
 #include "cov_line.H"
 #include "cov_calliter.H"
+#include "cov_project_params.H"
 #include "fakepopt.h"
 
 /* Call this to initialise the cov library */
@@ -56,20 +57,6 @@ void cov_post_read(void);
  */
 void cov_dump(FILE *);
 
-extern const struct poptOption cov_popt_options[];
-#define COV_POPT_OPTIONS \
-    { \
-	"whatever",                             /* longname */ \
-	'?',                                    /* shortname */ \
-	POPT_ARG_INCLUDE_TABLE,                 /* argInfo */ \
-	(void *)cov_popt_options,               /* arg */ \
-	0,                                      /* val 0=don't return */ \
-	0,                                      /* descrip */ \
-	0                                       /* argDescrip */ \
-    },
-
-void cov_set_recursive(int v);
-extern void cov_post_args(void);
-extern int cov_read_files(const list_t<const char> &files);
+extern int cov_read_files(const cov_project_params_t &);
 
 #endif /* _ggcov_cov_H_ */

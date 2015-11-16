@@ -42,11 +42,8 @@ CVSID("$Id: ggcov.c,v 1.53 2010-05-09 05:37:15 gnb Exp $");
 #define DEBUG_GTK 1
 
 char *argv0;
-static list_t<const char> files;            /* incoming specification from commandline */
 
 static const char ** debug_argv;
-static const char *initial_windows = "summary";
-static int profile_mode = FALSE;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
@@ -78,6 +75,68 @@ stash_argv(int argc, char **argv)
     nargv[i] = 0;
 
     debug_argv = (const char **)nargv;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+class ggcov_params_t : public cov_project_params_t
+{
+public:
+    ggcov_params_t();
+    ~ggcov_params_t();
+
+    ARGPARSE_STRING_PROPERTY(initial_windows);
+    ARGPARSE_BOOL_PROPERTY(profile_mode);
+
+protected:
+    void setup_parser(argparse::parser_t &parser)
+    {
+	cov_project_params_t::setup_parser(parser);
+	parser.add_option('w', "initial-windows")
+	      .description("list of windows to open initially")
+	      .setter((argparse::arg_setter_t)&ggcov_params_t::set_initial_windows);
+	parser.add_option(0, "profile")
+	      .setter((argparse::noarg_setter_t)&ggcov_params_t::set_profile_mode);
+    }
+
+    void add_file(const char *file)
+    {
+	/* transparently handle file: URLs for Nautilus integration */
+	if (!strncmp(file, "file://", 7))
+	    file += 7;
+	cov_project_params_t::add_file(file);
+    }
+
+    void
+    post_args()
+    {
+	cov_project_params_t::post_args();
+	if (debug_enabled(D_DUMP|D_VERBOSE))
+	{
+	    const char **p;
+
+	    duprintf0("argv[] = {");
+	    for (p = debug_argv ; *p ; p++)
+	    {
+		if (strpbrk(*p, " \t\"'") == 0)
+		    duprintf1(" %s", *p);
+		else
+		    duprintf1(" \"%s\"", *p);
+	    }
+	    duprintf0(" }\n");
+	}
+    }
+
+};
+
+ggcov_params_t::ggcov_params_t()
+ :  initial_windows_("summary"),
+    profile_mode_(FALSE)
+{
+}
+
+ggcov_params_t::~ggcov_params_t()
+{
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -289,7 +348,7 @@ windows[] =
 };
 
 static void
-ui_create(const char *full_argv0, int successes)
+ui_create(ggcov_params_t &params, const char *full_argv0, int successes)
 {
     /*
      * If we're being run from the source directory, fiddle the
@@ -331,7 +390,7 @@ ui_create(const char *full_argv0, int successes)
     }
 
     /* Possibly have files from commandline or dialog...show initial windows */
-    tok_t tok(initial_windows, ", \n\r");
+    tok_t tok(params.get_initial_windows(), ", \n\r");
     const char *name;
     int nwindows = 0;
     while ((name = tok.next()) != 0)
@@ -352,102 +411,11 @@ ui_create(const char *full_argv0, int successes)
     if (!nwindows)
 	on_windows_new_summarywin_activated(0, 0);
 
-    if (profile_mode)
+    if (params.get_profile_mode())
     {
 	while (g_main_context_iteration(NULL, FALSE))
 	    ;
 	exit(0);
-    }
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-/*
- * With the old GTK, we're forced to parse our own arguments the way
- * the library wants, with popt and in such a way that we can't use the
- * return from poptGetNextOpt() to implement multiple-valued options
- * (e.g. -o dir1 -o dir2).  This limits our ability to parse arguments
- * for both old and new GTK builds.  Worse, gtk2 doesn't depend on popt
- * at all, so some systems will have gtk2 and not popt, so we have to
- * parse arguments in a way which avoids potentially buggy duplicate
- * specification of options, i.e. we simulate popt in fakepopt.c!
- */
-static poptContext popt_context;
-static const struct poptOption popt_options[] =
-{
-    {
-	"initial-windows",                      /* longname */
-	'w',                                    /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&initial_windows,                       /* arg */
-	0,                                      /* val 0=don't return */
-	"list of windows to open initially",    /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"profile",                              /* longname */
-	0,                                      /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&profile_mode,                          /* arg */
-	0,                                      /* val 0=don't return */
-	0,                                      /* descrip */
-	0                                       /* argDescrip */
-    },
-    COV_POPT_OPTIONS
-    POPT_AUTOHELP
-    POPT_TABLEEND
-};
-
-static void
-parse_args(int argc, char **argv)
-{
-    const char *file;
-
-    argv0 = argv[0];
-
-#if HAVE_GNOME_PROGRAM_INIT
-    /* gnome_program_init() already has popt options */
-#elif GTK2
-    popt_context = poptGetContext(PACKAGE, argc, (const char**)argv,
-				  popt_options, 0);
-    int rc;
-    while ((rc = poptGetNextOpt(popt_context)) > 0)
-	;
-    if (rc < -1)
-    {
-	fprintf(stderr, "%s:%s at or near %s\n",
-	    argv[0],
-	    poptStrerror(rc),
-	    poptBadOption(popt_context, POPT_BADOPTION_NOALIAS));
-	exit(1);
-    }
-#endif
-
-    while ((file = poptGetArg(popt_context)) != 0)
-    {
-	/* transparently handle file: URLs for Nautilus integration */
-	if (!strncmp(file, "file://", 7))
-	    file += 7;
-	files.append(file);
-    }
-
-    poptFreeContext(popt_context);
-
-    cov_post_args();
-
-    if (debug_enabled(D_DUMP|D_VERBOSE))
-    {
-	const char **p;
-
-	duprintf0("parse_args: argv[] = {");
-	for (p = debug_argv ; *p ; p++)
-	{
-	    if (strpbrk(*p, " \t\"'") == 0)
-		duprintf1(" %s", *p);
-	    else
-		duprintf1(" \"%s\"", *p);
-	}
-	duprintf0(" }\n");
     }
 }
 
@@ -461,32 +429,39 @@ main(int argc, char **argv)
     /* stash a copy of argv[] in case we want to dump it for debugging */
     stash_argv(argc, argv);
 
+    ggcov_params_t params;
+    argparse::parser_t parser(params);
+
 #if HAVE_GNOME_PROGRAM_INIT
     GnomeProgram *prog;
+    poptContext popt_context;
 
     prog = gnome_program_init(PACKAGE, VERSION, LIBGNOMEUI_MODULE,
 			      argc, argv,
-			      GNOME_PARAM_POPT_TABLE, popt_options,
+			      GNOME_PARAM_POPT_TABLE, parser.get_popt_table(),
 			      GNOME_PROGRAM_STANDARD_PROPERTIES,
 			      GNOME_PARAM_NONE);
     g_object_get(prog, GNOME_PARAM_POPT_CONTEXT, &popt_context, (char *)0);
+    parser.handle_popt_tail(popt_context);
 #elif GTK2
     gtk_init(&argc, &argv);
     /* As of 2.0 we don't need to explicitly initialise libGlade anymore */
+    parser.parse(argc, argv);
 #else
+    poptContext popt_context;
     gnome_init_with_popt_table(PACKAGE, VERSION, argc, argv,
-			       popt_options, /*popt flags*/0,
+			       parser.get_popt_table(), /*popt flags*/0,
 			       &popt_context);
     glade_gnome_init();
+    parser.handle_popt_tail(popt_context);
 #endif
 
-    parse_args(argc, argv);
-    int r = cov_read_files(files);
+    int r = cov_read_files(params);
     if (r < 0)
 	exit(1);    /* error message in cov_read_files() */
 
     cov_dump(stderr);
-    ui_create(argv[0], r);
+    ui_create(params, argv[0], r);
     gtk_main();
 
     return 0;

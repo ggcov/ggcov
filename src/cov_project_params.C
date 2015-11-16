@@ -1,0 +1,143 @@
+/*
+ * ggcov - A GTK frontend for exploring gcov coverage data
+ * Copyright (c) 2001-2015 Greg Banks <gnb@users.sourceforge.net>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#include "cov_project_params.H"
+
+cov_project_params_t::cov_project_params_t()
+ :  recursive_(FALSE),
+    solve_fuzzy_(FALSE),
+    print_version_flag_(FALSE)
+{
+}
+
+cov_project_params_t::~cov_project_params_t()
+{
+}
+
+void
+cov_project_params_t::setup_parser(argparse::parser_t &parser)
+{
+    argparse::params_t::setup_parser(parser);
+    parser.add_option('r', "recursive")
+	  .description("recursively scan directories for source")
+	  .setter((argparse::noarg_setter_t)&cov_project_params_t::set_recursive);
+    parser.add_option(0, "suppress-call")
+	  .description("suppress blocks which call this function")
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_calls);
+    parser.add_option('X', "suppress-ifdef")
+	  .description("suppress source which is conditional on this cpp define")
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_ifdefs);
+    parser.add_option('Y', "suppress-comment")
+	  .description("suppress source on lines containing this comment")
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_comment_lines);
+    parser.add_option('Z', "suppress-comment-between")
+	  .description("suppress source between lines containing these start and end comments")
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_comment_ranges);
+    parser.add_option('p', "gcda-prefix")
+	  .description("directory underneath which to find .da files")
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_gcda_prefix);
+    parser.add_option('o', "object-directory")
+	  .description("directory in which to find .o,.bb,.bbg,.da files")
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_object_directory);
+    parser.add_option('F', "solve-fuzzy")
+	  .description("(silently ignored for compatibility)")
+	  .setter((argparse::noarg_setter_t)&cov_project_params_t::set_solve_fuzzy);
+    parser.add_option('D', "debug")
+	  .description("enable ggcov debugging features")
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_debug_str);
+    parser.add_option('v', "version")
+	  .description("print version and exit")
+	  .setter((argparse::noarg_setter_t)&cov_project_params_t::set_print_version_flag);
+}
+
+void
+cov_project_params_t::post_args()
+{
+    if (debug_str_.data() != 0)
+	debug_set(debug_str_);
+
+    if (print_version_flag_)
+    {
+	fputs(PACKAGE " version " VERSION "\n", stdout);
+	exit(0);
+    }
+
+    if (debug_enabled(D_DUMP|D_VERBOSE))
+    {
+	string_var token_str = debug_enabled_tokens();
+
+	duprintf1("recursive=%d\n", recursive_);
+	duprintf1("suppressed_calls=%s\n", suppressed_calls_.data());
+	duprintf1("suppressed_ifdefs=%s\n", suppressed_ifdefs_.data());
+	duprintf1("suppressed_comment_lines=%s\n", suppressed_comment_lines_.data());
+	duprintf1("suppressed_comment_ranges=%s\n", suppressed_comment_ranges_.data());
+	duprintf2("debug = 0x%lx (%s)\n", debug, token_str.data());
+
+	static const struct { const char *name; int value; } build_options[] =
+	{
+	    { "HAVE_LIBBFD",
+	    #ifdef HAVE_LIBBFD
+	    1
+	    #endif
+	    }, { "HAVE_LIBPOPT",
+	    #ifdef HAVE_LIBPOPT
+	    1
+	    #endif
+	    }, { "HAVE_LIBGCONF",
+	    #ifdef HAVE_LIBGCONF
+	    1
+	    #endif
+	    }, { "COV_I386",
+	    #ifdef COV_I386
+	    1
+	    #endif
+	    }, { "COV_AMD64",
+	    #ifdef COV_AMD64
+	    1
+	    #endif
+	    }, { "UI_DEBUG",
+	    #ifdef UI_DEBUG
+	    1
+	    #endif
+	    }, { "HAVE_GNOME_PROGRAM_INIT",
+	    #ifdef HAVE_GNOME_PROGRAM_INIT
+	    1
+	    #endif
+	    }, { "HAVE_GTK_TEXT_BUFFER_SELECT_RANGE",
+	    #ifdef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
+	    1
+	    #endif
+	    }, { "HAVE_G_HASH_TABLE_ITER",
+	    #ifdef HAVE_G_HASH_TABLE_ITER
+	    1
+	    #endif
+	    }, { NULL, 0 }
+	};
+	duprintf0("built with");
+	for (int i = 0 ; build_options[i].name ; i++)
+	    duprintf2(" %s%s", build_options[i].value ? "" : "!", build_options[i].name);
+	duprintf0("\n");
+
+	duprintf0("files = ");
+	for (file_iterator_t itr = file_iter() ; *itr ; ++itr)
+	    duprintf1(" \"%s\"", *itr);
+	duprintf0(" }\n");
+    }
+}
+

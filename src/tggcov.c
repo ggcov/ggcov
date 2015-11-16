@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2003-2005 Greg Banks <gnb@users.sourceforge.net>
+ * Copyright (c) 2003-2015 Greg Banks <gnb@users.sourceforge.net>
  *
  *
  * TODO: attribution for decode-gcov.c
@@ -42,18 +42,90 @@
 CVSID("$Id: tggcov.c,v 1.24 2010-05-09 05:37:15 gnb Exp $");
 
 char *argv0;
-static list_t<const char> files;            /* incoming specification from commandline */
 
-static int header_flag = FALSE;
-static int blocks_flag = FALSE;
-static int lines_flag = FALSE;
-static int new_format_flag = FALSE;
-static int status_flag = FALSE;
-static int annotate_flag = FALSE;
-static int check_callgraph_flag = FALSE;
-static int dump_callgraph_flag = FALSE;
-static const char *reports = 0;
-static char *output_filename;
+class tggcov_params_t : public cov_project_params_t
+{
+public:
+    tggcov_params_t();
+    ~tggcov_params_t();
+
+    ARGPARSE_STRING_PROPERTY(reports);
+    ARGPARSE_BOOL_PROPERTY(annotate_flag);
+    ARGPARSE_BOOL_PROPERTY(blocks_flag);
+    ARGPARSE_BOOL_PROPERTY(header_flag);
+    ARGPARSE_BOOL_PROPERTY(lines_flag);
+    ARGPARSE_BOOL_PROPERTY(status_flag);
+    ARGPARSE_BOOL_PROPERTY(new_format_flag);
+    ARGPARSE_BOOL_PROPERTY(check_callgraph_flag);
+    ARGPARSE_BOOL_PROPERTY(dump_callgraph_flag);
+    ARGPARSE_STRING_PROPERTY(output_filename);
+
+public:
+    void setup_parser(argparse::parser_t &parser)
+    {
+	cov_project_params_t::setup_parser(parser);
+	parser.add_option('R', "report")
+	      .description("display named reports or \"all\"")
+	      .setter((argparse::arg_setter_t)&tggcov_params_t::set_reports);
+	parser.add_option('a', "annotate")
+	      .description("save annotated source to FILE.tggcov")
+	      .setter((argparse::noarg_setter_t)&tggcov_params_t::set_annotate_flag);
+	parser.add_option('B', "blocks")
+	      .description("in annotated source, display block numbers")
+	      .setter((argparse::noarg_setter_t)&tggcov_params_t::set_blocks_flag);
+	parser.add_option('H', "header")
+	      .description("in annotated source, display header line")
+	      .setter((argparse::noarg_setter_t)&tggcov_params_t::set_header_flag);
+	parser.add_option('L', "lines")
+	      .description("in annotated source, display line numbers")
+	      .setter((argparse::noarg_setter_t)&tggcov_params_t::set_lines_flag);
+	parser.add_option('S', "status")
+	      .description("in annotated source, display line status")
+	      .setter((argparse::noarg_setter_t)&tggcov_params_t::set_status_flag);
+	parser.add_option('N', "new-format")
+	      .description("in annotated source, display count in new gcc 3.3 format")
+	      .setter((argparse::noarg_setter_t)&tggcov_params_t::set_new_format_flag);
+	parser.add_option('G', "check-callgraph")
+	      .description("generate and check callgraph diagram")
+	      .setter((argparse::noarg_setter_t)&tggcov_params_t::set_check_callgraph_flag);
+	parser.add_option('P', "dump-callgraph")
+	      .description("dump callgraph data in text form")
+	      .setter((argparse::noarg_setter_t)&tggcov_params_t::set_dump_callgraph_flag);
+	parser.add_option('o', "output")
+	      .description("output file for annotation")
+	      .setter((argparse::arg_setter_t)&tggcov_params_t::set_output_filename);
+	parser.set_other_option_help("[OPTIONS] [executable|source|directory]...");
+    }
+
+    void post_args()
+    {
+	cov_project_params_t::post_args();
+	if (debug_enabled(D_DUMP|D_VERBOSE))
+	{
+	    duprintf1("blocks_flag=%d\n", blocks_flag_);
+	    duprintf1("header_flag=%d\n", header_flag_);
+	    duprintf1("lines_flag=%d\n", lines_flag_);
+	    duprintf1("reports=\"%s\"\n", reports_.data());
+	}
+    }
+};
+
+tggcov_params_t::tggcov_params_t()
+ : annotate_flag_(0),
+   blocks_flag_(0),
+   header_flag_(0),
+   lines_flag_(0),
+   status_flag_(0),
+   new_format_flag_(0),
+   check_callgraph_flag_(0),
+   dump_callgraph_flag_(0)
+{
+}
+
+tggcov_params_t::~tggcov_params_t()
+{
+}
+
 
 static const char *status_short_names[cov::NUM_STATUS] =
 {
@@ -69,7 +141,7 @@ static const char *status_short_names[cov::NUM_STATUS] =
 #define BLOCKS_WIDTH    8
 
 static void
-annotate_file(cov_file_t *f)
+annotate_file(tggcov_params_t &params, cov_file_t *f)
 {
     const char *cfilename = f->name();
     FILE *infp, *outfp = NULL;
@@ -84,14 +156,14 @@ annotate_file(cov_file_t *f)
 	return;
     }
 
-    if (output_filename && !strcmp(output_filename, "-"))
+    if (params.get_output_filename() && !strcmp(params.get_output_filename(), "-"))
     {
 	ggcov_filename = NULL;
 	outfp = stdout;
     }
-    else if (output_filename)
+    else if (params.get_output_filename())
     {
-	estring e = (const char *)output_filename;
+	estring e = params.get_output_filename();
 	e.replace_all("{}", file_basename_c(cfilename));
 	ggcov_filename = e.take();
     }
@@ -113,23 +185,23 @@ annotate_file(cov_file_t *f)
 	g_free(ggcov_filename);
     }
 
-    if (header_flag)
+    if (params.get_header_flag())
     {
 	fprintf(outfp, "    Count       ");
-	if (blocks_flag)
+	if (params.get_blocks_flag())
 	    fprintf(outfp, "Block(s)");
-	if (lines_flag)
+	if (params.get_lines_flag())
 	    fprintf(outfp, " Line   ");
-	if (status_flag)
+	if (params.get_status_flag())
 	    fprintf(outfp, " Status ");
 	fprintf(outfp, " Source\n");
 
 	fprintf(outfp, "============    ");
-	if (blocks_flag)
+	if (params.get_blocks_flag())
 	    fprintf(outfp, "======= ");
-	if (lines_flag)
+	if (params.get_lines_flag())
 	    fprintf(outfp, "======= ");
-	if (status_flag)
+	if (params.get_status_flag())
 	    fprintf(outfp, "======= ");
 	fprintf(outfp, "=======\n");
     }
@@ -140,7 +212,7 @@ annotate_file(cov_file_t *f)
 	++lineno;
 	ln = f->nth_line(lineno);
 
-	if (new_format_flag)
+	if (params.get_new_format_flag())
 	{
 	    if (ln->status() != cov::UNINSTRUMENTED &&
 		ln->status() != cov::SUPPRESSED)
@@ -168,17 +240,17 @@ annotate_file(cov_file_t *f)
 	    else
 		fputs("\t\t", outfp);
 	}
-	if (blocks_flag)
+	if (params.get_blocks_flag())
 	{
 	    char blocks_buf[BLOCKS_WIDTH];
 	    ln->format_blocks(blocks_buf, BLOCKS_WIDTH-1);
 	    fprintf(outfp, "%*s ", BLOCKS_WIDTH-1, blocks_buf);
 	}
-	if (lines_flag)
+	if (params.get_lines_flag())
 	{
 	    fprintf(outfp, "%7lu ", lineno);
 	}
-	if (status_flag)
+	if (params.get_status_flag())
 	{
 	    fprintf(outfp, "%7s ", status_short_names[ln->status()]);
 	}
@@ -191,10 +263,10 @@ annotate_file(cov_file_t *f)
 }
 
 static void
-annotate(void)
+annotate(tggcov_params_t &params)
 {
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
-	annotate_file(*iter);
+	annotate_file(params, *iter);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -212,13 +284,14 @@ do_report(FILE *fp, const report_t *rep)
 }
 
 static void
-report(void)
+report(tggcov_params_t &params)
 {
     FILE *fp = stdout;
     const report_t *rep;
     gboolean did_msg1 = FALSE;
 
     report_lastlines = -1;
+    const char *reports = params.get_reports();
     if (reports == 0 || *reports == '\0' || !strcmp(reports, "all"))
     {
 	/* call all reports */
@@ -373,155 +446,6 @@ dump_callgraph(void)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-/*
- * With the old GTK, we're forced to parse our own arguments the way
- * the library wants, with popt and in such a way that we can't use the
- * return from poptGetNextOpt() to implement multiple-valued options
- * (e.g. -o dir1 -o dir2).  This limits our ability to parse arguments
- * for both old and new GTK builds.  Worse, gtk2 doesn't depend on popt
- * at all, so some systems will have gtk2 and not popt, so we have to
- * parse arguments in a way which avoids potentially buggy duplicate
- * specification of options, i.e. we simulate popt in fakepopt.c!
- */
-static poptContext popt_context;
-static struct poptOption popt_options[] =
-{
-    {
-	"report",                               /* longname */
-	'R',                                    /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&reports,                               /* arg */
-	0,                                      /* val 0=don't return */
-	"display named reports or \"all\"",     /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"annotate",                             /* longname */
-	'a',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&annotate_flag,                         /* arg */
-	0,                                      /* val 0=don't return */
-	"save annotated source to FILE.tggcov", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"blocks",                               /* longname */
-	'B',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&blocks_flag,                           /* arg */
-	0,                                      /* val 0=don't return */
-	"in annotated source, display block numbers",/* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"header",                               /* longname */
-	'H',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&header_flag,                           /* arg */
-	0,                                      /* val 0=don't return */
-	"in annotated source, display header line", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"lines",                                /* longname */
-	'L',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&lines_flag,                            /* arg */
-	0,                                      /* val 0=don't return */
-	"in annotated source, display line numbers", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"status",                               /* longname */
-	'S',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&status_flag,                           /* arg */
-	0,                                      /* val 0=don't return */
-	"in annotated source, display line status", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"new-format",                           /* longname */
-	'N',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&new_format_flag,                       /* arg */
-	0,                                      /* val 0=don't return */
-	"in annotated source, display count in new gcc 3.3 format", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"check-callgraph",                      /* longname */
-	'G',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&check_callgraph_flag,                  /* arg */
-	0,                                      /* val 0=don't return */
-	"generate and check callgraph diagram", /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"dump-callgraph",                       /* longname */
-	'P',                                    /* shortname */
-	POPT_ARG_NONE,                          /* argInfo */
-	&dump_callgraph_flag,                   /* arg */
-	0,                                      /* val 0=don't return */
-	"dump callgraph data in text form",     /* descrip */
-	0                                       /* argDescrip */
-    },
-    {
-	"output",                               /* longname */
-	'o',                                    /* shortname */
-	POPT_ARG_STRING,                        /* argInfo */
-	&output_filename,                       /* arg */
-	0,                                      /* val 0=don't return */
-	"output file for annotation",           /* descrip */
-	0                                       /* argDescrip */
-    },
-    COV_POPT_OPTIONS
-    POPT_AUTOHELP
-    POPT_TABLEEND
-};
-
-static void
-parse_args(int argc, char **argv)
-{
-    const char *file;
-
-    argv0 = argv[0];
-
-    popt_context = poptGetContext(PACKAGE, argc, (const char**)argv,
-				  popt_options, 0);
-    poptSetOtherOptionHelp(popt_context,
-			   "[OPTIONS] [executable|source|directory]...");
-
-    int rc;
-    while ((rc = poptGetNextOpt(popt_context)) > 0)
-	;
-    if (rc < -1)
-    {
-	fprintf(stderr, "%s:%s at or near %s\n",
-	    argv[0],
-	    poptStrerror(rc),
-	    poptBadOption(popt_context, POPT_BADOPTION_NOALIAS));
-	exit(1);
-    }
-
-    while ((file = poptGetArg(popt_context)) != 0)
-	files.append(file);
-
-    poptFreeContext(popt_context);
-
-    cov_post_args();
-
-    if (debug_enabled(D_DUMP|D_VERBOSE))
-    {
-	duprintf1("parse_args: blocks_flag=%d\n", blocks_flag);
-	duprintf1("parse_args: header_flag=%d\n", header_flag);
-	duprintf1("parse_args: lines_flag=%d\n", lines_flag);
-	duprintf1("parse_args: reports=\"%s\"\n", reports);
-    }
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #define DEBUG_GLIB 1
 #if DEBUG_GLIB
@@ -572,8 +496,14 @@ main(int argc, char **argv)
 		      log_func, /*user_data*/0);
 #endif
 
-    parse_args(argc, argv);
-    int r = cov_read_files(files);
+    tggcov_params_t params;
+    argparse::parser_t parser(params);
+    if (parser.parse(argc, argv) < 0)
+    {
+	exit(1);	/* error message emitted in parse_args() */
+    }
+
+    int r = cov_read_files(params);
     if (r < 0)
 	exit(1);    /* error message in cov_read_files() */
     if (r == 0)
@@ -581,13 +511,13 @@ main(int argc, char **argv)
 
     cov_dump(stderr);
 
-    if (reports)
-	report();
-    if (annotate_flag)
-	annotate();
-    if (check_callgraph_flag)
+    if (params.get_reports())
+	report(params);
+    if (params.get_annotate_flag())
+	annotate(params);
+    if (params.get_check_callgraph_flag())
 	check_callgraph();
-    if (dump_callgraph_flag)
+    if (params.get_dump_callgraph_flag())
 	dump_callgraph();
 
     return 0;
