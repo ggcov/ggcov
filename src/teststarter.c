@@ -34,24 +34,6 @@
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static void _dmsg(const char *fn, const char *fmt, ...)
-{
-    if (testrunner_t::verbose())
-    {
-	fprintf(stderr, "%s %d ", fn, getpid());
-	va_list args;
-	va_start(args, fmt);
-	vfprintf(stderr, fmt, args);
-	va_end(args);
-	fputc('\n', stderr);
-    }
-}
-
-#define dmsg(...) \
-    _dmsg(__FUNCTION__, __VA_ARGS__)
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 const char test_starter_t::default_exe[] = "foo";
 const char test_starter_t::default_lang[] = "c";
 string_var test_starter_t::base_dir = "..";
