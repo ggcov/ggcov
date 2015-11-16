@@ -27,6 +27,7 @@ libcommon_a_SOURCES= \
 		demangle.h demangle.c \
 		common.h common.c \
 		fakepopt.h fakepopt.c \
+		argparse.C argparse.H \
 		estring.H estring.C string_var.H tok.H tok.C \
 		cached_string.H cached_string.C \
 		filename.h filename.c \
@@ -150,7 +151,8 @@ testrunner_SOURCES=	testrunner.c testfw.c testfw.h \
 			hashtabletest.c \
 			listtest.c \
 			statustest.C \
-			scopetest.C
+			scopetest.C \
+			argstest.C
 testrunner_LDADD= 	$(CLI_LIBS)
 
 mangletest_SOURCES=	mangletest.c
