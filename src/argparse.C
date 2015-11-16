@@ -1,3 +1,4 @@
+#include "common.h"
 #include "argparse.H"
 
 namespace argparse
@@ -197,7 +198,7 @@ parser_t::get_popt_table()
 		0,				/* longname */
 		0,                              /* shortname */
 		POPT_ARG_CALLBACK,              /* argInfo */
-		(void *)popt_callback,		/* arg */
+		/*filled in later*/0,		/* arg */
 		0,                              /* val 0=don't return */
 		/*filled in later*/0,		/* descrip */
 		0                               /* argDescrip */
@@ -217,6 +218,7 @@ parser_t::get_popt_table()
 
 	memcpy(&popts[0], headers, sizeof(headers));
 	// this is for POPT_ARG_CALLBACK
+	popts[0].arg = function_to_object((void (*)())popt_callback);
 	popts[0].descrip = (const char *)this;
 
 	int n = nheaders;

@@ -267,6 +267,24 @@ extern void timing_impl(const char *func, unsigned int line,
 #define timingx(detail) timing_impl(__FUNCTION__, __LINE__, (detail))
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+/* These functions localize and neutralize the annoying warning
+ * "ISO C++ forbids casting between pointer-to-function and
+ * pointer-to-object". */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
+inline void (*object_to_function(void *p))()
+{
+    return (void (*)())p;
+}
+
+inline void *function_to_object(void (*fn)())
+{
+    return (void *)fn;
+}
+
+#pragma GCC diagnostic pop
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #ifdef _
 #undef _

@@ -15,6 +15,26 @@
  */
 #undef DEBUG
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+/* These functions localize and neutralize the annoying warning
+ * "ISO C++ forbids casting between pointer-to-function and
+ * pointer-to-object". */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
+
+inline void (*object_to_function(void *p))()
+{
+    return (void (*)())p;
+}
+
+inline void *function_to_object(void (*fn)())
+{
+    return (void *)fn;
+}
+
+#pragma GCC diagnostic pop
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 static void _fatal(const char *msg)
     __attribute__((noreturn));
 
@@ -136,7 +156,7 @@ real_open(const char *filename, int flags, int mode)
 
     if (!func)
     {
-	func = (int (*)(const char *, int, int))dlsym(RTLD_NEXT, "open");
+	func = (int (*)(const char *, int, int))object_to_function(dlsym(RTLD_NEXT, "open"));
 	if (!func)
 	    _fatal("libggcov: cannot get real open() "
 		   "call address, exiting\n");

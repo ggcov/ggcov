@@ -108,7 +108,7 @@ find_long_option(const struct poptOption *opt, const char *name, const char **va
 	switch (opt->argInfo)
 	{
 	case POPT_ARG_CALLBACK:
-	    *callbackp = (poptCallbackFn)opt->arg;
+	    *callbackp = (poptCallbackFn)object_to_function(opt->arg);
 	    *callback_datap = (void *)opt->descrip;
 	    break;
 	case POPT_ARG_INCLUDE_TABLE:
@@ -147,7 +147,7 @@ find_short_option(const struct poptOption *opt, char name,
 	switch (opt->argInfo)
 	{
 	case POPT_ARG_CALLBACK:
-	    *callbackp = (poptCallbackFn)opt->arg;
+	    *callbackp = (poptCallbackFn)object_to_function(opt->arg);
 	    *callback_datap = (void *)opt->descrip;
 	    break;
 	case POPT_ARG_INCLUDE_TABLE:
