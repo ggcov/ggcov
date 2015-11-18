@@ -50,10 +50,10 @@ cov_project_params_t::setup_parser(argparse::parser_t &parser)
 	  .description("suppress source between lines containing these start and end comments")
 	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_comment_ranges);
     parser.add_option('p', "gcda-prefix")
-	  .description("directory underneath which to find .da files")
+	  .description("directory underneath which to find .gcda files")
 	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_gcda_prefix);
     parser.add_option('o', "object-directory")
-	  .description("directory in which to find .o,.bb,.bbg,.da files")
+	  .description("directory in which to find .o,.gcno,.gcda files")
 	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_object_directory);
     parser.add_option('F', "solve-fuzzy")
 	  .description("(silently ignored for compatibility)")
