@@ -19,8 +19,6 @@
 
 #include "cached_string.H"
 
-CVSID("$Id: cached_string.C,v 1.2 2010-05-09 05:37:14 gnb Exp $");
-
 hashtable_t<const char, char> *cached_string::all_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

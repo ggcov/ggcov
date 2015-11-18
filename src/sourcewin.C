@@ -27,8 +27,6 @@
 #include "prefs.H"
 #include "confsection.H"
 
-CVSID("$Id: sourcewin.C,v 1.35 2010-05-09 05:37:15 gnb Exp $");
-
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
 	GTK_SCROLLED_WINDOW_CLASS(GTK_OBJECT_CLASS(GTK_OBJECT(obj)->klass))

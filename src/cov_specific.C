@@ -22,8 +22,6 @@
 #include "filename.h"
 #include "demangle.h"
 
-CVSID("$Id: cov_specific.C,v 1.8 2010-05-09 05:37:15 gnb Exp $");
-
 
 cov_factory_item_t *cov_factory_item_t::all_;
 

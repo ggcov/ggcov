@@ -28,8 +28,6 @@ extern "C" {
 }
 #endif
 
-CVSID("$Id: demangle.c,v 1.4 2010-05-09 05:37:15 gnb Exp $");
-
 #define LEFT_BRACKET    '('
 #define RIGHT_BRACKET   ')'
 

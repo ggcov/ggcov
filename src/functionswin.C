@@ -24,8 +24,6 @@
 #include "prefs.H"
 #include "confsection.H"
 
-CVSID("$Id: functionswin.C,v 1.19 2010-05-09 05:37:15 gnb Exp $");
-
 
 #define COL_BLOCKS      0
 #define COL_LINES       1

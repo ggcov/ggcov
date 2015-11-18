@@ -20,8 +20,6 @@
 #include "covio.H"
 #include "estring.H"
 
-CVSID("$Id: covio.C,v 1.11 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 covio_t::~covio_t()

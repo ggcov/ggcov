@@ -20,8 +20,6 @@
 #include "php_scenegen.H"
 #include <math.h>
 
-CVSID("$Id: php_scenegen.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 php_scenegen_t::php_scenegen_t()

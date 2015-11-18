@@ -25,8 +25,6 @@
 #include "window.H"
 #include "confsection.H"
 
-CVSID("$Id: ui.c,v 1.38 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 #if GTK2
 #define COL_LABEL   0

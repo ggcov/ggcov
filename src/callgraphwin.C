@@ -22,8 +22,6 @@
 #include "cov.H"
 #include "estring.H"
 
-CVSID("$Id: callgraphwin.C,v 1.17 2010-05-09 05:37:14 gnb Exp $");
-
 #define COL_COUNT   0
 #define COL_NAME    1
 #if !GTK2

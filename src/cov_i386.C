@@ -23,8 +23,6 @@
 
 #if defined(HAVE_LIBBFD) && (defined(COV_I386) || defined(COV_AM64))
 
-CVSID("$Id: cov_i386.C,v 1.9 2010-05-09 05:37:15 gnb Exp $");
-
 /*
  * Machine-specific code to scan i386 and amd64 object code for function calls.
  */

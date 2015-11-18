@@ -22,8 +22,6 @@
 #include "prefs.H"
 #include <libgnomeui/libgnomeui.h>
 
-CVSID("$Id: prefswin.C,v 1.8 2010-05-09 05:37:15 gnb Exp $");
-
 prefswin_t *prefswin_t::instance_ = 0;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -25,8 +25,6 @@
 #include "confsection.H"
 #include "prefs.H"
 
-CVSID("$Id: window.C,v 1.17 2010-05-09 05:37:15 gnb Exp $");
-
 static const char window_key[] = "ggcov_window_key";
 
 static list_t<window_t> all;

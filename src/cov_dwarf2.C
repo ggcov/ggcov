@@ -22,8 +22,6 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_dwarf2.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
-
 /*
  * Machine-specific code to read DWARF v2 debug entries from an
  * object file or executable and parse them for source filenames.

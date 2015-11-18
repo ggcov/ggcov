@@ -30,8 +30,6 @@
 #include "confsection.H"
 #include "estring.H"
 
-CVSID("$Id: confsection.C,v 1.11 2010-05-09 05:37:14 gnb Exp $");
-
 hashtable_t<const char, confsection_t> *confsection_t::all_;
 static const char filename[] = "ggcov";
 

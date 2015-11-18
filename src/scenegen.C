@@ -19,8 +19,6 @@
 
 #include "scenegen.H"
 
-CVSID("$Id: scenegen.C,v 1.5 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 scenegen_t::scenegen_t()

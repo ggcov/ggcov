@@ -22,8 +22,6 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_stab32.C,v 1.7 2010-05-09 05:37:15 gnb Exp $");
-
 /*
  * Machine-specific code to read 32-bit .stabs entries from an
  * object file or executable and parse them for source filenames.

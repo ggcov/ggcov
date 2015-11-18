@@ -21,8 +21,6 @@
 #include "prefs.H"
 #include "colors.h"
 
-CVSID("$Id: prefs.C,v 1.11 2010-05-09 05:37:15 gnb Exp $");
-
 prefs_t prefs;
 
 /*

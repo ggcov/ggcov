@@ -20,8 +20,6 @@
 #include "diagram.H"
 #include "colors.h"
 
-CVSID("$Id: diagram.C,v 1.2 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 diagram_t::diagram_t()

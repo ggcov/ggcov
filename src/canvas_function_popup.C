@@ -23,8 +23,6 @@
 #include "sourcewin.H"
 #include "ui.h"
 
-CVSID("$Id: canvas_function_popup.C,v 1.2 2010-05-09 05:37:14 gnb Exp $");
-
 canvas_function_popup_t::widgets_t canvas_function_popup_t::widgets_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

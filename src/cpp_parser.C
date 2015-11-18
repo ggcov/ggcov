@@ -22,8 +22,6 @@
 
 #define ISBLANK(c)      ((c) == ' ' || (c) == '\t')
 
-CVSID("$Id: cpp_parser.C,v 1.7 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cpp_parser_t::cpp_parser_t(const char *filename)

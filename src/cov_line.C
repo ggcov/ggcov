@@ -20,8 +20,6 @@
 #include "cov.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: cov_line.C,v 1.9 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_line_t::cov_line_t()

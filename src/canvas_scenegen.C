@@ -23,8 +23,6 @@
 #include "canvas_function_popup.H"
 #include "cov_suppression.H"
 
-CVSID("$Id: canvas_scenegen.C,v 1.4 2010-05-09 05:37:14 gnb Exp $");
-
 #define RGB_TO_STR(b, rgb) \
     snprintf((b), sizeof((b)), "#%02x%02x%02x", \
 		((rgb)>>16)&0xff, ((rgb)>>8)&0xff, (rgb)&0xff)

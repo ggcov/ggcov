@@ -21,8 +21,6 @@
 #include "estring.H"
 #include "ui.h"
 
-CVSID("$Id: help.c,v 1.8 2010-05-09 05:37:15 gnb Exp $");
-
 static GtkWidget *about_window;
 static GtkWidget *licence_window;
 

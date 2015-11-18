@@ -25,8 +25,6 @@
 #include "estring.H"
 #include "confsection.H"
 
-CVSID("$Id: callswin.C,v 1.24 2010-05-09 05:37:14 gnb Exp $");
-
 #define COL_FROM    0
 #define COL_TO      1
 #define COL_LINE    2

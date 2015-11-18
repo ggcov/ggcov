@@ -26,8 +26,6 @@
 
 #ifdef HAVE_LIBBFD
 
-CVSID("$Id: cov_elf.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
-
 /*
  * Machine-specific code to read 32-bit or 64-bit entries from an
  * ELF executable's .dynamic section and parse them for required

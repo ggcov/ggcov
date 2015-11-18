@@ -21,8 +21,6 @@
 
 #ifndef HAVE_LIBPOPT
 
-CVSID("$Id: fakepopt.c,v 1.5 2010-05-09 05:37:15 gnb Exp $");
-
 /*
  * Simulate enough of the popt interface so that I only have
  * to write and maintain a single argument parsing routine for

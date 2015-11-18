@@ -22,8 +22,6 @@
 #include "canvas_scenegen.H"
 #include "prefs.H"
 
-CVSID("$Id: diagwin.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 diagwin_t::diagwin_t(diagram_t *di)

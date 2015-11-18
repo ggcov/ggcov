@@ -20,8 +20,6 @@
 #include "cov.H"
 #include "cov_calliter.H"
 
-CVSID("$Id: cov_callgraph.C,v 1.11 2010-05-09 05:37:15 gnb Exp $");
-
 cov_callgraph_t *cov_callgraph_t::instance_ = 0;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

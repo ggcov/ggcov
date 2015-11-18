@@ -28,8 +28,6 @@
 #include "tok.H"
 #include <dirent.h>
 
-CVSID("$Id: cov.C,v 1.31 2010-05-09 05:37:14 gnb Exp $");
-
 static gboolean cov_read_one_object_file(const char *exefilename, int depth);
 static void cov_calculate_duplicate_counts(void);
 extern char *argv0;

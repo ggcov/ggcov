@@ -37,8 +37,6 @@
 #include <libgnomeui/libgnomeui.h>
 #include "fakepopt.h"
 
-CVSID("$Id: ggcov.c,v 1.53 2010-05-09 05:37:15 gnb Exp $");
-
 #define DEBUG_GTK 1
 
 char *argv0;

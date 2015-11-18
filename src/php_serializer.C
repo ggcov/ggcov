@@ -19,8 +19,6 @@
 
 #include "php_serializer.H"
 
-CVSID("$Id: php_serializer.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 php_serializer_t::php_serializer_t()

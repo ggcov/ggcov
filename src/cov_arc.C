@@ -22,8 +22,6 @@
 #include "estring.H"
 #include "filename.h"
 
-CVSID("$Id: cov_arc.C,v 1.12 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_arc_t::cov_arc_t()

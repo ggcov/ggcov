@@ -29,8 +29,6 @@
 #include "report.H"
 #include "tok.H"
 
-CVSID("$Id: report.C,v 1.4 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int

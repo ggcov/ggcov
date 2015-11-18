@@ -21,8 +21,6 @@
 #include <sys/time.h>
 #include "common.h"
 
-CVSID("$Id: common.c,v 1.20 2010-05-09 05:37:14 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 extern char *argv0;

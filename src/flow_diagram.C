@@ -20,8 +20,6 @@
 #include "flow_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: flow_diagram.C,v 1.7 2010-05-09 05:37:15 gnb Exp $");
-
 #define NODE_WIDTH      6.0
 #define HMARGIN         0.5
 #define HGAP            6.0

@@ -25,8 +25,6 @@
 #include <dirent.h>
 #include <fcntl.h>
 
-CVSID("$Id: filename.c,v 1.13 2010-05-09 05:37:15 gnb Exp $");
-
 #ifndef __set_errno
 #define __set_errno(v)   errno = (v)
 #endif

@@ -27,8 +27,6 @@
 #include "tok.H"
 #include "confsection.H"
 
-CVSID("$Id: fileswin.C,v 1.27 2010-05-09 05:37:15 gnb Exp $");
-
 
 #define COL_FILE        0
 #define COL_BLOCKS      1

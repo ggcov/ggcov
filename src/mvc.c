@@ -20,8 +20,6 @@
 
 #include "mvc.h"
 
-CVSID("$Id: mvc.c,v 1.4 2010-05-09 05:37:15 gnb Exp $");
-
 typedef struct mvc_listener_s       mvc_listener_t;
 typedef struct mvc_batch_s          mvc_batch_t;
 

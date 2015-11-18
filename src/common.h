@@ -204,15 +204,6 @@ static inline int safe_strcmp(const char *a, const char *b)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if defined(__ELF__) && defined(__GNUC__)
-#define _CVSID(u,s) __asm__ (".ident \"" s "\"" )
-#else
-#define _CVSID(u,s) static const char * const __cvsid##u[2] = {(s), (const char*)__cvsid}
-#endif
-#define CVSID(s) _CVSID(,s)
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 extern void fatal(const char *fmt, ...)
 #ifdef __GNUC__
 __attribute__ (( noreturn ))

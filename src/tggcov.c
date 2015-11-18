@@ -39,8 +39,6 @@
 #include "callgraph_diagram.H"
 #include "check_scenegen.H"
 
-CVSID("$Id: tggcov.c,v 1.24 2010-05-09 05:37:15 gnb Exp $");
-
 char *argv0;
 
 class tggcov_params_t : public cov_project_params_t

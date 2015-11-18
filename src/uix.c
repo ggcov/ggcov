@@ -20,8 +20,6 @@
 #include "uix.h"
 #include <gdk/gdkx.h>   /* This is what we want to avoid in the main code */
 
-CVSID("$Id: uix.c,v 1.8 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static XFontProp *

@@ -21,8 +21,6 @@
 #include "cov_suppression.H"
 #include "string_var.H"
 
-CVSID("$Id: cov_function.C,v 1.26 2010-05-09 05:37:15 gnb Exp $");
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_function_t::cov_function_t()

@@ -27,8 +27,6 @@
 #include "uix.h"
 #include "gnbstackedbar.h"
 
-CVSID("$Id: summarywin.C,v 1.22 2010-05-09 05:37:15 gnb Exp $");
-
 list_t<summarywin_t> summarywin_t::instances_;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

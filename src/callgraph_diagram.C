@@ -21,8 +21,6 @@
 #include "tok.H"
 #include "estring.H"
 
-CVSID("$Id: callgraph_diagram.C,v 1.18 2010-05-09 05:37:14 gnb Exp $");
-
 #define MARGIN              0.2
 #define BOX_WIDTH           4.0
 #define BOX_HEIGHT          1.0

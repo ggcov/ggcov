@@ -20,8 +20,6 @@
 #include "lego_diagram.H"
 #include "tok.H"
 
-CVSID("$Id: lego_diagram.C,v 1.5 2010-05-09 05:37:15 gnb Exp $");
-
 #define WIDTH   (1.0)
 #define HEIGHT  (1.0)
 
