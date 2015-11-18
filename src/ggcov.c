@@ -76,6 +76,7 @@ stash_argv(int argc, char **argv)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+static void add_all_window_names(estring &);
 
 class ggcov_params_t : public cov_project_params_t
 {
@@ -90,8 +91,11 @@ protected:
     void setup_parser(argparse::parser_t &parser)
     {
 	cov_project_params_t::setup_parser(parser);
+
+	estring w_desc("list of windows to open initially, any of: ");
+	add_all_window_names(w_desc);
 	parser.add_option('w', "initial-windows")
-	      .description("list of windows to open initially")
+	      .description(w_desc)
 	      .setter((argparse::arg_setter_t)&ggcov_params_t::set_initial_windows);
 	parser.add_option(0, "profile")
 	      .setter((argparse::noarg_setter_t)&ggcov_params_t::set_profile_mode);
@@ -344,6 +348,17 @@ windows[] =
     {"reports", N_("New Report..."), on_windows_new_reportwin_activated},
     {0, 0, 0}
 };
+
+static void add_all_window_names(estring &s)
+{
+    const struct window *wp;
+    for (wp = windows ; wp->name ; wp++)
+    {
+	if (wp > windows)
+	    s.append_char(',');
+	s.append_string(wp->name);
+    }
+}
 
 static void
 ui_create(ggcov_params_t &params, const char *full_argv0, int successes)
