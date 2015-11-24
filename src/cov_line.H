@@ -29,6 +29,8 @@ class cov_function_t;
 class cov_line_t
 {
 public:
+    cov_line_t();
+    ~cov_line_t();
 
     count_t count()
     {
@@ -55,8 +57,6 @@ public:
     }
     cov_function_t *function() const;
 
-    static cov_line_t *find(const cov_location_t *);
-
     /*
      * Format a string compactly describing the list of blocks
      * on a particular line.  Used in the Source window and
@@ -64,24 +64,36 @@ public:
      */
     unsigned int format_blocks(char *buf, unsigned int maxlen);
 
+    gboolean has_blocks() const
+    {
+	return blocks_.head() != 0;
+    }
+    unsigned int num_blocks() const
+    {
+	return blocks_.length();
+    }
+    void add_block(cov_block_t *b)
+    {
+	blocks_.append(b);
+    }
+    void remove_block(cov_block_t *b)
+    {
+	blocks_.remove(b);
+    }
+
+    void suppress(const cov_suppression_t *);
+    const cov_suppression_t *suppression() const { return suppression_; }
+
+    void finalise();
 
 private:
-    cov_line_t();
-    ~cov_line_t();
-    static void remove(const cov_location_t *, cov_block_t *);
     void calculate_count();
-    void suppress(const cov_suppression_t *);
-    void finalise();
 
     list_t<cov_block_t> blocks_;
     boolean count_valid_;  /* covers status_, count_ */
     cov::status_t status_;
     count_t count_;
     const cov_suppression_t *suppression_;
-
-    friend class cov_file_t;
-    friend class cov_block_t;
-    friend class cov_file_src_parser_t;
 };
 
 

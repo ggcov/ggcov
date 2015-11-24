@@ -34,7 +34,9 @@ cov_block_t::~cov_block_t()
     cov_location_t *loc;
     while ((loc = locations_.remove_head()) != 0)
     {
-	cov_line_t::remove(loc, this);
+	cov_line_t *ln = cov_file_t::find_line(loc);
+	if (ln)
+	    ln->remove_block(this);
 	delete loc;
     }
 
@@ -192,7 +194,7 @@ cov_block_t::finalise()
 	 * lines are suppressed */
 	cov_suppression_combiner_t c(cov_suppressions);
 	for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
-	    c.add(cov_line_t::find(*liter)->suppression_);
+	    c.add(cov_file_t::find_line(*liter)->suppression());
 	suppress(c.result());
     }
 
@@ -248,7 +250,7 @@ cov_block_t::calc_stats(cov_stats_t *stats) const
 	 */
 	for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
 	{
-	    cov_line_t *ln = cov_line_t::find(*liter);
+	    cov_line_t *ln = cov_file_t::find_line(*liter);
 
 	    st = ln->status();
 

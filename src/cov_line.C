@@ -85,30 +85,6 @@ cov_line_t::calculate_count()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-cov_line_t *
-cov_line_t::find(const cov_location_t *loc)
-{
-    cov_file_t *f;
-
-    return ((f = cov_file_t::find(loc->filename)) == 0 ||
-	    loc->lineno < 1 ||
-	    loc->lineno > f->num_lines()
-	    ? 0
-	    : f->nth_line(loc->lineno));
-}
-
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-void
-cov_line_t::remove(const cov_location_t *loc, cov_block_t *b)
-{
-    cov_line_t *ln = find(loc);
-
-    if (ln)
-	ln->blocks_.remove(b);
-}
-
 void
 cov_line_t::suppress(const cov_suppression_t *s)
 {

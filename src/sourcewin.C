@@ -892,7 +892,7 @@ sourcewin_t::selected_function() const
     ui_text_get_selected_lines(text_, &loc.lineno, 0);
 
     if (loc.lineno == 0 ||
-	(ln = cov_line_t::find(&loc)) == 0 ||
+	(ln = cov_file_t::find_line(&loc)) == 0 ||
 	(fn = ln->function()) == 0)
 	return 0;
     return fn;

@@ -122,7 +122,7 @@ cov_range_call_iterator_t::cov_range_call_iterator_t(
     if (first_)
     {
 	location_ = *first;
-	cov_line_t *ln = cov_line_t::find(&location_);
+	cov_line_t *ln = cov_file_t::find_line(&location_);
 	if (ln != 0)
 	    biter_ = ln->blocks().first();
     }
@@ -156,7 +156,7 @@ cov_range_call_iterator_t::next()
 	    if (last_ == 0 || location_ == *last_)
 		return FALSE;
 	    ++location_;
-	    cov_line_t *ln = cov_line_t::find(&location_);
+	    cov_line_t *ln = cov_file_t::find_line(&location_);
 	    if (ln != 0 && (biter_ = ln->blocks().first()) != 0)
 		break;
 	}

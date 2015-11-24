@@ -88,6 +88,8 @@ public:
      */
     static void *files_model();
 
+    static cov_line_t *find_line(const cov_location_t *loc);
+
     /*
      * For iterating over a file's functions.  Functions are
      * numbered 0..num_functions-1

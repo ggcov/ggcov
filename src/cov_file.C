@@ -390,7 +390,7 @@ cov_file_t::add_location(
      * This tweak suppresses the line entry for the epilogue block if
      * another block already has the line.
      */
-    if (ln->blocks_.head() && b->is_epilogue())
+    if (ln->has_blocks() && b->is_epilogue())
     {
 	dprintf3(D_BB, "Block %s skipping duplicate epilogue line %s:%lu\n",
 		  b->describe(), filename, lineno);
@@ -401,14 +401,26 @@ cov_file_t::add_location(
     {
 	duprintf3("Block %s adding location %s:%lu\n",
 		  b->describe(), filename, lineno);
-	if (ln->blocks_.head())
+	if (ln->has_blocks())
 	    duprintf3("%s:%lu: this line belongs to %d blocks\n",
-		      filename, lineno, ln->blocks_.length()+1);
+		      filename, lineno, ln->num_blocks()+1);
     }
 
-    ln->blocks_.append(b);
+    ln->add_block(b);
     b->add_location(f->name_, lineno);
     f->has_locations_ = TRUE;
+}
+
+cov_line_t *
+cov_file_t::find_line(const cov_location_t *loc)
+{
+    cov_file_t *f;
+
+    return ((f = cov_file_t::find(loc->filename)) == 0 ||
+	    loc->lineno < 1 ||
+	    loc->lineno > f->num_lines()
+	    ? 0
+	    : f->nth_line(loc->lineno));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1610,7 +1622,7 @@ cov_file_t::o_file_add_call(
 	}
     }
 
-    if ((ln = cov_line_t::find(&loc)) == 0)
+    if ((ln = find_line(&loc)) == 0)
     {
 	fprintf(stderr, "No blocks for call to %s at %s:%ld\n",
 		    callname_dem, loc.filename, loc.lineno);
