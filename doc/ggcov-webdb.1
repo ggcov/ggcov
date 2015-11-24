@@ -1,6 +1,6 @@
 .\"
 .\" ggcov - A GTK frontend for exploring gcov coverage data
-.\" Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
+.\" Copyright (c) 2015 Greg Banks <gnb@fastmail.fm>
 .\" 
 .\" This program is free software; you can redistribute it and/or modify
 .\" it under the terms of the GNU General Public License as published by
@@ -107,8 +107,9 @@ When a directory is specified on the command line, search for
 coverage data files recursively in all child directories.
 .TP
 \fB\-X\fP \fIsymbols\fP, \fB\-\-suppress\-ifdef=\fP\fIsymbols\fP
-Do not include in statistics or summaries, code inside C pre-processor
-directives which depend on any of the given \fIsymbols\fP.  One or
+Suppress code inside C pre-processor directives which depend on
+any of the given \fIsymbols\fP.  Suppressed code is not included
+in statistics or summaries.  One or
 more symbols may be given, separated by commas or whitespace.  \fBGgcov\-webdb\fP
 understands the following subset of the C pre-processor command set:
 .IP
@@ -145,11 +146,11 @@ but whose coverage is not significant.
 
 .TP
 \fB\-Y\fP \fIwords\fP, \fB\-\-suppress\-comment=\fP\fIwords\fP
-Do not include in statistics or summaries, code on lines which
-also contains a single-line comment comprising only one of the
-given \fIwords\fP.  One or more symbols may be given, separated
-by commas or whitespace.  For example, specifying \fB-Y IGNOREME\fP
-will suppress the \fIassert()\fP in this code:
+Suppress code on lines which also contain a single-line comment
+comprising only one of the given \fIwords\fP.  Suppressed code is
+not included in statistics or summaries.  One or more symbols may be
+given, separated by commas or whitespace.  For example,
+specifying \fB-Y IGNOREME\fP will suppress the \fIassert()\fP in this code:
 .IP
 .nf
 unsigned int
@@ -166,12 +167,10 @@ code, or other code which is compiled into the coverage test executable
 but whose coverage is not significant.
 
 .TP
-\fB\-Z\fP \fIstartword,endword,...\fP
-.TP
-\fB\-\-suppress\-comment-between=\fP\fIstartword,endword,...\fP
-Do not include in statistics or summaries, code on lines between
-those containing a single-line comment comprising only \fIstartword\fP
-and the next single-line comment comprising only \fIendword\fP.
+\fB\-Z\fP \fIstartword,endword,...\fP \fB\-\-suppress\-comment-between=\fP\fIstartword,endword,...\fP
+Suppress code on lines between those containing a single-line comment
+comprising only \fIstartword\fP and the next single-line comment comprising
+only \fIendword\fP.  Suppressed code is not included in statistics or summaries.
 Two or more symbols may be given, in pairs, separated by commas or
 whitespace.  For example, \fB-Z STARTIGNORE,ENDIGNORE\fP
 will suppress the entire function in this code:
@@ -214,9 +213,9 @@ object files and test coverage data files are in different directories:
 .B ggcov\-webdb /foo/obj/ /foo/cov\-data/ /foo/src/
 .SH AUTHOR
 Written by Greg Banks
-.IR <gnb@users.sourceforge.net> .
+.IR <gnb@fastmail.fm> .
 .SH COPYRIGHT
-ggcov is Copyright \(co 2001\-2005 Greg Banks \fI<gnb@users.sourceforge.net>\fP.
+ggcov is Copyright \(co 2001\-2015 Greg Banks \fI<gnb@fastmail.fm>\fP.
 .br
 This is free software; see the COPYING file for copying conditions.  There
 is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
