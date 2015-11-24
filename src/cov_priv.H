@@ -22,7 +22,9 @@
 
 #include "cov.H"
 #include "cov_suppression.H"
+#include "cov_callgraph.H"
 
 extern cov_suppression_set_t cov_suppressions;
+extern cov_callgraph_t cov_callgraph;
 
 #endif /* _ggcov_cov_priv_H_ */

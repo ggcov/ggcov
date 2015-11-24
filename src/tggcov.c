@@ -30,7 +30,7 @@
  */
 
 #include "common.h"
-#include "cov.H"
+#include "cov_priv.H"
 #include "filename.h"
 #include "estring.H"
 #include "tok.H"
@@ -378,8 +378,7 @@ dump_callgraph(void)
     }
 
     ptrarray_t<cov_callnode_t> *nodes = new ptrarray_t<cov_callnode_t>;
-    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
-    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
     {
 	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    nodes->append(*cnitr);

@@ -18,6 +18,7 @@
  */
 
 #include "callgraph_diagram.H"
+#include "cov_priv.H"
 #include "tok.H"
 #include "estring.H"
 
@@ -211,8 +212,7 @@ callgraph_diagram_t::find_roots()
 {
     dprintf0(D_DCALLGRAPH, "finding root and disconnected nodes:\n");
 
-    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
-    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
 	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    find_roots_1(*cnitr);
     callnode_roots_.sort(compare_root_nodes);
@@ -232,7 +232,7 @@ callgraph_diagram_t::find_roots()
 	/* check for unreached nodes and whine about them */
 	unsigned int nunreached = 0;
 
-	for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+	for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
 	{
 	    for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    {
@@ -679,8 +679,7 @@ callgraph_diagram_t::dump_graph()
 {
     duprintf0("dump_graph:\n");
 
-    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
-    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
     {
 	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    dump_graph_1(*cnitr);

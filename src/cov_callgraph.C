@@ -20,8 +20,6 @@
 #include "cov.H"
 #include "cov_calliter.H"
 
-cov_callgraph_t *cov_callgraph_t::instance_ = 0;
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cov_callspace_t::cov_callspace_t(const char *name)
@@ -85,13 +83,8 @@ cov_callnode_t::cov_callnode_t(const char *nname)
 
 cov_callnode_t::~cov_callnode_t()
 {
-#if 0
-    nodes_->remove(name);
-    listdelete(out_arcs, cov_callarc_t, delete);
-    listclear(in_arcs);
-#else
-    assert(0);
-#endif
+    out_arcs.delete_all();
+    in_arcs.remove_all();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -141,10 +134,6 @@ cov_callarc_t::cov_callarc_t(cov_callnode_t *ffrom, cov_callnode_t *tto)
 
 cov_callarc_t::~cov_callarc_t()
 {
-#if 0
-#else
-    assert(0);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -187,9 +176,6 @@ cov_callgraph_t::cov_callgraph_t()
     global_ = new cov_callspace_t("-global-");
     files_ = new hashtable_t<const char, cov_callspace_t>;
     files_->insert(global_->name(), global_);
-
-    assert(instance_ == 0);
-    instance_ = this;
 }
 
 gboolean
@@ -201,10 +187,6 @@ cov_callgraph_t::delete_one(const char *name, cov_callspace_t *space, gpointer u
 
 cov_callgraph_t::~cov_callgraph_t()
 {
-    assert(instance_ == this);
-    instance_ = 0;
-
-    delete global_;
     files_->foreach_remove(delete_one, 0);
     delete files_;
 }

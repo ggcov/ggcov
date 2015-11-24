@@ -18,7 +18,7 @@
  */
 
 #include "common.h"
-#include "cov.H"
+#include "cov_priv.H"
 #include "filename.h"
 #include "estring.H"
 #include "tok.H"
@@ -494,8 +494,7 @@ build_callnode_index(void)
     unsigned int n = 0;
 
     callnode_index = new hashtable_t<void, unsigned int>;
-    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
-    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
     {
 	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    callnode_index->insert((void *)*cnitr, new unsigned int(++n));
@@ -512,8 +511,7 @@ save_callnode_index(DB *db)
     int ret;
 
     // Sort the callnode index, for the node <select>
-    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
-    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
     {
 	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    all.append(*cnitr);
@@ -593,8 +591,7 @@ save_callnode(cov_callnode_t *cn, DB *db)
 static void
 save_callgraph(DB *db)
 {
-    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
-    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
     {
 	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    save_callnode(*cnitr, db);

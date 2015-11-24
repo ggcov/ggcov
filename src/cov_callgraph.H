@@ -49,12 +49,8 @@ public:
 
     cov_callnode_t *default_node() const { return default_node_; }
 
-    /* callgraph is a singleton for now */
-    static cov_callgraph_t *instance() { return instance_; }
-
 private:
     cov_callspace_t *get_file_space(cov_file_t *f);
-    static cov_callgraph_t *instance_;
     static gboolean delete_one(const char *name, cov_callspace_t *cs, gpointer userdata);
 
     cov_callspace_t *global_;

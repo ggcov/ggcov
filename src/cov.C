@@ -32,6 +32,7 @@ static gboolean cov_read_one_object_file(const char *exefilename, int depth);
 static void cov_calculate_duplicate_counts(void);
 extern char *argv0;
 cov_suppression_set_t cov_suppressions;
+cov_callgraph_t cov_callgraph;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -152,11 +153,10 @@ cov_post_read(void)
 
     /* Build the callgraph */
     /* TODO: only do this to newly read files */
-    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
     for (iter = cov_file_t::first() ; *iter ; ++iter)
-	callgraph->add_nodes(*iter);
+	cov_callgraph.add_nodes(*iter);
     for (iter = cov_file_t::first() ; *iter ; ++iter)
-	callgraph->add_arcs(*iter);
+	cov_callgraph.add_arcs(*iter);
 
     cov_calculate_duplicate_counts();
 
@@ -683,8 +683,7 @@ cov_dump(FILE *fp)
 	for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
 	    dump_file(fp, *iter);
 
-	cov_callgraph_t *callgraph = cov_callgraph_t::instance();
-	for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+	for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
 	    dump_callspace(*csitr, fp);
     }
 }

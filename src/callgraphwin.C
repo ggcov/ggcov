@@ -19,7 +19,7 @@
 
 #include "callgraphwin.H"
 #include "sourcewin.H"
-#include "cov.H"
+#include "cov_priv.H"
 #include "estring.H"
 
 #define COL_COUNT   0
@@ -190,7 +190,7 @@ callgraphwin_t::callgraphwin_t()
     gtk_signal_connect(GTK_OBJECT(get_window()), "show",
 	GTK_SIGNAL_FUNC(on_callgraph_show), 0);
 
-    callnode_ = cov_callgraph_t::instance()->default_node();
+    callnode_ = cov_callgraph.default_node();
 }
 
 callgraphwin_t::~callgraphwin_t()
@@ -207,8 +207,7 @@ callgraphwin_t::populate_function_combo(GtkComboBox *combo)
 
     clear(combo);
 
-    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
-    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
     {
 	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    list.prepend(*cnitr);
@@ -232,8 +231,7 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
 
     ui_combo_clear(combo);    /* stupid glade2 */
 
-    cov_callgraph_t *callgraph = cov_callgraph_t::instance();
-    for (cov_callspace_iter_t csitr = callgraph->first() ; *csitr ; ++csitr)
+    for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
     {
 	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
 	    list.prepend(*cnitr);
