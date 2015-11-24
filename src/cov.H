@@ -59,4 +59,11 @@ void cov_dump(FILE *);
 
 extern int cov_read_files(const cov_project_params_t &);
 
+/*
+ * Returns a new list of all unsuppressed functions
+ * sorted by the function compare function.
+ */
+extern list_t<cov_function_t> *cov_list_all_functions();
+
+
 #endif /* _ggcov_cov_H_ */

@@ -208,7 +208,7 @@ summarywin_t::populate_function_combo(ui_combo_t *cbox)
 {
     list_t<cov_function_t> *list;
 
-    list = cov_function_t::list_all();
+    list = cov_list_all_functions();
 
     ::populate_function_combo(cbox, list, /*add_all_item*/FALSE, &function_);
 

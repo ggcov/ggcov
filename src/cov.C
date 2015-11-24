@@ -515,6 +515,20 @@ cov_read_files(const cov_project_params_t &params)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+list_t<cov_function_t> *
+cov_list_all_functions()
+{
+    list_t<cov_function_t> *list = new list_t<cov_function_t>;
+
+    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
+	for (ptrarray_iterator_t<cov_function_t> fnitr = (*iter)->functions().first() ; *fnitr ; ++fnitr)
+	    list->prepend(*fnitr);
+    list->sort(cov_function_t::compare);
+    return list;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 static const char *status_names[cov::NUM_STATUS] =
 {
     "COVERED",

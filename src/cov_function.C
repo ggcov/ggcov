@@ -500,20 +500,6 @@ cov_function_t::solve()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-list_t<cov_function_t> *
-cov_function_t::list_all()
-{
-    list_t<cov_function_t> *list = new list_t<cov_function_t>;
-
-    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
-	for (ptrarray_iterator_t<cov_function_t> fnitr = (*iter)->functions().first() ; *fnitr ; ++fnitr)
-	    list->prepend(*fnitr);
-    list->sort(cov_function_t::compare);
-    return list;
-}
-
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
 void
 cov_function_t::zero_arc_counts()
 {

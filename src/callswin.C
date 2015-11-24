@@ -231,7 +231,7 @@ void
 callswin_t::populate()
 {
     dprintf0(D_CALLSWIN, "callswin_t::populate\n");
-    functions_ = cov_function_t::list_all();
+    functions_ = cov_list_all_functions();
     ::populate_function_combo(from_function_combo_, functions_,
 			      /*add_all_item*/TRUE, /*currentp*/0);
     ::populate_function_combo(to_function_combo_, functions_,

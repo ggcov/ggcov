@@ -216,30 +216,12 @@ save_filename_index(DB *db)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-// like cov_function_t::list_all() but includes suppressed
-// functions as well.  TODO: is that a good idea?
-
-static list_t<cov_function_t> *
-really_list_all_functions(void)
-{
-    list_t<cov_function_t> *all = new list_t<cov_function_t>;
-
-    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
-    {
-	for (ptrarray_iterator_t<cov_function_t> fnitr = (*iter)->functions().first() ; *fnitr ; ++fnitr)
-	    all->append(*fnitr);
-    }
-
-    all->sort(cov_function_t::compare);
-    return all;
-}
-
 static void
 build_global_function_index(void)
 {
     unsigned int n = 0;
 
-    all_functions = really_list_all_functions();
+    all_functions = cov_list_all_functions();
 
     function_index = new hashtable_t<void, unsigned int>;
     for (list_iterator_t<cov_function_t> iter = all_functions->first() ; *iter ; ++iter)
