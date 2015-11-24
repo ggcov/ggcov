@@ -17,8 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "cov.H"
-#include "cov_suppression.H"
+#include "cov_priv.H"
 #include "estring.H"
 #include "filename.h"
 
@@ -140,8 +139,8 @@ cov_arc_t::take_name(char *name)
     assert(name);
     name_ = name;
 
-    from_->suppress(cov_suppression_t::find(name_, cov_suppression_t::BLOCK_CALLS));
-    suppress(cov_suppression_t::find(name_, cov_suppression_t::ARC_CALLS));
+    from_->suppress(cov_suppressions.find(name_, cov_suppression_t::BLOCK_CALLS));
+    suppress(cov_suppressions.find(name_, cov_suppression_t::ARC_CALLS));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

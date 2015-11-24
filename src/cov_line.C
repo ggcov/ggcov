@@ -17,8 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "cov.H"
-#include "cov_suppression.H"
+#include "cov_priv.H"
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -134,7 +133,7 @@ cov_line_t::finalise()
     {
 	/* suppress lines, where all the blocks
 	 * on the line are suppressed */
-	cov_suppression_combiner_t c;
+	cov_suppression_combiner_t c(cov_suppressions);
 	for (list_iterator_t<cov_block_t> biter = blocks_.first() ; *biter ; ++biter)
 	    c.add((*biter)->suppression_);
 	suppress(c.result());

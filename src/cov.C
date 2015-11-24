@@ -31,6 +31,7 @@
 static gboolean cov_read_one_object_file(const char *exefilename, int depth);
 static void cov_calculate_duplicate_counts(void);
 extern char *argv0;
+cov_suppression_set_t cov_suppressions;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -133,7 +134,7 @@ cov_init(void)
 
     new cov_callgraph_t();      // becomes singleton instance
     cov_file_t::init();
-    cov_suppression_t::init_builtins();
+    cov_suppressions.init_builtins();
 }
 
 void
@@ -411,8 +412,8 @@ cov_read_files(const cov_project_params_t &params)
 	const char *v;
 
 	while ((v = tok.next()) != 0)
-	    new cov_suppression_t(v, cov_suppression_t::BLOCK_CALLS,
-				  "commandline --suppress-call option");
+	    cov_suppressions.add(new cov_suppression_t(v, cov_suppression_t::BLOCK_CALLS,
+				  "commandline --suppress-call option"));
     }
 
     if (params.get_suppressed_ifdefs() != 0)
@@ -421,8 +422,8 @@ cov_read_files(const cov_project_params_t &params)
 	const char *v;
 
 	while ((v = tok.next()) != 0)
-	    new cov_suppression_t(v, cov_suppression_t::IFDEF,
-				  "commandline -X option");
+	    cov_suppressions.add(new cov_suppression_t(v, cov_suppression_t::IFDEF,
+				  "commandline -X option"));
     }
 
     if (params.get_suppressed_comment_lines() != 0)
@@ -431,8 +432,8 @@ cov_read_files(const cov_project_params_t &params)
 	const char *v;
 
 	while ((v = tok.next()) != 0)
-	    new cov_suppression_t(v, cov_suppression_t::COMMENT_LINE,
-				  "commandline -Y option");
+	    cov_suppressions.add(new cov_suppression_t(v, cov_suppression_t::COMMENT_LINE,
+				  "commandline -Y option"));
     }
 
     if (params.get_suppressed_comment_ranges() != 0)
@@ -451,6 +452,7 @@ cov_read_files(const cov_project_params_t &params)
 	    sup = new cov_suppression_t(s, cov_suppression_t::COMMENT_RANGE,
 					"commandline -Z option");
 	    sup->set_word2(e);
+	    cov_suppressions.add(sup);
 	}
     }
 

@@ -17,8 +17,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "cov_priv.H"
 #include "cov_specific.H"
-#include "cov_suppression.H"
 #include "string_var.H"
 
 #if defined(HAVE_LIBBFD) && (defined(COV_I386) || defined(COV_AM64))
@@ -231,7 +231,7 @@ cov_i386_call_scanner_t::next(cov_call_scanner_t::calldata_t *calld)
 	    if (!is_function_reloc(rel))
 		continue;
 
-	    if (cov_suppression_t::find(sym->name, cov_suppression_t::RELOC))
+	    if (cov_suppressions.find(sym->name, cov_suppression_t::RELOC))
 		continue;
 	    if ((sym->flags & BSF_FUNCTION) ||
 		(sym->flags & (BSF_LOCAL|BSF_GLOBAL|BSF_SECTION_SYM|BSF_OBJECT)) == 0)

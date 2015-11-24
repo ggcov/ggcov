@@ -17,8 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "cov.H"
-#include "cov_suppression.H"
+#include "cov_priv.H"
 #include "estring.H"
 #include "filename.h"
 
@@ -191,7 +190,7 @@ cov_block_t::finalise()
     {
 	/* suppress the block if all it's
 	 * lines are suppressed */
-	cov_suppression_combiner_t c;
+	cov_suppression_combiner_t c(cov_suppressions);
 	for (list_iterator_t<cov_location_t> liter = locations_.first() ; *liter ; ++liter)
 	    c.add(cov_line_t::find(*liter)->suppression_);
 	suppress(c.result());
@@ -201,7 +200,7 @@ cov_block_t::finalise()
     {
 	/* suppress the block if all it's
 	 * outgoing arcs are suppressed */
-	cov_suppression_combiner_t c;
+	cov_suppression_combiner_t c(cov_suppressions);
 	for (list_iterator_t<cov_arc_t> aiter = out_arcs_.first() ; *aiter ; ++aiter)
 	    c.add((*aiter)->suppression_);
 	suppress(c.result());

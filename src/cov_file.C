@@ -17,7 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "cov.H"
+#include "cov_priv.H"
 #include "cov_specific.H"
 #include "covio.H"
 #include "estring.H"
@@ -28,7 +28,6 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 #include "cpp_parser.H"
-#include "cov_suppression.H"
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
 list_t<cov_file_t> cov_file_t::files_list_;
@@ -67,7 +66,7 @@ cov_file_t::cov_file_t(const char *name, const char *relpath)
 
     files_->insert(name_, this);
 
-    suppress(cov_suppression_t::find(name_, cov_suppression_t::FILENAME));
+    suppress(cov_suppressions.find(name_, cov_suppression_t::FILENAME));
     if (!suppression_)
 	add_name(name_);
 }
@@ -140,7 +139,7 @@ cov_file_t::finalise()
     {
 	/* suppress the file if all it's
 	 * functions are suppressed */
-	cov_suppression_combiner_t c;
+	cov_suppression_combiner_t c(cov_suppressions);
 	for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
 	    c.add((*fnitr)->suppression_);
 	suppress(c.result());
@@ -1791,7 +1790,7 @@ private:
 
 	suppressions_[cov_suppression_t::IFDEF] = 0;
 	for (list_iterator_t<const cov_suppression_t> itr =
-	     cov_suppression_t::first(cov_suppression_t::IFDEF) ; *itr ; ++itr)
+	     cov_suppressions.first(cov_suppression_t::IFDEF) ; *itr ; ++itr)
 	{
 	    const cov_suppression_t *s = *itr;
 	    if (depends(s->word()))
@@ -1839,7 +1838,7 @@ private:
 
 	dprintf1(D_CPP, "handle_comment: \"%s\"\n", text);
 
-	s = cov_suppression_t::find(text, cov_suppression_t::COMMENT_LINE);
+	s = cov_suppressions.find(text, cov_suppression_t::COMMENT_LINE);
 	if (s)
 	{
 	    /* comment suppresses this line only */
@@ -1847,7 +1846,7 @@ private:
 	    dprintf0(D_CPP, "handle_comment: suppressing line\n");
 	}
 
-	s = cov_suppression_t::find(text, cov_suppression_t::COMMENT_RANGE);
+	s = cov_suppressions.find(text, cov_suppression_t::COMMENT_RANGE);
 	if (s)
 	{
 	    /* comment starts a new active range */
@@ -2033,11 +2032,11 @@ cov_file_t::file_missing(const char *ext, const char *ext2) const
 static int
 have_line_suppressions(void)
 {
-    if (cov_suppression_t::count(cov_suppression_t::IFDEF))
+    if (cov_suppressions.count(cov_suppression_t::IFDEF))
 	return TRUE;
-    if (cov_suppression_t::count(cov_suppression_t::COMMENT_LINE))
+    if (cov_suppressions.count(cov_suppression_t::COMMENT_LINE))
 	return TRUE;
-    if (cov_suppression_t::count(cov_suppression_t::COMMENT_RANGE))
+    if (cov_suppressions.count(cov_suppression_t::COMMENT_RANGE))
 	return TRUE;
     return FALSE;
 }

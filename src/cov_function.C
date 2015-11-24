@@ -17,8 +17,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "cov.H"
-#include "cov_suppression.H"
+#include "cov_priv.H"
 #include "string_var.H"
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -64,7 +63,7 @@ cov_function_t::set_name(const char *name)
     name_ = name;
     file_->functions_by_name_->insert(name_, this);
 
-    suppress(cov_suppression_t::find(name_, cov_suppression_t::FUNCTION));
+    suppress(cov_suppressions.find(name_, cov_suppression_t::FUNCTION));
 }
 
 void
@@ -118,7 +117,7 @@ cov_function_t::finalise()
     {
 	/* suppress the function if all it's
 	 * blocks are suppressed */
-	cov_suppression_combiner_t c;
+	cov_suppression_combiner_t c(cov_suppressions);
 	for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
 	    c.add((*bitr)->suppression_);
 	suppress(c.result());
@@ -435,7 +434,7 @@ cov_function_t::solve()
 			fprintf(stderr, "Function %s cannot be solved because "
 					"the arc counts are inconsistent, suppressing\n",
 					name_.data());
-			suppress(cov_suppression_t::find(0, cov_suppression_t::UNSOLVABLE));
+			suppress(cov_suppressions.find(0, cov_suppression_t::UNSOLVABLE));
 			return TRUE;
 		    }
 		    assert(b->count_ >= out_total);
@@ -459,7 +458,7 @@ cov_function_t::solve()
 			fprintf(stderr, "Function %s cannot be solved because "
 					"the arc counts are inconsistent, suppressing\n",
 					name_.data());
-			suppress(cov_suppression_t::find(0, cov_suppression_t::UNSOLVABLE));
+			suppress(cov_suppressions.find(0, cov_suppression_t::UNSOLVABLE));
 			return TRUE;
 		    }
 		    assert(b->count_ >= in_total);
