@@ -296,36 +296,9 @@ set_label_values(
     GtkWidget *pclabel,
     const unsigned long *values)
 {
-    unsigned long numerator, denominator;
-    char buf[128];
-    char pcbuf[128];
-
-    numerator = values[cov::COVERED] + values[cov::PARTCOVERED];
-    denominator = total(values);
-
-    if (denominator == 0)
-    {
-	snprintf(buf, sizeof(buf), "0/0");
-	pcbuf[0] = '\0';
-    }
-    else if (values[cov::PARTCOVERED] == 0)
-    {
-	snprintf(buf, sizeof(buf), "%ld/%ld",
-		numerator, denominator);
-	snprintf(pcbuf, sizeof(pcbuf), "%.1f%%",
-		(double)numerator * 100.0 / (double)denominator);
-    }
-    else
-    {
-	snprintf(buf, sizeof(buf), "%ld+%ld/%ld",
-		values[cov::COVERED],
-		values[cov::PARTCOVERED],
-		denominator);
-	snprintf(pcbuf, sizeof(pcbuf), "%.1f+%.1f%%",
-		(double)values[cov::COVERED] * 100.0 / (double)denominator,
-		(double)values[cov::PARTCOVERED] * 100.0 / (double)denominator);
-    }
-    gtk_label_set_text(GTK_LABEL(label), buf);
+    estring absbuf, pcbuf;
+    cov_stats_t::format_row_labels(values, absbuf, pcbuf);
+    gtk_label_set_text(GTK_LABEL(label), absbuf);
     gtk_label_set_text(GTK_LABEL(pclabel), pcbuf);
 }
 

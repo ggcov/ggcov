@@ -21,6 +21,7 @@
 #define _ggcov_cov_types_H_ 1
 
 #include "common.h"
+#include "estring.H"
 #include "list.H"
 
 #if HAVE_STDINT_H
@@ -482,6 +483,8 @@ public:
 	       !memcmp(branches_, o.branches_,
 		      sizeof(branches_[0]) * (int)cov::UNINSTRUMENTED);
     }
+
+    static void format_row_labels(const unsigned long *cc, estring &absbuf, estring &pcbuf);
 
     /* for testing */
     void dump(FILE *fp) const;

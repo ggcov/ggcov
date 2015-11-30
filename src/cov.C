@@ -739,4 +739,38 @@ const char *cov::long_name(cov::status_t st)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+void
+cov_stats_t::format_row_labels(const unsigned long *cc, estring &absbuf, estring &pcbuf)
+{
+    unsigned long numerator = cc[cov::COVERED] + cc[cov::PARTCOVERED];
+    unsigned long denominator = cc[cov::COVERED] + cc[cov::PARTCOVERED] + cc[cov::UNCOVERED];
+
+    absbuf.truncate();
+    pcbuf.truncate();
+
+    if (denominator == 0)
+    {
+	absbuf.append_string("0/0");
+    }
+    else if (cc[cov::PARTCOVERED] == 0)
+    {
+	absbuf.append_printf("%lu/%lu",
+		numerator, denominator);
+	pcbuf.append_printf("%.1f%%",
+		(double)numerator * 100.0 / (double)denominator);
+    }
+    else
+    {
+	absbuf.append_printf("%lu+%ld/%lu",
+		cc[cov::COVERED],
+		cc[cov::PARTCOVERED],
+		denominator);
+	pcbuf.append_printf("%.1f+%.1f%%",
+		(double)cc[cov::COVERED] * 100.0 / (double)denominator,
+		(double)cc[cov::PARTCOVERED] * 100.0 / (double)denominator);
+    }
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
