@@ -711,4 +711,32 @@ void cov_stats_t::dump(FILE *fp) const
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+const char *cov::short_name(cov::status_t st)
+{
+    static const char *names[cov::NUM_STATUS] =
+    {
+	"CO",
+	"PC",
+	"UN",
+	"UI",
+	"SU"
+    };
+    return ((int)st >= 0 && (int)st < (int)cov::NUM_STATUS ? names[st] : "??");
+}
+
+const char *cov::long_name(cov::status_t st)
+{
+    static const char *names[cov::NUM_STATUS] =
+    {
+	"COVERED",
+	"PARTCOVERED",
+	"UNCOVERED",
+	"UNINSTRUMENTED",
+	"SUPPRESSED"
+    };
+    return ((int)st >= 0 && (int)st < (int)cov::NUM_STATUS ? names[st] : "?unknown?");
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

@@ -169,6 +169,8 @@ struct cov
 	}
 	return a;   /* NOTREACHED */
     }
+    static const char *short_name(status_t);
+    static const char *long_name(status_t);
 
 private:
     cov() { }    /* prevent instantiation */

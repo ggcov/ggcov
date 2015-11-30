@@ -124,16 +124,6 @@ tggcov_params_t::~tggcov_params_t()
 {
 }
 
-
-static const char *status_short_names[cov::NUM_STATUS] =
-{
-    "CO",
-    "PC",
-    "UN",
-    "UI",
-    "SU"
-};
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 #define BLOCKS_WIDTH    8
@@ -141,19 +131,12 @@ static const char *status_short_names[cov::NUM_STATUS] =
 static void
 annotate_file(tggcov_params_t &params, cov_file_t *f)
 {
-    const char *cfilename = f->name();
-    FILE *infp, *outfp = NULL;
-    unsigned long lineno;
-    cov_line_t *ln;
-    char *ggcov_filename;
-    char buf[1024];
-
-    if ((infp = fopen(cfilename, "r")) == 0)
-    {
-	perror(cfilename);
+    cov_file_annotator_t annotator(f);
+    if (!annotator.is_valid())
 	return;
-    }
 
+    char *ggcov_filename;
+    FILE *outfp = NULL;
     if (params.get_output_filename() && !strcmp(params.get_output_filename(), "-"))
     {
 	ggcov_filename = NULL;
@@ -162,12 +145,12 @@ annotate_file(tggcov_params_t &params, cov_file_t *f)
     else if (params.get_output_filename())
     {
 	estring e = params.get_output_filename();
-	e.replace_all("{}", file_basename_c(cfilename));
+	e.replace_all("{}", file_basename_c(f->name()));
 	ggcov_filename = e.take();
     }
     else
     {
-	ggcov_filename = g_strconcat(cfilename, ".tggcov", (char *)0);
+	ggcov_filename = g_strconcat(f->name(), ".tggcov", (char *)0);
     }
 
     if (ggcov_filename)
@@ -177,7 +160,6 @@ annotate_file(tggcov_params_t &params, cov_file_t *f)
 	{
 	    perror(ggcov_filename);
 	    g_free(ggcov_filename);
-	    fclose(infp);
 	    return;
 	}
 	g_free(ggcov_filename);
@@ -204,34 +186,30 @@ annotate_file(tggcov_params_t &params, cov_file_t *f)
 	fprintf(outfp, "=======\n");
     }
 
-    lineno = 0;
-    while (fgets(buf, sizeof(buf), infp) != 0)
+    while (annotator.next())
     {
-	++lineno;
-	ln = f->nth_line(lineno);
-
 	if (params.get_new_format_flag())
 	{
-	    if (ln->status() != cov::UNINSTRUMENTED &&
-		ln->status() != cov::SUPPRESSED)
+	    if (annotator.status() != cov::UNINSTRUMENTED &&
+		annotator.status() != cov::SUPPRESSED)
 	    {
-		if (ln->count())
+		if (annotator.count())
 		    fprintf(outfp, "%9llu:%5lu:",
-			    (unsigned long long)ln->count(),
-			    lineno);
+			    (unsigned long long)annotator.count(),
+			    annotator.lineno());
 		else
-		    fprintf(outfp, "    #####:%5lu:", lineno);
+		    fprintf(outfp, "    #####:%5lu:", annotator.lineno());
 	    }
 	    else
-		fprintf(outfp, "        -:%5lu:", lineno);
+		fprintf(outfp, "        -:%5lu:", annotator.lineno());
 	}
 	else
 	{
-	    if (ln->status() != cov::UNINSTRUMENTED &&
-		ln->status() != cov::SUPPRESSED)
+	    if (annotator.status() != cov::UNINSTRUMENTED &&
+		annotator.status() != cov::SUPPRESSED)
 	    {
-		if (ln->count())
-		    fprintf(outfp, "%12llu    ", (unsigned long long)ln->count());
+		if (annotator.count())
+		    fprintf(outfp, "%12llu    ", (unsigned long long)annotator.count());
 		else
 		    fputs("      ######    ", outfp);
 	    }
@@ -241,21 +219,20 @@ annotate_file(tggcov_params_t &params, cov_file_t *f)
 	if (params.get_blocks_flag())
 	{
 	    char blocks_buf[BLOCKS_WIDTH];
-	    ln->format_blocks(blocks_buf, BLOCKS_WIDTH-1);
+	    annotator.format_blocks(blocks_buf, BLOCKS_WIDTH-1);
 	    fprintf(outfp, "%*s ", BLOCKS_WIDTH-1, blocks_buf);
 	}
 	if (params.get_lines_flag())
 	{
-	    fprintf(outfp, "%7lu ", lineno);
+	    fprintf(outfp, "%7lu ", annotator.lineno());
 	}
 	if (params.get_status_flag())
 	{
-	    fprintf(outfp, "%7s ", status_short_names[ln->status()]);
+	    fprintf(outfp, "%7s ", cov::short_name(annotator.status()));
 	}
-	fputs(buf, outfp);
+	fputs(annotator.text(), outfp);
     }
 
-    fclose(infp);
     if (outfp != stdout)
 	fclose(outfp);
 }

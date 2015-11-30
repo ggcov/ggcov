@@ -25,10 +25,10 @@
 #include "hashtable.H"
 #include "ptrarray.H"
 #include "string_var.H"
+#include "cov_line.H"
 #include "covio.H"
 
 class cov_function_t;
-class cov_line_t;
 class cov_suppression_t;
 class cov_bfd_t;
 class cov_project_params_t;
@@ -318,5 +318,30 @@ private:
     friend class cov_file_src_parser_t;
 };
 
+class cov_file_annotator_t
+{
+public:
+    cov_file_annotator_t(cov_file_t *);
+    ~cov_file_annotator_t();
+
+    // TODO: really should throw an exception in the ctor
+    bool is_valid() const { return (fp_ != 0); }
+    bool next();
+
+    unsigned long lineno() const { return lineno_; }
+    cov::status_t status() const { return ln_->status(); }
+    count_t count() const { return ln_->count(); }
+    const char *count_as_string() const;
+    void format_blocks(char *buf, size_t maxlen) const { ln_->format_blocks(buf, maxlen); }
+    const char *blocks_as_string() const;
+    const char *text() const { return buf_; }
+
+private:
+    cov_file_t *file_;
+    FILE *fp_;
+    unsigned long lineno_;
+    cov_line_t *ln_;
+    char buf_[1024];
+};
 
 #endif /* _ggcov_cov_file_H_ */

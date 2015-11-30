@@ -2204,4 +2204,71 @@ cov_file_t::line_iterator_t cov_file_t::lines_end() const
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+cov_file_annotator_t::cov_file_annotator_t(cov_file_t *file)
+ :  file_(file),
+    fp_(0),
+    lineno_(0UL)
+{
+    if ((fp_ = fopen(file_->name(), "r")) == 0)
+    {
+	perror(file_->name());
+	return;
+    }
+}
+
+cov_file_annotator_t::~cov_file_annotator_t()
+{
+    if (fp_)
+	fclose(fp_);
+}
+
+bool
+cov_file_annotator_t::next()
+{
+    if (!fp_)
+	return false;
+
+    // read the next line
+    if (fgets(buf_, sizeof(buf_), fp_) == 0)
+    {
+	// no more lines
+	fclose(fp_);
+	fp_ = 0;
+	return false;
+    }
+    ++lineno_;
+    ln_ = file_->nth_line(lineno_);
+    return true;
+}
+
+const char *
+cov_file_annotator_t::count_as_string() const
+{
+    if (status() == cov::UNINSTRUMENTED ||
+	status() == cov::SUPPRESSED)
+    {
+	return "-";
+    }
+    else if (!count())
+    {
+	return "#####";
+    }
+    else
+    {
+	static char buf[32];
+	snprintf(buf, sizeof(buf), "%ld", count());
+	return buf;
+    }
+}
+
+const char *
+cov_file_annotator_t::blocks_as_string() const
+{
+    static char buf[512];
+    format_blocks(buf, sizeof(buf)-1);
+    return buf;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

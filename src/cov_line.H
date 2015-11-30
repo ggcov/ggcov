@@ -25,6 +25,7 @@
 
 class cov_file_t;
 class cov_function_t;
+class cov_suppression_t;
 
 class cov_line_t
 {
