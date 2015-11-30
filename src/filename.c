@@ -21,6 +21,7 @@
 #include "estring.H"
 #include "string_var.H"
 #include "tok.H"
+#include <stdarg.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <fcntl.h>
@@ -432,6 +433,110 @@ file_apply_children(
 
     closedir(dir);
     return ret;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+char *
+file_join2(const char *part1, const char *part2)
+{
+    return file_join(part1, part2, (const char *)0);
+}
+
+char *
+file_join(const char *part, ...)
+{
+    estring path(part);
+    va_list args;
+    va_start(args, part);
+    while ((part = va_arg(args, const char*)) != 0)
+    {
+	while (path.last() == '/')
+	    path.truncate_to(path.length()-1);
+	path.append_char('/');
+	while (*part == '/')
+	    part++;
+	path.append_string(part);
+    }
+    va_end(args);
+    return path.take();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+int
+file_copy(const char *filefrom, const char *fileto)
+{
+    int fdfrom = -1;
+    int fdto = -1;
+    int nfrom;
+    struct stat statfrom;
+    int r = 0;
+    char *tmp_fileto = 0;
+    char buf[4096];
+
+    tmp_fileto = g_strconcat(fileto, ".NEW", (const char*)0);
+
+    if ((fdfrom = open(filefrom, O_RDONLY)) < 0)
+    {
+	perror(filefrom);
+	goto error;
+    }
+    if (fstat(fdfrom, &statfrom) < 0)
+    {
+	perror(filefrom);
+	goto error;
+    }
+    if ((fdto = open(tmp_fileto, O_WRONLY|O_CREAT|O_TRUNC, statfrom.st_mode)) < 0)
+    {
+	perror(tmp_fileto);
+	goto error;
+    }
+
+    while ((nfrom = read(fdfrom, buf, sizeof(buf))) > 0)
+    {
+	int offto = 0;
+	while (nfrom > 0)
+	{
+	    int nto = write(fdto, buf+offto, nfrom);
+	    if (nto < 0)
+	    {
+		perror(tmp_fileto);
+		goto error;
+	    }
+	    offto += nto;
+	    nfrom -= nto;
+	}
+    }
+    if (nfrom < 0)
+    {
+	perror(filefrom);
+	goto error;
+    }
+
+    /* success */
+    if (rename(tmp_fileto, fileto) < 0)
+    {
+	perror(fileto);
+	goto error;
+    }
+
+out:
+    if (fdfrom >= 0 && close(fdfrom) < 0)
+    {
+	perror(filefrom);
+	r = -1;
+    }
+    if (fdto >= 0 && close(fdto) < 0)
+    {
+	perror(fileto);	/* write errors over NFS can be reported here */
+	r = -1;
+    }
+    free(tmp_fileto);
+    return r;
+error:
+    r = -1;
+    goto out;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

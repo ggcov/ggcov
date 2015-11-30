@@ -119,4 +119,26 @@ TEST(normalise)
 #undef TESTCASE
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+#define TESTCASE(p1, p2, expected) \
+{ \
+    char *out = file_join2(p1, p2); \
+    check_str_equals(expected, out); \
+    g_free(out); \
+}
+
+TEST(join2)
+{
+    TESTCASE("a", "b", "a/b");
+    TESTCASE("a/", "b", "a/b");
+    TESTCASE("a", "/b", "a/b");
+    TESTCASE("a/", "/b", "a/b");
+    TESTCASE("a////", "///b", "a/b");
+    TESTCASE("/foo/bar", "baz", "/foo/bar/baz");
+    TESTCASE("/mustache", (const char *)0, "/mustache");
+}
+
+#undef TESTCASE
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
