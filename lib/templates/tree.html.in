@@ -1,0 +1,10 @@
+<table width="100%">
+  <tbody>
+    {{#files}}
+    <tr>
+      <td class="F{{status}}"><a href="{{url}}">{{minimal_name}}</a></td>
+      <td class="F{{status}}" width="1%">{{#stats}}{{blocks_executed}}/{{blocks_total}}{{/stats}}</td>
+    </tr>
+    {{/files}}
+  </tbody>
+</table>

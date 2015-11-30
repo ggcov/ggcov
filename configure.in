@@ -477,6 +477,8 @@ AC_OUTPUT([
     php/Makefile
     php/lib/Makefile
     php/basic/Makefile
+    lib/Makefile
+    lib/templates/Makefile
     ggcov.spec
     version.m4
     test/Makefile

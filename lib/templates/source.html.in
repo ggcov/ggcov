@@ -1,0 +1,20 @@
+<table class="main">
+  <thead>
+    <tr>
+      <th>Line</th>
+      <th>Count</th>
+      <th>Block(s)</th>
+      <th>Source</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#lines}}
+    <tr>
+      <td class="F{{status_short}} Clineno" width="1%"><a name="#L{{lineno}}"></a><a href="#L{{lineno}}">{{lineno}}</a></td>
+      <td class="F{{status_short}} Ccount" width="1%">{{count_if_instrumented}}</td>
+      <td class="F{{status_short}} Cblocks" width="1%">{{blocks}}</td>
+      <td class="F{{status_short}} Ctext">{{text}}</td>
+    </tr>
+    {{/lines}}
+  </tbody>
+</table>

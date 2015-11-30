@@ -1,0 +1,16 @@
+<table class="main">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Coverage</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#functions}}
+    <tr>
+      <td class="F{{status}}"><a href="{{url}}">{{name}}</a></td>
+      <td class="F{{status}}" width="1%">{{#stats}}{{blocks_executed}}/{{blocks_total}}{{/stats}}</td>
+    </tr>
+    {{/functions}}
+  </tbody>
+</table>

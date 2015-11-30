@@ -74,7 +74,7 @@ else
 BASEINCLUDES=	$(GGCOV_CLI_CFLAGS)
 endif
 
-bin_PROGRAMS=	$(GUIPROG) tggcov $(WEBPROG)
+bin_PROGRAMS=	$(GUIPROG) tggcov ggcov-html $(WEBPROG)
 EXTRA_PROGRAMS= ggcov ggcov-webdb
 
 gui_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
@@ -108,6 +108,10 @@ tggcov_SOURCES= tggcov.c \
 		check_scenegen.H check_scenegen.C \
 		$(LIBCOV_STATIC_SOURCES)
 tggcov_LDADD=	$(CLI_LIBS)
+
+ggcov_html_SOURCES=	ggcov-html.c \
+		$(LIBCOV_STATIC_SOURCES)
+ggcov_html_LDADD=   $(CLI_LIBS)
 
 ggcov_webdb_SOURCES= \
 		ggcov-webdb.c \

@@ -1,0 +1,116 @@
+body {
+    color: #000000;
+    margin: 0px;
+    padding: 0px;
+    background: #ffffff;
+}
+#header {
+    background: #ffffff;
+    height: 120px;
+    padding: 5px;
+    margin: 0px;
+    background-image: url("ncXL7RzcB_120x120.png");
+    background-position: right;
+    background-repeat: no-repeat;
+}
+#header h1 {
+    text-align: left;
+    font: 72px verdana,arial,helvetica,sans-serif;
+    margin: 0px;
+}
+#header p {
+    text-align: left;
+    margin-left: 30px;
+    font: italic 16px verdana,arial,helvetica,sans-serif;
+}
+#nav {
+    background: #afafcf;
+    color: #000000;
+}
+#nav li {
+    display: inline-block;
+    text-align: left;
+    padding: 5px 20px 5px 20px;
+    font: 12pt verdana,arial,helvetica,sans-serif;
+}
+/* getting Webkit to actually display the hover property
+ * is surprisingly unobvious... */
+#nav li:hover a, #nav li a:hover {
+    color: #ffffff;
+    text-shadow: #404040 2px 2px 2px;
+    text-decoration: none;
+    font-weight: bold;
+}
+#nav a:link {
+    color: #000000;
+    text-decoration: none;
+    font-weight: bold;
+}
+#nav a:visited {
+    color: #000000;
+    text-decoration: none;
+    font-weight: bold;
+}
+#footer {
+    background: #ffffff;
+    border-top: 3px solid #afafcf;
+    margin: 0;
+    width: 100%;
+    clear: left;
+}
+#footer p {
+    font: 8pt verdana,arial,helvetica,sans-serif;
+    text-align: center;
+}
+#footer a:link, #footer a:visited {
+    color: #808080;
+}
+table.main {
+    width: 100%;
+    top-margin: 10px;
+    border-spacing: 0px 0px;
+}
+th {
+    font: 12pt bold verdana,arial,helvetica,sans-serif;
+    border: 0;
+    text-align: left;
+}
+td {
+    font: 12pt verdana,arial,helvetica,sans-serif;
+    border: 0;
+}
+td.Ctext {
+    font: 12pt lucidatypewriter,lucidasanstypewriter,courier,monospace;
+    white-space: pre;
+    margin: 0;
+}
+.FCO {
+    color: #00c000;
+}
+.BCO {
+    background: #80d080;
+}
+.FPC {
+    color: #a0a000;
+}
+.BPC {
+    background: #d0d080;
+}
+.FUN {
+    color: #c00000;
+}
+.BUN {
+    background: #d08080;
+}
+.FUI {
+    color: #000000;
+}
+.BUI {
+    background: #a0a0a0;
+}
+.FSU {
+    color: #000080;
+}
+.BSU {
+    background: #8080d0;
+}

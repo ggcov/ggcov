@@ -19,7 +19,7 @@
 # $Id: Makefile.am,v 1.9 2010-05-09 05:37:14 gnb Exp $
 #
 
-SUBDIRS=	src ui php doc test scripts
+SUBDIRS=	src ui php doc test scripts lib
 
 EXTRA_DIST=	.gitignore .gdbinit autogen.sh
 

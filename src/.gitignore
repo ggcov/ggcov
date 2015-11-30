@@ -5,6 +5,7 @@ licence.c
 testrunner
 mangletest
 popttest
+ggcov-html
 ggcov-webdb
 tggcov
 *.bck
