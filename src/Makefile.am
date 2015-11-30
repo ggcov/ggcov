@@ -39,6 +39,7 @@ libcommon_a_SOURCES= \
 		scenegen.H scenegen.C \
 		geometry.H \
 		yaml_generator.H yaml_generator.C \
+		mustache.H mustache.C \
 		unicode.H unicode.C
 
 libcov_a_SOURCES= \
