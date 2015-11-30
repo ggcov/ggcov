@@ -37,7 +37,9 @@ libcommon_a_SOURCES= \
 		mvc.h mvc.c \
 		cpp_parser.H cpp_parser.C \
 		scenegen.H scenegen.C \
-		geometry.H
+		geometry.H \
+		yaml_generator.H yaml_generator.C \
+		unicode.H unicode.C
 
 libcov_a_SOURCES= \
 		covio.H covio.C \
@@ -153,7 +155,8 @@ testrunner_SOURCES=	testrunner.c testfw.c testfw.h \
 			listtest.c \
 			statustest.C \
 			scopetest.C \
-			argstest.C
+			argstest.C \
+			yamltest.C
 testrunner_LDADD= 	$(CLI_LIBS)
 
 mangletest_SOURCES=	mangletest.c
