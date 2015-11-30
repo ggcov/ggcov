@@ -159,35 +159,76 @@ source_url(const cov_location_t *loc)
 static void
 generate_stats(yaml_generator_t &yaml, const cov_stats_t &stats)
 {
+    estring absbuf, pcbuf;
+
     yaml.begin_mapping();
+
     yaml.key("blocks_executed").value(stats.blocks_executed());
     yaml.key("blocks_total").value(stats.blocks_total());
     yaml.key("blocks_fraction").value(stats.blocks_fraction());
     yaml.key("blocks_sort_fraction").value(stats.blocks_sort_fraction());
+    cov_stats_t::format_row_labels(stats.blocks_by_status(), absbuf, pcbuf);
+    yaml.key("blocks_abslabel").value(absbuf);
+    yaml.key("blocks_pclabel").value(pcbuf);
+
     yaml.key("lines_executed").value(stats.lines_executed());
     yaml.key("lines_full").value(stats.lines_full());
     yaml.key("lines_partial").value(stats.lines_partial());
     yaml.key("lines_total").value(stats.lines_total());
     yaml.key("lines_fraction").value(stats.lines_fraction());
     yaml.key("lines_sort_fraction").value(stats.lines_sort_fraction());
+    cov_stats_t::format_row_labels(stats.lines_by_status(), absbuf, pcbuf);
+    yaml.key("lines_abslabel").value(absbuf);
+    yaml.key("lines_pclabel").value(pcbuf);
+
     yaml.key("functions_executed").value(stats.functions_executed());
     yaml.key("functions_full").value(stats.functions_full());
     yaml.key("functions_partial").value(stats.functions_partial());
     yaml.key("functions_total").value(stats.functions_total());
     yaml.key("functions_fraction").value(stats.functions_fraction());
     yaml.key("functions_sort_fraction").value(stats.functions_sort_fraction());
+    cov_stats_t::format_row_labels(stats.functions_by_status(), absbuf, pcbuf);
+    yaml.key("functions_abslabel").value(absbuf);
+    yaml.key("functions_pclabel").value(pcbuf);
+
     yaml.key("calls_executed").value(stats.calls_executed());
     yaml.key("calls_total").value(stats.calls_total());
     yaml.key("calls_fraction").value(stats.calls_fraction());
     yaml.key("calls_sort_fraction").value(stats.calls_sort_fraction());
+    cov_stats_t::format_row_labels(stats.calls_by_status(), absbuf, pcbuf);
+    yaml.key("calls_abslabel").value(absbuf);
+    yaml.key("calls_pclabel").value(pcbuf);
+
     yaml.key("branches_executed").value(stats.branches_executed());
     yaml.key("branches_taken").value(stats.branches_taken());
     yaml.key("branches_total").value(stats.branches_total());
     yaml.key("branches_fraction").value(stats.branches_fraction());
     yaml.key("branches_sort_fraction").value(stats.branches_sort_fraction());
+    cov_stats_t::format_row_labels(stats.branches_by_status(), absbuf, pcbuf);
+    yaml.key("branches_abslabel").value(absbuf);
+    yaml.key("branches_pclabel").value(pcbuf);
+
     yaml.key("status_by_blocks").value(cov::short_name(stats.status_by_blocks()));
     yaml.key("status_by_lines").value(cov::short_name(stats.status_by_lines()));
     yaml.end_mapping();
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static void
+generate_index(const lggcov_params_t &params)
+{
+    mustache_t tmpl("index.html", "index.html");
+    yaml_generator_t &yaml = tmpl.begin_render();
+
+    cov_overall_scope_t scope;
+
+    yaml.begin_mapping();
+    yaml.key("subtitle").value("summary");
+    yaml.key("stats"); generate_stats(yaml, *scope.get_stats());
+    yaml.end_mapping();
+
+    tmpl.end_render();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -312,6 +353,7 @@ generate_html(const lggcov_params_t &params)
 
     if (generate_static_files(params) < 0)
 	return -1;
+    generate_index(params);
     generate_source_tree(params);
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
 	generate_annotated_source(params, *iter);

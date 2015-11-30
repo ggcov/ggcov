@@ -17,7 +17,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #
 
-PAGE_TEMPLATES=	source.html tree.html functions.html
+PAGE_TEMPLATES=	index.html source.html tree.html functions.html
 STATIC_FILES=	ggcov.css ncXL7RzcB_120x120.png
 FRAGMENTS=	foot.html head.html
 

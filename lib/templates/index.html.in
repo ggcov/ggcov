@@ -1,0 +1,31 @@
+{{#stats}}
+<table>
+  <tbody>
+    <tr>
+      <td align="right">Lines</td>
+      <td>{{lines_abslabel}}</td>
+      <td>{{lines_pclabel}}</td>
+    </tr>
+    <tr>
+      <td align="right">Functions</td>
+      <td>{{functions_abslabel}}</td>
+      <td>{{functions_pclabel}}</td>
+    </tr>
+    <tr>
+      <td align="right">Calls</td>
+      <td>{{calls_abslabel}}</td>
+      <td>{{calls_pclabel}}</td>
+    </tr>
+    <tr>
+      <td align="right">Branches</td>
+      <td>{{branches_abslabel}}</td>
+      <td>{{branches_pclabel}}</td>
+    </tr>
+    <tr>
+      <td align="right">Blocks</td>
+      <td>{{blocks_abslabel}}</td>
+      <td>{{blocks_pclabel}}</td>
+    </tr>
+  </tbody>
+</table>
+{{/stats}}
