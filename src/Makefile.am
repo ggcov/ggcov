@@ -162,6 +162,7 @@ testrunner_SOURCES=	testrunner.c testfw.c testfw.h \
 			scopetest.C \
 			argstest.C \
 			yamltest.C \
+			mustachetest.C \
 			uniqueptrtest.C
 testrunner_LDADD= 	$(CLI_LIBS)
 
