@@ -161,7 +161,8 @@ testrunner_SOURCES=	testrunner.c testfw.c testfw.h \
 			statustest.C \
 			scopetest.C \
 			argstest.C \
-			yamltest.C
+			yamltest.C \
+			uniqueptrtest.C
 testrunner_LDADD= 	$(CLI_LIBS)
 
 mangletest_SOURCES=	mangletest.c
