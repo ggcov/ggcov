@@ -33,11 +33,11 @@ char *argv0;
 string_var data_dir;
 string_var templates_dir;
 
-class lggcov_params_t : public cov_project_params_t
+class gghtml_params_t : public cov_project_params_t
 {
 public:
-    lggcov_params_t();
-    ~lggcov_params_t();
+    gghtml_params_t();
+    ~gghtml_params_t();
 
     ARGPARSE_STRING_PROPERTY(output_directory);
 
@@ -52,7 +52,7 @@ public:
 			     default_output_directory);
 	parser.add_option('o', "output-directory")
 	      .description(o_desc)
-	      .setter((argparse::arg_setter_t)&lggcov_params_t::set_output_directory);
+	      .setter((argparse::arg_setter_t)&gghtml_params_t::set_output_directory);
 	parser.set_other_option_help("[OPTIONS] [executable|source|directory]...");
     }
 
@@ -66,21 +66,21 @@ public:
     }
 };
 
-const char lggcov_params_t::default_output_directory[] = "html";
+const char gghtml_params_t::default_output_directory[] = "html";
 
-lggcov_params_t::lggcov_params_t()
+gghtml_params_t::gghtml_params_t()
  :  output_directory_(default_output_directory)
 {
 }
 
-lggcov_params_t::~lggcov_params_t()
+gghtml_params_t::~gghtml_params_t()
 {
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
-generate_static_files(const lggcov_params_t &params)
+generate_static_files(const gghtml_params_t &params)
 {
     /* 
      * Read the static.files file which contains a list
@@ -216,7 +216,7 @@ generate_stats(yaml_generator_t &yaml, const cov_stats_t &stats)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-generate_index(const lggcov_params_t &params)
+generate_index(const gghtml_params_t &params)
 {
     mustache_t tmpl("index.html", "index.html");
     yaml_generator_t &yaml = tmpl.begin_render();
@@ -234,7 +234,7 @@ generate_index(const lggcov_params_t &params)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-generate_source_tree(const lggcov_params_t &params)
+generate_source_tree(const gghtml_params_t &params)
 {
     mustache_t tmpl("tree.html", "tree.html");
     yaml_generator_t &yaml = tmpl.begin_render();
@@ -266,7 +266,7 @@ generate_source_tree(const lggcov_params_t &params)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-generate_annotated_source(const lggcov_params_t &params, cov_file_t *f)
+generate_annotated_source(const gghtml_params_t &params, cov_file_t *f)
 {
     cov_file_annotator_t annotator(f);
     if (!annotator.is_valid())
@@ -304,7 +304,7 @@ generate_annotated_source(const lggcov_params_t &params, cov_file_t *f)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-generate_functions(const lggcov_params_t &params)
+generate_functions(const gghtml_params_t &params)
 {
     mustache_t tmpl("functions.html", "functions.html");
     yaml_generator_t &yaml = tmpl.begin_render();
@@ -342,7 +342,7 @@ generate_functions(const lggcov_params_t &params)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
-generate_html(const lggcov_params_t &params)
+generate_html(const gghtml_params_t &params)
 {
     int r = file_build_tree(params.get_output_directory(), 0777);
     if (r < 0)
@@ -411,7 +411,7 @@ main(int argc, char **argv)
 		      log_func, /*user_data*/0);
 #endif
     argv0 = argv[0];
-    lggcov_params_t params;
+    gghtml_params_t params;
     argparse::parser_t parser(params);
     if (parser.parse(argc, argv) < 0)
     {
