@@ -21,13 +21,27 @@
 #include <fstream>
 #include <ext/stdio_filebuf.h>
 
-string_var mustache_t::template_dir_;
-string_var mustache_t::output_dir_;
+namespace mustache
+{
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-mustache_t::mustache_t(const char *name, const char *output_name)
- :  stdin_fp_(0),
+environment_t::environment_t() {}
+
+environment_t::~environment_t() {}
+
+template_t *environment_t::make_template(const char *name, const char *output_name)
+{
+    if (output_name == 0)
+	output_name = name;
+    return new template_t(*this, name, output_name);
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+template_t::template_t(environment_t &env, const char *name, const char *output_name)
+ :  env_(env),
+    stdin_fp_(0),
     stdin_sb_(0),
     stdin_stream_(0),
     yaml_(0)
@@ -38,12 +52,12 @@ mustache_t::mustache_t(const char *name, const char *output_name)
 	set_output_name(output_name);
 }
 
-mustache_t::~mustache_t()
+template_t::~template_t()
 {
     cleanup();
 }
 
-yaml_generator_t &mustache_t::begin_render()
+yaml_generator_t &template_t::begin_render()
 {
     char cmd[1024];
     fprintf(stderr, "Expanding template %s to %s\n",
@@ -58,7 +72,7 @@ yaml_generator_t &mustache_t::begin_render()
     return *yaml_;
 }
 
-void mustache_t::cleanup()
+void template_t::cleanup()
 {
     if (stdin_fp_)
     {
@@ -82,10 +96,13 @@ void mustache_t::cleanup()
     }
 }
 
-void mustache_t::end_render()
+void template_t::end_render()
 {
     cleanup();
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+// end the namespace
+}
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

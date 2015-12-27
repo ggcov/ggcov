@@ -25,32 +25,54 @@
 #include "string_var.h"
 #include "yaml_generator.H"
 
-class mustache_t
+namespace mustache
+{
+
+class template_t;
+
+class environment_t
 {
 public:
-    mustache_t(const char *name, const char *output_name);
-    ~mustache_t();
+    environment_t();
+    ~environment_t();
+
+    void set_template_directory(const char *dir) { template_dir_ = dir; }
+    const char *get_template_directory() { return template_dir_.data(); }
+    void set_output_directory(const char *dir) { output_dir_ = dir; }
+    const char *get_output_directory() { return output_dir_.data(); }
+
+    template_t *make_template(const char *name = 0, const char *output_name = 0);
+
+private:
+    string_var template_dir_;
+    string_var output_dir_;
+
+    friend class template_t;
+};
+
+class template_t
+{
+public:
+    ~template_t();
 
     void set_template_name(const char *name)
     {
-	template_path_ = file_make_absolute_to_dir(name, template_dir_);
+	template_path_ = file_make_absolute_to_dir(name, env_.template_dir_);
     }
     void set_output_name(const char *name)
     {
-	output_path_ = file_make_absolute_to_dir(name, output_dir_);
+	output_path_ = file_make_absolute_to_dir(name, env_.output_dir_);
     }
 
     yaml_generator_t &begin_render();
     void end_render();
 
-    static void set_template_directory(const char *dir) { template_dir_ = dir; }
-    static const char *get_template_directory() { return template_dir_.data(); }
-    static void set_output_directory(const char *dir) { output_dir_ = dir; }
-    static const char *get_output_directory() { return output_dir_.data(); }
-
 private:
+    // only for environment_t
+    template_t(environment_t &env, const char *name, const char *output_name);
     void cleanup();
 
+    environment_t &env_;
     string_var template_path_;
     string_var output_path_;
     FILE *stdin_fp_;
@@ -58,9 +80,9 @@ private:
     std::ostream *stdin_stream_;
     yaml_generator_t *yaml_;
 
-    static string_var template_dir_;
-    static string_var output_dir_;
+    friend class environment_t;
 };
 
-
+// end the namespace
+}
 #endif /* _ggcov_mustache_H_ */

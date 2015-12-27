@@ -28,10 +28,12 @@
 #include "tok.H"
 #include "yaml_generator.H"
 #include "mustache.H"
+#include "unique_ptr.H"
 
 char *argv0;
 string_var data_dir;
 string_var templates_dir;
+mustache::environment_t menv;
 
 class gghtml_params_t : public cov_project_params_t
 {
@@ -218,8 +220,8 @@ generate_stats(yaml_generator_t &yaml, const cov_stats_t &stats)
 static void
 generate_index(const gghtml_params_t &params)
 {
-    mustache_t tmpl("index.html", "index.html");
-    yaml_generator_t &yaml = tmpl.begin_render();
+    unique_ptr<mustache::template_t> tmpl = menv.make_template("index.html");
+    yaml_generator_t &yaml = tmpl->begin_render();
 
     cov_overall_scope_t scope;
 
@@ -228,7 +230,7 @@ generate_index(const gghtml_params_t &params)
     yaml.key("stats"); generate_stats(yaml, *scope.get_stats());
     yaml.end_mapping();
 
-    tmpl.end_render();
+    tmpl->end_render();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -236,8 +238,8 @@ generate_index(const gghtml_params_t &params)
 static void
 generate_source_tree(const gghtml_params_t &params)
 {
-    mustache_t tmpl("tree.html", "tree.html");
-    yaml_generator_t &yaml = tmpl.begin_render();
+    unique_ptr<mustache::template_t> tmpl = menv.make_template("tree.html");
+    yaml_generator_t &yaml = tmpl->begin_render();
 
     yaml.begin_mapping();
     yaml.key("subtitle").value("source tree");
@@ -260,7 +262,7 @@ generate_source_tree(const gghtml_params_t &params)
     yaml.end_sequence();
     yaml.end_mapping();
 
-    tmpl.end_render();
+    tmpl->end_render();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -274,8 +276,8 @@ generate_annotated_source(const gghtml_params_t &params, cov_file_t *f)
 
     string_var out_name = source_url(f);
 
-    mustache_t tmpl("source.html", out_name);
-    yaml_generator_t &yaml = tmpl.begin_render();
+    unique_ptr<mustache::template_t> tmpl = menv.make_template("source.html", out_name);
+    yaml_generator_t &yaml = tmpl->begin_render();
 
     yaml.begin_mapping();
     string_var subtitle = g_strdup_printf("source %s", f->minimal_name());
@@ -298,7 +300,7 @@ generate_annotated_source(const gghtml_params_t &params, cov_file_t *f)
     yaml.end_sequence();
     yaml.end_mapping();
 
-    tmpl.end_render();
+    tmpl->end_render();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -306,8 +308,8 @@ generate_annotated_source(const gghtml_params_t &params, cov_file_t *f)
 static void
 generate_functions(const gghtml_params_t &params)
 {
-    mustache_t tmpl("functions.html", "functions.html");
-    yaml_generator_t &yaml = tmpl.begin_render();
+    unique_ptr<mustache::template_t> tmpl = menv.make_template("functions.html");
+    yaml_generator_t &yaml = tmpl->begin_render();
 
     yaml.begin_mapping();
     yaml.key("subtitle").value("functions");
@@ -336,7 +338,7 @@ generate_functions(const gghtml_params_t &params)
     yaml.end_sequence();
     yaml.end_mapping();
 
-    tmpl.end_render();
+    tmpl->end_render();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -419,8 +421,8 @@ main(int argc, char **argv)
     }
     data_dir = file_make_absolute_to_file("../lib", argv[0]);
     templates_dir = file_join2(data_dir, "templates");
-    mustache_t::set_template_directory(templates_dir);
-    mustache_t::set_output_directory(params.get_output_directory());
+    menv.set_template_directory(templates_dir);
+    menv.set_output_directory(params.get_output_directory());
 
     int r = cov_read_files(params);
     if (r < 0)
