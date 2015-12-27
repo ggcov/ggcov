@@ -65,7 +65,7 @@ yaml_generator_t &template_t::begin_render()
     // TODO: generate a temporary file for output_path_ if its null
     snprintf(cmd, sizeof(cmd), "mustache - \"%s\" > \"%s\"",
 	     template_path_.data(), output_path_.data());
-    FILE *stdin_fp_ = popen(cmd, "w");
+    stdin_fp_ = popen(cmd, "w");
     stdin_sb_ = new __gnu_cxx::stdio_filebuf<char>(fileno(stdin_fp_), std::ios::out);
     stdin_stream_ = new std::ostream(stdin_sb_);
     yaml_ = new yaml_generator_t(*stdin_stream_);
@@ -74,6 +74,8 @@ yaml_generator_t &template_t::begin_render()
 
 void template_t::cleanup()
 {
+    if (stdin_stream_)
+	stdin_stream_->flush();
     if (stdin_fp_)
     {
 	pclose(stdin_fp_);
