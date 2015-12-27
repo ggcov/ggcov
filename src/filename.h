@@ -45,5 +45,6 @@ int file_is_directory(const char *filename);
 char *file_join2(const char *part1, const char *part2);
 char *file_join(const char *part, ...);
 int file_copy(const char *filefrom, const char *fileto);
+char *file_temp_directory(const char *prefix);
 
 #endif /* _ggcov_filename_h_ */

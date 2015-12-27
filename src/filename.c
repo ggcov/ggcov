@@ -540,4 +540,31 @@ error:
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+char *file_temp_directory(const char *prefix)
+{
+    char *path;
+    const char *tmpdir;
+
+    tmpdir = getenv("TMPDIR");
+    if (tmpdir == 0)
+	tmpdir = "/tmp";
+
+    path = g_strconcat(tmpdir, "/", prefix, "-XXXXXX", (char*)0);
+    if (path == 0)
+	return 0;
+
+    if (mkdtemp(path) == 0)
+    {
+	/* failed to create directory, see errno */
+	int e = errno;
+	g_free(path);
+	errno = e;
+	return 0;
+    }
+
+    return path;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
