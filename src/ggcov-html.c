@@ -28,6 +28,8 @@
 #include "filerec.H"
 #include "yaml_generator.H"
 #include "mustache.H"
+#include "flow_diagram.H"
+#include "libgd_scenegen.H"
 #include "unique_ptr.H"
 
 char *argv0;
@@ -290,14 +292,91 @@ generate_source_tree(const gghtml_params_t &params)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+struct flow_t
+{
+    cov_function_t *function;
+    unsigned int width, height;
+    string_var url;
+};
+
+static void set_diagram_colors(diagram_t *di)
+{
+    // TODO: ugh, these are hardcoded to be the same as the ones in ggcov.css
+    di->set_fg(cov::COVERED, 0x00c000);
+    di->set_bg(cov::COVERED, 0x80d080);
+    di->set_fg(cov::PARTCOVERED, 0xa0a000);
+    di->set_bg(cov::PARTCOVERED, 0xd0d080);
+    di->set_fg(cov::UNCOVERED, 0xc00000);
+    di->set_bg(cov::UNCOVERED, 0xd08080);
+    di->set_fg(cov::UNINSTRUMENTED, 0x000000);
+    di->set_bg(cov::UNINSTRUMENTED, 0xa0a0a0);
+    di->set_fg(cov::SUPPRESSED, 0x000080);
+    di->set_bg(cov::SUPPRESSED, 0x8080d0);
+}
+
+static flow_t *generate_flow_diagram(const gghtml_params_t &params, cov_function_t *fn)
+{
+    unique_ptr<diagram_t> diag = new flow_diagram_t(fn);
+    set_diagram_colors(diag.get());
+    diag->prepare();
+    dbounds_t bounds;
+    diag->get_bounds(&bounds);
+    unsigned int width = (unsigned int)(4.0 * bounds.width() + 0.5);
+    unsigned int height = (unsigned int)(4.0 * bounds.height() + 0.5);
+    unique_ptr<libgd_scenegen_t> sg = new libgd_scenegen_t(width, height, bounds);
+    diag->render(sg.get());
+
+    static unsigned int tag = 1;
+    string_var name = g_strdup_printf("flow%u.png", tag++);
+    string_var path = file_join2(params.get_output_directory(), name);
+    fprintf(stderr, "Generating flow diagram %s for function %s file %s\n",
+	    name.data(), fn->name(), fn->file()->minimal_name());
+    sg->save(path);
+
+    flow_t *flow = new flow_t;
+    flow->function = fn;
+    flow->width = width;
+    flow->height = height;
+    flow->url = name.take();
+    return flow;
+}
+
+static hashtable_t<void, flow_t> *generate_flow_diagrams(const gghtml_params_t &params, cov_file_t *f)
+{
+    hashtable_t<void, flow_t> *flows = new hashtable_t<void, flow_t>;
+    unsigned int i;
+    for (i = 0 ; i < f->num_functions() ; i++)
+    {
+	cov_function_t *fn = f->nth_function(i);
+	flows->insert((void*)fn, generate_flow_diagram(params, fn));
+    }
+    return flows;
+}
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+static int compare_funcs_by_first_line(const cov_function_t *fn1,
+				       const cov_function_t *fn2)
+{
+    return u32cmp(fn1->get_first_location()->lineno,
+		  fn2->get_first_location()->lineno);
+}
+
 static void
-generate_annotated_source(const gghtml_params_t &params, cov_file_t *f)
+generate_annotated_source(const gghtml_params_t &params, cov_file_t *f,
+			  hashtable_t<void, flow_t> *flows)
 {
     cov_file_annotator_t annotator(f);
     if (!annotator.is_valid())
 	return;
 
     string_var out_name = source_url(f);
+
+    list_t<cov_function_t> funcs;
+    for (unsigned int i = 0 ; i < f->num_functions() ; i++)
+	funcs.append(f->nth_function(i));
+    funcs.sort(compare_funcs_by_first_line);
+    unsigned int lines_left = 0;
 
     unique_ptr<mustache::template_t> tmpl = menv.make_template("source.html", out_name);
     yaml_generator_t &yaml = tmpl->begin_render();
@@ -318,6 +397,32 @@ generate_annotated_source(const gghtml_params_t &params, cov_file_t *f)
 	yaml.key("lineno").value(annotator.lineno());
 	yaml.key("blocks").value(annotator.blocks_as_string());
 	yaml.key("text").value(annotator.text());
+
+	if (lines_left)
+	    lines_left--;
+	cov_function_t *fn = funcs.head();
+	if (fn && annotator.lineno() == fn->get_first_location()->lineno)
+	{
+	    funcs.remove_head();
+	    unsigned int nlines = fn->get_last_location()->lineno -
+				  fn->get_first_location()->lineno + 1;
+	    lines_left = 0;
+	    flow_t *flow = flows->lookup((void*)fn);
+	    if (flow)
+	    {
+		yaml.key("flow_diagram").begin_mapping();
+		yaml.key("nlines").value(nlines);
+		double sf = 0.445;
+		yaml.key("width").value((unsigned int)(sf * flow->width + 0.5));
+		yaml.key("height").value((unsigned int)(sf * flow->height + 0.5));
+		yaml.key("url").value(flow->url);
+		yaml.end_mapping();
+		lines_left = nlines;
+	    }
+	}
+	if (!lines_left)
+	    yaml.key("flow_filler").bool_value(true);
+
 	yaml.end_mapping();
     }
     yaml.end_sequence();
@@ -366,6 +471,13 @@ generate_functions(const gghtml_params_t &params)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static gboolean
+delete_one_flow(void *key, flow_t *value, void *closure)
+{
+    delete value;
+    return TRUE;    /* remove from hashtable */
+}
+
 static int
 generate_html(const gghtml_params_t &params)
 {
@@ -381,7 +493,12 @@ generate_html(const gghtml_params_t &params)
     generate_index(params);
     generate_source_tree(params);
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
-	generate_annotated_source(params, *iter);
+    {
+	hashtable_t<void, flow_t> *flows = generate_flow_diagrams(params, *iter);
+	generate_annotated_source(params, *iter, flows);
+	flows->foreach_remove(delete_one_flow, 0);
+	delete flows;
+    }
     generate_functions(params);
     return 0;
 }
