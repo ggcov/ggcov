@@ -258,10 +258,7 @@ static void generate_tree_node(file_rec_t *fr, yaml_generator_t &yaml, unsigned 
 	    yaml.key("url").value(url);
 	    yaml.key("minimal_name").value(f->minimal_name());
 	}
-	yaml.key("indents").begin_sequence();
-	for (unsigned int i = 1 ; i < depth ; i++)
-	    yaml.value(" ");
-	yaml.end_sequence();
+	yaml.key("indent").value(4*(depth-1));
 	yaml.key("stats"); generate_stats(yaml, *fr->get_scope()->get_stats());
 	yaml.end_mapping();
     }

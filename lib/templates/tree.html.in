@@ -3,15 +3,16 @@
     {{#files}}
     <tr>
       <td>
-      <span>{{#indents}}&nbsp;&nbsp;&nbsp;&nbsp;{{/indents}}</span>
-      <span class="F{{status}}">
+      <div style="position:relative;">
+      <div style="position:relative;left:{{indent}}em;" class="F{{status}}">
       {{#is_file?}}
       <a href="{{url}}">{{name}}</a>
       {{/is_file?}}
       {{^is_file?}}
       {{name}}/
       {{/is_file?}}
-      </span>
+      </div>
+      </div>
       </td>
       <td class="F{{status}}" width="1%">{{#stats}}{{blocks_executed}}/{{blocks_total}}{{/stats}}</td>
     </tr>
