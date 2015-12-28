@@ -2,14 +2,21 @@
   <thead>
     <tr>
       <th>Name</th>
-      <th>Coverage</th>
+      <th colspan="2">Coverage</th>
     </tr>
   </thead>
   <tbody>
     {{#functions}}
     <tr>
       <td class="F{{status}}"><a href="{{url}}">{{name}}</a></td>
-      <td class="F{{status}}" width="1%">{{#stats}}{{blocks_executed}}/{{blocks_total}}{{/stats}}</td>
+      {{#stats}}
+      <td class="F{{status}}" width="1%">{{blocks_executed}}/{{blocks_total}}</td>
+      <td width="1%">
+	<div class="BUN" style="width:10em;border:1px solid black;">
+	  <div class="BCO" style="width:{{blocks_percent}}%;">&nbsp;</div>
+	</div>
+      </td>
+      {{/stats}}
     </tr>
     {{/functions}}
   </tbody>
