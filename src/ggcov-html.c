@@ -25,7 +25,7 @@
 #include "cov_priv.H"
 #include "filename.h"
 #include "estring.H"
-#include "tok.H"
+#include "filerec.H"
 #include "yaml_generator.H"
 #include "mustache.H"
 #include "unique_ptr.H"
@@ -243,30 +243,46 @@ generate_index(const gghtml_params_t &params)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+static void generate_tree_node(file_rec_t *fr, yaml_generator_t &yaml, unsigned int depth)
+{
+    if (depth)
+    {
+	cov_file_t *f = fr->get_file();
+	yaml.begin_mapping();
+	yaml.key("name").value(file_basename_c(fr->get_name()));
+	yaml.key("status").value(cov::short_name(fr->get_scope()->status()));
+	yaml.key("is_file?").bool_value(fr->is_file());
+	if (fr->is_file())
+	{
+	    string_var url = source_url(f);
+	    yaml.key("url").value(url);
+	    yaml.key("minimal_name").value(f->minimal_name());
+	}
+	yaml.key("indents").begin_sequence();
+	for (unsigned int i = 1 ; i < depth ; i++)
+	    yaml.value(" ");
+	yaml.end_sequence();
+	yaml.key("stats"); generate_stats(yaml, *fr->get_scope()->get_stats());
+	yaml.end_mapping();
+    }
+
+    for (list_iterator_t<file_rec_t> friter = fr->first_child() ; *friter ; ++friter)
+	generate_tree_node(*friter, yaml, depth+1);
+}
+
 static void
 generate_source_tree(const gghtml_params_t &params)
 {
     unique_ptr<mustache::template_t> tmpl = menv.make_template("tree.html");
     yaml_generator_t &yaml = tmpl->begin_render();
 
+    unique_ptr<file_rec_t> tree = new file_rec_t("", 0);
+    tree->add_descendents(cov_file_t::first());
+
     yaml.begin_mapping();
     yaml.key("subtitle").value("source tree");
     yaml.key("files").begin_sequence();
-    for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
-    {
-	const cov_file_t *f = *iter;
-	cov_file_scope_t scope(f);
-	cov::status_t st = scope.status();
-	if (st == cov::SUPPRESSED || st == cov::UNINSTRUMENTED)
-	    continue;
-	string_var url = source_url(f);
-	yaml.begin_mapping();
-	yaml.key("minimal_name").value(f->minimal_name());
-	yaml.key("status").value(cov::short_name(st));
-	yaml.key("url").value(url);
-	yaml.key("stats"); generate_stats(yaml, *scope.get_stats());
-	yaml.end_mapping();
-    }
+    generate_tree_node(tree.get(), yaml, 0U);
     yaml.end_sequence();
     yaml.end_mapping();
 

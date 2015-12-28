@@ -1,8 +1,18 @@
-<table width="100%">
+<table width="100%" class="main">
   <tbody>
     {{#files}}
     <tr>
-      <td class="F{{status}}"><a href="{{url}}">{{minimal_name}}</a></td>
+      <td>
+      <span>{{#indents}}&nbsp;&nbsp;&nbsp;&nbsp;{{/indents}}</span>
+      <span class="F{{status}}">
+      {{#is_file?}}
+      <a href="{{url}}">{{name}}</a>
+      {{/is_file?}}
+      {{^is_file?}}
+      {{name}}/
+      {{/is_file?}}
+      </span>
+      </td>
       <td class="F{{status}}" width="1%">{{#stats}}{{blocks_executed}}/{{blocks_total}}{{/stats}}</td>
     </tr>
     {{/files}}

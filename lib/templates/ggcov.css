@@ -67,8 +67,14 @@ body {
 }
 table.main {
     width: 100%;
-    top-margin: 10px;
+    padding: 10px;
     border-spacing: 0px 0px;
+}
+table.main tr:nth-child(even) {
+    background: #cccccc;
+}
+table.main tr:nth-child(odd) {
+    background: #ffffff;
 }
 th {
     font: 12pt bold verdana,arial,helvetica,sans-serif;
@@ -87,10 +93,22 @@ td.Ctext {
 .FCO {
     color: #00c000;
 }
+.FCO a:link {
+    color: #00c000;
+}
+.FCO a:visited {
+    color: #00c000;
+}
 .BCO {
     background: #80d080;
 }
 .FPC {
+    color: #a0a000;
+}
+.FPC a:link {
+    color: #a0a000;
+}
+.FPC a:visited {
     color: #a0a000;
 }
 .BPC {
@@ -99,16 +117,34 @@ td.Ctext {
 .FUN {
     color: #c00000;
 }
+.FUN a:link {
+    color: #c00000;
+}
+.FUN a:visited {
+    color: #c00000;
+}
 .BUN {
     background: #d08080;
 }
 .FUI {
     color: #000000;
 }
+.FUI a:link {
+    color: #000000;
+}
+.FUI a:visited {
+    color: #000000;
+}
 .BUI {
     background: #a0a0a0;
 }
 .FSU {
+    color: #000080;
+}
+.FSU a:link {
+    color: #000080;
+}
+.FSU a:visited {
     color: #000080;
 }
 .BSU {
