@@ -41,7 +41,8 @@ libcommon_a_SOURCES= \
 		yaml_generator.H yaml_generator.C \
 		mustache.H mustache.C \
 		unicode.H unicode.C \
-		filerec.H filerec.C
+		filerec.H filerec.C \
+		libgd_scenegen.H libgd_scenegen.C
 
 libcov_a_SOURCES= \
 		covio.H covio.C \

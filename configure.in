@@ -328,7 +328,7 @@ if test x$gui = xyes ; then
     	    	      [gtk2=yes],[gtk2=no])
     if test $gtk2 = yes ; then
 	PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.4.0,have_gconf=yes)
-	PKG_CHECK_MODULES(GGCOV_CLI, glib-2.0 >= 2.0.0 libxml-2.0 >= 2.0.0)
+	PKG_CHECK_MODULES(GGCOV_CLI, glib-2.0 >= 2.0.0 libxml-2.0 >= 2.0.0 gdlib >= 2.0.0)
 
 	dnl we don't need --export-dynamic anymore, remove it
 	dnl so the executable will be smaller
@@ -372,7 +372,7 @@ if test x$gui = xyes ; then
     AC_SUBST(GGCOV_GLADE_FILE)
 else
     # gui disabled
-    PKG_CHECK_MODULES(GGCOV_CLI, glib-2.0 >= 2.0.0 libxml-2.0 >= 2.0.0, [glib2=yes],[glib2=no])
+    PKG_CHECK_MODULES(GGCOV_CLI, glib-2.0 >= 2.0.0 libxml-2.0 >= 2.0.0 gdlib >= 2.0.0, [glib2=yes],[glib2=no])
     if test $glib2 = no ; then
 	AC_MSG_ERROR([ggcov requires the glib library])
     fi
