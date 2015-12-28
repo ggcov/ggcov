@@ -40,7 +40,8 @@ libcommon_a_SOURCES= \
 		geometry.H \
 		yaml_generator.H yaml_generator.C \
 		mustache.H mustache.C \
-		unicode.H unicode.C
+		unicode.H unicode.C \
+		filerec.H filerec.C
 
 libcov_a_SOURCES= \
 		covio.H covio.C \
