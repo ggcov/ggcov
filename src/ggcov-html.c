@@ -31,19 +31,16 @@
 #include "unique_ptr.H"
 
 char *argv0;
-string_var data_dir;
-string_var templates_dir;
 mustache::environment_t menv;
 
 class gghtml_params_t : public cov_project_params_t
 {
 public:
-    gghtml_params_t();
+    gghtml_params_t(const char *argv0);
     ~gghtml_params_t();
 
     ARGPARSE_STRING_PROPERTY(output_directory);
-
-    static const char default_output_directory[];
+    ARGPARSE_STRING_PROPERTY(template_directory);
 
 public:
     void setup_parser(argparse::parser_t &parser)
@@ -51,27 +48,38 @@ public:
 	cov_project_params_t::setup_parser(parser);
 	estring o_desc;
 	o_desc.append_printf("write HTML to the given directory, default \"%s\"",
-			     default_output_directory);
+			     output_directory_.data());
+	estring t_desc;
+	t_desc.append_printf("read HTML templates from the given directory, default \"%s\"",
+			     template_directory_.data());
 	parser.add_option('o', "output-directory")
 	      .description(o_desc)
 	      .setter((argparse::arg_setter_t)&gghtml_params_t::set_output_directory);
+	parser.add_option('t', "template-directory")
+	      .description(t_desc)
+	      .setter((argparse::arg_setter_t)&gghtml_params_t::set_template_directory);
 	parser.set_other_option_help("[OPTIONS] [executable|source|directory]...");
     }
 
     void post_args()
     {
 	cov_project_params_t::post_args();
+	if (!template_directory_.data())
+	    template_directory_ = file_join2(data_directory_, "templates");
 	if (debug_enabled(D_DUMP|D_VERBOSE))
 	{
 	    duprintf1("output_directory=\"%s\"\n", output_directory_.data());
+	    duprintf1("template_directory=\"%s\"\n", template_directory_.data());
+	    duprintf1("data_directory=\"%s\"\n", data_directory_.data());
 	}
     }
+private:
+    string_var data_directory_;
 };
 
-const char gghtml_params_t::default_output_directory[] = "html";
-
-gghtml_params_t::gghtml_params_t()
- :  output_directory_(default_output_directory)
+gghtml_params_t::gghtml_params_t(const char *argv0)
+ :  output_directory_("html"),
+    data_directory_(file_make_absolute_to_file("../lib", argv0))
 {
 }
 
@@ -91,7 +99,7 @@ generate_static_files(const gghtml_params_t &params)
      * give the user the option to point at their own
      * template directory.
      */
-    string_var filename = file_join2(templates_dir, "static.files");
+    string_var filename = file_join2(params.get_template_directory(), "static.files");
     FILE *fp = 0;
     char *p;
     int r = 0;
@@ -121,7 +129,7 @@ generate_static_files(const gghtml_params_t &params)
 	if (!*p)
 	    continue;	    /* ignore empty lines */
 
-	string_var filefrom = file_join2(templates_dir, p);
+	string_var filefrom = file_join2(params.get_template_directory(), p);
 	string_var fileto = file_join2(params.get_output_directory(), p);
 	fprintf(stderr, "Installing static file %s to %s\n", filefrom.data(), fileto.data());
 	if (file_copy(filefrom, fileto) < 0)
@@ -413,15 +421,13 @@ main(int argc, char **argv)
 		      log_func, /*user_data*/0);
 #endif
     argv0 = argv[0];
-    gghtml_params_t params;
+    gghtml_params_t params(argv[0]);
     argparse::parser_t parser(params);
     if (parser.parse(argc, argv) < 0)
     {
 	exit(1);	/* error message emitted in parse_args() */
     }
-    data_dir = file_make_absolute_to_file("../lib", argv[0]);
-    templates_dir = file_join2(data_dir, "templates");
-    menv.set_template_directory(templates_dir);
+    menv.set_template_directory(params.get_template_directory());
     menv.set_output_directory(params.get_output_directory());
 
     int r = cov_read_files(params);
