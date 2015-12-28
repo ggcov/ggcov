@@ -176,7 +176,9 @@ generate_stats(yaml_generator_t &yaml, const cov_stats_t &stats)
     yaml.key("blocks_executed").value(stats.blocks_executed());
     yaml.key("blocks_total").value(stats.blocks_total());
     yaml.key("blocks_fraction").value(stats.blocks_fraction());
+    yaml.key("blocks_percent").value((unsigned)(100.0*stats.blocks_fraction()+0.5));
     yaml.key("blocks_sort_fraction").value(stats.blocks_sort_fraction());
+    yaml.key("blocks_sort_percent").value((unsigned)(100.0*stats.blocks_sort_fraction()+0.5));
     cov_stats_t::format_row_labels(stats.blocks_by_status(), absbuf, pcbuf);
     yaml.key("blocks_abslabel").value(absbuf);
     yaml.key("blocks_pclabel").value(pcbuf);

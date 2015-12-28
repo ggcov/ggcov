@@ -14,7 +14,14 @@
       </div>
       </div>
       </td>
-      <td class="F{{status}}" width="1%">{{#stats}}{{blocks_executed}}/{{blocks_total}}{{/stats}}</td>
+      {{#stats}}
+      <td class="F{{status}}" width="1%">{{blocks_executed}}/{{blocks_total}}</td>
+      <td width="1%">
+	<div class="BUN" style="width:10em;border:1px solid black;">
+	  <div class="BCO" style="width:{{blocks_percent}}%;">&nbsp;</div>
+	</div>
+      </td>
+      {{/stats}}
     </tr>
     {{/files}}
   </tbody>
