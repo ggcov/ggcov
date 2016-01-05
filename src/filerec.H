@@ -23,6 +23,7 @@
 #include "common.h"
 #include "cov.H"
 #include "list.H"
+#include "logging.H"
 
 /*
  * file_rec_t is used to build a tree of coverage stats
@@ -54,7 +55,7 @@ public:
     cov_scope_t *get_scope() const { return scope_; }
     list_iterator_t<file_rec_t> first_child() const { return children_.first(); }
 
-    void dump(int indent, FILE *fp);
+    void dump(int indent, logging::logger_t &);
 
 private:
     string_var name_;            /* partial name */

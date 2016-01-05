@@ -19,6 +19,7 @@
 
 #include "flow_diagram.H"
 #include "tok.H"
+#include "logging.H"
 
 #define NODE_WIDTH      6.0
 #define HMARGIN         0.5
@@ -33,6 +34,8 @@
 /* common denominator between SLOTGAP, NODE_WIDTH and HGAP */
 #define HQUANTUM        3.0
 #define HSLOTS(x)       ((int)(((x)/HQUANTUM)+0.5))
+
+static logging::logger_t &_log = logging::find_logger("lego");
 
 /* return the arc slot nearest the centre of the node at the given rank */
 static inline int
@@ -105,7 +108,7 @@ flow_diagram_t::generate_nodes()
     const cov_location_t *first = function_->get_first_location();
     const cov_location_t *last = function_->get_last_location();
 
-    dprintf0(D_DLEGO, "flow_diagram_t::prepare\n");
+    _log.debug("flow_diagram_t::prepare\n");
 
     if (first == 0 ||
 	first->lineno == 0 ||
@@ -113,17 +116,17 @@ flow_diagram_t::generate_nodes()
 	last->lineno == 0 ||
 	last->lineno < first->lineno)
     {
-	fprintf(stderr, "flow_diagram_t::prepare: can't generate "
-			"diagram for function \"%s\"\n",
-		    function_->name());
+	_log.error("flow_diagram_t::prepare: can't generate "
+		   "diagram for function \"%s\"\n",
+		   function_->name());
 	if (first == 0)
-	    fprintf(stderr, "    first=(null)\n");
+	    _log.error("    first=(null)\n");
 	else
-	    fprintf(stderr, "    first={%s,%lu}\n", first->filename, first->lineno);
+	    _log.error("    first={%s,%lu}\n", first->filename, first->lineno);
 	if (last == 0)
-	    fprintf(stderr, "    last=(null)\n");
+	    _log.error("    last=(null)\n");
 	else
-	    fprintf(stderr, "    last={%s,%lu}\n", last->filename, last->lineno);
+	    _log.error("    last={%s,%lu}\n", last->filename, last->lineno);
 	return 0;
     }
 
@@ -354,9 +357,8 @@ flow_diagram_t::slot_distance(node_t *node, int idx, int *distances) const
 	else
 	    distances[side]++;
     }
-    dprintf4(D_DLEGO|D_VERBOSE,
-	    "slot_distance(node=%p,idx=%d,distances=[%d,%d]\n",
-	    (void *)node, idx, distances[0], distances[1]);
+    _log.debug2("slot_distance(node=%p,idx=%d,distances=[%d,%d]\n",
+		(void *)node, idx, distances[0], distances[1]);
 }
 
 int
@@ -444,18 +446,18 @@ flow_diagram_t::allocate_arc_slots()
     delete[] next_slot[0];
     delete[] next_slot[1];
 
-    if (debug_enabled(D_DLEGO|D_VERBOSE))
+    if (_log.is_enabled(logging::DEBUG2))
     {
-	duprintf0("flow_diagram_t::arcs_[] = {\n");
+	_log.debug2("flow_diagram_t::arcs_[] = {\n");
 	for (i = 0 ; i < arcs_->length() ; i++)
 	{
 	    arc_t *arc = arcs_->nth(i);
-	    duprintf3("flow_diagram_t::    {from=%u,to=%u,slot=%d}\n",
+	    _log.debug2("flow_diagram_t::    {from=%u,to=%u,slot=%d}\n",
 		    arc->from_->block_->bindex(),
 		    arc->to_->block_->bindex(),
 		    arc->slot_);
 	}
-	duprintf0("flow_diagram_t::}\n");
+	_log.debug2("flow_diagram_t::}\n");
     }
 }
 
@@ -481,18 +483,18 @@ flow_diagram_t::assign_geometry()
     ypos_[2] = ypos_[1] + (LINE_HEIGHT + VGAP) * num_lines_;
     ypos_[3] = ypos_[2] + VMARGIN;
 
-    if (debug_enabled(D_DLEGO|D_VERBOSE))
+    if (_log.is_enabled(logging::DEBUG2))
     {
 	unsigned int i;
-	duprintf0("flow_diagram_t::xpos_[] = {\n");
+	_log.debug2("flow_diagram_t::xpos_[] = {\n");
 	for (i = 0 ; i < 8 ; i++)
-	    duprintf1("flow_diagram_t::    %g\n", xpos_[i]);
-	duprintf0("flow_diagram_t::}\n");
+	    _log.debug2("flow_diagram_t::    %g\n", xpos_[i]);
+	_log.debug2("flow_diagram_t::}\n");
 
-	duprintf0("flow_diagram_t::ypos_[] = {\n");
+	_log.debug2("flow_diagram_t::ypos_[] = {\n");
 	for (i = 0 ; i < 4 ; i++)
-	    duprintf1("flow_diagram_t::    %g\n", ypos_[i]);
-	duprintf0("flow_diagram_t::}\n");
+	    _log.debug2("flow_diagram_t::    %g\n", ypos_[i]);
+	_log.debug2("flow_diagram_t::}\n");
     }
 
     for (list_iterator_t<node_t> niter = nodes_.first() ; *niter ; ++niter)
@@ -824,11 +826,9 @@ flow_diagram_t::show_arc(arc_t *arc, scenegen_t *sg)
     case AC_DOWN:
 	/* more general arc downwards */
 	vx = slotx(arc->slot_);
-	dprintf4(D_DLEGO|D_VERBOSE,
-	    "arc downwards from=%u to=%u slot=%d vx=%g\n",
-	    from->block_->bindex(),
-	    to->block_->bindex(),
-	    arc->slot_, vx);
+	_log.debug2("arc downwards from=%u to=%u slot=%d vx=%g\n",
+		    from->block_->bindex(), to->block_->bindex(),
+		    arc->slot_, vx);
 	sg->polyline_point(from->slotx(arc->slot_), from->bottomy());
 	sg->polyline_point(vx, from->bottomy() + VGAP/2.0);
 	sg->polyline_point(vx, to->topy() - VGAP/2.0);
@@ -837,11 +837,9 @@ flow_diagram_t::show_arc(arc_t *arc, scenegen_t *sg)
     case AC_UP:
 	/* more general arc upwards */
 	vx = slotx(arc->slot_);
-	dprintf4(D_DLEGO|D_VERBOSE,
-	    "arc upwards from=%u to=%u slot=%d vx=%g\n",
-	    from->block_->bindex(),
-	    to->block_->bindex(),
-	    arc->slot_, vx);
+	_log.debug2("arc upwards from=%u to=%u slot=%d vx=%g\n",
+		    from->block_->bindex(), to->block_->bindex(),
+		    arc->slot_, vx);
 	sg->polyline_point(from->slotx(arc->slot_), from->topy());
 	sg->polyline_point(vx, from->topy() - VGAP/2.0);
 	sg->polyline_point(vx, to->bottomy() + VGAP/2.0);
@@ -877,7 +875,7 @@ flow_diagram_t::show_node(node_t *node, scenegen_t *sg)
     snprintf(label, sizeof(label), "%u\n%llu",
 	    node->block_->bindex(),
 	    node->block_->count());
-    dprintf1(D_DLEGO|D_VERBOSE, "flow_diagram_t::node_t::show label=\"%s\"\n",
+    _log.debug2("flow_diagram_t::node_t::show label=\"%s\"\n",
 		label);
     sg->textbox(node->x_, node->y_, node->w_, node->h_, label);
 #endif
@@ -888,7 +886,7 @@ flow_diagram_t::show_node(node_t *node, scenegen_t *sg)
 void
 flow_diagram_t::render(scenegen_t *sg)
 {
-    if (debug_enabled(D_DLEGO))
+    if (_log.is_enabled(logging::DEBUG))
 	show_debug_grid(sg);
 
     /*

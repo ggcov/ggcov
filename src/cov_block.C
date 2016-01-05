@@ -20,6 +20,10 @@
 #include "cov_priv.H"
 #include "estring.H"
 #include "filename.h"
+#include "logging.H"
+
+static logging::logger_t &cgraph_log = logging::find_logger("cgraph");
+static logging::logger_t &suppress_log = logging::find_logger("suppress");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -143,21 +147,22 @@ cov_block_t::add_call(const char *name, const cov_location_t *loc)
     if (is_call_site() &&
 	((last = locations_.tail()) == 0 || *loc == *last))
     {
-	dprintf5(D_CGRAPH, "%s: call from %s:%u to %s at %s\n",
-		fn, function_->name(), idx_, name, loc->describe());
+	cgraph_log.debug("%s: call from %s:%u to %s at %s\n",
+			 fn, function_->name(), idx_, name, loc->describe());
 	if (call_ != 0)
 	{
 	    /* multiple calls: assume the earlier one is actually pure */
-	    dprintf5(D_CGRAPH, "%s: assuming earlier call from %s:%u to %s at %s was pure\n",
-		fn, function_->name(), idx_, call_.data(), locations_.tail()->describe());
+	    cgraph_log.debug("%s: assuming earlier call from %s:%u to %s at %s was pure\n",
+			     fn, function_->name(), idx_, call_.data(),
+			     locations_.tail()->describe());
 	    pure_calls_.append(new call_t(call_, locations_.tail()));
 	}
 	call_ = name;
     }
     else
     {
-	dprintf5(D_CGRAPH, "%s: pure call from %s:%u to %s at %s\n",
-		fn, function_->name(), idx_, name, loc->describe());
+	cgraph_log.debug("%s: pure call from %s:%u to %s at %s\n",
+			 fn, function_->name(), idx_, name, loc->describe());
 	pure_calls_.append(new call_t(name, loc));
     }
 }
@@ -176,7 +181,7 @@ cov_block_t::suppress(const cov_suppression_t *s)
 {
     if (s && !suppression_)
     {
-	dprintf2(D_SUPPRESS, "suppressing block %s: %s\n", describe(), s->describe());
+	suppress_log.debug("suppressing block %s: %s\n", describe(), s->describe());
 	suppression_ = s;
 
 	/* suppress all outbound arcs */

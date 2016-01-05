@@ -51,11 +51,10 @@ unsigned int cov_read_directory(const char *dirname, gboolean recursive);
 void cov_post_read(void);
 
 /*
- * If -DDEBUG > 1, dump human-readable debugging description
- * of contents of cov data structures to the given FILE*
- * (defaults to stderr if NULL is passed).
+ * Dump human-readable debugging description
+ * of contents of cov data structures to the log.
  */
-void cov_dump(FILE *);
+void cov_dump();
 
 extern int cov_read_files(const cov_project_params_t &);
 

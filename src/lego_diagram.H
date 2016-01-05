@@ -53,7 +53,7 @@ private:
     };
 
     void show_node(node_t *, scenegen_t *);
-    void dump_node(node_t *node, FILE *fp);
+    void dump_node(node_t *node);
     void assign_geometry(node_t *, double x, double y, double w, double h);
     char *root_name() const;
 

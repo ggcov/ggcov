@@ -137,7 +137,7 @@ private:
     friend class cov_file_t;
     friend class cov_function_t;
     friend class cov_block_t;
-    friend void dump_arc(FILE *, cov_arc_t *a);
+    friend void dump_arc(cov_arc_t *a);
 };
 
 

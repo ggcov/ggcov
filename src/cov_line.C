@@ -18,6 +18,9 @@
  */
 
 #include "cov_priv.H"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("suppress");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -92,7 +95,7 @@ cov_line_t::suppress(const cov_suppression_t *s)
     {
 	count_valid_ = true;
 	status_ = cov::SUPPRESSED;
-	dprintf1(D_SUPPRESS, "suppressing line: %s\n", s->describe());
+	_log.debug("suppressing line: %s\n", s->describe());
 	suppression_ = s;
 
 	/* suppress any arcs out of blocks on this line */

@@ -19,8 +19,11 @@
 
 #include "cpp_parser.H"
 #include "tok.H"
+#include "logging.H"
 
 #define ISBLANK(c)      ((c) == ' ' || (c) == '\t')
+
+static logging::logger_t &_log = logging::find_logger("cpp");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -119,8 +122,7 @@ cpp_parser_t::got_comment(estring &e, unsigned int offset)
 {
     if (comment_.length())
     {
-	dprintf2(D_CPP|D_VERBOSE, "got_comment: e=\"%s\", offset=%u\n",
-		 e.data(), offset);
+	_log.debug2("got_comment: e=\"%s\", offset=%u\n", e.data(), offset);
 
 	char *buf = (char *)e.data() + offset;
 	char *p = (char *)e.data() + e.length() - 1;
@@ -289,8 +291,8 @@ cpp_parser_t::set_delta(depend_t *dep, const char *var, int delta)
     }
     else if (*dd != delta)
     {
-	fprintf(stderr,
-		"%s:%ld: Warning: complex expression involves %s"
+	_log.warning(
+		"%s:%ld: complex expression involves %s"
 		" more than once, code suppression may not work.\n",
 		filename_.data(), lineno_, var);
     }
@@ -312,21 +314,21 @@ cpp_parser_t::depends(const char *var) const
 	    count[(*dd)+1]++;
     }
     ret = (count[2] && !count[0]); // some positive and no negative
-    dprintf2(D_CPP|D_VERBOSE, "depends: %s=%d\n", var, ret);
+    _log.debug2("depends: %s=%d\n", var, ret);
     return ret;
 }
 
 void
 cpp_parser_t::dump() const
 {
-    fprintf(stderr, "Depend stack dump:\n");
+    _log.debug("Depend stack dump:\n");
+    estring buf;
     for (list_iterator_t<depend_t> iter = depend_stack_.last() ; *iter ; --iter)
     {
-	fprintf(stderr, "    [%ld]", (*iter)->lineno_);
-
+	buf.truncate();
 	for (hashtable_iter_t<const char, int> ditr = (*iter)->deltas_->first() ; *ditr ; ++ditr)
-	    fprintf(stderr, " %s=%d", ditr.key(), *ditr.value());
-	fputc('\n', stderr);
+	    buf.append_printf(" %s=%d", ditr.key(), *ditr.value());
+	_log.debug("    [%ld]%s\n", (*iter)->lineno_, buf.data());
     }
 }
 
@@ -336,11 +338,11 @@ void
 cpp_parser_t::stack_dump()
 {
     int i;
+    estring buf;
 
-    fprintf(stderr, "Parse stack:");
     for (i = 0 ; i < depth_ ; i++)
-	fprintf(stderr, " %s", token_as_string(stack_[i]));
-    fputc('\n', stderr);
+	buf.append_printf(" %s", token_as_string(stack_[i]));
+    _log.debug2("Parse stack:%s\n", buf.data());
 }
 
 void
@@ -349,7 +351,7 @@ cpp_parser_t::stack_push(int token)
     assert(depth_ < MAX_STACK);
     stack_[depth_++] = token;
 
-    if (debug_enabled(D_CPP|D_VERBOSE))
+    if (_log.is_enabled(logging::DEBUG2))
 	stack_dump();
 }
 
@@ -359,7 +361,7 @@ cpp_parser_t::stack_pop()
     assert(depth_ > 0);
     return stack_[--depth_];
 
-    if (debug_enabled(D_CPP|D_VERBOSE))
+    if (_log.is_enabled(logging::DEBUG2))
 	stack_dump();
 }
 
@@ -377,7 +379,7 @@ cpp_parser_t::stack_replace(int ntoks, int newtoken)
     depth_ -= ntoks;
     stack_[depth_++] = newtoken;
 
-    if (debug_enabled(D_CPP|D_VERBOSE))
+    if (_log.is_enabled(logging::DEBUG2))
 	stack_dump();
 }
 
@@ -389,8 +391,7 @@ cpp_parser_t::parse_boolean_expr(gboolean inverted)
 
     while ((tok = get_token()) != EOF)
     {
-	dprintf2(D_CPP|D_VERBOSE, "Read token %s %s\n",
-		token_as_string(tok), tokenbuf_);
+	_log.debug2("Read token %s %s\n", token_as_string(tok), tokenbuf_);
 
 	/* shift */
 	switch (tok)
@@ -453,7 +454,7 @@ cpp_parser_t::parse_boolean_expr(gboolean inverted)
 void
 cpp_parser_t::parse_if()
 {
-    dprintf1(D_CPP, "[%ld] if\n", lineno_);
+    _log.debug("[%ld] if\n", lineno_);
 
     depend_t *dep = new depend_t;
     dep->lineno_ = lineno_;
@@ -469,7 +470,7 @@ cpp_parser_t::parse_if()
 void
 cpp_parser_t::parse_ifdef()
 {
-    dprintf1(D_CPP, "[%ld] ifdef\n", lineno_);
+    _log.debug("[%ld] ifdef\n", lineno_);
 
     if (get_token() != T_IDENTIFIER)
 	return; /* syntax error */
@@ -488,7 +489,7 @@ cpp_parser_t::parse_ifdef()
 void
 cpp_parser_t::parse_ifndef()
 {
-    dprintf1(D_CPP, "[%ld] ifndef\n", lineno_);
+    _log.debug("[%ld] ifndef\n", lineno_);
 
     if (get_token() != T_IDENTIFIER)
 	return; /* syntax error */
@@ -507,14 +508,13 @@ cpp_parser_t::parse_ifndef()
 void
 cpp_parser_t::parse_else()
 {
-    dprintf1(D_CPP, "[%ld] else\n", lineno_);
+    _log.debug("[%ld] else\n", lineno_);
 
     depend_t *dep;
     if ((dep = depend_stack_.head()) == 0)
     {
-	fprintf(stderr,
-		"%s:%ld: Warning: unmatched else\n",
-		filename_.data(), lineno_);
+	_log.warning("%s:%ld: unmatched else\n",
+		     filename_.data(), lineno_);
 	return;
     }
     dep->lineno_ = lineno_;
@@ -531,15 +531,14 @@ cpp_parser_t::parse_else()
 void
 cpp_parser_t::parse_endif()
 {
-    dprintf1(D_CPP, "[%ld] endif\n", lineno_);
+    _log.debug("[%ld] endif\n", lineno_);
 
     depend_t *dep;
 
     if ((dep = depend_stack_.remove_head()) == 0)
     {
-	fprintf(stderr,
-		"%s:%ld: Warning: unmatched endif\n",
-		filename_.data(), lineno_);
+	_log.warning("%s:%ld: unmatched endif\n",
+		     filename_.data(), lineno_);
 	return;
     }
 
@@ -558,30 +557,8 @@ cpp_parser_t::parse_cpp_line(unsigned long lineno)
     index_ = 0;
     in_comment_ = FALSE;
 
-    dprintf2(D_CPP|D_VERBOSE, "parse_cpp_line: line[%lu]=\"%s\"\n",
-	     lineno, line_.data());
-
-#if 0
-    int c;
-    fprintf(stderr, "cpp_parser_t::parse: line[%lu]=\"%s\"\n\t\t\"",
-	    lineno, data_);
-    while ((c = getc_commentless()) != EOF)
-    {
-	fputc(c, stderr);
-    }
-    fprintf(stderr, "\"\n");
-#endif
-
-#if 0
-    int tok;
-    fprintf(stderr, "cpp_parser_t::parse: line[%lu]=\"%s\"\n ->",
-	    lineno, data_);
-    while ((tok = get_token()) != EOF)
-    {
-	fprintf(stderr, " %d(%s)", tok, token_as_string(tok));
-    }
-    fprintf(stderr, "\n");
-#endif
+    _log.debug2("parse_cpp_line: line[%lu]=\"%s\"\n",
+		lineno, line_.data());
 
     int tok = get_token();
     switch (tok)
@@ -605,8 +582,7 @@ cpp_parser_t::parse_c_line(unsigned long lineno)
     index_ = 0;
     in_comment_ = FALSE;
 
-    dprintf2(D_CPP|D_VERBOSE, "parse_c_line: line[%lu]=\"%s\"\n",
-	     lineno, line_.data());
+    _log.debug2("parse_c_line: line[%lu]=\"%s\"\n", lineno, line_.data());
 
     while (getc_commentless() != EOF)
 	;

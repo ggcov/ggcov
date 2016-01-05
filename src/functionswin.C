@@ -23,6 +23,7 @@
 #include "cov.H"
 #include "prefs.H"
 #include "confsection.H"
+#include "logging.H"
 
 
 #define COL_BLOCKS      0
@@ -42,6 +43,8 @@
     G_TYPE_POINTER, GDK_TYPE_COLOR
 #endif
 
+static logging::logger_t &_log = logging::find_logger("funcswin");
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
@@ -60,9 +63,8 @@ functionswin_compare(
     const cov_stats_t *s2 = fs2->get_stats();
     int ret = 0;
 
-    dprintf2(D_FUNCSWIN|D_VERBOSE,
-	    "functionswin_compare: fs1=\"%s\" fs2=\"%s\"\n",
-	    fs1->describe(), fs2->describe());
+    _log.debug2("functionswin_compare: fs1=\"%s\" fs2=\"%s\"\n",
+		fs1->describe(), fs2->describe());
 
     switch (column)
     {
@@ -235,7 +237,7 @@ functionswin_t::~functionswin_t()
 void
 functionswin_t::populate()
 {
-    dprintf0(D_FUNCSWIN, "functionswin_t::populate\n");
+    _log.debug("functionswin_t::populate\n");
 
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
@@ -282,7 +284,7 @@ functionswin_t::update()
     char calls_pc_buf[16];
     char branches_pc_buf[16];
 
-    dprintf0(D_FUNCSWIN, "functionswin_t::update\n");
+    _log.debug("functionswin_t::update\n");
 
     percent_flag = GTK_CHECK_MENU_ITEM(percent_check_)->active;
 

@@ -21,6 +21,7 @@
 #include "sourcewin.H"
 #include "cov_priv.H"
 #include "estring.H"
+#include "logging.H"
 
 #define COL_COUNT   0
 #define COL_NAME    1
@@ -33,6 +34,8 @@
 #define COL_TYPES \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER
 #endif
+
+static logging::logger_t &_log = logging::find_logger("graphwin");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -251,7 +254,7 @@ callgraphwin_t::populate_function_combo(GtkCombo *combo)
 void
 callgraphwin_t::populate()
 {
-    dprintf0(D_GRAPHWIN, "callgraphwin_t::populate\n");
+    _log.debug("callgraphwin_t::populate\n");
 
     populate_function_combo(function_combo_);
 
@@ -349,7 +352,7 @@ callgraphwin_t::update()
 {
     cov_callnode_t *cn = callnode_;
 
-    dprintf0(D_GRAPHWIN, "callgraphwin_t::update\n");
+    _log.debug("callgraphwin_t::update\n");
     gtk_widget_set_sensitive(function_view_, (cn->function != 0));
 
     set_title(cn->unambiguous_name());

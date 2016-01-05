@@ -19,6 +19,9 @@
 
 #include "uix.h"
 #include <gdk/gdkx.h>   /* This is what we want to avoid in the main code */
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("uicore");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -137,7 +140,7 @@ uix_font_desc_load(const uix_font_desc_t *desc)
 
     fontname = g_strjoinv("-", (char **)fields);
 
-    dprintf1(D_UICORE, "uix_font_desc_load: trying \"%s\"\n", fontname);
+    _log.debug("uix_font_desc_load: trying \"%s\"\n", fontname);
 
     font = gdk_font_load(fontname);
 
@@ -246,10 +249,9 @@ x_error_handler(Display *display, XErrorEvent *event)
     char errmsg[1024];
     strncpy(errmsg, "<unknown>", sizeof(errmsg)-1);
     XGetErrorText(display, event->error_code, errmsg, sizeof(errmsg));
-    fprintf(stderr, "ggcov: %s error from X server, resource %lu serial %lu request %u/%u\n",
+    _log.error("%s error from X server, resource %lu serial %lu request %u/%u\n",
 	    errmsg, event->resourceid, event->serial,
 	    event->request_code, event->minor_code);
-    fflush(stderr);
     return 0;   /* return value igored */
 }
 
@@ -257,8 +259,7 @@ x_error_handler(Display *display, XErrorEvent *event)
 static int
 x_io_error_handler(Display *display)
 {
-    fprintf(stderr, "ggcov: lost connection to the X server!!\n");
-    fflush(stderr);
+    _log.error("lost connection to the X server!!\n");
     return 0;   /* return value igored */
     /* Xlib will exit() */
 }

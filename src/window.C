@@ -24,10 +24,12 @@
 #include "string_var.H"
 #include "confsection.H"
 #include "prefs.H"
+#include "logging.H"
 
 static const char window_key[] = "ggcov_window_key";
 
 static list_t<window_t> all;
+static logging::logger_t &_log = logging::find_logger("uicore");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -80,7 +82,7 @@ dnd_handle_uri_list(void *data, unsigned int length)
     cov_pre_read();
     while ((uri = tok.next()) != 0)
     {
-	dprintf1(D_UICORE, "dnd_handle_uri_list: uri=\"%s\"\n", uri);
+	_log.debug("dnd_handle_uri_list: uri=\"%s\"\n", uri);
 	if (!strncmp(uri, "file:", 5) && ggcov_read_file(uri+5))
 	    nfiles++;
     }
@@ -118,12 +120,12 @@ dnd_drag_data_received(
     guint time,
     gpointer user_data)
 {
-    if (debug_enabled(D_UICORE))
+    if (_log.is_enabled(logging::DEBUG))
     {
 	string_var selection_str = gdk_atom_name(data->selection);
 	string_var target_str = gdk_atom_name(data->target);
 	string_var type_str = gdk_atom_name(data->type);
-	duprintf7("dnd_drag_data_received: info=%d, "
+	_log.debug("dnd_drag_data_received: info=%d, "
 		  "data={selection=%s target=%s type=%s "
 		  "data=0x%p length=%d format=%d}\n",
 		  info,
@@ -153,16 +155,15 @@ dnd_drag_motion(
     gpointer user_data)
 {
     GList *iter;
-
-    fprintf(stderr, "dnd_drag_motion: x=%d y=%d targets={", x, y);
+    estring buf;
 
     for (iter = drag_context->targets ; iter != 0 ; iter = iter->next)
     {
 	gchar *name = gdk_atom_name((GdkAtom)GPOINTER_TO_INT(iter->data));
-	fprintf(stderr, "\"%s\"%s", name, (iter->next == 0 ? "" : ", "));
-	g_free (name);
+	buf.append_printf(" \"%s\"", name);
+	g_free(name);
     }
-    fprintf(stderr, "}\n");
+    _log.debug("dnd_drag_motion: x=%d y=%d targets={%s }\n", x, y, buf.data());
 
     gdk_drag_status(drag_context, GDK_ACTION_COPY, GDK_CURRENT_TIME);
 

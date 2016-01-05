@@ -24,6 +24,9 @@
 #include "tok.H"
 #include "window.H"
 #include "confsection.H"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("uicore");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 #if GTK2
@@ -337,7 +340,7 @@ ui_load_tree(const char *root)
 	filename = find_file(ui_glade_path, gladefile);
 	if (filename == 0)
 	    fatal("can't find %s in path %s\n", gladefile, ui_glade_path.data());
-	dprintf1(D_UICORE, "Loading Glade UI from file \"%s\"\n", filename);
+	_log.debug("Loading Glade UI from file \"%s\"\n", filename);
     }
 
     glade_set_custom_handler(ui_custom_widget_handler, (gpointer)0);
@@ -414,10 +417,8 @@ ui_window_set_default_icon(GtkWidget *w)
 {
     if (!GTK_WIDGET_REALIZED(w))
     {
-#if UI_DEBUG > 10
-	fprintf(stderr, "ui_window_set_default_icon(w=0x%08lx): delaying until realized\n",
-		(unsigned)w);
-#endif
+	_log.debug2("ui_window_set_default_icon(w=0x%08lx): "
+		    "delaying until realized\n", (unsigned long)w);
 	/* delay self until realized */
 	gtk_signal_connect(GTK_OBJECT(w), "realize",
 	    GTK_SIGNAL_FUNC(ui_window_set_default_icon), 0);
@@ -425,10 +426,7 @@ ui_window_set_default_icon(GtkWidget *w)
 	return;
     }
 
-#if UI_DEBUG > 10
-    fprintf(stderr, "ui_window_set_default_icon(w=0x%08lx)\n",
-	    (unsigned)w);
-#endif
+    _log.debug2("ui_window_set_default_icon(w=0x%08lx)\n", (unsigned long)w);
 
     if (ui_default_icon.pm == 0)
 	ui_default_icon.pm = gdk_pixmap_create_from_xpm_d(w->window,
@@ -464,8 +462,7 @@ ui_on_windows_menu_activate(GtkWidget *w, gpointer userdata)
 {
     GtkWidget *win = (GtkWidget *)userdata;
 
-    dprintf1(D_UICORE, "ui_on_windows_menu_activate: %s\n",
-			GTK_WINDOW(win)->title);
+    _log.debug("ui_on_windows_menu_activate: %s\n", GTK_WINDOW(win)->title);
 
     gdk_window_show(win->window);
     gdk_window_raise(win->window);
@@ -821,7 +818,7 @@ ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
 				     (int)event->button.y,
 				     &row, &col))
     {
-	dprintf2(D_UICORE, "ui_list_double_click_data: row=%d col=%d\n", row, col);
+	_log.debug("ui_list_double_click_data: row=%d col=%d\n", row, col);
 	return gtk_clist_get_row_data(clist, row);
     }
     return 0;
@@ -839,11 +836,10 @@ ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
 				     &path, (GtkTreeViewColumn **)0,
 				     (gint *)0, (gint *)0))
     {
-	if (debug_enabled(D_UICORE))
+	if (_log.is_enabled(logging::DEBUG))
 	{
 	    string_var path_str = gtk_tree_path_to_string(path);
-	    duprintf1("ui_list_double_click_data: path=\"%s\"\n",
-			    path_str.data());
+	    _log.debug("ui_list_double_click_data: path=\"%s\"\n", path_str.data());
 	}
 	model = gtk_tree_view_get_model(tv);
 	gtk_tree_model_get_iter(model, &iter, path);
@@ -916,8 +912,7 @@ static void
 ui_text_line_start(GtkText *text, ui_text_data *td)
 {
     unsigned int offset = gtk_text_get_length(text);
-    dprintf2(D_UICORE|D_VERBOSE, "offsets_by_line[%d] = %d\n",
-	td->offsets_by_line->len, offset);
+    _log.debug2("offsets_by_line[%d] = %d\n", td->offsets_by_line->len, offset);
     g_array_append_val(td->offsets_by_line, offset);
 }
 
@@ -1269,7 +1264,7 @@ ui_text_offset_to_lineno(ui_text_data *td, unsigned int offset)
     top = td->offsets_by_line->len-1;
     bottom = 0;
 
-    dprintf3(D_UICORE|D_VERBOSE,
+    _log.debug2(
 	    "ui_text_offset_to_lineno: { offset=%u top=%u bottom=%u\n",
 	    offset, top, bottom);
 
@@ -1278,7 +1273,7 @@ ui_text_offset_to_lineno(ui_text_data *td, unsigned int offset)
 	unsigned int mid = (top + bottom)/2;
 	unsigned int midoff = g_array_index(td->offsets_by_line, unsigned int, mid);
 
-	dprintf4(D_UICORE|D_VERBOSE,
+	_log.debug2(
 		"ui_text_offset_to_lineno:     top=%d bottom=%d mid=%d midoff=%u\n",
 		 top, bottom, mid, midoff);
 
@@ -1290,7 +1285,7 @@ ui_text_offset_to_lineno(ui_text_data *td, unsigned int offset)
 	    top = mid;
     }
 
-    dprintf2(D_UICORE|D_VERBOSE,
+    _log.debug2(
 	    "ui_text_offset_to_lineno: offset=%u line=%u }\n",
 	    offset, bottom);
 
@@ -1366,22 +1361,18 @@ ui_text_get_contents(GtkWidget *w)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static const char *
-log_level_to_str(GLogLevelFlags level)
+static logging::level_t
+log_level(GLogLevelFlags level)
 {
-    static char buf[32];
-
     switch (level & G_LOG_LEVEL_MASK)
     {
-    case G_LOG_LEVEL_ERROR: return "ERROR";
-    case G_LOG_LEVEL_CRITICAL: return "CRITICAL";
-    case G_LOG_LEVEL_WARNING: return "WARNING";
-    case G_LOG_LEVEL_MESSAGE: return "MESSAGE";
-    case G_LOG_LEVEL_INFO: return "INFO";
-    case G_LOG_LEVEL_DEBUG: return "DEBUG";
-    default:
-	snprintf(buf, sizeof(buf), "%d", level);
-	return buf;
+    case G_LOG_LEVEL_ERROR: return logging::ERROR;
+    case G_LOG_LEVEL_CRITICAL: return logging::FATAL;
+    case G_LOG_LEVEL_WARNING: return logging::WARNING;
+    case G_LOG_LEVEL_MESSAGE: return logging::INFO;
+    case G_LOG_LEVEL_INFO: return logging::INFO;
+    case G_LOG_LEVEL_DEBUG: return logging::DEBUG;
+    default: return logging::INFO;
     }
 }
 
@@ -1392,9 +1383,8 @@ log_func(
     const char *msg,
     gpointer user_data)
 {
-    fprintf(stderr, "%s:%s:%s\n",
+    _log.message(log_level(level), "%s:%s:%s\n",
 	(domain == 0 ? PACKAGE : domain),
-	log_level_to_str(level),
 	msg);
     if (level & G_LOG_FLAG_FATAL)
 	exit(1);

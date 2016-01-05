@@ -23,6 +23,7 @@
 #include "hashtable.H"
 #include "filename.h"
 #include "tok.H"
+#include "logging.H"
 
 #ifdef HAVE_LIBBFD
 
@@ -31,6 +32,8 @@
  * ELF executable's .dynamic section and parse them for required
  * dynamic libraries.
  */
+
+static logging::logger_t &_log = logging::find_logger("elf");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -244,11 +247,11 @@ cov_elf_shlib_scanner_t::find_shlib(const char *name)
 
 	add_to_rpath("/lib:/usr/lib");
 
-	if (debug_enabled(D_ELF|D_VERBOSE))
+	if (_log.is_enabled(logging::DEBUG2))
 	{
-	    duprintf0("Shared library search path is:\n");
+	    _log.debug2("Shared library search path is:\n");
 	    for (i = 0 ; i < rpath_->length() ; i++)
-		duprintf1("    \"%s\"\n", rpath_->nth(i));
+		_log.debug2("    \"%s\"\n", rpath_->nth(i));
 	}
     }
 
@@ -257,10 +260,10 @@ cov_elf_shlib_scanner_t::find_shlib(const char *name)
     for (i = 0 ; i < rpath_->length()  ; i++)
     {
 	file = g_strconcat(rpath_->nth(i), "/", name, (char *)0);
-	dprintf1(D_ELF|D_VERBOSE, "find_shlib: trying \"%s\"\n", file.data());
+	_log.debug2("find_shlib: trying \"%s\"\n", file.data());
 	if (file_exists(file) == 0)
 	{
-	    dprintf0(D_ELF|D_VERBOSE, "    found\n");
+	    _log.debug2("    found\n");
 	    return file.take();
 	}
     }
@@ -278,15 +281,14 @@ cov_elf_shlib_scanner_t::next()
     char *file;
 
     if (!dyni_)
-	dprintf0(D_ELF|D_VERBOSE, "index|tag       |value\n");
+	_log.debug2("index|tag       |value\n");
 
     for ( ; dyni_ < num_dyns_ ; dyni_++)
     {
 	d = &dyns_[dyni_];
 
-	dprintf3(D_ELF|D_VERBOSE,
-		 "%5u|%10s|%s\n",
-		 dyni_, tag_as_string(d), value_as_string(d));
+	_log.debug2("%5u|%10s|%s\n",
+		    dyni_, tag_as_string(d), value_as_string(d));
 
 	if (d->tag != DT_NEEDED ||
 	    d->value >= string_size_)

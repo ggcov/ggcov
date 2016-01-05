@@ -18,6 +18,10 @@
  */
 
 #include "cov_project_params.H"
+#include "estring.H"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("dump");
 
 cov_project_params_t::cov_project_params_t()
  :  recursive_(FALSE),
@@ -70,7 +74,7 @@ void
 cov_project_params_t::post_args()
 {
     if (debug_str_.data() != 0)
-	debug_set(debug_str_);
+	logging::logger_t::debug_enable_loggers(debug_str_);
 
     if (print_version_flag_)
     {
@@ -78,16 +82,16 @@ cov_project_params_t::post_args()
 	exit(0);
     }
 
-    if (debug_enabled(D_DUMP|D_VERBOSE))
+    if (_log.is_enabled(logging::DEBUG2))
     {
-	string_var token_str = debug_enabled_tokens();
+	string_var debug_loggers = logging::logger_t::describe_debug_enabled_loggers();
 
-	duprintf1("recursive=%d\n", recursive_);
-	duprintf1("suppressed_calls=%s\n", suppressed_calls_.data());
-	duprintf1("suppressed_ifdefs=%s\n", suppressed_ifdefs_.data());
-	duprintf1("suppressed_comment_lines=%s\n", suppressed_comment_lines_.data());
-	duprintf1("suppressed_comment_ranges=%s\n", suppressed_comment_ranges_.data());
-	duprintf2("debug = 0x%lx (%s)\n", debug, token_str.data());
+	_log.debug2("recursive=%d\n", recursive_);
+	_log.debug2("suppressed_calls=%s\n", suppressed_calls_.data());
+	_log.debug2("suppressed_ifdefs=%s\n", suppressed_ifdefs_.data());
+	_log.debug2("suppressed_comment_lines=%s\n", suppressed_comment_lines_.data());
+	_log.debug2("suppressed_comment_ranges=%s\n", suppressed_comment_ranges_.data());
+	_log.debug2("debug = %s\n", debug_loggers.data());
 
 	static const struct { const char *name; int value; } build_options[] =
 	{
@@ -129,15 +133,15 @@ cov_project_params_t::post_args()
 	    #endif
 	    }, { NULL, 0 }
 	};
-	duprintf0("built with");
+	estring build_msg;
 	for (int i = 0 ; build_options[i].name ; i++)
-	    duprintf2(" %s%s", build_options[i].value ? "" : "!", build_options[i].name);
-	duprintf0("\n");
+	    build_msg.append_printf(" %s%s", build_options[i].value ? "" : "!", build_options[i].name);
+	_log.debug2("built with%s\n", build_msg.data());
 
-	duprintf0("files = ");
+	estring files_msg;
 	for (file_iterator_t itr = file_iter() ; *itr ; ++itr)
-	    duprintf1(" \"%s\"", *itr);
-	duprintf0(" }\n");
+	    files_msg.append_printf(" \"%s\"", *itr);
+	_log.debug2("files = {%s }\n", files_msg.data());
     }
 }
 

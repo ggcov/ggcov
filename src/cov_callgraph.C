@@ -19,6 +19,9 @@
 
 #include "cov.H"
 #include "cov_calliter.H"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("cgraph");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -227,9 +230,9 @@ cov_callgraph_t::add_nodes(cov_file_t *f)
 	    cn = cs->add(new cov_callnode_t(fn->name()));
 
 	if (cn->function != 0 && cn->function != fn)
-	    fprintf(stderr, "Callgraph name collision: %s:%s and %s:%s\n",
-		fn->file()->name(), fn->name(),
-		cn->function->file()->name(), cn->function->name());
+	    _log.error("Callgraph name collision: %s:%s and %s:%s\n",
+		       fn->file()->name(), fn->name(),
+		       cn->function->file()->name(), cn->function->name());
 	if (cn->function == 0)
 	    cn->function = fn;
 

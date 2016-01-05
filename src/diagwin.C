@@ -21,6 +21,9 @@
 #include "cov.H"
 #include "canvas_scenegen.H"
 #include "prefs.H"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("diagwin");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -68,7 +71,7 @@ diagwin_t::zoom_all()
     zoomx = canvas_->allocation.width / bounds.width();
     zoomy = canvas_->allocation.height / bounds.height();
     zoom_ = MIN(zoomx, zoomy);
-    dprintf3(D_DIAGWIN, "diagwin_t::zoom_all: zoomx=%g zoomy=%g zoom=%g\n",
+    _log.debug("diagwin_t::zoom_all: zoomx=%g zoomy=%g zoom=%g\n",
 		zoomx, zoomy, zoom_);
 
     gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas_), zoom_);
@@ -104,7 +107,7 @@ diagwin_t::populate()
 {
     GnomeCanvasGroup *root = gnome_canvas_root(GNOME_CANVAS(canvas_));
 
-    dprintf0(D_DIAGWIN, "diagwin_t::populate\n");
+    _log.debug("diagwin_t::populate\n");
 
     while (root->item_list != 0)
     {
@@ -145,7 +148,7 @@ diagwin_t::name() const
 GLADE_CALLBACK void
 diagwin_t::on_zoom_in_activate()
 {
-    dprintf0(D_DIAGWIN, "diagwin_t::on_zoom_in_activate\n");
+    _log.debug("diagwin_t::on_zoom_in_activate\n");
     zoom_to(zoom_*2.0);
 }
 
@@ -153,7 +156,7 @@ diagwin_t::on_zoom_in_activate()
 GLADE_CALLBACK void
 diagwin_t::on_zoom_out_activate()
 {
-    dprintf0(D_DIAGWIN, "diagwin_t::on_zoom_out_activate\n");
+    _log.debug("diagwin_t::on_zoom_out_activate\n");
     zoom_to(zoom_/2.0);
 }
 
@@ -161,7 +164,7 @@ diagwin_t::on_zoom_out_activate()
 GLADE_CALLBACK void
 diagwin_t::on_show_all_activate()
 {
-    dprintf0(D_DIAGWIN, "diagwin_t::on_show_all_activate\n");
+    _log.debug("diagwin_t::on_show_all_activate\n");
     zoom_all();
 }
 

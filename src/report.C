@@ -28,6 +28,9 @@
 #include "estring.H"
 #include "report.H"
 #include "tok.H"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("report");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -96,15 +99,14 @@ report_summary_per_directory(FILE *fp, const char *)
 
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
-	dprintf1(D_REPORT, "report_summary_per_directory: [1] \"%s\"\n",
+	_log.debug("report_summary_per_directory: [1] \"%s\"\n",
 		(*fiter)->minimal_name());
 
 	string_var dir = g_dirname((*fiter)->minimal_name());
 	if ((st = ht->lookup((char *)dir.data())) == 0)
 	{
 	    st = new cov_stats_t;
-	    dprintf1(D_REPORT, "report_summary_per_directory: -> \"%s\"\n",
-			dir.data());
+	    _log.debug("report_summary_per_directory: -> \"%s\"\n", dir.data());
 	    ht->insert(dir.take(), st);
 	    ndirs++;
 	}
@@ -117,7 +119,7 @@ report_summary_per_directory(FILE *fp, const char *)
 
     while ((key = keys.remove_head()) != 0)
     {
-	dprintf1(D_REPORT, "report_summary_per_directory: [2] \"%s\"\n", key);
+	_log.debug("report_summary_per_directory: [2] \"%s\"\n", key);
 
 	st = ht->lookup(key);
 	if (ndirs > 1)

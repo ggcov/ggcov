@@ -148,7 +148,7 @@ private:
     friend class cov_line_t;
     friend class cov_range_scope_t;
     friend class cov_call_iterator_t;
-    friend void dump_block(FILE *fp, cov_block_t *b);
+    friend void dump_block(cov_block_t *b);
 };
 
 #endif /* _ggcov_cov_block_H_ */

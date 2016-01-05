@@ -24,6 +24,7 @@
 #include "cov.H"
 #include "estring.H"
 #include "confsection.H"
+#include "logging.H"
 
 #define COL_FROM    0
 #define COL_TO      1
@@ -39,6 +40,8 @@
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
     G_TYPE_STRING, G_TYPE_POINTER
 #endif
+
+static logging::logger_t &_log = logging::find_logger("callswin");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -230,7 +233,7 @@ callswin_t::~callswin_t()
 void
 callswin_t::populate()
 {
-    dprintf0(D_CALLSWIN, "callswin_t::populate\n");
+    _log.debug("callswin_t::populate\n");
     functions_ = cov_list_all_functions();
     ::populate_function_combo(from_function_combo_, functions_,
 			      /*add_all_item*/TRUE, /*currentp*/0);
@@ -304,7 +307,7 @@ callswin_t::update()
     cov_function_t *to_fn = (cov_function_t *)get_active(to_function_combo_);
     estring title;
 
-    dprintf0(D_CALLSWIN, "callswin_t::update\n");
+    _log.debug("callswin_t::update\n");
     switch ((from_fn == 0 ? 0 : 2)|(to_fn == 0 ? 0 : 1))
     {
     case 0:

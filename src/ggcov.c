@@ -36,12 +36,15 @@
 #include "reportwin.H"
 #include <libgnomeui/libgnomeui.h>
 #include "fakepopt.h"
+#include "logging.H"
 
 #define DEBUG_GTK 1
 
 char *argv0;
 
 static const char ** debug_argv;
+static logging::logger_t &_log = logging::find_logger("uicore");
+static logging::logger_t &dump_log = logging::find_logger("dump");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*
@@ -113,19 +116,19 @@ protected:
     post_args()
     {
 	cov_project_params_t::post_args();
-	if (debug_enabled(D_DUMP|D_VERBOSE))
+	if (dump_log.is_enabled(logging::DEBUG2))
 	{
 	    const char **p;
+	    estring buf;
 
-	    duprintf0("argv[] = {");
 	    for (p = debug_argv ; *p ; p++)
 	    {
 		if (strpbrk(*p, " \t\"'") == 0)
-		    duprintf1(" %s", *p);
+		    buf.append_printf(" %s", *p);
 		else
-		    duprintf1(" \"%s\"", *p);
+		    buf.append_printf(" \"%s\"", *p);
 	    }
-	    duprintf0(" }\n");
+	    _log.debug2("argv[] = {%s }\n", buf.data());
 	}
     }
 
@@ -173,9 +176,7 @@ ggcov_read_file(const char *filename)
     }
     else
     {
-	/* TODO: gui alert to user */
-	fprintf(stderr, "%s: don't know how to handle this filename\n",
-		filename);
+	_log.error("%s: don't know how to handle this filename\n", filename);
 	return FALSE;
     }
 
@@ -189,7 +190,7 @@ on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
 {
     const char *filename;
 
-    dprintf0(D_UICORE, "on_open_ok_button_clicked\n");
+    _log.debug("on_open_ok_button_clicked\n");
 
     filename = gtk_file_selection_get_filename(
 		    GTK_FILE_SELECTION(open_window));
@@ -214,7 +215,7 @@ on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
 GLADE_CALLBACK void
 on_open_cancel_button_clicked(GtkWidget *w, gpointer userdata)
 {
-    dprintf0(D_UICORE, "on_open_cancel_button_clicked\n");
+    _log.debug("on_open_cancel_button_clicked\n");
     gtk_widget_hide(open_window);
 
     /*
@@ -228,7 +229,7 @@ on_open_cancel_button_clicked(GtkWidget *w, gpointer userdata)
 GLADE_CALLBACK void
 on_file_open_activate(GtkWidget *w, gpointer userdata)
 {
-    dprintf0(D_UICORE, "on_file_open_activate\n");
+    _log.debug("on_file_open_activate\n");
 
     if (open_window == 0)
     {
@@ -379,9 +380,9 @@ ui_create(ggcov_params_t &params, const char *full_argv0, int successes)
 	dir.append_string("/ui");
 	if (!file_is_directory(dir))
 	{
-	    fprintf(stderr, "ggcov: running from source directory, "
-			    "so prepending %s to glade search path\n",
-			    dir.data());
+	    _log.info("running from source directory, "
+		      "so prepending %s to glade search path\n",
+		      dir.data());
 	    ui_prepend_glade_path(dir);
 	}
     }
@@ -418,7 +419,7 @@ ui_create(ggcov_params_t &params, const char *full_argv0, int successes)
 	    }
 	}
 	if (!wp->name)
-	    fprintf(stderr, "%s: unknown window name \"%s\"\n", argv0, name);
+	    _log.warning("unknown window name \"%s\"\n", name);
     }
 
     if (!nwindows)
@@ -473,7 +474,7 @@ main(int argc, char **argv)
     if (r < 0)
 	exit(1);    /* error message in cov_read_files() */
 
-    cov_dump(stderr);
+    cov_dump();
     ui_create(params, argv[0], r);
     gtk_main();
 

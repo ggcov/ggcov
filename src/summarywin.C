@@ -26,8 +26,10 @@
 #include "prefs.H"
 #include "uix.h"
 #include "gnbstackedbar.h"
+#include "logging.H"
 
 list_t<summarywin_t> summarywin_t::instances_;
+static logging::logger_t &_log = logging::find_logger("summarywin");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -219,7 +221,7 @@ summarywin_t::populate_function_combo(ui_combo_t *cbox)
 void
 summarywin_t::populate()
 {
-    dprintf0(D_SUMMARYWIN, "summarywin_t::populate\n");
+    _log.debug("summarywin_t::populate\n");
 
     populating_ = TRUE;     /* suppress combo entry callbacks */
     populate_filename_combo(filename_combo_);
@@ -242,7 +244,7 @@ summarywin_t::spin_update()
     start_ = 1;
     end_ = file_->num_lines();
 
-    dprintf3(D_SUMMARYWIN, "summarywin_t::spin_update: %s[%lu-%lu]\n",
+    _log.debug("summarywin_t::spin_update: %s[%lu-%lu]\n",
 		file_->minimal_name(), start_, end_);
 
     adj = gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(range_start_spin_));
@@ -323,7 +325,7 @@ summarywin_t::update()
     cov_scope_t *sc = 0;
     const cov_stats_t *stats;
 
-    dprintf0(D_SUMMARYWIN, "summarywin_t::update\n");
+    _log.debug("summarywin_t::update\n");
 
     grey_items();
 
@@ -361,8 +363,8 @@ summarywin_t::update()
 
     case SU_RANGE:
 	assert(file_ != 0);
-	dprintf3(D_SUMMARYWIN, "summarywin_update: SU_RANGE %s %lu-%lu\n",
-			file_->minimal_name(), start_, end_);
+	_log.debug("summarywin_update: SU_RANGE %s %lu-%lu\n",
+		   file_->minimal_name(), start_, end_);
 	sc = new cov_range_scope_t(file_, start_, end_);
 	break;
 

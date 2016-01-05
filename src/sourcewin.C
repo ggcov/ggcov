@@ -26,6 +26,7 @@
 #include "estring.H"
 #include "prefs.H"
 #include "confsection.H"
+#include "logging.H"
 
 #ifndef GTK_SCROLLED_WINDOW_GET_CLASS
 #define GTK_SCROLLED_WINDOW_GET_CLASS(obj) \
@@ -34,6 +35,7 @@
 
 
 list_t<sourcewin_t> sourcewin_t::instances_;
+static logging::logger_t &_log = logging::find_logger("sourcewin");
 
 /* column widths, in *characters* */
 const int sourcewin_t::column_widths_[sourcewin_t::NUM_COLS] = { 6, 8, 16, 8, -1 };
@@ -59,7 +61,7 @@ sourcewin_t::update_flow_window()
 {
     GtkTextView *tv = GTK_TEXT_VIEW(text_);
 
-    dprintf0(D_SOURCEWIN, "sourcewin_t::update_flow_window\n");
+    _log.debug("sourcewin_t::update_flow_window\n");
 
     if (!GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])->active)
     {
@@ -96,8 +98,8 @@ sourcewin_t::get_visible_lines(
     GtkTextIter end_iter;
 
     gtk_text_view_get_visible_rect(tv, &rect);
-    dprintf4(D_SOURCEWIN, "    visible rect={%u,%u,%u,%u}\n",
-	    rect.x, rect.y, rect.width, rect.height);
+    _log.debug("    visible rect={%u,%u,%u,%u}\n",
+	       rect.x, rect.y, rect.width, rect.height);
 
     gtk_text_view_get_iter_at_location(tv, &begin_iter,
 		    rect.x, rect.y);
@@ -107,7 +109,7 @@ sourcewin_t::get_visible_lines(
     unsigned long begin_lineno = gtk_text_iter_get_line(&begin_iter);
     unsigned long end_lineno = gtk_text_iter_get_line(&end_iter);
 
-    dprintf2(D_SOURCEWIN, "    begin=%lu end=%lu\n", begin_lineno, end_lineno);
+    _log.debug("    begin=%lu end=%lu\n", begin_lineno, end_lineno);
 
     if (begin_lineno == 0 && end_lineno == 0)
 	return FALSE;
@@ -135,7 +137,7 @@ sourcewin_t::update_flows()
     if ((f = cov_file_t::find(filename_)) == 0)
 	return;
 
-    dprintf0(D_SOURCEWIN, "sourcewin_t::update_flows\n");
+    _log.debug("sourcewin_t::update_flows\n");
 
     unsigned long begin_lineno, end_lineno;
     if (!get_visible_lines(&begin_lineno, &end_lineno))
@@ -155,7 +157,7 @@ sourcewin_t::update_flows()
 	    continue;
 	oldfn = fn;
 
-	dprintf2(D_SOURCEWIN, "    %u: fn=%s\n", lineno, fn->name());
+	_log.debug("    %u: fn=%s\n", lineno, fn->name());
 
 	flow_t *flow = 0;
 	for (list_iterator_t<flow_t> fiter = flows_.first() ; *fiter ; ++fiter)
@@ -178,8 +180,8 @@ sourcewin_t::update_flows()
 	    gtk_text_view_get_line_yrange(tv, &first_iter, &first_y, &height);
 	    gtk_text_view_get_line_yrange(tv, &last_iter, &last_y, &height);
 
-	    dprintf2(D_SOURCEWIN, "        y=%d height=%d\n",
-		    first_y-height, last_y-first_y+height);
+	    _log.debug("        y=%d height=%d\n",
+		       first_y-height, last_y-first_y+height);
 
 	    flow = create_flow(fn, first_y-height, last_y-first_y+height);
 	    flows_.append(flow);
@@ -189,21 +191,21 @@ sourcewin_t::update_flows()
 	int wx, wy;
 	gtk_text_view_buffer_to_window_coords(tv, GTK_TEXT_WINDOW_LEFT,
 		0, flow->bufy_, &wx, &wy);
-	dprintf2(D_SOURCEWIN, "        moving to %d,%d\n", 0, wy);
+	_log.debug("        moving to %d,%d\n", 0, wy);
 	gtk_text_view_move_child(tv, flow->canvas_, 0, wy);
 	gtk_widget_show(flow->canvas_);
 	flow->shown_ = flow_shown_;
     }
 
     /* Hide flows not just shown */
-    dprintf0(D_SOURCEWIN, "    hiding flows\n");
+    _log.debug("    hiding flows\n");
     for (list_iterator_t<flow_t> fiter = flows_.first() ; *fiter ; ++fiter)
     {
 	flow_t *flow = *fiter;
 	if (flow->shown_ < flow_shown_ &&
 	    GTK_WIDGET_VISIBLE(flow->canvas_))
 	{
-	    dprintf1(D_SOURCEWIN, "        %s\n", flow->function_->name());
+	    _log.debug("        %s\n", flow->function_->name());
 	    gtk_widget_hide(flow->canvas_);
 	}
     }
@@ -212,14 +214,14 @@ sourcewin_t::update_flows()
     if (flow_width_dirty_)
     {
 	flow_width_ = column_widths_[COL_FLOW] * font_width_;
-	dprintf0(D_SOURCEWIN, "    resizing window\n");
+	_log.debug("    resizing window\n");
 	for (list_iterator_t<flow_t> fiter = flows_.first() ; *fiter ; ++fiter)
 	{
 	    flow_t *flow = *fiter;
 	    if (GTK_WIDGET_VISIBLE(flow->canvas_) && flow->width_ > flow_width_)
 	    {
 		flow_width_ = flow->width_;
-		dprintf2(D_SOURCEWIN, "        %s -> %u\n",
+		_log.debug("        %s -> %u\n",
 			 flow->function_->name(), flow_width_);
 	    }
 	}
@@ -251,7 +253,7 @@ sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
     flow->function_ = fn;
     flow->bufy_ = y;
 
-    dprintf0(D_SOURCEWIN, "        creating flow\n");
+    _log.debug("        creating flow\n");
 
     flow->canvas_ = gnome_canvas_new();
 
@@ -259,12 +261,12 @@ sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
     gtk_widget_modify_bg(flow->canvas_, GTK_STATE_NORMAL,
 			 &style->base[GTK_STATE_NORMAL]);
 
-    dprintf4(D_SOURCEWIN, "bg[%d] = {%04x,%04x,%04x}\n",
+    _log.debug("bg[%d] = {%04x,%04x,%04x}\n",
 	    GTK_STATE_NORMAL,
 	    style->bg[GTK_STATE_NORMAL].red,
 	    style->bg[GTK_STATE_NORMAL].green,
 	    style->bg[GTK_STATE_NORMAL].blue);
-    dprintf4(D_SOURCEWIN, "base[%d] = {%04x,%04x,%04x}\n",
+    _log.debug("base[%d] = {%04x,%04x,%04x}\n",
 	    GTK_STATE_NORMAL,
 	    style->base[GTK_STATE_NORMAL].red,
 	    style->base[GTK_STATE_NORMAL].green,
@@ -291,13 +293,13 @@ sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
 				   bounds.x1, bounds.y1,
 				   bounds.x2, bounds.y2);
 
-    dprintf4(D_SOURCEWIN, "        canvas %g x %g units = %u x %u pixels\n",
+    _log.debug("        canvas %g x %g units = %u x %u pixels\n",
 		bounds.width(), bounds.height(), flow->width_, h);
 
     if (flow->width_ > flow_width_)
     {
 	flow_width_dirty_ = TRUE;
-	dprintf0(D_SOURCEWIN, "        flow width dirty\n");
+	_log.debug("        flow width dirty\n");
     }
 
     return flow;
@@ -331,7 +333,7 @@ sourcewin_t::wait_for_text_validation()
 
     while (g_main_context_iteration(NULL, FALSE))
     {
-	dprintf0(D_SOURCEWIN, "wait_for_text_validation\n");
+	_log.debug("wait_for_text_validation\n");
 
 	if (!vis)
 	    vis = get_visible_lines(0, 0);
@@ -513,22 +515,22 @@ sourcewin_t::on_functions_entry_changed()
 
     first = fn->get_first_location();
     last = fn->get_last_location();
-    dprintf5(D_SOURCEWIN, "Function %s -> %s:%ld to %s:%ld\n",
-			fn->name(),
-			first->filename, first->lineno,
-			last->filename, last->lineno);
+    _log.debug("Function %s -> %s:%ld to %s:%ld\n",
+	       fn->name(),
+	       first->filename, first->lineno,
+	       last->filename, last->lineno);
 
     /* Check for weirdness like functions spanning files */
     if (strcmp(first->filename, filename_))
     {
-	fprintf(stderr, "WTF?  Wrong filename for first loc: %s vs %s\n",
-			first->filename, filename_.data());
+	_log.error("Wrong filename for first loc: %s vs %s\n",
+		   first->filename, filename_.data());
 	return;
     }
     if (strcmp(last->filename, filename_))
     {
-	fprintf(stderr, "WTF?  Wrong filename for last loc: %s vs %s\n",
-			last->filename, filename_.data());
+	_log.error("Wrong filename for last loc: %s vs %s\n",
+		   last->filename, filename_.data());
 	return;
     }
 
@@ -868,7 +870,7 @@ sourcewin_t::set_filename(const char *filename, const char *display_fname)
 void
 sourcewin_t::select_region(unsigned long startline, unsigned long endline)
 {
-    dprintf2(D_SOURCEWIN, "sourcewin_t::select_region: startline=%ld endline=%ld\n",
+    _log.debug("sourcewin_t::select_region: startline=%ld endline=%ld\n",
 		startline, endline);
     ui_text_select_lines(text_, startline, endline);
 }
@@ -924,8 +926,8 @@ sourcewin_t::show_lines(
     estring fullname = cov_file_t::unminimise_name(filename);
     estring displayname = cov_file_t::minimise_name(fullname.data());
 
-    dprintf4(D_SOURCEWIN, "sourcewin_t::show_lines(\"%s\", %lu, %lu) => \"%s\"\n",
-		filename, startline, endline, fullname.data());
+    _log.debug("sourcewin_t::show_lines(\"%s\", %lu, %lu) => \"%s\"\n",
+	       filename, startline, endline, fullname.data());
 
     sw->set_filename(fullname.data(), displayname.data());
     sw->show();
@@ -1189,21 +1191,21 @@ sourcewin_t::adjust_text_size(int dirn)
 GLADE_CALLBACK void
 sourcewin_t::on_text_size_increase_activate()
 {
-    dprintf0(D_SOURCEWIN, "sourcewin_t::on_text_size_increase_activate\n");
+    _log.debug("sourcewin_t::on_text_size_increase_activate\n");
     adjust_text_size(1);
 }
 
 GLADE_CALLBACK void
 sourcewin_t::on_text_size_normal_activate()
 {
-    dprintf0(D_SOURCEWIN, "sourcewin_t::on_text_size_normal_activate\n");
+    _log.debug("sourcewin_t::on_text_size_normal_activate\n");
     adjust_text_size(0);
 }
 
 GLADE_CALLBACK void
 sourcewin_t::on_text_size_decrease_activate()
 {
-    dprintf0(D_SOURCEWIN, "sourcewin_t::on_text_size_decrease_activate\n");
+    _log.debug("sourcewin_t::on_text_size_decrease_activate\n");
     adjust_text_size(-1);
 }
 

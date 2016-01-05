@@ -21,6 +21,9 @@
 #include "libgd_scenegen.H"
 #include <gdfonts.h>
 #include "filename.h"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("scene");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -32,8 +35,8 @@ libgd_scenegen_t::libgd_scenegen_t(unsigned int w, unsigned int h, const dbounds
     font_ = gdFontGetSmall();
     text_color_ = internalize_color(/*black*/0U);
 
-    dprintf6(D_SCENE, "libgd_scenegen_t(w=%u, h=%u, bounds={x1=%g, y1=%g, x2=%g, y2=%g})\n",
-		      w, h, bounds.x1, bounds.y1, bounds.x2, bounds.y2);
+    _log.debug("libgd_scenegen_t(w=%u, h=%u, bounds={x1=%g, y1=%g, x2=%g, y2=%g})\n",
+	       w, h, bounds.x1, bounds.y1, bounds.x2, bounds.y2);
 
     /* setup a matrix to transform from the diagram
      * coordinates as described by the dbounds_t
@@ -93,12 +96,9 @@ libgd_scenegen_t::box(double x, double y, double w, double h)
     int iy1 = transform_.itransy(x, y);
     int ix2 = transform_.itransx(x+w, y+h);
     int iy2 = transform_.itransy(x+w, y+h);
-    if (debug_enabled(D_SCENE))
-    {
-	dprintf8(D_SCENE, "box(world {x=%g, y=%g, w=%g, h=%g} "
-			  "image {x=%d, y=%d, w=%d, h=%d})\n",
-			  x, y, w, h, ix1, iy1, ix2-ix1, iy2-iy1);
-    }
+    _log.debug("box(world {x=%g, y=%g, w=%g, h=%g} "
+	       "image {x=%d, y=%d, w=%d, h=%d})\n",
+	       x, y, w, h, ix1, iy1, ix2-ix1, iy2-iy1);
     if (fill_flag_)
 	gdImageFilledRectangle(image_, ix1, iy1, ix2, iy2, fill_);
     if (border_flag_)
@@ -119,12 +119,9 @@ libgd_scenegen_t::textbox(
     int iy1 = transform_.itransy(x, y);
     int ix2 = transform_.itransx(x+w, y+h);
     int iy2 = transform_.itransy(x+w, y+h);
-    if (debug_enabled(D_SCENE))
-    {
-	dprintf9(D_SCENE, "textbox(world {x=%g, y=%g, w=%g, h=%g} "
-			  "image {x=%d, y=%d, w=%d, h=%d}, text=\"%s\"\n",
-			  x, y, w, h, ix1, iy1, ix2-ix1, iy2-iy1, text);
-    }
+    _log.debug("textbox(world {x=%g, y=%g, w=%g, h=%g} "
+	       "image {x=%d, y=%d, w=%d, h=%d}, text=\"%s\"\n",
+	       x, y, w, h, ix1, iy1, ix2-ix1, iy2-iy1, text);
     if (fill_flag_)
 	gdImageFilledRectangle(image_, ix1, iy1, ix2, iy2, fill_);
     if (border_flag_)
@@ -210,7 +207,7 @@ libgd_scenegen_t::polyline_end(gboolean arrow)
 {
     if (points_count_ < 2)
 	return;
-    dprintf1(D_SCENE, "polyline([...%u...])\n", points_count_);
+    _log.debug("polyline([...%u...])\n", points_count_);
 
     gdImageOpenPolygon(image_, points_, points_count_, fill_);
     if (first_arrow_flag_)
@@ -237,7 +234,7 @@ bool libgd_scenegen_t::save(const char *filename, const char *format)
 	format = file_extension_c(filename);
 	if (!format)
 	{
-	    fprintf(stderr, "%s: cannot discover format from filename\n", filename);
+	    _log.error("%s: cannot discover format from filename\n", filename);
 	    goto error;
 	}
 	format++;   // skip the '.'
@@ -248,7 +245,7 @@ bool libgd_scenegen_t::save(const char *filename, const char *format)
     }
     else
     {
-	fprintf(stderr, "%s: unknown image format\n", format);
+	_log.error("%s: unknown image format\n", format);
 	goto error;
     }
 

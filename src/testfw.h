@@ -72,7 +72,7 @@
     const char *_sb = (_b) ? (_b) : ""; \
     testrunner_t::_check(!strcmp(_sa, _sb), \
 		   __FILE__, __LINE__, \
-		   "check_str_equals(%s=\"%s\", %s=\"%s\")", \
+		   "check_str_equals(\n    %s=\"%s\",\n    %s=\"%s\")", \
 		    #a, _sa, #b, _sb); \
 }
 

@@ -22,12 +22,14 @@
 #include "ui.h"
 #include "canvas_function_popup.H"
 #include "cov_suppression.H"
+#include "logging.H"
 
 #define RGB_TO_STR(b, rgb) \
     snprintf((b), sizeof((b)), "#%02x%02x%02x", \
 		((rgb)>>16)&0xff, ((rgb)>>8)&0xff, (rgb)&0xff)
 
 static const char BLOCK_KEY[] = "ggcov-canvas-scenegen-block";
+static logging::logger_t &_log = logging::find_logger("scene");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -116,14 +118,14 @@ canvas_scenegen_t::box(double x, double y, double w, double h)
 {
     GnomeCanvasItem *item;
 
-    if (debug_enabled(D_SCENE))
+    if (_log.is_enabled(logging::DEBUG))
     {
 	int cx1, cy1, cx2, cy2;
 	gnome_canvas_w2c(canvas_, x, y, &cx1, &cy1);
 	gnome_canvas_w2c(canvas_, x+w, y+h, &cx2, &cy2);
-	dprintf8(D_SCENE, "box(world {x=%g, y=%g, w=%g, h=%g} "
-			  "canvas {x=%d, y=%d, w=%d, h=%d})\n",
-			  x, y, w, h, cx1, cy1, cx2-cx1, cy2-cy1);
+	_log.debug("box(world {x=%g, y=%g, w=%g, h=%g} "
+		   "canvas {x=%d, y=%d, w=%d, h=%d})\n",
+		   x, y, w, h, cx1, cy1, cx2-cx1, cy2-cy1);
     }
 
     item = gnome_canvas_item_new(root_, GNOME_TYPE_CANVAS_RECT,
@@ -152,14 +154,14 @@ canvas_scenegen_t::textbox(
 {
     GnomeCanvasItem *item;
 
-    if (debug_enabled(D_SCENE))
+    if (_log.is_enabled(logging::DEBUG))
     {
 	int cx1, cy1, cx2, cy2;
 	gnome_canvas_w2c(canvas_, x, y, &cx1, &cy1);
 	gnome_canvas_w2c(canvas_, x+w, y+h, &cx2, &cy2);
-	dprintf9(D_SCENE, "textbox(world {x=%g, y=%g, w=%g, h=%g} "
-			  "canvas {x=%d, y=%d, w=%d, h=%d}, text=\"%s\"\n",
-			  x, y, w, h, cx1, cy1, cx2-cx1, cy2-cy1, text);
+	_log.debug("textbox(world {x=%g, y=%g, w=%g, h=%g} "
+		   "canvas {x=%d, y=%d, w=%d, h=%d}, text=\"%s\"\n",
+		   x, y, w, h, cx1, cy1, cx2-cx1, cy2-cy1, text);
     }
 
     item = gnome_canvas_item_new(root_, GNOME_TYPE_CANVAS_TEXT,
@@ -211,7 +213,7 @@ canvas_scenegen_t::polyline_end(gboolean arrow)
 
     if (!points_.num_points)
 	return;
-    dprintf1(D_SCENE, "polyline([...%u...])\n", points_.num_points);
+    _log.debug("polyline([...%u...])\n", points_.num_points);
     item = gnome_canvas_item_new(root_, GNOME_TYPE_CANVAS_LINE,
 		"points",               &points_,
 		"first_arrowhead",      first_arrow_flag_,

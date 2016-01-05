@@ -19,6 +19,9 @@
 
 #include "covio.H"
 #include "estring.H"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("io");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -62,8 +65,7 @@ covio_t::read_lu32(uint32_t &wr)
 
     wr = w;
 
-    dprintf1(D_IO|D_VERBOSE, "covio_t::read_lu32() = 0x%08lx\n",
-	     (unsigned long)w);
+    _log.debug2("covio_t::read_lu32() = 0x%08lx\n", (unsigned long)w);
 
     return (!feof(fp_));
 }
@@ -81,8 +83,7 @@ covio_t::read_bu32(uint32_t &wr)
 
     wr = w;
 
-    dprintf1(D_IO|D_VERBOSE, "covio_t::read_bu32() = 0x%08lx\n",
-	     (unsigned long)w);
+    _log.debug2("covio_t::read_bu32() = 0x%08lx\n", (unsigned long)w);
 
     return (!feof(fp_));
 }
@@ -107,7 +108,7 @@ covio_t::read_lu64(uint64_t &wr)
 
     wr = w;
 
-    dprintf1(D_IO|D_VERBOSE, "covio_t::read_lu64() = 0x%016llx\n", (unsigned long long)w);
+    _log.debug2("covio_t::read_lu64() = 0x%016llx\n", (unsigned long long)w);
 
     return (!feof(fp_));
 }
@@ -130,7 +131,7 @@ covio_t::read_bu64(uint64_t &wr)
 
     wr = w;
 
-    dprintf1(D_IO|D_VERBOSE, "covio_t::read_bu64() = 0x%016llx\n", (unsigned long long)w);
+    _log.debug2("covio_t::read_bu64() = 0x%016llx\n", (unsigned long long)w);
 
     return (!feof(fp_));
 }
@@ -150,7 +151,7 @@ covio_t::read_string_len(estring &e, uint32_t len)
     if (fread(buf, 1, len, fp_) != len)
 	return FALSE;                   /* short file */
     buf[len] = '\0';    /* JIC */
-    dprintf2(D_IO|D_VERBOSE, "covio_t::read_string_len(%d) = \"%s\"\n", len, buf);
+    _log.debug2("covio_t::read_string_len(%d) = \"%s\"\n", len, buf);
     return TRUE;
 }
 
@@ -185,7 +186,7 @@ covio_t::read_bbstring(estring &buf, uint32_t endtag)
 gboolean
 covio_t::skip(unsigned int length)
 {
-    dprintf1(D_IO|D_VERBOSE, "covio_t::skip(%d)\n", length);
+    _log.debug2("covio_t::skip(%d)\n", length);
     for ( ; length ; length--)
     {
 	if (fgetc(fp_) == EOF)

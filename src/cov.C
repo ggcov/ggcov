@@ -27,12 +27,15 @@
 #include "mvc.h"
 #include "tok.H"
 #include <dirent.h>
+#include "logging.H"
 
 static gboolean cov_read_one_object_file(const char *exefilename, int depth);
 static void cov_calculate_duplicate_counts(void);
 extern char *argv0;
 cov_suppression_set_t cov_suppressions;
 cov_callgraph_t cov_callgraph;
+static logging::logger_t &_log = logging::find_logger("files");
+static logging::logger_t &dump_log = logging::find_logger("dump");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -51,7 +54,7 @@ cov_location_t::describe() const
 void
 cov_add_search_directory(const char *dir)
 {
-    dprintf1(D_FILES, "Adding search directory \"%s\"\n", dir);
+    _log.debug("Adding search directory \"%s\"\n", dir);
     cov_file_t::search_path_append(dir);
 }
 
@@ -84,7 +87,7 @@ cov_read_source_file_2(const char *fname, gboolean quiet)
     const char *filename;
 
     filename = file_make_absolute(fname);
-    dprintf1(D_FILES, "Handling source file %s\n", filename);
+    _log.debug("Handling source file %s\n", filename);
 
     if ((f = cov_file_t::find(filename)) != 0)
     {
@@ -120,7 +123,7 @@ cov_bfd_error_handler(const char *fmt, ...)
     va_list args;
 
     va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
+    _log.vmessage(logging::ERROR, fmt, args);
     va_end(args);
 }
 #endif /* HAVE_LIBBFD */
@@ -180,12 +183,11 @@ cov_read_shlibs(cov_bfd_t *b, int depth)
     string_var file;
     int successes = 0;
 
-    dprintf1(D_FILES, "Scanning \"%s\" for shared libraries\n",
-	     b->filename());
+    _log.debug("Scanning \"%s\" for shared libraries\n", b->filename());
 
     do
     {
-	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
+	_log.debug("Trying scanner %s\n", factory.name());
 	if ((ss = factory.create()) != 0 && ss->attach(b))
 	    break;
 	delete ss;
@@ -202,7 +204,7 @@ cov_read_shlibs(cov_bfd_t *b, int depth)
      */
     while ((file = ss->next()) != 0)
     {
-	dprintf1(D_FILES, "Trying filename %s\n", file.data());
+	_log.debug("Trying filename %s\n", file.data());
 	if (cov_read_one_object_file(file, depth))
 	    successes++;
     }
@@ -220,7 +222,7 @@ cov_read_one_object_file(const char *exefilename, int depth)
     string_var file;
     int successes = 0;
 
-    dprintf1(D_FILES, "Scanning object or exe file \"%s\"\n", exefilename);
+    _log.debug("Scanning object or exe file \"%s\"\n", exefilename);
 
     if ((b = new cov_bfd_t()) == 0)
 	return FALSE;
@@ -233,7 +235,7 @@ cov_read_one_object_file(const char *exefilename, int depth)
     cov_factory_t<cov_filename_scanner_t> factory;
     do
     {
-	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
+	_log.debug("Trying scanner %s\n", factory.name());
 	if ((fs = factory.create()) != 0 && fs->attach(b))
 	    break;
 	delete fs;
@@ -256,7 +258,7 @@ cov_read_one_object_file(const char *exefilename, int depth)
      */
     while ((file = fs->next()) != 0)
     {
-	dprintf1(D_FILES, "Trying filename %s\n", file.data());
+	_log.debug("Trying filename %s\n", file.data());
 	if (cov_is_source_filename(file) &&
 	    file_is_regular(file) == 0 &&
 	    cov_read_source_file_2(file, /*quiet*/TRUE))
@@ -268,8 +270,8 @@ cov_read_one_object_file(const char *exefilename, int depth)
     successes += cov_read_shlibs(b, depth+1);
 
     if (depth == 0 && successes == 0)
-	fprintf(stderr, "found no coveraged source files in executable \"%s\"\n",
-		exefilename);
+	_log.error("found no coveraged source files in executable \"%s\"\n",
+		   exefilename);
     delete b;
     return (successes > 0);
 }
@@ -299,7 +301,7 @@ cov_read_directory_2(
     unsigned int successes = 0;
 
     estring child = dirname;
-    dprintf1(D_FILES, "Scanning directory \"%s\"\n", child.data());
+    _log.debug("Scanning directory \"%s\"\n", child.data());
 
     if ((dir = opendir(dirname)) == 0)
     {
@@ -337,11 +339,9 @@ cov_read_directory_2(
     if (successes == 0 && !quiet)
     {
 	if (recursive)
-	    fprintf(stderr, "found no coveraged source files in or under directory \"%s\"\n",
-		    dirname);
+	    _log.error("found no coveraged source files in or under directory \"%s\"\n", dirname);
 	else
-	    fprintf(stderr, "found no coveraged source files in directory \"%s\"\n",
-		    dirname);
+	    _log.error("found no coveraged source files in directory \"%s\"\n", dirname);
     }
     return successes;
 }
@@ -445,7 +445,7 @@ cov_read_files(const cov_project_params_t &params)
 	{
 	    if ((e = tok.next()) == 0)
 	    {
-		fprintf(stderr, "%s: -Z option requires pairs of words\n", argv0);
+		_log.error("%s: -Z option requires pairs of words\n", argv0);
 		return -1;
 	    }
 	    cov_suppression_t *sup;
@@ -498,8 +498,7 @@ cov_read_files(const cov_project_params_t &params)
 	    }
 	    else
 	    {
-		fprintf(stderr, "%s: don't know how to handle this filename\n",
-			filename);
+		_log.error("%s: don't know how to handle this filename\n", filename);
 		return -1;
 	    }
 	}
@@ -546,48 +545,48 @@ static const char *linkage_names[] =
 };
 
 static void
-dump_callarcs(FILE *fp, list_t<cov_callarc_t> &arcs)
+dump_callarcs(list_t<cov_callarc_t> &arcs)
 {
     for (list_iterator_t<cov_callarc_t> itr = arcs.first() ; *itr ; ++itr)
     {
 	cov_callarc_t *ca = *itr;
 
-	fprintf(fp, "            ARC {\n");
-	fprintf(fp, "                FROM=%s\n", ca->from->name.data());
-	fprintf(fp, "                TO=%s\n", ca->to->name.data());
-	fprintf(fp, "                COUNT=%llu\n", (unsigned long long)ca->count);
-	fprintf(fp, "            }\n");
+	dump_log.debug("            ARC {\n");
+	dump_log.debug("                FROM=%s\n", ca->from->name.data());
+	dump_log.debug("                TO=%s\n", ca->to->name.data());
+	dump_log.debug("                COUNT=%llu\n", (unsigned long long)ca->count);
+	dump_log.debug("            }\n");
     }
 }
 
 static void
-dump_callspace(cov_callspace_t *space, FILE *fp)
+dump_callspace(cov_callspace_t *space)
 {
-    fprintf(fp, "CALLSPACE {\n");
-    fprintf(fp, "    NAME=%s\n", space->name());
+    dump_log.debug("CALLSPACE {\n");
+    dump_log.debug("    NAME=%s\n", space->name());
 
     for (cov_callnode_iter_t cnitr = space->first() ; *cnitr ; ++cnitr)
     {
 	cov_callnode_t *cn = *cnitr;
 
-	fprintf(fp, "    CALLNODE {\n");
-	fprintf(fp, "        NAME=%s\n", cn->name.data());
+	dump_log.debug("    CALLNODE {\n");
+	dump_log.debug("        NAME=%s\n", cn->name.data());
 	if (cn->function == 0)
-	    fprintf(fp, "        FUNCTION=null\n");
+	    dump_log.debug("        FUNCTION=null\n");
 	else
-	    fprintf(fp, "        FUNCTION=%s:%s\n", cn->function->file()->name(),
+	    dump_log.debug("        FUNCTION=%s:%s\n", cn->function->file()->name(),
 						    cn->function->name());
-	fprintf(fp, "        COUNT=%llu\n", (unsigned long long)cn->count);
-	fprintf(fp, "        OUT_ARCS={\n");
-	dump_callarcs(fp, cn->out_arcs);
-	fprintf(fp, "        }\n");
-	fprintf(fp, "        IN_ARCS={\n");
-	dump_callarcs(fp, cn->in_arcs);
-	fprintf(fp, "        }\n");
-	fprintf(fp, "    }\n");
+	dump_log.debug("        COUNT=%llu\n", (unsigned long long)cn->count);
+	dump_log.debug("        OUT_ARCS={\n");
+	dump_callarcs(cn->out_arcs);
+	dump_log.debug("        }\n");
+	dump_log.debug("        IN_ARCS={\n");
+	dump_callarcs(cn->in_arcs);
+	dump_log.debug("        }\n");
+	dump_log.debug("    }\n");
     }
 
-    fprintf(fp, "}\n");
+    dump_log.debug("}\n");
 }
 
 /*
@@ -596,95 +595,92 @@ dump_callspace(cov_callspace_t *space, FILE *fp)
  * functions into class members.
  */
 void
-dump_arc(FILE *fp, cov_arc_t *a)
+dump_arc(cov_arc_t *a)
 {
-    fprintf(fp, "                    ARC {\n");
-    fprintf(fp, "                        FROM=%s\n", a->from()->describe());
-    fprintf(fp, "                        TO=%s\n", a->to()->describe());
-    fprintf(fp, "                        COUNT=%llu\n", (unsigned long long)a->count());
-    fprintf(fp, "                        NAME=%s\n", a->name());
-    fprintf(fp, "                        ON_TREE=%s\n", boolstr(a->on_tree_));
-    fprintf(fp, "                        CALL=%s\n", boolstr(a->call_));
-    fprintf(fp, "                        FALL_THROUGH=%s\n", boolstr(a->fall_through_));
-    fprintf(fp, "                        STATUS=%s\n", status_names[a->status()]);
-    fprintf(fp, "                    }\n");
+    dump_log.debug("                    ARC {\n");
+    dump_log.debug("                        FROM=%s\n", a->from()->describe());
+    dump_log.debug("                        TO=%s\n", a->to()->describe());
+    dump_log.debug("                        COUNT=%llu\n", (unsigned long long)a->count());
+    dump_log.debug("                        NAME=%s\n", a->name());
+    dump_log.debug("                        ON_TREE=%s\n", boolstr(a->on_tree_));
+    dump_log.debug("                        CALL=%s\n", boolstr(a->call_));
+    dump_log.debug("                        FALL_THROUGH=%s\n", boolstr(a->fall_through_));
+    dump_log.debug("                        STATUS=%s\n", status_names[a->status()]);
+    dump_log.debug("                    }\n");
 }
 
 void
-dump_block(FILE *fp, cov_block_t *b)
+dump_block(cov_block_t *b)
 {
-    fprintf(fp, "            BLOCK {\n");
-    fprintf(fp, "                IDX=%s\n", b->describe());
-    fprintf(fp, "                COUNT=%llu\n", (unsigned long long)b->count());
-    fprintf(fp, "                STATUS=%s\n", status_names[b->status()]);
+    dump_log.debug("            BLOCK {\n");
+    dump_log.debug("                IDX=%s\n", b->describe());
+    dump_log.debug("                COUNT=%llu\n", (unsigned long long)b->count());
+    dump_log.debug("                STATUS=%s\n", status_names[b->status()]);
 
-    fprintf(fp, "                OUT_ARCS {\n");
+    dump_log.debug("                OUT_ARCS {\n");
     for (list_iterator_t<cov_arc_t> aiter = b->first_arc() ; *aiter ; ++aiter)
-	dump_arc(fp, *aiter);
-    fprintf(fp, "                }\n");
+	dump_arc(*aiter);
+    dump_log.debug("                }\n");
 
-    fprintf(fp, "                LOCATIONS {\n");
+    dump_log.debug("                LOCATIONS {\n");
     for (list_iterator_t<cov_location_t> liter = b->locations().first() ; *liter ; ++liter)
     {
 	cov_location_t *loc = *liter;
 	cov_line_t *ln = cov_file_t::find_line(loc);
-	fprintf(fp, "                    %s:%ld %s\n",
+	dump_log.debug("                    %s:%ld %s\n",
 		loc->filename,
 		loc->lineno,
 		status_names[ln->status()]);
     }
-    fprintf(fp, "                }\n");
+    dump_log.debug("                }\n");
 
-    fprintf(fp, "                PURE_CALLS {\n");
+    dump_log.debug("                PURE_CALLS {\n");
     for (list_iterator_t<cov_block_t::call_t> citer = b->pure_calls_.first() ; *citer ; ++citer)
     {
 	cov_block_t::call_t *call = *citer;
-	fprintf(fp, "                    %s @ %s\n",
+	dump_log.debug("                    %s @ %s\n",
 		(call->name_.data() == 0 ? "-" : call->name_.data()),
 		call->location_.describe());
     }
-    fprintf(fp, "                }\n");
-    fprintf(fp, "            }\n");
+    dump_log.debug("                }\n");
+    dump_log.debug("            }\n");
 }
 
 static void
-dump_function(FILE *fp, cov_function_t *fn)
+dump_function(cov_function_t *fn)
 {
-    fprintf(fp, "        FUNCTION {\n");
-    fprintf(fp, "            NAME=\"%s\"\n", fn->name());
-    fprintf(fp, "            STATUS=%s\n", status_names[fn->status()]);
-    fprintf(fp, "            LINKAGE=%s\n", linkage_names[fn->linkage()]);
+    dump_log.debug("        FUNCTION {\n");
+    dump_log.debug("            NAME=\"%s\"\n", fn->name());
+    dump_log.debug("            STATUS=%s\n", status_names[fn->status()]);
+    dump_log.debug("            LINKAGE=%s\n", linkage_names[fn->linkage()]);
     for (ptrarray_iterator_t<cov_block_t> itr = fn->blocks().first() ; *itr ; ++itr)
-	dump_block(fp, *itr);
-    fprintf(fp, "            DUP_COUNT=%u\n", fn->dup_count());
-    fprintf(fp, "    }\n");
+	dump_block(*itr);
+    dump_log.debug("            DUP_COUNT=%u\n", fn->dup_count());
+    dump_log.debug("    }\n");
 }
 
 static void
-dump_file(FILE *fp, cov_file_t *f)
+dump_file(cov_file_t *f)
 {
-    fprintf(fp, "FILE {\n");
-    fprintf(fp, "    NAME=\"%s\"\n", f->name());
-    fprintf(fp, "    MINIMAL_NAME=\"%s\"\n", f->minimal_name());
-    fprintf(fp, "    STATUS=%s\n", status_names[f->status()]);
+    dump_log.debug("FILE {\n");
+    dump_log.debug("    NAME=\"%s\"\n", f->name());
+    dump_log.debug("    MINIMAL_NAME=\"%s\"\n", f->minimal_name());
+    dump_log.debug("    STATUS=%s\n", status_names[f->status()]);
     for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
-	dump_function(fp, *fnitr);
-    fprintf(fp, "}\n");
+	dump_function(*fnitr);
+    dump_log.debug("}\n");
 }
 
 void
-cov_dump(FILE *fp)
+cov_dump()
 {
-    if (debug_enabled(D_DUMP))
+    if (dump_log.is_enabled(logging::DEBUG))
     {
-	if (fp == 0)
-	    fp = stderr;
-
 	for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
-	    dump_file(fp, *iter);
+	    dump_file(*iter);
 
 	for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
-	    dump_callspace(*csitr, fp);
+	    dump_callspace(*csitr);
     }
 }
 

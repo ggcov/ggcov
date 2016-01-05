@@ -28,6 +28,7 @@
 #include "callgraph_diagram.H"
 #include "lego_diagram.H"
 #include "argparse.H"
+#include "logging.H"
 #include <db.h>
 
 #define V(major,minor,patch)    ((major)*10000+(minor)*1000+(patch))
@@ -51,6 +52,7 @@ static hashtable_t<void, unsigned int> *file_index;
 static hashtable_t<void, unsigned int> *function_index;
 static hashtable_t<void, unsigned int> *callnode_index;
 static list_t<cov_function_t> *all_functions;
+static logging::logger_t &_log = logging::find_logger("web");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -130,7 +132,7 @@ systemf(const char *fmt, ...)
     cmd.append_vprintf(fmt, args);
     va_end(args);
 
-    dprintf1(D_WEB, "Running \"%s\"\n", cmd.data());
+    _log.debug("Running \"%s\"\n", cmd.data());
     return system(cmd.data());
 }
 
@@ -646,12 +648,12 @@ save_reports(DB *db)
 			       (char *)0);
     if ((fd = mkstemp((char *)tmp_filename.data())) < 0)
     {
-	perror(tmp_filename);
+	_log.perror(tmp_filename);
 	exit(1);
     }
     if ((fp = fdopen(fd, "r+")) == NULL)
     {
-	perror("fdopen");
+	_log.perror("fdopen");
 	close(fd);
 	exit(1);
     }
@@ -666,7 +668,7 @@ save_reports(DB *db)
 	rewind(fp);
 	if (ftruncate(fd, (off_t)0) < 0)
 	{
-	    perror(tmp_filename);
+	    _log.perror(tmp_filename);
 	    exit(1);
 	}
 
@@ -677,7 +679,7 @@ save_reports(DB *db)
 	// Read the report output into buffer
 	if ((len = fd_length(fd)) < 0)
 	{
-	    perror(tmp_filename);
+	    _log.perror(tmp_filename);
 	    exit(1);
 	}
 	buffer.truncate_to(len);
@@ -685,8 +687,7 @@ save_reports(DB *db)
 	int r = fread((char *)buffer.data(), 1, len, fp);
 	if (r != len)
 	{
-	    perror(tmp_filename);
-	    fprintf(stderr, "len=%d r=%d\n", len, r);
+	    _log.perror(tmp_filename);
 	    exit(1);
 	}
 
@@ -794,7 +795,7 @@ create_source_symlinks(const char *tempdir)
 	string_var link = g_strconcat(tempdir, "/", f->minimal_name(), (char *)0);
 	string_var tempmindir = file_dirname(link);
 	file_build_tree(tempmindir, 0755);
-	dprintf2(D_WEB, "symlink %s -> %s\n", link.data(), f->name());
+	_log.debug("symlink %s -> %s\n", link.data(), f->name());
 	if (symlink(f->name(), link) < 0)
 	    perror(f->name());
     }
@@ -846,25 +847,18 @@ webdb_params_t::~webdb_params_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#define DEBUG_GLIB 1
-#if DEBUG_GLIB
-
-static const char *
-log_level_to_str(GLogLevelFlags level)
+static logging::level_t
+log_level(GLogLevelFlags level)
 {
-    static char buf[32];
-
     switch (level & G_LOG_LEVEL_MASK)
     {
-    case G_LOG_LEVEL_ERROR: return "ERROR";
-    case G_LOG_LEVEL_CRITICAL: return "CRITICAL";
-    case G_LOG_LEVEL_WARNING: return "WARNING";
-    case G_LOG_LEVEL_MESSAGE: return "MESSAGE";
-    case G_LOG_LEVEL_INFO: return "INFO";
-    case G_LOG_LEVEL_DEBUG: return "DEBUG";
-    default:
-	snprintf(buf, sizeof(buf), "%d", level);
-	return buf;
+    case G_LOG_LEVEL_ERROR: return logging::ERROR;
+    case G_LOG_LEVEL_CRITICAL: return logging::FATAL;
+    case G_LOG_LEVEL_WARNING: return logging::WARNING;
+    case G_LOG_LEVEL_MESSAGE: return logging::INFO;
+    case G_LOG_LEVEL_INFO: return logging::INFO;
+    case G_LOG_LEVEL_DEBUG: return logging::DEBUG;
+    default: return logging::INFO;
     }
 }
 
@@ -875,15 +869,13 @@ log_func(
     const char *msg,
     gpointer user_data)
 {
-    fprintf(stderr, "%s:%s:%s\n",
+    _log.message(log_level(level), "%s:%s:%s\n",
 	(domain == 0 ? PACKAGE : domain),
-	log_level_to_str(level),
 	msg);
     if (level & G_LOG_FLAG_FATAL)
 	exit(1);
 }
 
-#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
@@ -904,7 +896,7 @@ create_database(const webdb_params_t &params)
 
     if ((ret = db_create(&db, 0, 0)))
     {
-	fprintf(stderr, "%s: db_create(): %s\n", argv0, db_strerror(ret));
+	_log.error("db_create(): %s\n", db_strerror(ret));
 	exit(1);
     }
 
@@ -960,7 +952,7 @@ dump_database(const webdb_params_t &params)
 
     if (params.num_files() != 1)
     {
-	fprintf(stderr, "dump_database: must provide a .webdb filename\n");
+	_log.error("dump_database: must provide a .webdb filename\n");
 	exit(1);
     }
     webdb_file = params.nth_file(0);
@@ -973,8 +965,8 @@ dump_database(const webdb_params_t &params)
 	case 'k': key_flag = TRUE; break;
 	case 'v': value_flag = TRUE; break;
 	default:
-	    fprintf(stderr, "dump_database: argument to --dump must be a "
-			    "combination of the characters 'k','v'\n");
+	    _log.error("dump_database: argument to --dump must be a "
+		       "combination of the characters 'k','v'\n");
 	    exit(1);
 	}
     }
@@ -982,7 +974,7 @@ dump_database(const webdb_params_t &params)
 
     if ((ret = db_create(&db, 0, 0)))
     {
-	fprintf(stderr, "%s: db_create(): %s\n", argv0, db_strerror(ret));
+	_log.error("db_create(): %s\n", db_strerror(ret));
 	exit(1);
     }
 
@@ -1034,11 +1026,9 @@ dump_database(const webdb_params_t &params)
 int
 main(int argc, char **argv)
 {
-#if DEBUG_GLIB
     g_log_set_handler("GLib",
 		      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
 		      log_func, /*user_data*/0);
-#endif
 
     webdb_params_t params;
     argparse::parser_t parser(params);

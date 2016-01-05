@@ -31,9 +31,12 @@
 #include "flow_diagram.H"
 #include "libgd_scenegen.H"
 #include "unique_ptr.H"
+#include "logging.H"
 
 char *argv0;
 mustache::environment_t menv;
+static logging::logger_t &_log = logging::find_logger("ggcov-html");
+static logging::logger_t &dump_log = logging::find_logger("dump");
 
 class gghtml_params_t : public cov_project_params_t
 {
@@ -68,11 +71,11 @@ public:
 	cov_project_params_t::post_args();
 	if (!template_directory_.data())
 	    template_directory_ = file_join2(data_directory_, "templates");
-	if (debug_enabled(D_DUMP|D_VERBOSE))
+	if (dump_log.is_enabled(logging::DEBUG2))
 	{
-	    duprintf1("output_directory=\"%s\"\n", output_directory_.data());
-	    duprintf1("template_directory=\"%s\"\n", template_directory_.data());
-	    duprintf1("data_directory=\"%s\"\n", data_directory_.data());
+	    dump_log.debug2("output_directory=\"%s\"\n", output_directory_.data());
+	    dump_log.debug2("template_directory=\"%s\"\n", template_directory_.data());
+	    dump_log.debug2("data_directory=\"%s\"\n", data_directory_.data());
 	}
     }
 private:
@@ -133,7 +136,7 @@ generate_static_files(const gghtml_params_t &params)
 
 	string_var filefrom = file_join2(params.get_template_directory(), p);
 	string_var fileto = file_join2(params.get_output_directory(), p);
-	fprintf(stderr, "Installing static file %s to %s\n", filefrom.data(), fileto.data());
+	_log.info("Installing static file %s to %s\n", filefrom.data(), fileto.data());
 	if (file_copy(filefrom, fileto) < 0)
 	{
 	    r = -1;
@@ -329,7 +332,7 @@ static flow_t *generate_flow_diagram(const gghtml_params_t &params, cov_function
     static unsigned int tag = 1;
     string_var name = g_strdup_printf("flow%u.png", tag++);
     string_var path = file_join2(params.get_output_directory(), name);
-    fprintf(stderr, "Generating flow diagram %s for function %s file %s\n",
+    _log.info("Generating flow diagram %s for function %s file %s\n",
 	    name.data(), fn->name(), fn->file()->minimal_name());
     sg->save(path);
 
@@ -504,54 +507,44 @@ generate_html(const gghtml_params_t &params)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-#define DEBUG_GLIB 1
-#if DEBUG_GLIB
 
-static const char *
-log_level_to_str(GLogLevelFlags level)
+static logging::level_t
+log_level(GLogLevelFlags level)
 {
-    static char buf[32];
-
     switch (level & G_LOG_LEVEL_MASK)
     {
-    case G_LOG_LEVEL_ERROR: return "ERROR";
-    case G_LOG_LEVEL_CRITICAL: return "CRITICAL";
-    case G_LOG_LEVEL_WARNING: return "WARNING";
-    case G_LOG_LEVEL_MESSAGE: return "MESSAGE";
-    case G_LOG_LEVEL_INFO: return "INFO";
-    case G_LOG_LEVEL_DEBUG: return "DEBUG";
-    default:
-	snprintf(buf, sizeof(buf), "%d", level);
-	return buf;
+    case G_LOG_LEVEL_ERROR: return logging::ERROR;
+    case G_LOG_LEVEL_CRITICAL: return logging::FATAL;
+    case G_LOG_LEVEL_WARNING: return logging::WARNING;
+    case G_LOG_LEVEL_MESSAGE: return logging::INFO;
+    case G_LOG_LEVEL_INFO: return logging::INFO;
+    case G_LOG_LEVEL_DEBUG: return logging::DEBUG;
+    default: return logging::INFO;
     }
 }
 
-void
+static void
 log_func(
     const char *domain,
     GLogLevelFlags level,
     const char *msg,
     gpointer user_data)
 {
-    fprintf(stderr, "%s:%s:%s\n",
+    _log.message(log_level(level), "%s:%s:%s\n",
 	(domain == 0 ? PACKAGE : domain),
-	log_level_to_str(level),
 	msg);
     if (level & G_LOG_FLAG_FATAL)
 	exit(1);
 }
 
-#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 int
 main(int argc, char **argv)
 {
-#if DEBUG_GLIB
     g_log_set_handler("GLib",
 		      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
 		      log_func, /*user_data*/0);
-#endif
     argv0 = argv[0];
     gghtml_params_t params(argv[0]);
     argparse::parser_t parser(params);
@@ -568,7 +561,7 @@ main(int argc, char **argv)
     if (r == 0)
 	exit(0);    /* error message in cov_read_files() */
 
-    cov_dump(stderr);
+    cov_dump();
 
     if (generate_html(params) < 0)
 	return 1;   /* failure */

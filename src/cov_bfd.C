@@ -20,9 +20,11 @@
 #include "cov_bfd.H"
 #include "string_var.H"
 #include "demangle.h"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("cgraph");
 
 #ifdef HAVE_LIBBFD
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
@@ -133,11 +135,7 @@ cov_bfd_t::find_section(const char *secname)
     if (abfd_ == 0)
 	return 0;
     if ((sec = bfd_get_section_by_name(abfd_, secname)) == 0)
-    {
-	/* TODO */
-//      fprintf(stderr, "%s: no %s section\n", filename(), secname);
 	return 0;
-    }
     return (cov_bfd_section_t *)sec;
 }
 
@@ -149,7 +147,7 @@ cov_bfd_t::get_symbols()
     assert(!have_symbols_);
     have_symbols_ = true;
 
-    dprintf1(D_CGRAPH, "Reading symbols from %s\n", filename());
+    _log.debug("Reading symbols from %s\n", filename());
 
     num_symbols_ = bfd_get_symtab_upper_bound(abfd_);
     symbols_ = g_new(asymbol*, num_symbols_);
@@ -169,7 +167,7 @@ cov_bfd_t::get_symbols()
     qsort((void *)sorted_symbols_, num_symbols_,
 	  sizeof(asymbol*), compare_symbols);
 
-    if (debug_enabled(D_CGRAPH|D_VERBOSE))
+    if (_log.is_enabled(logging::DEBUG2))
     {
 	unsigned int i;
 	for (i = 0 ; i < num_symbols_ ; i++)
@@ -215,20 +213,20 @@ cov_bfd_t::get_code_sections()
     if (abfd_ == 0)
 	return FALSE;
 
-    dprintf1(D_CGRAPH, "Gathering code sections from %s\n", filename());
+    _log.debug("Gathering code sections from %s\n", filename());
 
     code_sections_ = g_new(asection*, abfd_->section_count);
 
     for (sec = abfd_->sections ; sec != 0 ; sec = sec->next)
     {
-	dprintf2(D_CGRAPH|D_VERBOSE, "    [%d]%s: ", sec->index, sec->name);
+	_log.debug2("    [%d]%s: ", sec->index, sec->name);
 
 	if ((sec->flags & codesectype) != codesectype)
 	{
-	    dprintf0(D_CGRAPH|D_VERBOSE, "skipping\n");
+	    _log.debug2("skipping\n");
 	    continue;
 	}
-	dprintf0(D_CGRAPH|D_VERBOSE, "is code section\n");
+	_log.debug2("is code section\n");
 	code_sections_[num_code_sections_++] = sec;
     }
 
@@ -280,22 +278,23 @@ void
 cov_bfd_t::dump_symbol(unsigned int idx, asymbol *sym)
 {
     if (!idx)
-	duprintf0("index|value   |flags|type|section   |name\n");
+	_log.debug2("index|value   |flags|type|section   |name\n");
     if (sym == 0)
 	return;
 
     string_var dem = demangle(sym->name);
+    string_var str2 = "";
+    if (strcmp(dem, sym->name))
+	str2 = g_strdup_printf(" (%s)", dem.data());
 
-    duprintf6("%5d|%08lx|%5x|%-4s|%-10s|%s",
+    _log.debug2("%5d|%08lx|%5x|%-4s|%-10s|%s%s\n",
 	      idx,
 	      (long unsigned)sym->value,
 	      (unsigned)sym->flags,
 	      symbol_type_as_string(sym),
 	      sym->section->name,
-	      sym->name);
-    if (strcmp(dem, sym->name))
-	duprintf1(" (%s)", dem.data());
-    duprintf0("\n");
+	      sym->name,
+	      str2.data());
 }
 
 void
@@ -303,8 +302,8 @@ cov_bfd_t::dump_reloc(unsigned int idx, arelent *rel)
 {
     if (!idx)
     {
-	duprintf0("relocation                              |symbol\n");
-	duprintf0("index|address |addend  |type            |flags|type|name\n");
+	_log.debug2("relocation                              |symbol\n");
+	_log.debug2("index|address |addend  |type            |flags|type|name\n");
     }
     if (rel == 0)
 	return;
@@ -316,7 +315,7 @@ cov_bfd_t::dump_reloc(unsigned int idx, arelent *rel)
     snprintf(reltype, sizeof(reltype), "%d(%s)",
 	    rel->howto->type,
 	    rel->howto->name);
-    duprintf7("%5d|%08lx|%08lx|%-16s|%5x|%-4s|%s\n",
+    _log.debug2("%5d|%08lx|%08lx|%-16s|%5x|%-4s|%s\n",
 	    idx,
 	    (long unsigned)rel->address,
 	    (long unsigned)rel->addend,
@@ -384,7 +383,7 @@ cov_bfd_section_t::get_relocs(unsigned int *lenp)
     if (!b->have_symbols_ && !b->get_symbols())
 	return FALSE;
 
-    dprintf1(D_CGRAPH, "Reading relocs from %s\n", b->filename());
+    _log.debug("Reading relocs from %s\n", b->filename());
 
     nrelocs = bfd_get_reloc_upper_bound(sec->owner, sec);
     relocs = g_new(arelent*, nrelocs);
@@ -471,6 +470,14 @@ cov_bfd_section_t::find_symbol_by_value(
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+#else
+
+gboolean cov_bfd_t::open(const char *filename)
+{
+    _log.debug("ggcov was compiled without the BFD library, cannot open %s\n", filename);
+    return FALSE;
+}
+
 #endif /*HAVE_LIBBFD*/
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

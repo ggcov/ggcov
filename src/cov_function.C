@@ -19,6 +19,11 @@
 
 #include "cov_priv.H"
 #include "string_var.H"
+#include "logging.H"
+
+static logging::logger_t &cgraph_log = logging::find_logger("cgraph");
+static logging::logger_t &solve_log = logging::find_logger("solve");
+static logging::logger_t &suppress_log = logging::find_logger("suppress");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -100,7 +105,7 @@ cov_function_t::suppress(const cov_suppression_t *s)
      */
     if (s && !suppression_)
     {
-	dprintf2(D_SUPPRESS, "suppressing function %s: %s\n", name(), s->describe());
+	suppress_log.debug("suppressing function %s: %s\n", name(), s->describe());
 	suppression_ = s;
 	for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->first() ; *bitr ; ++bitr)
 	    (*bitr)->suppress(s);
@@ -290,11 +295,8 @@ cov_function_t::reconcile_calls()
 		 * __cxa_throw(), or any other call with no direct
 		 * relationship to the source code.
 		 */
-		dprintf1(D_CGRAPH, "Failed to reconcile calls for block %s\n",
-			    b->describe());
-		dprintf2(D_CGRAPH, "    %d call arcs, %d recorded calls\n",
-			    b->out_ncalls_,
-			    (b->call_ == 0 ? 0 : 1));
+		cgraph_log.debug("Failed to reconcile calls for block %s, %d call arcs, %d recorded calls\n",
+				 b->describe(), b->out_ncalls_, (b->call_ == 0 ? 0 : 1));
 	    }
 	    b->call_ = (const char *)0;   /* free and null out */
 	    ret = FALSE;
@@ -308,13 +310,11 @@ cov_function_t::reconcile_calls()
 
 	    if (a->is_call() && (name = b->pop_call()))
 	    {
-		dprintf2(D_CGRAPH|D_VERBOSE, "    block %s calls %s\n",
-			  b->describe(), name);
+		cgraph_log.debug2("    block %s calls %s\n", b->describe(), name);
 		a->take_name(name);
 	    }
 	}
-	dprintf2(D_CGRAPH, "Reconciled %d calls for block %s\n",
-		  b->out_ncalls_, b->describe());
+	cgraph_log.debug("Reconciled %d calls for block %s\n", b->out_ncalls_, b->describe());
     }
     return ret;
 }
@@ -354,7 +354,7 @@ cov_function_t::solve()
 
        This takes an average of slightly more than 3 passes.  */
 
-    dprintf1(D_SOLVE, " ---> %s\n", name_.data());
+    solve_log.debug(" ---> %s\n", name_.data());
 
     /*
      * In the new gcc 3.3 file format we cannot expect to get arcs into
@@ -368,13 +368,13 @@ cov_function_t::solve()
     {
 	assert(file_->format_version_ > 0);
 	b->in_ninvalid_ = ~0U;
-	dprintf0(D_SOLVE, "entry block tweaked\n");
+	solve_log.debug("entry block tweaked\n");
     }
     if ((b = blocks_->nth(exit_block()))->out_arcs_.head() == 0)
     {
 	assert(file_->format_version_ > 0);
 	b->out_ninvalid_ = ~0U;
-	dprintf0(D_SOLVE, "exit block tweaked\n");
+	solve_log.debug("exit block tweaked\n");
     }
 
     changes = 1;
@@ -384,16 +384,16 @@ cov_function_t::solve()
 	passes++;
 	changes = 0;
 
-	dprintf1(D_SOLVE, "pass %d\n", passes);
+	solve_log.debug("pass %d\n", passes);
 
 	for (ptrarray_iterator_t<cov_block_t> bitr = blocks_->last() ; *bitr ; --bitr)
 	{
 	    b = *bitr;
-	    dprintf1(D_SOLVE, "[%d]\n", b->bindex());
+	    solve_log.debug("[%d]\n", b->bindex());
 
 	    if (!b->count_valid_)
 	    {
-		dprintf3(D_SOLVE, "[%d] out_ninvalid_=%u in_ninvalid_=%u\n",
+		solve_log.debug("[%d] out_ninvalid_=%u in_ninvalid_=%u\n",
 			    b->bindex(), b->out_ninvalid_, b->in_ninvalid_);
 
 		/*
@@ -408,13 +408,13 @@ cov_function_t::solve()
 		{
 		    b->set_count(cov_arc_t::total(b->out_arcs_));
 		    changes++;
-		    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), (unsigned long long)b->count());
+		    solve_log.debug("[%d] count=%llu\n", b->bindex(), (unsigned long long)b->count());
 		}
 		else if (b->in_ninvalid_ == 0)
 		{
 		    b->set_count(cov_arc_t::total(b->in_arcs_));
 		    changes++;
-		    dprintf2(D_SOLVE, "[%d] count=%llu\n", b->bindex(), (unsigned long long)b->count());
+		    solve_log.debug("[%d] count=%llu\n", b->bindex(), (unsigned long long)b->count());
 		}
 	    }
 
@@ -431,16 +431,16 @@ cov_function_t::solve()
 		    count_t out_total = cov_arc_t::total(b->out_arcs_);
 		    if (b->count_ < out_total)
 		    {
-			fprintf(stderr, "Function %s cannot be solved because "
-					"the arc counts are inconsistent, suppressing\n",
-					name_.data());
+			solve_log.warning("Function %s cannot be solved because "
+					  "the arc counts are inconsistent, suppressing\n",
+					  name_.data());
 			suppress(cov_suppressions.find(0, cov_suppression_t::UNSOLVABLE));
 			return TRUE;
 		    }
 		    assert(b->count_ >= out_total);
 		    a->set_count(b->count_ - out_total);
 		    changes++;
-		    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
+		    solve_log.debug("[%d->%d] count=%llu\n",
 			    a->from()->bindex(), a->to()->bindex(),
 			    (unsigned long long)a->count());
 		}
@@ -455,16 +455,16 @@ cov_function_t::solve()
 		    count_t in_total = cov_arc_t::total(b->in_arcs_);
 		    if (b->count_ < in_total)
 		    {
-			fprintf(stderr, "Function %s cannot be solved because "
-					"the arc counts are inconsistent, suppressing\n",
-					name_.data());
+			solve_log.warning("Function %s cannot be solved because "
+					  "the arc counts are inconsistent, suppressing\n",
+					  name_.data());
 			suppress(cov_suppressions.find(0, cov_suppression_t::UNSOLVABLE));
 			return TRUE;
 		    }
 		    assert(b->count_ >= in_total);
 		    a->set_count(b->count_ - in_total);
 		    changes++;
-		    dprintf3(D_SOLVE, "[%d->%d] count=%llu\n",
+		    solve_log.debug("[%d->%d] count=%llu\n",
 			    a->from()->bindex(), a->to()->bindex(),
 			    (unsigned long long)a->count());
 		}
@@ -492,8 +492,7 @@ cov_function_t::solve()
 	    return FALSE;
     }
 
-    dprintf2(D_SOLVE, "Solved flow graph for %s in %d passes\n",
-			name(), passes);
+    solve_log.debug("Solved flow graph for %s in %d passes\n", name(), passes);
 
     return TRUE;
 }

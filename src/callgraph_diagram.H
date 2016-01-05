@@ -71,6 +71,7 @@ private:
 	{
 	    return (node_t *)cn->userdata;
 	}
+	const char *rank_str() const;
 	node_t(cov_callnode_t *);
 	~node_t();
     };

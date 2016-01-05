@@ -335,6 +335,7 @@ public:
     void format_blocks(char *buf, size_t maxlen) const { ln_->format_blocks(buf, maxlen); }
     const char *blocks_as_string() const;
     const char *text() const { return buf_; }
+    cov_function_t *function() const { return ln_->function(); }
 
 private:
     cov_file_t *file_;

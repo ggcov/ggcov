@@ -22,8 +22,10 @@
 #include "summarywin.H"
 #include "sourcewin.H"
 #include "ui.h"
+#include "logging.H"
 
 canvas_function_popup_t::widgets_t canvas_function_popup_t::widgets_;
+static logging::logger_t &_log = logging::find_logger("canvasfn");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -78,7 +80,6 @@ canvas_function_popup_t::set_background(const char *s)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if 0
 static const char *
 describe_event(GnomeCanvas *canvas, const GdkEvent *event)
 {
@@ -124,14 +125,13 @@ describe_event(GnomeCanvas *canvas, const GdkEvent *event)
 	return buf;
     }
 }
-#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 GLADE_CALLBACK void
 on_canfn_view_summary_activate(GtkWidget *w, GdkEvent *event, gpointer closure)
 {
-//    fprintf(stderr, "on_canfn_view_summary_activate:\n");
+    _log.debug("on_canfn_view_summary_activate\n");
     cov_function_t *fn = canvas_function_popup_t::widgets_.current_->function_;
     summarywin_t::show_function(fn);
 }
@@ -139,14 +139,14 @@ on_canfn_view_summary_activate(GtkWidget *w, GdkEvent *event, gpointer closure)
 GLADE_CALLBACK void
 on_canfn_view_call_butterfly_activate(GtkWidget *w, GdkEvent *event, gpointer closure)
 {
-    fprintf(stderr, "on_canfn_view_call_butterfly_activate:\n");
+    _log.debug("on_canfn_view_call_butterfly_activate\n");
 //    cov_function_t *fn = canvas_function_popup_t::widgets_.current_->function_;
 }
 
 GLADE_CALLBACK void
 on_canfn_view_source_activate(GtkWidget *w, GdkEvent *event, gpointer closure)
 {
-//    fprintf(stderr, "on_canfn_view_source_activate:\n");
+    _log.debug("on_canfn_view_source_activate\n");
     cov_function_t *fn = canvas_function_popup_t::widgets_.current_->function_;
     sourcewin_t::show_function(fn);
 }
@@ -159,8 +159,7 @@ canvas_function_popup_t::on_button_press_event(
     GdkEvent *event,
     gpointer closure)
 {
-//    fprintf(stderr, "on_button_press_event: %s\n",
-//          describe_event(0, event));
+    _log.debug("on_button_press_event: %s\n", describe_event(0, event));
     if (event->type == GDK_BUTTON_PRESS && event->button.button == 3)
 	widgets_.current_->show_menu(event);
     return FALSE;
@@ -176,10 +175,7 @@ canvas_function_popup_t::on_item_event(
 {
     canvas_function_popup_t *fpop = (canvas_function_popup_t *)closure;
 
-#if 0
-    fprintf(stderr, "on_item_event: %s\n",
-	    describe_event(item->canvas, event));
-#endif
+    _log.debug("on_item_event: %s\n", describe_event(item->canvas, event));
 
     switch (event->type)
     {
@@ -202,7 +198,7 @@ canvas_function_popup_t::on_leave_event(
     gpointer closure)
 {
 //    canvas_function_popup_t *fpop = (canvas_function_popup_t *)closure;
-//    fprintf(stderr, "on_canvas_function_popup_leave_event\n");
+    _log.debug("on_canvas_function_popup_leave_event\n");
     gtk_widget_hide(window);
     return FALSE;
 }
@@ -269,7 +265,6 @@ canvas_function_popup_t::show(GdkEvent *event)
 		     &cx, &cy);
     cx = (int)item_->x1 + ((int)event->crossing.x_root - cx);
     cy = (int)item_->y1 + ((int)event->crossing.y_root - cy);
-//    fprintf(stderr, "cx,cy=%u,%u\n", cx, cy);
 
     gtk_window_move(GTK_WINDOW(w->popup_), cx, cy);
     gtk_widget_show(w->popup_);

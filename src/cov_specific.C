@@ -21,9 +21,10 @@
 #include "string_var.H"
 #include "filename.h"
 #include "demangle.h"
-
+#include "logging.H"
 
 cov_factory_item_t *cov_factory_item_t::all_;
+static logging::logger_t &_log = logging::find_logger("cgraph");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -118,10 +119,10 @@ cov_call_scanner_t::setup_calldata(
     if (!sec->find_nearest_line(address, &calld->location, &calld->function))
 	return FALSE;
 
-    if (debug_enabled(D_CGRAPH))
+    if (_log.is_enabled(logging::DEBUG))
     {
 	string_var function_dem = demangle(calld->function);
-	duprintf4("%s:%ld: %s calls %s\n",
+	_log.debug("%s:%ld: %s calls %s\n",
 		calld->location.filename,
 		calld->location.lineno,
 		function_dem.data(),

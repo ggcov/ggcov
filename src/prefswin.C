@@ -21,8 +21,10 @@
 #include "prefswin.H"
 #include "prefs.H"
 #include <libgnomeui/libgnomeui.h>
+#include "logging.H"
 
 prefswin_t *prefswin_t::instance_ = 0;
+static logging::logger_t &_log = logging::find_logger("prefswin");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -92,7 +94,7 @@ prefswin_t::update_picker(int i, const GdkColor *col)
 void
 prefswin_t::update()
 {
-    dprintf0(D_PREFSWIN, "prefswin_t::update\n");
+    _log.debug("prefswin_t::update\n");
 
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(reuse_srcwin_check_),
 				prefs.reuse_srcwin);
@@ -122,7 +124,7 @@ prefswin_t::populate()
 void
 prefswin_t::grey_items()
 {
-    dprintf0(D_PREFSWIN, "prefswin_t::grey_items\n");
+    _log.debug("prefswin_t::grey_items\n");
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -139,7 +141,7 @@ prefswin_t::apply_picker(int i, GdkColor *col)
 void
 prefswin_t::apply()
 {
-    dprintf0(D_PREFSWIN, "prefswin_t::apply\n");
+    _log.debug("prefswin_t::apply\n");
 
     prefs.reuse_srcwin = GTK_TOGGLE_BUTTON(reuse_srcwin_check_)->active;
     prefs.reuse_summwin = GTK_TOGGLE_BUTTON(reuse_summwin_check_)->active;

@@ -42,7 +42,8 @@ libcommon_a_SOURCES= \
 		mustache.H mustache.C \
 		unicode.H unicode.C \
 		filerec.H filerec.C \
-		libgd_scenegen.H libgd_scenegen.C
+		libgd_scenegen.H libgd_scenegen.C \
+		logging.H logging.C
 
 libcov_a_SOURCES= \
 		covio.H covio.C \

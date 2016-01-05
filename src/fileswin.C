@@ -27,6 +27,7 @@
 #include "tok.H"
 #include "confsection.H"
 #include "filerec.H"
+#include "logging.H"
 
 
 #define COL_FILE        0
@@ -48,6 +49,8 @@
     G_TYPE_STRING
 #endif
 
+static logging::logger_t &_log = logging::find_logger("fileswin");
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static int
@@ -62,9 +65,8 @@ fileswin_compare(file_rec_t *fr1, file_rec_t *fr2, int column)
     const cov_stats_t *s1 = fr1->get_scope()->get_stats();
     const cov_stats_t *s2 = fr2->get_scope()->get_stats();
 
-    dprintf2(D_FILESWIN|D_VERBOSE,
-	    "fileswin_compare: fr1=\"%s\" fr2=\"%s\"\n",
-	    fr1->get_name(), fr2->get_name());
+    _log.debug2("fileswin_compare: fr1=\"%s\" fr2=\"%s\"\n",
+		fr1->get_name(), fr2->get_name());
     switch (column)
     {
     case COL_BLOCKS:
@@ -258,7 +260,7 @@ fileswin_t::~fileswin_t()
 void
 fileswin_t::populate()
 {
-    dprintf0(D_FILESWIN, "fileswin_t::populate\n");
+    _log.debug("fileswin_t::populate\n");
 
     if (root_ != 0)
 	delete root_;
@@ -269,8 +271,8 @@ fileswin_t::populate()
     rootname.remove(0, rootname.find_last_char('/')+1);
     root_ = new file_rec_t(rootname, 0);
     root_->add_descendents(cov_file_t::first());
-    if (debug_enabled(D_FILESWIN|D_VERBOSE))
-	root_->dump(0, stderr);
+    if (_log.is_enabled(logging::DEBUG2))
+	root_->dump(0, _log);
 
     update();
 }
@@ -388,7 +390,7 @@ fileswin_t::update()
     gboolean percent_flag;
     gboolean tree_flag;
 
-    dprintf0(D_FILESWIN, "fileswin_t::update\n");
+    _log.debug("fileswin_t::update\n");
 
     percent_flag = GTK_CHECK_MENU_ITEM(percent_check_)->active;
     tree_flag = GTK_CHECK_MENU_ITEM(tree_check_)->active;
@@ -447,7 +449,7 @@ fileswin_t::apply_toggles()
 GLADE_CALLBACK void
 fileswin_t::on_blocks_check_activate()
 {
-    dprintf0(D_FILESWIN, "fileswin_t::on_blocks_check_activate\n");
+    _log.debug("fileswin_t::on_blocks_check_activate\n");
 
     if (populating_)
 	return;
@@ -458,7 +460,7 @@ fileswin_t::on_blocks_check_activate()
 GLADE_CALLBACK void
 fileswin_t::on_lines_check_activate()
 {
-    dprintf0(D_FILESWIN, "fileswin_t::on_lines_check_activate\n");
+    _log.debug("fileswin_t::on_lines_check_activate\n");
 
     if (populating_)
 	return;
@@ -469,7 +471,7 @@ fileswin_t::on_lines_check_activate()
 GLADE_CALLBACK void
 fileswin_t::on_functions_check_activate()
 {
-    dprintf0(D_FILESWIN, "fileswin_t::on_functions_check_activate\n");
+    _log.debug("fileswin_t::on_functions_check_activate\n");
 
     if (populating_)
 	return;
@@ -480,7 +482,7 @@ fileswin_t::on_functions_check_activate()
 GLADE_CALLBACK void
 fileswin_t::on_calls_check_activate()
 {
-    dprintf0(D_FILESWIN, "fileswin_t::on_calls_check_activate\n");
+    _log.debug("fileswin_t::on_calls_check_activate\n");
 
     if (populating_)
 	return;
@@ -491,7 +493,7 @@ fileswin_t::on_calls_check_activate()
 GLADE_CALLBACK void
 fileswin_t::on_branches_check_activate()
 {
-    dprintf0(D_FILESWIN, "fileswin_t::on_branches_check_activate\n");
+    _log.debug("fileswin_t::on_branches_check_activate\n");
 
     if (populating_)
 	return;

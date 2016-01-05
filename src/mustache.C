@@ -20,6 +20,9 @@
 #include "mustache.H"
 #include <fstream>
 #include <ext/stdio_filebuf.h>
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("ggcov-html");
 
 namespace mustache
 {
@@ -60,8 +63,8 @@ template_t::~template_t()
 yaml_generator_t &template_t::begin_render()
 {
     char cmd[1024];
-    fprintf(stderr, "Expanding template %s to %s\n",
-	    template_path_.data(), output_path_.data());
+    _log.info("Expanding template %s to %s\n",
+	      template_path_.data(), output_path_.data());
     // TODO: generate a temporary file for output_path_ if its null
     snprintf(cmd, sizeof(cmd), "mustache - \"%s\" > \"%s\"",
 	     template_path_.data(), output_path_.data());

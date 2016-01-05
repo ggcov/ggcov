@@ -99,18 +99,17 @@ void file_rec_t::add_descendents(list_iterator_t<cov_file_t> iter)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void file_rec_t::dump(int indent, FILE *fp)
+void file_rec_t::dump(int indent, logging::logger_t &_log)
 {
     int i;
+    estring indentbuf;
 
-    if (!fp)
-	fp = stderr;
     for (i = 0 ; i < indent ; i++)
-	fputc(' ', fp);
-    fprintf(fp, "%s\n", name_.data());
+	indentbuf.append_char(' ');
+    _log.debug("%s%s\n", indentbuf.data(), name_.data());
 
     for (list_iterator_t<file_rec_t> friter = children_.first() ; *friter ; ++friter)
-	(*friter)->dump(indent+4, fp);
+	(*friter)->dump(indent+4, _log);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

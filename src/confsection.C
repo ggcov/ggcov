@@ -29,9 +29,11 @@
 #endif
 #include "confsection.H"
 #include "estring.H"
+#include "logging.H"
 
 hashtable_t<const char, confsection_t> *confsection_t::all_;
 static const char filename[] = "ggcov";
+static logging::logger_t &_log = logging::find_logger("ggcov");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -70,7 +72,7 @@ handle_error(const char *name, GError *e)
 {
     if (e)
     {
-	fprintf(stderr, "ERROR: confsection(%s): %s\n", name, e->message);
+	_log.error("confsection(%s): %s\n", name, e->message);
 	g_error_free(e);
     }
 }

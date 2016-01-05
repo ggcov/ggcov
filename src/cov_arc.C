@@ -20,6 +20,9 @@
 #include "cov_priv.H"
 #include "estring.H"
 #include "filename.h"
+#include "logging.H"
+
+static logging::logger_t &suppress_log = logging::find_logger("suppress");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -122,12 +125,12 @@ cov_arc_t::suppress(const cov_suppression_t *s)
 {
     if (s && !suppression_)
     {
-	if (debug_enabled(D_SUPPRESS))
+	if (suppress_log.is_enabled(logging::DEBUG))
 	{
 	    string_var fdesc = from_->describe();
 	    string_var tdesc = to_->describe();
-	    duprintf3("suppressing arc from %s to %s: %s\n",
-		      fdesc.data(), tdesc.data(), s->describe());
+	    suppress_log.debug("suppressing arc from %s to %s: %s\n",
+			       fdesc.data(), tdesc.data(), s->describe());
 	}
 	suppression_ = s;
     }

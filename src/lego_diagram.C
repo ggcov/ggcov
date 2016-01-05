@@ -19,9 +19,12 @@
 
 #include "lego_diagram.H"
 #include "tok.H"
+#include "logging.H"
 
 #define WIDTH   (1.0)
 #define HEIGHT  (1.0)
+
+static logging::logger_t &_log = logging::find_logger("lego");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -50,13 +53,15 @@ lego_diagram_t::title()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-lego_diagram_t::dump_node(node_t *node, FILE *fp)
+lego_diagram_t::dump_node(node_t *node)
 {
     unsigned int i;
+    estring indentbuf;
 
     for (i = 0 ; i < node->depth_ ; i++)
-	fputs("    ", fp);
-    fprintf(fp, "%s depth=%u blocks=%lu/%lu geom=[%g %g %g %g]",
+	indentbuf.append_string("    ");
+    _log.debug("%s%s depth=%u blocks=%lu/%lu geom=[%g %g %g %g]\n",
+	indentbuf.data(),
 	node->name_.data(),
 	node->depth_,
 	node->stats_.blocks_executed(),
@@ -66,18 +71,8 @@ lego_diagram_t::dump_node(node_t *node, FILE *fp)
 	node->w_,
 	node->h_);
 
-    if (node->children_.head() != 0)
-    {
-	fputs(" {\n", fp);
-
-	for (list_iterator_t<node_t> niter = node->children_.first() ; *niter ; ++niter)
-	    dump_node(*niter, fp);
-
-	for (i = 0 ; i < node->depth_ ; i++)
-	    fputs("    ", fp);
-	fputc('}', fp);
-    }
-    fputc('\n', fp);
+    for (list_iterator_t<node_t> niter = node->children_.first() ; *niter ; ++niter)
+	dump_node(*niter);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -144,7 +139,7 @@ lego_diagram_t::root_name() const
 void
 lego_diagram_t::prepare()
 {
-    dprintf0(D_DLEGO, "lego_diagram_t::prepare\n");
+    _log.debug("lego_diagram_t::prepare\n");
 
     root_ = new node_t();
     root_->name_ = root_name();
@@ -156,7 +151,7 @@ lego_diagram_t::prepare()
     {
 	cov_file_t *f = *iter;
 
-	dprintf1(D_DLEGO, "    adding file \"%s\"\n", f->minimal_name());
+	_log.debug("    adding file \"%s\"\n", f->minimal_name());
 
 	cov_scope_t *sc = new cov_file_scope_t(f);
 	const cov_stats_t *st = sc->get_stats();
@@ -207,8 +202,8 @@ lego_diagram_t::prepare()
     assign_geometry(root_, 0.0, 0.0, (WIDTH / (double)(maxdepth_+1)), HEIGHT);
 
     /* Debug: dump tree */
-    if (debug_enabled(D_DLEGO|D_VERBOSE))
-	dump_node(root_, stderr);
+    if (_log.is_enabled(logging::DEBUG2))
+	dump_node(root_);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -223,7 +218,7 @@ lego_diagram_t::show_node(node_t *node, scenegen_t *sg)
 	node->name_.data(),
 	100.0 * node->stats_.blocks_fraction());
 
-    dprintf3(D_DLEGO|D_VERBOSE, "legowin_t::show_node depth=%u name=\"%s\" label=\"%s\"\n",
+    _log.debug2("legowin_t::show_node depth=%u name=\"%s\" label=\"%s\"\n",
 		node->depth_, node->name_.data(), label.data());
 
     sg->fill(bg_rgb_by_status_[cov::COVERED]);

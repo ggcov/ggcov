@@ -124,16 +124,6 @@ estring::replace_chars(
 {
     unsigned int remain;
 
-#if 0
-    fputs("estring::replace_chars: replacing \"", stderr);
-    if (data_ != 0)
-	fwrite(data_+start, 1, len, stderr);
-    fputs("\" -> \"", stderr);
-    if (buf != 0)
-	fwrite(buf, 1, buflen, stderr);
-    fputs("\"\n", stderr);
-#endif
-
     if (buflen > len)
     {
 	expand_by(buflen-len);

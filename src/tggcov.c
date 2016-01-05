@@ -38,8 +38,11 @@
 #include "report.H"
 #include "callgraph_diagram.H"
 #include "check_scenegen.H"
+#include "logging.H"
 
 char *argv0;
+static logging::logger_t &_log = logging::find_logger("tggcov");
+static logging::logger_t &dump_log = logging::find_logger("dump");
 
 class tggcov_params_t : public cov_project_params_t
 {
@@ -98,12 +101,12 @@ public:
     void post_args()
     {
 	cov_project_params_t::post_args();
-	if (debug_enabled(D_DUMP|D_VERBOSE))
+	if (dump_log.is_enabled(logging::DEBUG2))
 	{
-	    duprintf1("blocks_flag=%d\n", blocks_flag_);
-	    duprintf1("header_flag=%d\n", header_flag_);
-	    duprintf1("lines_flag=%d\n", lines_flag_);
-	    duprintf1("reports=\"%s\"\n", reports_.data());
+	    dump_log.debug2("blocks_flag=%d\n", blocks_flag_);
+	    dump_log.debug2("header_flag=%d\n", header_flag_);
+	    dump_log.debug2("lines_flag=%d\n", lines_flag_);
+	    dump_log.debug2("reports=\"%s\"\n", reports_.data());
 	}
     }
 };
@@ -155,7 +158,7 @@ annotate_file(tggcov_params_t &params, cov_file_t *f)
 
     if (ggcov_filename)
     {
-	fprintf(stderr, "Writing %s\n", ggcov_filename);
+	_log.info("Writing %s\n", ggcov_filename);
 	if ((outfp = fopen(ggcov_filename, "w")) == 0)
 	{
 	    perror(ggcov_filename);
@@ -300,13 +303,17 @@ report(tggcov_params_t &params)
 	    }
 	    if (rep->name == 0)
 	    {
-		fprintf(stderr, "%s: unknown report name \"%s\"", argv0, name);
 		if (!did_msg1)
 		{
-		    fputs(", use \"-R list\" to print listing.", stderr);
+		    _log.error("unknown report name \"%s\""
+			       ", use \"-R list\" to print listing.",
+			       name);
 		    did_msg1 = TRUE;
 		}
-		fputc('\n', stderr);
+		else
+		{
+		    _log.error("unknown report name \"%s\"", name);
+		}
 	    }
 	}
     }
@@ -347,7 +354,7 @@ dump_callgraph(void)
     FILE *fp;
     const char *cgfilename = file_make_absolute("callgraph.tggcov");
 
-    fprintf(stderr, "Writing %s\n", cgfilename);
+    _log.info("Writing %s\n", cgfilename);
     if ((fp = fopen(cgfilename, "w")) == 0)
     {
 	perror(cgfilename);
@@ -421,25 +428,18 @@ dump_callgraph(void)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#define DEBUG_GLIB 1
-#if DEBUG_GLIB
-
-static const char *
-log_level_to_str(GLogLevelFlags level)
+static logging::level_t
+log_level(GLogLevelFlags level)
 {
-    static char buf[32];
-
-    switch (level & G_LOG_LEVEL_MASK)
+    switch(level & G_LOG_LEVEL_MASK)
     {
-    case G_LOG_LEVEL_ERROR: return "ERROR";
-    case G_LOG_LEVEL_CRITICAL: return "CRITICAL";
-    case G_LOG_LEVEL_WARNING: return "WARNING";
-    case G_LOG_LEVEL_MESSAGE: return "MESSAGE";
-    case G_LOG_LEVEL_INFO: return "INFO";
-    case G_LOG_LEVEL_DEBUG: return "DEBUG";
-    default:
-	snprintf(buf, sizeof(buf), "%d", level);
-	return buf;
+    case G_LOG_LEVEL_ERROR: return logging::ERROR;
+    case G_LOG_LEVEL_CRITICAL: return logging::FATAL;
+    case G_LOG_LEVEL_WARNING: return logging::WARNING;
+    case G_LOG_LEVEL_MESSAGE: return logging::INFO;
+    case G_LOG_LEVEL_INFO: return logging::INFO;
+    case G_LOG_LEVEL_DEBUG: return logging::DEBUG;
+    default: return logging::INFO;
     }
 }
 
@@ -450,25 +450,21 @@ log_func(
     const char *msg,
     gpointer user_data)
 {
-    fprintf(stderr, "%s:%s:%s\n",
+    _log.message(log_level(level), "%s:%s:%s\n",
 	(domain == 0 ? PACKAGE : domain),
-	log_level_to_str(level),
 	msg);
     if (level & G_LOG_FLAG_FATAL)
 	exit(1);
 }
 
-#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 int
 main(int argc, char **argv)
 {
-#if DEBUG_GLIB
     g_log_set_handler("GLib",
 		      (GLogLevelFlags)(G_LOG_LEVEL_MASK|G_LOG_FLAG_FATAL),
 		      log_func, /*user_data*/0);
-#endif
 
     tggcov_params_t params;
     argparse::parser_t parser(params);
@@ -483,7 +479,7 @@ main(int argc, char **argv)
     if (r == 0)
 	exit(0);    /* error message in cov_read_files() */
 
-    cov_dump(stderr);
+    cov_dump();
 
     if (params.get_reports())
 	report(params);

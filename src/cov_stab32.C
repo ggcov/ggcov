@@ -19,6 +19,7 @@
 
 #include "cov_specific.H"
 #include "string_var.H"
+#include "logging.H"
 
 #ifdef HAVE_LIBBFD
 
@@ -27,6 +28,8 @@
  * object file or executable and parse them for source filenames.
  * Large chunks of code ripped from binutils/rddbg.c and stabs.c
  */
+
+logging::logger_t &_log = logging::find_logger("stabs");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -108,7 +111,7 @@ char *
 cov_stab32_filename_scanner_t::next()
 {
     if (!stabi_)
-	dprintf0(D_STABS|D_VERBOSE, "index|type|other|desc|value   |string\n");
+	_log.debug2("index|type|other|desc|value   |string\n");
 
     for ( ; stabi_ < num_stabs_ ; stabi_++)
     {
@@ -127,16 +130,15 @@ cov_stab32_filename_scanner_t::next()
 	{
 	    if (stroff_ + st->strx > string_size_)
 	    {
-		/* TODO */
-		fprintf(stderr, "%s: stab entry %u is corrupt, strx = 0x%x, type = %d\n",
-		    cbfd_->filename(),
-		    stabi_, st->strx, st->type);
+		_log.error("%s: stab entry %u is corrupt, strx = 0x%x, type = %d\n",
+			   cbfd_->filename(),
+			   stabi_, st->strx, st->type);
 		continue;
 	    }
 
 	    const char *s = strings_ + stroff_ + st->strx;
 
-	    dprintf6(D_STABS|D_VERBOSE,
+	    _log.debug2(
 		     "%5u|%4x|%5x|%04x|%08x|%s\n",
 		     stabi_, st->type, st->other, st->desc, st->value, s);
 
@@ -149,7 +151,7 @@ cov_stab32_filename_scanner_t::next()
 	    {
 		stabi_++;
 		char *res = (s[0] == '/' ? g_strdup(s) : g_strconcat(dir_.data(), s, (char *)0));
-		dprintf1(D_STABS, "Scanned source file \"%s\"\n", res);
+		_log.debug("Scanned source file \"%s\"\n", res);
 		return res;
 	    }
 	}

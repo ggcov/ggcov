@@ -541,7 +541,7 @@ run_tggcov ()
     if vcapdo $TMP1 $_VALGRIND $top_builddir/${_DUP}src/tggcov $mode $nflag $flags $SRC ; then
 	cat $TMP1
 	if [ x$mode = "x-a" ] ; then
-	    TGGCOV_FILES=$(sed -n -e 's:^Writing[ \t][ \t]*'$pwd'/\([^ \t]*\.tggcov\)$:\1:p' < $TMP1)
+	    TGGCOV_FILES=$(sed -n -e 's:.*Writing[ \t][ \t]*'$pwd'/\([^ \t]*\.tggcov\)$:\1:p' < $TMP1)
 	    [ -z "$TGGCOV_FILES" ] && fatal "no output files from tggcov"
 	    _subtestize_files $TGGCOV_FILES
 	fi

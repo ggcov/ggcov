@@ -19,6 +19,7 @@
 
 #include "cov_specific.H"
 #include "ptrarray.H"
+#include "logging.H"
 
 #ifdef HAVE_LIBBFD
 
@@ -27,6 +28,8 @@
  * object file or executable and parse them for source filenames.
  * Large chunks of code ripped from binutils/readelf.c and dwarf2.h
  */
+
+static logging::logger_t &_log = logging::find_logger("dwarf");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -389,9 +392,9 @@ cov_dwarf2_filename_scanner_t::get_lineinfo()
 	    break;
 	dir_table_->append(g_strdup(dir));
 
-	dprintf2(D_DWARF, "dir_table[%d] = \"%s\"\n",
-		dir_table_->length(),
-		dir_table_->nth(dir_table_->length()-1));
+	_log.debug("dir_table[%d] = \"%s\"\n",
+		   dir_table_->length(),
+		   dir_table_->nth(dir_table_->length()-1));
     }
 
     return TRUE;
@@ -417,7 +420,7 @@ cov_dwarf2_filename_scanner_t::get_lineinfo_filename()
     path = (diridx ?
 	    g_strconcat(dir_table_->nth(diridx-1), "/", file, (char *)0) :
 	    g_strdup(file));
-    dprintf1(D_DWARF, "get_lineinfo_filename() = \"%s\"\n", path);
+    _log.debug("get_lineinfo_filename() = \"%s\"\n", path);
     return path;
 }
 
@@ -430,7 +433,7 @@ cov_dwarf2_filename_scanner_t::get_abbrevs()
     dwarf_abbrev_t *abbrev;
     dwarf_attr_t *attr;
 
-    dprintf0(D_DWARF, "get_abbrevs:\n");
+    _log.debug("get_abbrevs:\n");
 
     for (;;)
     {
@@ -450,8 +453,7 @@ cov_dwarf2_filename_scanner_t::get_abbrevs()
 	abbrev->tag_ = b;
 	abbrevs_.append(abbrev);
 
-	dprintf2(D_DWARF, "abbrev entry=%d tag=%d {\n",
-		    abbrev->entry_, abbrev->tag_);
+	_log.debug("abbrev entry=%d tag=%d {\n", abbrev->entry_, abbrev->tag_);
 
 	for (;;)
 	{
@@ -466,13 +468,12 @@ cov_dwarf2_filename_scanner_t::get_abbrevs()
 	    attr->form_ = b;
 	    abbrev->attrs_.append(attr);
 
-	    dprintf2(D_DWARF, "    attr=%d form=%d\n",
-			attr->tag_, attr->form_);
+	    _log.debug("    attr=%d form=%d\n", attr->tag_, attr->form_);
 	}
-	dprintf0(D_DWARF, "}\n");
+	_log.debug("}\n");
     }
 
-    dprintf0(D_DWARF, "get_abbrevs: end of section\n");
+    _log.debug("get_abbrevs: end of section\n");
     return TRUE;
 }
 
@@ -542,7 +543,7 @@ cov_dwarf2_filename_scanner_t::get_compunit_filename()
 		"/",
 		strings_+name_off,
 		(char *)0);
-    dprintf1(D_DWARF, "get_compunit_filename() = \"%s\"\n", path);
+    _log.debug("get_compunit_filename() = \"%s\"\n", path);
     return path;
 }
 
@@ -576,8 +577,6 @@ cov_dwarf2_filename_scanner_t::next()
 	    return 0;   /* end of iteration */
 	}
     }
-
-//      dprintf0(D_DWARF|D_VERBOSE, "index|type|other|desc|value   |string\n");
 
     return 0;   /* end of iteration */
 }

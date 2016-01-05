@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
+ * Copyright (c) 2001-2015 Greg Banks <gnb@users.sourceforge.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "demangle.h"
 #include "cpp_parser.H"
 #include "cpp_parser.H"
+#include "logging.H"
 
 hashtable_t<const char, cov_file_t> *cov_file_t::files_;
 list_t<cov_file_t> cov_file_t::files_list_;
@@ -36,6 +37,12 @@ string_var cov_file_t::gcda_prefix_;
 char *cov_file_t::common_path_;
 int cov_file_t::common_len_;
 void *cov_file_t::files_model_;
+static logging::logger_t &files_log = logging::find_logger("files");
+static logging::logger_t &bb_log = logging::find_logger("bb");
+static logging::logger_t &bbg_log = logging::find_logger("bbg");
+static logging::logger_t &da_log = logging::find_logger("da");
+static logging::logger_t &cpp_log = logging::find_logger("cpp");
+static logging::logger_t &cgraph_log = logging::find_logger("cgraph");
 
 #define _NEW_VERSION(major, minor, release) \
 	(((uint32_t)('0'+(major))<<24)| \
@@ -111,7 +118,7 @@ cov_file_t::suppress(const cov_suppression_t *s)
 {
     if (s && !suppression_)
     {
-	dprintf1(D_CGRAPH|D_VERBOSE, "suppressing file: %s\n", s->describe());
+	cgraph_log.debug("suppressing file: %s\n", s->describe());
 	suppression_ = s;
 
 	/* in most cases we'll be suppressed before any lines or
@@ -227,7 +234,7 @@ cov_file_t::add_name(const char *name)
 	*cs = '\0';
     }
     common_len_ = strlen(common_path_);
-    dprintf2(D_FILES, "cov_file_t::add_name: name=\"%s\" => common=\"%s\"\n",
+    files_log.debug("cov_file_t::add_name: name=\"%s\" => common=\"%s\"\n",
 		name, common_path_);
 }
 
@@ -247,7 +254,7 @@ cov_file_t::check_common_path()
 {
     if (common_len_ < 0)
     {
-	dprintf0(D_FILES, "cov_file_t::check_common_path: recalculating common path\n");
+	files_log.debug("cov_file_t::check_common_path: recalculating common path\n");
 	common_len_ = 0;
 	for (hashtable_iter_t<const char, cov_file_t> itr = files_->first() ; *itr ; ++itr)
 	    if (!(*itr)->suppression_)
@@ -392,18 +399,18 @@ cov_file_t::add_location(
      */
     if (ln->has_blocks() && b->is_epilogue())
     {
-	dprintf3(D_BB, "Block %s skipping duplicate epilogue line %s:%lu\n",
+	bb_log.debug("Block %s skipping duplicate epilogue line %s:%lu\n",
 		  b->describe(), filename, lineno);
 	return;
     }
 
-    if (debug_enabled(D_BB))
+    if (bb_log.is_enabled(logging::DEBUG))
     {
-	duprintf3("Block %s adding location %s:%lu\n",
-		  b->describe(), filename, lineno);
+	bb_log.debug("Block %s adding location %s:%lu\n",
+		     b->describe(), filename, lineno);
 	if (ln->has_blocks())
-	    duprintf3("%s:%lu: this line belongs to %d blocks\n",
-		      filename, lineno, ln->num_blocks()+1);
+	    bb_log.debug("%s:%lu: this line belongs to %d blocks\n",
+		         filename, lineno, ln->num_blocks()+1);
     }
 
     ln->add_block(b);
@@ -486,8 +493,7 @@ cov_file_t::solve()
 	cov_function_t *fn = *fnitr;
 	if (!fn->solve())
 	{
-	    fprintf(stderr, "ERROR: could not solve flow graph for %s\n",
-		    fn->name());
+	    files_log.error("could not solve flow graph for %s\n", fn->name());
 	    return FALSE;
 	}
     }
@@ -512,7 +518,7 @@ cov_file_t::read_bb_file(covio_t *io)
     int line;
     int nlines;
 
-    dprintf1(D_FILES, "Reading .bb file \"%s\"\n", io->filename());
+    files_log.debug("Reading .bb file \"%s\"\n", io->filename());
 
     io->set_format(covio_t::FORMAT_OLD);
 
@@ -528,14 +534,14 @@ cov_file_t::read_bb_file(covio_t *io)
 	    if (!io->read_bbstring(filename, tag))
 		return FALSE;
 	    filename = make_absolute(filename);
-	    dprintf1(D_BB, "BB filename = \"%s\"\n", filename.data());
+	    bb_log.debug("BB filename = \"%s\"\n", filename.data());
 	    break;
 
 	case BB_FUNCTION:
 	    if (!io->read_bbstring(funcname, tag))
 		return FALSE;
 	    funcname = normalise_mangled(funcname);
-	    dprintf1(D_BB, "BB function = \"%s\"\n", funcname.data());
+	    bb_log.debug("BB function = \"%s\"\n", funcname.data());
 	    fn = nth_function(funcidx);
 	    funcidx++;
 	    bidx = 0;
@@ -557,7 +563,7 @@ cov_file_t::read_bb_file(covio_t *io)
 	    break;
 
 	default:
-	    dprintf2(D_BB, "BB line = %d (block %d)\n", (int)tag, bidx);
+	    bb_log.debug("BB line = %d (block %d)\n", (int)tag, bidx);
 	    assert(fn != 0);
 
 	    line = tag;
@@ -592,17 +598,17 @@ cov_file_t::read_bb_file(covio_t *io)
  */
 #define bbg_failed0(fmt) \
     { \
-	dprintf1(D_BBG, "BBG:%d, " fmt "\n", __LINE__); \
+	bbg_log.debug("BBG:%d, " fmt "\n", __LINE__); \
 	return FALSE; \
     }
 #define bbg_failed1(fmt, a1) \
     { \
-	dprintf2(D_BBG, "BBG:%d, " fmt "\n", __LINE__, a1); \
+	bbg_log.debug("BBG:%d, " fmt "\n", __LINE__, a1); \
 	return FALSE; \
     }
 #define bbg_failed2(fmt, a1, a2) \
     { \
-	dprintf3(D_BBG, "BBG:%d, " fmt "\n", __LINE__, a1, a2); \
+	bbg_log.debug("BBG:%d, " fmt "\n", __LINE__, a1, a2); \
 	return FALSE; \
     }
 
@@ -627,7 +633,7 @@ cov_file_t::skip_oldplus_func_header(covio_t *io, const char *prefix)
 
     if (!io->read_string(funcname))
 	bbg_failed0("short file");
-    dprintf2(D_BBG, "%sskipping function name: \"%s\"\n", prefix, funcname.data());
+    bbg_log.debug("%sskipping function name: \"%s\"\n", prefix, funcname.data());
 
     if (!io->read_u32(crud))
 	bbg_failed0("short file");
@@ -636,7 +642,7 @@ cov_file_t::skip_oldplus_func_header(covio_t *io, const char *prefix)
 
     if (!io->read_u32(crud))
 	bbg_failed0("short file");
-    dprintf2(D_BBG, "%sskipping function flags(?): 0x%08x\n", prefix, crud);
+    bbg_log.debug("%sskipping function flags(?): 0x%08x\n", prefix, crud);
 
     return TRUE;
 }
@@ -652,7 +658,7 @@ cov_file_t::read_old_bbg_function(covio_t *io)
     cov_arc_t *a;
     cov_function_t *fn;
 
-    dprintf0(D_BBG, "BBG reading function\n");
+    bbg_log.debug("BBG reading function\n");
 
     if ((features_ & FF_OLDPLUS))
     {
@@ -684,7 +690,7 @@ cov_file_t::read_old_bbg_function(covio_t *io)
 
     for (bidx = 0 ; bidx < nblocks ; bidx++)
     {
-	dprintf1(D_BBG, "BBG   block %d\n", bidx);
+	bbg_log.debug("BBG   block %d\n", bidx);
 	if (!io->read_u32(narcs))
 	    bbg_failed0("short file");
 
@@ -697,7 +703,7 @@ cov_file_t::read_old_bbg_function(covio_t *io)
 	    if (!io->read_u32(flags))
 		bbg_failed0("short file");
 
-	    dprintf7(D_BBG, "BBG     arc %u: %u->%u flags %x(%s,%s,%s)\n",
+	    bbg_log.debug("BBG     arc %u: %u->%u flags %x(%s,%s,%s)\n",
 			    aidx,
 			    bidx, dest, flags,
 			    (flags & BBG_ON_TREE ? "on_tree" : ""),
@@ -727,7 +733,7 @@ cov_file_t::read_old_bbg_function(covio_t *io)
 		if (!(flags & BBG_FAKE))
 		{
 		    num_missing_fake_++;
-		    dprintf0(D_BBG, "BBG     missing fake flag\n");
+		    bbg_log.debug("BBG     missing fake flag\n");
 		}
 	    }
 	}
@@ -750,8 +756,7 @@ cov_file_t::read_old_bbg_file_common(covio_t *io)
     {
 	if (!read_old_bbg_function(io))
 	{
-	    /* TODO */
-	    fprintf(stderr, "%s: file is corrupted or in a bad file format.\n",
+	    files_log.error("%s: file is corrupted or in a bad file format.\n",
 		    io->filename());
 	    return FALSE;
 	}
@@ -845,7 +850,7 @@ cov_file_t::infer_compilation_directory(const char *path)
 {
     int clen;
 
-    dprintf1(D_BBG, "infer_compilation_directory(\"%s\")\n", path);
+    bbg_log.debug("infer_compilation_directory(\"%s\")\n", path);
 
     /*
      * If used without the -o option, flex generates #lines like
@@ -871,7 +876,7 @@ cov_file_t::infer_compilation_directory(const char *path)
 	 * the compiledir is the remainder of `path'.
 	 */
 	compiledir_ = g_strndup(path, clen);
-	dprintf1(D_BBG, "compiledir_=\"%s\"\n", compiledir_.data());
+	bbg_log.debug("compiledir_=\"%s\"\n", compiledir_.data());
 	return;
     }
 
@@ -887,12 +892,12 @@ cov_file_t::infer_compilation_directory(const char *path)
 	 * with `path' removed from its tail.
 	 */
 	compiledir_ = g_strndup(name_, clen);
-	dprintf1(D_BBG, "compiledir_=\"%s\"\n", compiledir_.data());
+	bbg_log.debug("compiledir_=\"%s\"\n", compiledir_.data());
 	return;
     }
 
     /* This might be a problem...but probably not */
-    dprintf2(D_BBG, "Could not calculate compiledir for %s from location %s\n",
+    bbg_log.debug("Could not calculate compiledir for %s from location %s\n",
 	    name_.data(), path);
 }
 
@@ -902,7 +907,7 @@ cov_file_t::make_absolute(const char *filename) const
     if (compiledir_ != (const char *)0)
 	return file_make_absolute_to_dir(filename, compiledir_);
     if (*filename != '/')
-	dprintf1(D_BBG, "Warning: no compiledir when converting "
+	bbg_log.warning("no compiledir when converting "
 			"path \"%s\" to absolute, trying plan B\n",
 			filename);
     return file_make_absolute_to_file(filename, name_);
@@ -1009,11 +1014,11 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	unsigned int major, minor;
 	unsigned char rel;
 	if (!decode_new_version(format_version_, &major, &minor, &rel))
-	    fprintf(stderr, "%s: undecodable compiler version %08x, "
+	    files_log.error("%s: undecodable compiler version %08x, "
 			    "probably corrupted file\n",
 			    io->filename(), format_version_);
 	else
-	    fprintf(stderr, "%s: unsupported compiler version %u.%u(%c), "
+	    files_log.error("%s: unsupported compiler version %u.%u(%c), "
 			    "contact author for support\n",
 			    io->filename(), major, minor, rel);
 	return FALSE;
@@ -1035,7 +1040,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	    bbg_failed0("short file");
 	length *= len_unit;
 
-	dprintf3(D_BBG, "tag=0x%08x (%s) length=%u\n",
+	bbg_log.debug("tag=0x%08x (%s) length=%u\n",
 		tag, gcov_tag_as_string(tag), length);
 	switch (tag)
 	{
@@ -1077,7 +1082,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	    fn->set_name(funcname);
 	    if (funcid != 0)
 		fn->set_id(funcid);
-	    dprintf1(D_BBG, "added function \"%s\"\n", funcname.data());
+	    bbg_log.debug("added function \"%s\"\n", funcname.data());
 	    nblocks = 0;
 	    break;
 
@@ -1102,7 +1107,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 		    !io->read_u32(flags))
 		    bbg_failed0("short file");
 
-		dprintf6(D_BBG, "BBG     arc %u->%u flags %x(%s,%s,%s)\n",
+		bbg_log.debug("BBG     arc %u->%u flags %x(%s,%s,%s)\n",
 			    bidx, dest, flags,
 			    (flags & BBG_ON_TREE ? "on_tree" : ""),
 			    (flags & BBG_FAKE ? "fake" : ""),
@@ -1138,7 +1143,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 		/* may need to interpolate some block->line assignments */
 		for (last_bidx++ ; last_bidx < bidx ; last_bidx++)
 		{
-		    dprintf0(D_BBG, "BBG     interpolating line:\n");
+		    bbg_log.debug("BBG     interpolating line:\n");
 		    add_location(fn->nth_block(last_bidx), filename, last_line);
 		}
 	    }
@@ -1172,7 +1177,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	    break;
 
 	default:
-	    fprintf(stderr, "%s: skipping unknown tag 0x%08x offset 0x%08lx length 0x%08x\n",
+	    files_log.info("%s: skipping unknown tag 0x%08x offset 0x%08lx length 0x%08x\n",
 		    io->filename(), tag, (unsigned long)(io->tell()-8), length);
 	    io->skip(length);
 	    break;
@@ -1205,7 +1210,7 @@ cov_file_t::read_gcc34b_bbg_file(covio_t *io)
 gboolean
 cov_file_t::read_bbg_file(covio_t *io)
 {
-    dprintf1(D_FILES, "Reading .bbg file \"%s\"\n", io->filename());
+    files_log.debug("Reading .bbg file \"%s\"\n", io->filename());
 
     return (this->*(format_->read_bbg_))(io);
 }
@@ -1255,13 +1260,11 @@ cov_file_t::discover_format(covio_t *io)
     char magic[MAX_MAGIC_LEN];
     const format_rec_t *fmt;
 
-    dprintf1(D_FILES, "Detecting format of .bbg file \"%s\"\n", io->filename());
+    files_log.debug("Detecting format of .bbg file \"%s\"\n", io->filename());
 
     if (io->read(magic, MAX_MAGIC_LEN) != MAX_MAGIC_LEN)
     {
-	/* TODO */
-	fprintf(stderr, "%s: short file while reading magic number\n",
-		io->filename());
+	files_log.error("%s: short file while reading magic number\n", io->filename());
 	return FALSE;
     }
 
@@ -1270,7 +1273,7 @@ cov_file_t::discover_format(covio_t *io)
 	if (!memcmp(magic, fmt->magic_, fmt->magic_len_))
 	    break;
     }
-    dprintf1(D_FILES, "Detected %s\n", fmt->description_);
+    files_log.debug("Detected %s\n", fmt->description_);
     format_ = fmt;
     return TRUE;
 }
@@ -1302,18 +1305,17 @@ cov_file_t::read_old_da_file(covio_t *io)
 		/* TODO: check that nents is correct */
 		if (!io->read_u64(ent))
 		{
-		    fprintf(stderr, "%s: short file\n", io->filename());
+		    da_log.error("%s: short file\n", io->filename());
 		    return FALSE;
 		}
 
-		if (debug_enabled(D_DA))
+		if (da_log.is_enabled(logging::DEBUG))
 		{
 		    string_var fromdesc = a->from()->describe();
 		    string_var todesc = a->to()->describe();
-		    duprintf3("DA arc {from=%s to=%s} count=%llu\n",
-			      fromdesc.data(),
-			      todesc.data(),
-			      (unsigned long long)ent);
+		    da_log.debug("DA arc {from=%s to=%s} count=%llu\n",
+			         fromdesc.data(), todesc.data(),
+			         (unsigned long long)ent);
 		}
 
 		a->set_count(ent);
@@ -1330,17 +1332,17 @@ cov_file_t::read_old_da_file(covio_t *io)
  */
 #define da_failed0(fmt) \
     { \
-	dprintf1(D_DA, "da:%d, " fmt "\n", __LINE__); \
+	da_log.debug("da:%d, " fmt "\n", __LINE__); \
 	return FALSE; \
     }
 #define da_failed1(fmt, a1) \
     { \
-	dprintf2(D_DA, "da:%d, " fmt "\n", __LINE__, a1); \
+	da_log.debug("da:%d, " fmt "\n", __LINE__, a1); \
 	return FALSE; \
     }
 #define da_failed2(fmt, a1, a2) \
     { \
-	dprintf3(D_DA, "da:%d, " fmt "\n", __LINE__, a1, a2); \
+	da_log.debug("da:%d, " fmt "\n", __LINE__, a1, a2); \
 	return FALSE; \
     }
 
@@ -1404,14 +1406,13 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
 		if (!io->read_u64(ent))
 		    da_failed0("short file");
 
-		if (debug_enabled(D_DA))
+		if (da_log.is_enabled(logging::DEBUG))
 		{
 		    string_var fromdesc = a->from()->describe();
 		    string_var todesc = a->to()->describe();
-		    duprintf3("DA arc {from=%s to=%s} count=%llu\n",
-			      fromdesc.data(),
-			      todesc.data(),
-			      (unsigned long long)ent);
+		    da_log.debug("DA arc {from=%s to=%s} count=%llu\n",
+			         fromdesc.data(), todesc.data(),
+			         (unsigned long long)ent);
 		}
 
 		a->set_count(ent);
@@ -1479,8 +1480,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 	    da_failed0("short file");
 	length *= len_unit;
 
-	dprintf3(D_DA, "tag=0x%08x (%s) length=%u\n",
-		tag, gcov_tag_as_string(tag), length);
+	da_log.debug("tag=0x%08x (%s) length=%u\n",
+		     tag, gcov_tag_as_string(tag), length);
 	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
@@ -1532,14 +1533,13 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 
 		    if (!io->read_u64(count))
 			da_failed0("short file");
-		    if (debug_enabled(D_DA))
+		    if (da_log.is_enabled(logging::DEBUG))
 		    {
 			string_var fromdesc = a->from()->describe();
 			string_var todesc = a->to()->describe();
-			duprintf3("DA arc {from=%s to=%s} count=%llu\n",
-				  fromdesc.data(),
-				  todesc.data(),
-				  (unsigned long long)count);
+			da_log.debug("DA arc {from=%s to=%s} count=%llu\n",
+				     fromdesc.data(), todesc.data(),
+				     (unsigned long long)count);
 		    }
 		    a->set_count(count);
 		}
@@ -1548,8 +1548,8 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 	    break;
 
 	default:
-	    fprintf(stderr, "%s: skipping unknown tag 0x%08x offset 0x%08lx length 0x%08x\n",
-		    io->filename(), tag, (unsigned long)(io->tell()-8), length);
+	    da_log.error("%s: skipping unknown tag 0x%08x offset 0x%08lx length 0x%08x\n",
+		         io->filename(), tag, (unsigned long)(io->tell()-8), length);
 	    /* fall through */
 	case GCOV_TAG_OBJECT_SUMMARY:
 	case GCOV_TAG_PROGRAM_SUMMARY:
@@ -1584,7 +1584,7 @@ cov_file_t::read_gcc34l_da_file(covio_t *io)
 gboolean
 cov_file_t::read_da_file(covio_t *io)
 {
-    dprintf1(D_FILES, "Reading runtime data file \"%s\"\n", io->filename());
+    files_log.debug("Reading runtime data file \"%s\"\n", io->filename());
 
     return (this->*(format_->read_da_))(io);
 }
@@ -1616,16 +1616,16 @@ cov_file_t::o_file_add_call(
 	string_var candidate = file_make_absolute_to_file(file_basename_c(loc.filename), name_);
 	if (file_exists(candidate) == 0)
 	{
-	    dprintf2(D_CGRAPH, "o_file_add_call: heuristically replacing \"%s\" with \"%s\"\n",
-		      loc.filename, (const char *)candidate);
+	    cgraph_log.debug("o_file_add_call: heuristically replacing \"%s\" with \"%s\"\n",
+			     loc.filename, (const char *)candidate);
 	    loc.filename = candidate.take();
 	}
     }
 
     if ((ln = find_line(&loc)) == 0)
     {
-	fprintf(stderr, "No blocks for call to %s at %s:%ld\n",
-		    callname_dem, loc.filename, loc.lineno);
+	cgraph_log.error("No blocks for call to %s at %s:%ld\n",
+			 callname_dem, loc.filename, loc.lineno);
 	return FALSE;
     }
 
@@ -1645,11 +1645,11 @@ cov_file_t::o_file_add_call(
 	 */
 	if (b->needs_call())
 	{
-	    dprintf1(D_CGRAPH, "    block %s\n", b->describe());
+	    cgraph_log.debug("    block %s\n", b->describe());
 	    b->add_call(callname_dem, &loc);
 	    return TRUE;
 	}
-	dprintf1(D_CGRAPH, "    skipping block %s\n", b->describe());
+	cgraph_log.debug("    skipping block %s\n", b->describe());
 	if (pure_candidate == 0)
 	    pure_candidate = b;
     }
@@ -1673,8 +1673,8 @@ cov_file_t::o_file_add_call(
      * did.  Either the .o file is out of sync with the .bb or
      * .bbg files, or we've encountered the braindead gcc 2.96.
      */
-    fprintf(stderr, "Could not assign block for call to %s at %s:%ld\n",
-		callname_dem, loc.filename, loc.lineno);
+    cgraph_log.error("Could not assign block for call to %s at %s:%ld\n",
+		     callname_dem, loc.filename, loc.lineno);
     return FALSE;
 }
 
@@ -1687,12 +1687,12 @@ cov_file_t::scan_o_file_calls(cov_bfd_t *cbfd)
     cov_call_scanner_t *cs;
     gboolean ret = FALSE;
 
-    dprintf1(D_FILES, "Scanning .o file \"%s\" for calls\n", cbfd->filename());
+    files_log.debug("Scanning .o file \"%s\" for calls\n", cbfd->filename());
 
     cov_factory_t<cov_call_scanner_t> factory;
     do
     {
-	dprintf1(D_FILES, "Trying scanner %s\n", factory.name());
+	files_log.debug("Trying scanner %s\n", factory.name());
 	if ((cs = factory.create()) != 0 && cs->attach(cbfd))
 	    break;
 	delete cs;
@@ -1721,7 +1721,7 @@ cov_file_t::scan_o_file_calls(cov_bfd_t *cbfd)
 void
 cov_file_t::scan_o_file_linkage(cov_bfd_t *cbfd)
 {
-    dprintf1(D_FILES, "Scanning .o file \"%s\" for linkage\n", cbfd->filename());
+    files_log.debug("Scanning .o file \"%s\" for linkage\n", cbfd->filename());
 
     int n = cbfd->num_symbols();
     for (int i = 0 ; i < n ; i++)
@@ -1736,11 +1736,11 @@ cov_file_t::scan_o_file_linkage(cov_bfd_t *cbfd)
 	switch (sym->flags & (BSF_LOCAL|BSF_GLOBAL))
 	{
 	case BSF_LOCAL:
-	    dprintf1(D_FILES|D_VERBOSE, "Function %s is LOCAL\n", sym->name);
+	    files_log.debug2("Function %s is LOCAL\n", sym->name);
 	    fn->set_linkage(cov_function_t::LOCAL);
 	    break;
 	case BSF_GLOBAL:
-	    dprintf1(D_FILES|D_VERBOSE, "Function %s is GLOBAL\n", sym->name);
+	    files_log.debug2("Function %s is GLOBAL\n", sym->name);
 	    fn->set_linkage(cov_function_t::GLOBAL);
 	    break;
 	/* case 0: undefined, can't tell from here */
@@ -1753,7 +1753,7 @@ cov_file_t::scan_o_file_linkage(cov_bfd_t *cbfd)
 gboolean
 cov_file_t::read_o_file(covio_t *io)
 {
-    dprintf1(D_FILES, "Reading .o file \"%s\"\n", io->filename());
+    files_log.debug("Reading .o file \"%s\"\n", io->filename());
 
     cov_bfd_t *cbfd = new(cov_bfd_t);
     if (!cbfd->open(io->filename(), io->take()) || cbfd->num_symbols() == 0)
@@ -1797,7 +1797,7 @@ private:
     void
     depends_changed()
     {
-	if (debug_enabled(D_CPP|D_VERBOSE))
+	if (cpp_log.is_enabled(logging::DEBUG2))
 	    dump();
 
 	suppressions_[cov_suppression_t::IFDEF] = 0;
@@ -1807,7 +1807,7 @@ private:
 	    const cov_suppression_t *s = *itr;
 	    if (depends(s->word()))
 	    {
-		dprintf1(D_CPP, "depends_changed suppressions_[IFDEF]=%s\n", s->describe());
+		cpp_log.debug("depends_changed suppressions_[IFDEF]=%s\n", s->describe());
 		suppressions_[s->type()] = s;
 		break;
 	    }
@@ -1835,8 +1835,7 @@ private:
 	    lineno() <= file_->lines_->length() &&
 	    (ln = file_->lines_->nth(lineno()-1)) != 0)
 	{
-	    dprintf1(D_CPP|D_VERBOSE, "post_line: suppressing: %s\n",
-			s->describe());
+	    cpp_log.debug("post_line: suppressing: %s\n", s->describe());
 	    ln->suppress(s);
 	}
 	/* line suppression is one-shot */
@@ -1848,21 +1847,21 @@ private:
     {
 	const cov_suppression_t *s;
 
-	dprintf1(D_CPP, "handle_comment: \"%s\"\n", text);
+	cpp_log.debug("handle_comment: \"%s\"\n", text);
 
 	s = cov_suppressions.find(text, cov_suppression_t::COMMENT_LINE);
 	if (s)
 	{
 	    /* comment suppresses this line only */
 	    suppressions_[s->type()] = s;
-	    dprintf0(D_CPP, "handle_comment: suppressing line\n");
+	    cpp_log.debug("handle_comment: suppressing line\n");
 	}
 
 	s = cov_suppressions.find(text, cov_suppression_t::COMMENT_RANGE);
 	if (s)
 	{
 	    /* comment starts a new active range */
-	    dprintf2(D_CPP, "handle_comment: starting range %s-%s\n",
+	    cpp_log.debug("handle_comment: starting range %s-%s\n",
 			    s->word(), s->word2());
 	    if (!active_ranges_->lookup(s->word2()))
 		active_ranges_->insert(s->word2(), s);
@@ -1874,7 +1873,7 @@ private:
 	{
 	    /* comment ends an active range */
 	    active_ranges_->remove(text);
-	    dprintf2(D_CPP, "handle_comment: ending range %s-%s\n",
+	    cpp_log.debug("handle_comment: ending range %s-%s\n",
 			    s->word(), s->word2());
 	    if (active_ranges_->size() == 0)
 	    {
@@ -1885,7 +1884,7 @@ private:
 		 */
 		suppressions_[cov_suppression_t::COMMENT_RANGE] = 0;
 		suppressions_[cov_suppression_t::COMMENT_LINE] = s;
-		dprintf0(D_CPP, "handle_comment: last range\n");
+		cpp_log.debug("handle_comment: last range\n");
 	    }
 	}
     }
@@ -1943,13 +1942,13 @@ cov_file_t::try_file(const char *fn, const char *ext) const
     assert(ext[0] != '+');  /* this used to be a feature */
     string_var dfilename = file_change_extension(ofilename, 0, ext);
 
-    dprintf1(D_FILES|D_VERBOSE, "    try %s\n", dfilename.data());
+    files_log.debug2("    try %s\n", dfilename.data());
 
     if (file_is_regular(dfilename) < 0)
     {
 	int e = errno;
 	if (e == EISDIR)
-	    fprintf(stderr, "%s: not a regular file\n", dfilename.data());
+	    files_log.error("%s: not a regular file\n", dfilename.data());
 	else if (e != ENOENT)
 	    perror(dfilename);
 	errno = e;
@@ -1975,9 +1974,8 @@ cov_file_t::find_file(const char *ext, gboolean quiet,
 {
     covio_t *io;
 
-    dprintf2(D_FILES|D_VERBOSE,
-	    "Searching for %s file matching %s\n",
-	    ext, file_basename_c(name()));
+    files_log.debug2("Searching for %s file matching %s\n",
+		ext, file_basename_c(name()));
 
     if (prefix)
     {
@@ -2032,11 +2030,11 @@ cov_file_t::file_missing(const char *ext, const char *ext2) const
     string_var which = (ext2 == 0 ? g_strdup("") :
 			    g_strdup_printf(" or %s", ext2));
 
-    fprintf(stderr, "Couldn't find %s%s file for %s in path:\n",
+    files_log.error("Couldn't find %s%s file for %s in path:\n",
 		ext, which.data(), file_basename_c(name()));
-    fprintf(stderr, "   %s\n", dir.data());
+    files_log.error("   %s\n", dir.data());
     for (list_iterator_t<char> iter = search_path_.first() ; *iter ; ++iter)
-	fprintf(stderr, "   %s\n", *iter);
+	files_log.error("   %s\n", *iter);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -2099,7 +2097,7 @@ cov_file_t::read(gboolean quiet)
      */
     if (!has_locations_)
     {
-	dprintf1(D_FILES, "Ignoring file %s because it has no locations\n", name_.data());
+	files_log.debug("Ignoring file %s because it has no locations\n", name_.data());
 	return FALSE;
     }
 
@@ -2120,9 +2118,8 @@ cov_file_t::read(gboolean quiet)
 	"could not scan source file for cpp conditionals or comments, "
 	"reports may be inaccurate.\n";
 
-	/* TODO: save and report in alert to user */
 	if (!count++)
-	    fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
+	    files_log.warning("%s: %s", name(), warnmsg);
     }
 
     /*
@@ -2140,10 +2137,9 @@ cov_file_t::read(gboolean quiet)
 	"Call Graph windows will be incomplete.  Skipping object "
 	"file.\n"
 	;
-	/* TODO: save and report in alert to user */
 	/* TODO: update the message to point out that line stats are fine */
 	if (!count++)
-	    fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
+	    files_log.warning("%s: %s", name(), warnmsg);
     }
     else
     {
@@ -2166,7 +2162,7 @@ cov_file_t::read(gboolean quiet)
 	    ;
 	    /* TODO: save and report in alert to user */
 	    if (!count++)
-		fprintf(stderr, "%s: WARNING: %s", name(), warnmsg);
+		files_log.warning("%s: %s", name(), warnmsg);
 	}
     }
 #endif

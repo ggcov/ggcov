@@ -18,6 +18,9 @@
  */
 
 #include "check_scenegen.H"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("scene");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -166,14 +169,15 @@ check_scenegen_t::check_box_intersections()
 		break;
 	    if (a->bbox_.intersects(b->bbox_))
 	    {
-		fprintf(stderr, "boxes %s and %s intersect\n",
-			a->name_.data(), b->name_.data());
+		_log.error("boxes %s and %s intersect\n",
+			   a->name_.data(), b->name_.data());
 		n_box_intersect++;
 	    }
 	}
     }
-    fprintf(stderr, "%u boxes, %u box intersections\n",
-	    boxes_.length(), n_box_intersect);
+    if (n_box_intersect > 0)
+	_log.error("%u boxes, %u box intersections\n",
+		   boxes_.length(), n_box_intersect);
     return (n_box_intersect == 0);
 }
 

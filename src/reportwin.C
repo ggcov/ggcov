@@ -25,6 +25,9 @@
 #include "prefs.H"
 #include "uix.h"
 #include "gnbstackedbar.h"
+#include "logging.H"
+
+static logging::logger_t &_log = logging::find_logger("reportswin");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -83,7 +86,7 @@ reportwin_t::populate_report_combo()
 void
 reportwin_t::populate()
 {
-    dprintf0(D_REPORTWIN, "reportwin_t::populate\n");
+    _log.debug("reportwin_t::populate\n");
 
     populating_ = TRUE;     /* suppress combo entry callbacks */
     populate_report_combo();
@@ -132,7 +135,7 @@ reportwin_t::update()
     int n;
     char buf[1024];
 
-    dprintf0(D_REPORTWIN, "reportwin_t::update\n");
+    _log.debug("reportwin_t::update\n");
 
     grey_items();
 
@@ -181,7 +184,7 @@ reportwin_t::on_report_combo_changed()
 GLADE_CALLBACK void
 reportwin_t::on_save_as_ok_clicked()
 {
-    dprintf0(D_UICORE, "reportwin_t::on_save_as_ok_clicked\n");
+    _log.debug("reportwin_t::on_save_as_ok_clicked\n");
 
     const char *filename = gtk_file_selection_get_filename(
 		    GTK_FILE_SELECTION(save_dialog_));
@@ -206,14 +209,14 @@ reportwin_t::on_save_as_ok_clicked()
 GLADE_CALLBACK void
 reportwin_t::on_save_as_cancel_clicked()
 {
-    dprintf0(D_UICORE, "reportwin_t::on_save_as_cancel_clicked\n");
+    _log.debug("reportwin_t::on_save_as_cancel_clicked\n");
     gtk_widget_hide(save_dialog_);
 }
 
 GLADE_CALLBACK void
 reportwin_t::on_save_as_clicked()
 {
-    dprintf0(D_UICORE, "reportwin_t::on_save_as_clicked\n");
+    _log.debug("reportwin_t::on_save_as_clicked\n");
     if (save_dialog_ == 0)
     {
 	GladeXML *xml = ui_load_tree("report_save_as");

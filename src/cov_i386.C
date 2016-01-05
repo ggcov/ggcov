@@ -20,8 +20,11 @@
 #include "cov_priv.H"
 #include "cov_specific.H"
 #include "string_var.H"
+#include "logging.H"
 
 #if defined(HAVE_LIBBFD) && (defined(COV_I386) || defined(COV_AM64))
+
+static logging::logger_t &_log = logging::find_logger("cgraph");
 
 /*
  * Machine-specific code to scan i386 and amd64 object code for function calls.
@@ -128,8 +131,8 @@ cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
     unsigned long callfrom, callto;
     const asymbol *sym;
 
-    dprintf3(D_CGRAPH|D_VERBOSE, "scan_statics: scanning %s %lx to %lx\n",
-	    cbfd_->filename(), startaddr_, endaddr_);
+    _log.debug2("scan_statics: scanning %s %lx to %lx\n",
+		cbfd_->filename(), startaddr_, endaddr_);
     g_assert(endaddr_ >= startaddr_);
     if ((len = endaddr_ - startaddr_) < 1)
 	return 0;
@@ -158,8 +161,7 @@ cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
 	p++;
 	callto = callfrom + read_lu32(p) + 5;
 	p += 4;
-	dprintf2(D_CGRAPH|D_VERBOSE, "scan_statics: possible call from %lx to %lx\n",
-		callfrom, callto);
+	_log.debug2("scan_statics: possible call from %lx to %lx\n", callfrom, callto);
 
 	/*
 	 * Scan symbols to see if this is a PCREL32
@@ -168,7 +170,7 @@ cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
 	if ((sym = find_function_by_value(sec, callto)) != 0)
 	{
 	    offset_ = (p - contents_);
-	    dprintf0(D_CGRAPH, "scan_statics: scanned static call\n");
+	    _log.debug("scan_statics: scanned static call\n");
 	    return (setup_calldata(sec, callfrom, sym->name, calld) ?
 		    1/* have calldata */ : -1/* something is wrong */);
 	}
@@ -195,8 +197,8 @@ cov_i386_call_scanner_t::is_function_reloc(const arelent *rel) const
     case R_386_PLT32:   /* function call from PIC code */
 	return TRUE;
     default:
-	fprintf(stderr, "%s: Warning unexpected 386 reloc howto type %d\n",
-			    cbfd_->filename(), rel->howto->type);
+	_log.warning("%s: unexpected 386 reloc howto type %d\n",
+		     cbfd_->filename(), rel->howto->type);
 	return FALSE;
     }
 }
@@ -225,7 +227,7 @@ cov_i386_call_scanner_t::next(cov_call_scanner_t::calldata_t *calld)
 	    arelent *rel = relocs_[reloc_];
 	    const asymbol *sym = *rel->sym_ptr_ptr;
 
-	    if (debug_enabled(D_CGRAPH|D_VERBOSE))
+	    if (_log.is_enabled(logging::DEBUG2))
 		cov_bfd_t::dump_reloc(reloc_, rel);
 
 	    if (!is_function_reloc(rel))
@@ -308,10 +310,9 @@ cov_amd64_call_scanner_t::is_function_reloc(const arelent *rel) const
 	    name = (*rel->sym_ptr_ptr)->name;
 	if (!name)
 	    name = "(unknown symbol)";
-	fprintf(stderr, "%s: Warning unexpected x86-64 reloc howto "
-			"type %d at %p for %s\n",
-			cbfd_->filename(), rel->howto->type,
-			(void *)rel->address, name);
+	_log.warning("%s: unexpected x86-64 reloc howto type %d at %p for %s\n",
+		     cbfd_->filename(), rel->howto->type,
+		     (void *)rel->address, name);
 	return FALSE;
     }
 }
