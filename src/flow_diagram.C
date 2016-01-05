@@ -35,7 +35,7 @@
 #define HQUANTUM        3.0
 #define HSLOTS(x)       ((int)(((x)/HQUANTUM)+0.5))
 
-static logging::logger_t &_log = logging::find_logger("lego");
+static logging::logger_t &_log = logging::find_logger("flow");
 
 /* return the arc slot nearest the centre of the node at the given rank */
 static inline int
