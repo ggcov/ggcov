@@ -480,7 +480,7 @@ flow_diagram_t::assign_geometry()
 
     ypos_[0] = 0.0;
     ypos_[1] = ypos_[0] + VMARGIN;
-    ypos_[2] = ypos_[1] + (LINE_HEIGHT + VGAP) * num_lines_;
+    ypos_[2] = ypos_[1] + (LINE_HEIGHT + VGAP) * num_lines_ - VGAP;
     ypos_[3] = ypos_[2] + VMARGIN;
 
     if (_log.is_enabled(logging::DEBUG2))
