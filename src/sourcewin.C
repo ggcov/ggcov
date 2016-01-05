@@ -109,7 +109,7 @@ sourcewin_t::get_visible_lines(
     unsigned long begin_lineno = gtk_text_iter_get_line(&begin_iter);
     unsigned long end_lineno = gtk_text_iter_get_line(&end_iter);
 
-    _log.debug("    begin=%lu end=%lu\n", begin_lineno, end_lineno);
+    _log.debug("    begin_lineno=%lu end_lineno=%lu\n", begin_lineno, end_lineno);
 
     if (begin_lineno == 0 && end_lineno == 0)
 	return FALSE;
@@ -125,23 +125,40 @@ sourcewin_t::get_visible_lines(
 void
 sourcewin_t::update_flows()
 {
+    _log.debug("scheduling sourcewin_t::do_update_flows() for later\n");
+    retries_remaining_ = 10;
+    g_idle_add_full(G_PRIORITY_LOW,
+		    update_flows_tramp,
+		    /*data*/(gpointer)this,
+		    (GDestroyNotify)NULL);
+}
+
+gboolean
+sourcewin_t::update_flows_tramp(gpointer user_data)
+{
+    sourcewin_t *sw = (sourcewin_t *)user_data;
+    return sw->do_update_flows();
+}
+
+gboolean
+sourcewin_t::do_update_flows()
+{
+    _log.debug("sourcewin_t::do_update_flows\n");
     GtkTextView *tv = GTK_TEXT_VIEW(text_);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(tv);
 
     if (!GTK_WIDGET_REALIZED(text_))
-	return;
+	return G_SOURCE_REMOVE;	    // no worries, will get called on realize
     if (!GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])->active)
-	return;
+	return G_SOURCE_REMOVE;	    // nothing to do anyway
 
     cov_file_t *f;
     if ((f = cov_file_t::find(filename_)) == 0)
-	return;
-
-    _log.debug("sourcewin_t::update_flows\n");
+	return G_SOURCE_REMOVE;	    // nothing to do anyway
 
     unsigned long begin_lineno, end_lineno;
     if (!get_visible_lines(&begin_lineno, &end_lineno))
-	return;
+	return G_SOURCE_REMOVE;	    // nothing to do anyway
 
     flow_shown_++;
     cov_function_t *oldfn = 0, *fn;
@@ -157,7 +174,7 @@ sourcewin_t::update_flows()
 	    continue;
 	oldfn = fn;
 
-	_log.debug("    %u: fn=%s\n", lineno, fn->name());
+	_log.debug("    line %u function %s\n", lineno, fn->name());
 
 	flow_t *flow = 0;
 	for (list_iterator_t<flow_t> fiter = flows_.first() ; *fiter ; ++fiter)
@@ -170,19 +187,34 @@ sourcewin_t::update_flows()
 	}
 	if (flow == 0)
 	{
+	    _log.debug("        creating new flow\n");
 	    GtkTextIter first_iter, last_iter;
+
 	    gtk_text_buffer_get_iter_at_line(buffer, &first_iter,
 		    fn->get_first_location()->lineno);
 	    gtk_text_buffer_get_iter_at_line(buffer, &last_iter,
 		    fn->get_last_location()->lineno);
 
-	    int first_y, last_y, height;
+	    int first_y = -1, last_y = -1, height = -1;
 	    gtk_text_view_get_line_yrange(tv, &first_iter, &first_y, &height);
 	    gtk_text_view_get_line_yrange(tv, &last_iter, &last_y, &height);
 
-	    _log.debug("        y=%d height=%d\n",
-		       first_y-height, last_y-first_y+height);
+	    _log.debug("        line geometry in pixels: first_y=%d last_y=%d height=%d\n",
+		       first_y, last_y, height);
+	    if (height == 0)
+	    {
+		if (retries_remaining_)
+		{
+		    _log.debug("        skipping flows and will retry\n");
+		    retries_remaining_--;
+		    return G_SOURCE_CONTINUE;
+		}
+		_log.warning("sourcewin_t::do_update_flows: too many retries, giving up\n");
+		return G_SOURCE_REMOVE;
+	    }
 
+	    _log.debug("        flow geometry in pixels: y=%d height=%d\n",
+		       first_y-height, last_y-first_y+height);
 	    flow = create_flow(fn, first_y-height, last_y-first_y+height);
 	    flows_.append(flow);
 	    gtk_text_view_add_child_in_window(tv, flow->canvas_,
@@ -229,6 +261,8 @@ sourcewin_t::update_flows()
 	update_flow_window();
 	update_title_buttons();
     }
+
+    return G_SOURCE_REMOVE;	    // all done, yay
 }
 
 #define GDK_TO_RGB(gdkcol) \
@@ -253,7 +287,7 @@ sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
     flow->function_ = fn;
     flow->bufy_ = y;
 
-    _log.debug("        creating flow\n");
+    _log.debug("        creating flow y=%d h=%d\n", y, h);
 
     flow->canvas_ = gnome_canvas_new();
 

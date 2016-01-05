@@ -79,6 +79,8 @@ private:
     void update_flow_window();
     gboolean get_visible_lines(unsigned long*, unsigned long*);
     void update_flows();
+    static gboolean update_flows_tramp(gpointer);
+    gboolean do_update_flows();
     flow_t *create_flow(cov_function_t *, int y, int h);
     void wait_for_text_validation();
 #endif
@@ -149,6 +151,7 @@ private:
     unsigned int flow_width_;
     gboolean flow_width_dirty_;
 #endif
+    unsigned int retries_remaining_;
 };
 
 #endif /* _ggcov_sourcewin_H_ */
