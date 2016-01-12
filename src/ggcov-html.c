@@ -33,6 +33,8 @@
 #include "unique_ptr.H"
 #include "logging.H"
 
+using namespace std;
+
 char *argv0;
 mustache::environment_t menv;
 static logging::logger_t &_log = logging::find_logger("ggcov-html");
@@ -344,16 +346,13 @@ static flow_t *generate_flow_diagram(const gghtml_params_t &params, cov_function
     return flow;
 }
 
-static hashtable_t<void, flow_t> *generate_flow_diagrams(const gghtml_params_t &params, cov_file_t *f)
+static void generate_flow_diagrams(const gghtml_params_t &params,
+				   cov_file_t *f,
+				   vector<unique_ptr<flow_t> > &flows)
 {
-    hashtable_t<void, flow_t> *flows = new hashtable_t<void, flow_t>;
     unsigned int i;
     for (i = 0 ; i < f->num_functions() ; i++)
-    {
-	cov_function_t *fn = f->nth_function(i);
-	flows->insert((void*)fn, generate_flow_diagram(params, fn));
-    }
-    return flows;
+	flows[i] = generate_flow_diagram(params, f->nth_function(i));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -367,7 +366,7 @@ static int compare_funcs_by_first_line(const cov_function_t *fn1,
 
 static void
 generate_annotated_source(const gghtml_params_t &params, cov_file_t *f,
-			  hashtable_t<void, flow_t> *flows)
+			  const vector<unique_ptr<flow_t> > &flows)
 {
     cov_file_annotator_t annotator(f);
     if (!annotator.is_valid())
@@ -410,7 +409,7 @@ generate_annotated_source(const gghtml_params_t &params, cov_file_t *f,
 	    unsigned int nlines = fn->get_last_location()->lineno -
 				  fn->get_first_location()->lineno + 1;
 	    lines_left = 0;
-	    flow_t *flow = flows->lookup((void*)fn);
+	    flow_t *flow = flows[fn->findex()].get();
 	    if (flow)
 	    {
 		yaml.key("flow_diagram").begin_mapping();
@@ -474,13 +473,6 @@ generate_functions(const gghtml_params_t &params)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static gboolean
-delete_one_flow(void *key, flow_t *value, void *closure)
-{
-    delete value;
-    return TRUE;    /* remove from hashtable */
-}
-
 static int
 generate_html(const gghtml_params_t &params)
 {
@@ -497,10 +489,9 @@ generate_html(const gghtml_params_t &params)
     generate_source_tree(params);
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
-	hashtable_t<void, flow_t> *flows = generate_flow_diagrams(params, *iter);
+	vector<unique_ptr<flow_t> > flows((*iter)->num_functions());
+	generate_flow_diagrams(params, *iter, flows);
 	generate_annotated_source(params, *iter, flows);
-	flows->foreach_remove(delete_one_flow, 0);
-	delete flows;
     }
     generate_functions(params);
     return 0;
