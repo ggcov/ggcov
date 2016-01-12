@@ -121,7 +121,7 @@ ggcov_webdb_SOURCES= \
 		php_serializer.H php_serializer.C \
 		php_scenegen.H php_scenegen.C \
 		$(LIBCOV_STATIC_SOURCES)
-ggcov_webdb_CPPFLAGS=	$(DB_CPPFLAGS)
+ggcov_webdb_CPPFLAGS=	$(AM_CPPFLAGS) $(DB_CPPFLAGS)
 ggcov_webdb_LDADD=	$(CLI_LIBS) $(DB_LIBS)
 
 UI_DEBUG=0
