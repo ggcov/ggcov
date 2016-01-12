@@ -130,7 +130,7 @@ public:
 	return (iter_.current() == 0 ? 0 : (T *)iter_.current()->create());
     }
 
-    gboolean next()
+    bool next()
     {
 	return (iter_.next() != 0);
     }
@@ -165,7 +165,7 @@ public:
     virtual ~cov_filename_scanner_t();
 
     // attempt to use the given object file
-    virtual gboolean attach(cov_bfd_t *);
+    virtual bool attach(cov_bfd_t *);
 
     /* Iteration interface: returns new strings until it returns NULL */
     virtual char *next() = 0;
@@ -189,7 +189,7 @@ public:
     cov_shlib_scanner_t();
     virtual ~cov_shlib_scanner_t();
 
-    virtual gboolean attach(cov_bfd_t *b);
+    virtual bool attach(cov_bfd_t *b);
 
     /* Iteration interface: returns new strings until it returns NULL */
     virtual char *next() = 0;
@@ -213,7 +213,7 @@ public:
     cov_call_scanner_t();
     virtual ~cov_call_scanner_t();
 
-    virtual gboolean attach(cov_bfd_t *b);
+    virtual bool attach(cov_bfd_t *b);
 
     struct calldata_t
     {
@@ -228,8 +228,8 @@ public:
     static int factory_category();
 
 protected:
-    gboolean setup_calldata(cov_bfd_section_t *, unsigned long,
-			    const char *, calldata_t *);
+    bool setup_calldata(cov_bfd_section_t *, unsigned long,
+			const char *, calldata_t *);
 
     cov_bfd_t *cbfd_;
 };

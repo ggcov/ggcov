@@ -135,7 +135,7 @@ cov_file_t::finalise()
 {
     if (finalised_)
 	return;
-    finalised_ = TRUE;
+    finalised_ = true;
 
     for (ptrarray_iterator_t<cov_line_t> liter = lines_->first() ; *liter ; ++liter)
 	(*liter)->finalise();
@@ -415,7 +415,7 @@ cov_file_t::add_location(
 
     ln->add_block(b);
     b->add_location(f->name_, lineno);
-    f->has_locations_ = TRUE;
+    f->has_locations_ = true;
 }
 
 cov_line_t *
@@ -485,7 +485,7 @@ cov_file_t::zero_arc_counts()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_file_t::solve()
 {
     for (ptrarray_iterator_t<cov_function_t> fnitr = functions_->first() ; *fnitr ; ++fnitr)
@@ -494,10 +494,10 @@ cov_file_t::solve()
 	if (!fn->solve())
 	{
 	    files_log.error("could not solve flow graph for %s\n", fn->name());
-	    return FALSE;
+	    return false;
 	}
     }
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -506,7 +506,7 @@ cov_file_t::solve()
 #define BB_FUNCTION     0x80000002
 #define BB_ENDOFLIST    0x00000000
 
-gboolean
+bool
 cov_file_t::read_bb_file(covio_t *io)
 {
     uint32_t tag;
@@ -532,14 +532,14 @@ cov_file_t::read_bb_file(covio_t *io)
 	{
 	case BB_FILENAME:
 	    if (!io->read_bbstring(filename, tag))
-		return FALSE;
+		return false;
 	    filename = make_absolute(filename);
 	    bb_log.debug("BB filename = \"%s\"\n", filename.data());
 	    break;
 
 	case BB_FUNCTION:
 	    if (!io->read_bbstring(funcname, tag))
-		return FALSE;
+		return false;
 	    funcname = normalise_mangled(funcname);
 	    bb_log.debug("BB function = \"%s\"\n", funcname.data());
 	    fn = nth_function(funcidx);
@@ -573,7 +573,7 @@ cov_file_t::read_bb_file(covio_t *io)
 	}
     }
 
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -599,25 +599,25 @@ cov_file_t::read_bb_file(covio_t *io)
 #define bbg_failed0(fmt) \
     { \
 	bbg_log.debug("BBG:%d, " fmt "\n", __LINE__); \
-	return FALSE; \
+	return false; \
     }
 #define bbg_failed1(fmt, a1) \
     { \
 	bbg_log.debug("BBG:%d, " fmt "\n", __LINE__, a1); \
-	return FALSE; \
+	return false; \
     }
 #define bbg_failed2(fmt, a1, a2) \
     { \
 	bbg_log.debug("BBG:%d, " fmt "\n", __LINE__, a1, a2); \
-	return FALSE; \
+	return false; \
     }
 
 /*
  * Skip some pointless crap seen in Fedora Core 1:  a per-function
  * header with the function name, which duplicates the info in
  * the .bb file which is also present.  This rubbish is seen in
- * both the .bbg and .da files.  Returns TRUE if header correct,
- * FALSE if broken and EOF on EOF.
+ * both the .bbg and .da files.  Returns true if header correct,
+ * false if broken and EOF on EOF.
  */
 
 int
@@ -644,11 +644,11 @@ cov_file_t::skip_oldplus_func_header(covio_t *io, const char *prefix)
 	bbg_failed0("short file");
     bbg_log.debug("%sskipping function flags(?): 0x%08x\n", prefix, crud);
 
-    return TRUE;
+    return true;
 }
 
 
-gboolean
+bool
 cov_file_t::read_old_bbg_function(covio_t *io)
 {
     uint32_t nblocks, totnarcs, narcs;
@@ -664,8 +664,8 @@ cov_file_t::read_old_bbg_function(covio_t *io)
     {
 	switch (skip_oldplus_func_header(io, "BBG   "))
 	{
-	case FALSE: return FALSE;
-	case EOF: return TRUE;
+	case false: return false;
+	case EOF: return true;
 	}
     }
 
@@ -673,7 +673,7 @@ cov_file_t::read_old_bbg_function(covio_t *io)
     {
 	if ((features_ & FF_OLDPLUS))
 	    bbg_failed0("short file");
-	return TRUE;    /* end of file */
+	return true;    /* end of file */
     }
 
     if (!io->read_u32(totnarcs))
@@ -743,10 +743,10 @@ cov_file_t::read_old_bbg_function(covio_t *io)
     if (sep != BBG_SEPARATOR)
 	bbg_failed2("sep=0x%08x != 0x%08x", sep, BBG_SEPARATOR);
 
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 cov_file_t::read_old_bbg_file_common(covio_t *io)
 {
     io->set_format(covio_t::FORMAT_OLD);
@@ -758,21 +758,21 @@ cov_file_t::read_old_bbg_file_common(covio_t *io)
 	{
 	    files_log.error("%s: file is corrupted or in a bad file format.\n",
 		    io->filename());
-	    return FALSE;
+	    return false;
 	}
     }
 
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 cov_file_t::read_old_bbg_file(covio_t *io)
 {
     features_ |= FF_BBFILE;
     return read_old_bbg_file_common(io);
 }
 
-gboolean
+bool
 cov_file_t::read_oldplus_bbg_file(covio_t *io)
 {
     features_ |= FF_BBFILE|FF_OLDPLUS;
@@ -915,7 +915,7 @@ cov_file_t::make_absolute(const char *filename) const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static gboolean
+static bool
 decode_new_version(uint32_t ver, unsigned int *major,
 		   unsigned int *minor, unsigned char *rel)
 {
@@ -923,28 +923,28 @@ decode_new_version(uint32_t ver, unsigned int *major,
 
     b = (ver>>24) & 0xff;
     if (!isdigit(b))
-	return FALSE;
+	return false;
     *major = b - '0';
 
     b = (ver>>16) & 0xff;
     if (!isdigit(b))
-	return FALSE;
+	return false;
     *minor = b - '0';
 
     b = (ver>>8) & 0xff;
     if (!isdigit(b))
-	return FALSE;
+	return false;
     *minor = (*minor * 10) + (b - '0');
 
     b = (ver) & 0xff;
     if (!isalnum(b) && b != '*')
-	return FALSE;
+	return false;
     *rel = b;
 
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 cov_file_t::read_gcc3_bbg_file(covio_t *io,
 			       uint32_t expect_version,
 			       covio_t::format_t ioformat)
@@ -1025,7 +1025,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	    files_log.error("%s: unsupported compiler version %u.%u(%c), "
 			    "contact author for support\n",
 			    io->filename(), major, minor, rel);
-	return FALSE;
+	return false;
     }
 
     if ((features_ & FF_TIMESTAMP))
@@ -1188,22 +1188,22 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	}
     }
 
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 cov_file_t::read_gcc33_bbg_file(covio_t *io)
 {
     return read_gcc3_bbg_file(io, BBG_VERSION_GCC33, covio_t::FORMAT_GCC33);
 }
 
-gboolean
+bool
 cov_file_t::read_gcc34l_bbg_file(covio_t *io)
 {
     return read_gcc3_bbg_file(io, BBG_VERSION_GCC34, covio_t::FORMAT_GCC34L);
 }
 
-gboolean
+bool
 cov_file_t::read_gcc34b_bbg_file(covio_t *io)
 {
     return read_gcc3_bbg_file(io, BBG_VERSION_GCC34, covio_t::FORMAT_GCC34B);
@@ -1211,7 +1211,7 @@ cov_file_t::read_gcc34b_bbg_file(covio_t *io)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_file_t::read_bbg_file(covio_t *io)
 {
     files_log.debug("Reading .bbg file \"%s\"\n", io->filename());
@@ -1258,7 +1258,7 @@ const cov_file_t::format_rec_t cov_file_t::formats[] =
 #define MAX_MAGIC_LEN               4
 
 
-gboolean
+bool
 cov_file_t::discover_format(covio_t *io)
 {
     char magic[MAX_MAGIC_LEN];
@@ -1269,7 +1269,7 @@ cov_file_t::discover_format(covio_t *io)
     if (io->read(magic, MAX_MAGIC_LEN) != MAX_MAGIC_LEN)
     {
 	files_log.error("%s: short file while reading magic number\n", io->filename());
-	return FALSE;
+	return false;
     }
 
     for (fmt = formats ; fmt->magic_ != 0 ; fmt++)
@@ -1279,12 +1279,12 @@ cov_file_t::discover_format(covio_t *io)
     }
     files_log.debug("Detected %s\n", fmt->description_);
     format_ = fmt;
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_file_t::read_old_da_file(covio_t *io)
 {
     uint64_t nents;
@@ -1310,7 +1310,7 @@ cov_file_t::read_old_da_file(covio_t *io)
 		if (!io->read_u64(ent))
 		{
 		    da_log.error("%s: short file\n", io->filename());
-		    return FALSE;
+		    return false;
 		}
 
 		if (da_log.is_enabled(logging::DEBUG))
@@ -1327,7 +1327,7 @@ cov_file_t::read_old_da_file(covio_t *io)
 	}
     }
 
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1337,22 +1337,22 @@ cov_file_t::read_old_da_file(covio_t *io)
 #define da_failed0(fmt) \
     { \
 	da_log.debug("da:%d, " fmt "\n", __LINE__); \
-	return FALSE; \
+	return false; \
     }
 #define da_failed1(fmt, a1) \
     { \
 	da_log.debug("da:%d, " fmt "\n", __LINE__, a1); \
-	return FALSE; \
+	return false; \
     }
 #define da_failed2(fmt, a1, a2) \
     { \
 	da_log.debug("da:%d, " fmt "\n", __LINE__, a1, a2); \
-	return FALSE; \
+	return false; \
     }
 
 #define DA_OLDPLUS_MAGIC    0x8000007b
 
-gboolean
+bool
 cov_file_t::read_oldplus_da_file(covio_t *io)
 {
     uint32_t crud;
@@ -1386,7 +1386,7 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
 	cov_function_t *fn = *fnitr;
 
 	if (!skip_oldplus_func_header(io, "DA "))
-	    return FALSE;
+	    return false;
 
 	if (!io->read_u32(file_narcs))
 	    da_failed0("short file");
@@ -1428,7 +1428,7 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
 			file_narcs, actual_narcs);
     }
 
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1442,7 +1442,7 @@ cov_file_t::read_oldplus_da_file(covio_t *io)
 #define DA_GCC34_MAGIC      _DA_MAGIC('g','c','d','a')  /* also 4.0 */
 #define DA_GCC33_MAGIC      _DA_MAGIC('g','c','o','v')
 
-gboolean
+bool
 cov_file_t::read_gcc3_da_file(covio_t *io,
 			      uint32_t expect_magic,
 			      covio_t::format_t ioformat)
@@ -1562,22 +1562,22 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 	}
     }
 
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 cov_file_t::read_gcc33_da_file(covio_t *io)
 {
     return read_gcc3_da_file(io, DA_GCC33_MAGIC, covio_t::FORMAT_GCC33);
 }
 
-gboolean
+bool
 cov_file_t::read_gcc34b_da_file(covio_t *io)
 {
     return read_gcc3_da_file(io, DA_GCC34_MAGIC, covio_t::FORMAT_GCC34B);
 }
 
-gboolean
+bool
 cov_file_t::read_gcc34l_da_file(covio_t *io)
 {
     return read_gcc3_da_file(io, DA_GCC34_MAGIC, covio_t::FORMAT_GCC34L);
@@ -1585,7 +1585,7 @@ cov_file_t::read_gcc34l_da_file(covio_t *io)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_file_t::read_da_file(covio_t *io)
 {
     files_log.debug("Reading runtime data file \"%s\"\n", io->filename());
@@ -1597,7 +1597,7 @@ cov_file_t::read_da_file(covio_t *io)
 
 #ifdef HAVE_LIBBFD
 
-gboolean
+bool
 cov_file_t::o_file_add_call(
     cov_location_t loc,
     const char *callname_dem)
@@ -1630,7 +1630,7 @@ cov_file_t::o_file_add_call(
     {
 	cgraph_log.error("No blocks for call to %s at %s:%ld\n",
 			 callname_dem, loc.filename, loc.lineno);
-	return FALSE;
+	return false;
     }
 
     for (list_iterator_t<cov_block_t> itr = ln->blocks().first() ; *itr ; ++itr)
@@ -1651,7 +1651,7 @@ cov_file_t::o_file_add_call(
 	{
 	    cgraph_log.debug("    block %s\n", b->describe());
 	    b->add_call(callname_dem, &loc);
-	    return TRUE;
+	    return true;
 	}
 	cgraph_log.debug("    skipping block %s\n", b->describe());
 	if (pure_candidate == 0)
@@ -1668,7 +1668,7 @@ cov_file_t::o_file_add_call(
     if (pure_candidate != 0)
     {
 	pure_candidate->add_call(callname_dem, &loc);
-	return TRUE;
+	return true;
     }
 
     /*
@@ -1679,17 +1679,17 @@ cov_file_t::o_file_add_call(
      */
     cgraph_log.error("Could not assign block for call to %s at %s:%ld\n",
 		     callname_dem, loc.filename, loc.lineno);
-    return FALSE;
+    return false;
 }
 
 /*
  * Use the BFD library to scan relocation records in the .o file.
  */
-gboolean
+bool
 cov_file_t::scan_o_file_calls(cov_bfd_t *cbfd)
 {
     cov_call_scanner_t *cs;
-    gboolean ret = FALSE;
+    bool ret = false;
 
     files_log.debug("Scanning .o file \"%s\" for calls\n", cbfd->filename());
 
@@ -1754,7 +1754,7 @@ cov_file_t::scan_o_file_linkage(cov_bfd_t *cbfd)
 }
 
 
-gboolean
+bool
 cov_file_t::read_o_file(covio_t *io)
 {
     files_log.debug("Reading .o file \"%s\"\n", io->filename());
@@ -1763,13 +1763,13 @@ cov_file_t::read_o_file(covio_t *io)
     if (!cbfd->open(io->filename(), io->take()) || cbfd->num_symbols() == 0)
     {
 	delete cbfd;
-	return FALSE;
+	return false;
     }
 
     if (!scan_o_file_calls(cbfd))
     {
 	delete cbfd;
-	return TRUE;        /* this info is optional */
+	return true;        /* this info is optional */
     }
 
     /*
@@ -1784,7 +1784,7 @@ cov_file_t::read_o_file(covio_t *io)
     scan_o_file_linkage(cbfd);
 
     delete cbfd;
-    return TRUE;
+    return true;
 }
 
 #endif /* HAVE_LIBBFD */
@@ -1908,13 +1908,13 @@ public:
     }
 };
 
-gboolean
+bool
 cov_file_t::read_src_file()
 {
     cov_file_src_parser_t parser(this);
     if (!parser.parse())
-	return FALSE;
-    return TRUE;
+	return false;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1973,7 +1973,7 @@ cov_file_t::try_file(const char *fn, const char *ext) const
 }
 
 covio_t *
-cov_file_t::find_file(const char *ext, gboolean quiet,
+cov_file_t::find_file(const char *ext, bool quiet,
 		      const char *prefix) const
 {
     covio_t *io;
@@ -2047,39 +2047,39 @@ static int
 have_line_suppressions(void)
 {
     if (cov_suppressions.count(cov_suppression_t::IFDEF))
-	return TRUE;
+	return true;
     if (cov_suppressions.count(cov_suppression_t::COMMENT_LINE))
-	return TRUE;
+	return true;
     if (cov_suppressions.count(cov_suppression_t::COMMENT_RANGE))
-	return TRUE;
-    return FALSE;
+	return true;
+    return false;
 }
 
-gboolean
-cov_file_t::read(gboolean quiet)
+bool
+cov_file_t::read(bool quiet)
 {
     string_var filename;
     const char *da_ext = ".da";
     covio_var io;
 
-    if ((io = find_file(".bbg", TRUE, 0)) == 0)
+    if ((io = find_file(".bbg", true, 0)) == 0)
     {
 	/* The .bbg file was gratuitously renamed .gcno in gcc 3.4 */
-	if ((io = find_file(".gcno", TRUE, 0)) == 0)
+	if ((io = find_file(".gcno", true, 0)) == 0)
 	{
 	    if (!quiet)
 		file_missing(".bbg", ".gcno");
-	    return FALSE;
+	    return false;
 	}
 	/* The .da file was renamed too */
 	da_ext = ".gcda";
     }
 
     if (!discover_format(io))
-	return FALSE;
+	return false;
 
     if (!read_bbg_file(io))
-	return FALSE;
+	return false;
 
     /*
      * In the new formats, the information from the .bb file has been
@@ -2089,7 +2089,7 @@ cov_file_t::read(gboolean quiet)
     {
 	if ((io = find_file(".bb", quiet, 0)) == 0 ||
 	    !read_bb_file(io))
-	    return FALSE;
+	    return false;
     }
 
     /*
@@ -2102,18 +2102,18 @@ cov_file_t::read(gboolean quiet)
     if (!has_locations_)
     {
 	files_log.debug("Ignoring file %s because it has no locations\n", name_.data());
-	return FALSE;
+	return false;
     }
 
     /* TODO: read multiple .da files from the search path & accumulate */
     if ((io = find_file(da_ext, quiet, gcda_prefix_)) == 0)
     {
 	if (errno != ENOENT)
-	    return FALSE;
+	    return false;
 	zero_arc_counts();
     }
     else if (!read_da_file(io))
-	return FALSE;
+	return false;
 
     if (have_line_suppressions() && !read_src_file())
     {
@@ -2155,7 +2155,7 @@ cov_file_t::read(gboolean quiet)
 	 */
 	io = find_file(".o", quiet, 0);
 	if (!io)
-	    io = find_file(".os", TRUE, 0);
+	    io = find_file(".os", true, 0);
 	if (!io || !read_o_file(io))
 	{
 	    static int count = 0;
@@ -2172,9 +2172,9 @@ cov_file_t::read(gboolean quiet)
 #endif
 
     if (!solve())
-	return FALSE;
+	return false;
 
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -71,8 +71,8 @@ prefs_t::load()
 
     cs = confsection_t::get("general");
 
-    reuse_srcwin = cs->get_bool("reuse_srcwin", FALSE);
-    reuse_summwin = cs->get_bool("reuse_summwin", FALSE);
+    reuse_srcwin = cs->get_bool("reuse_srcwin", false);
+    reuse_summwin = cs->get_bool("reuse_summwin", false);
 
 
     cs = confsection_t::get("colors");
@@ -105,36 +105,36 @@ void
 prefs_t::post_load(GtkWidget *w)
 {
     GdkColormap *cmap;
-    static gboolean first = TRUE;
+    static bool first = true;
 
     if (!first)
 	return;
-    first = FALSE;
+    first = false;
 
     gtk_widget_realize(w);
 
     cmap = gtk_widget_get_colormap(w);
 
     gdk_colormap_alloc_color(cmap, &covered_foreground,
-			     /*writeable*/FALSE, /*best_match*/TRUE);
+			     /*writeable*/false, /*best_match*/true);
     gdk_colormap_alloc_color(cmap, &covered_background,
-			     /*writeable*/FALSE, /*best_match*/TRUE);
+			     /*writeable*/false, /*best_match*/true);
     gdk_colormap_alloc_color(cmap, &partcovered_foreground,
-			     /*writeable*/FALSE, /*best_match*/TRUE);
+			     /*writeable*/false, /*best_match*/true);
     gdk_colormap_alloc_color(cmap, &partcovered_background,
-			     /*writeable*/FALSE, /*best_match*/TRUE);
+			     /*writeable*/false, /*best_match*/true);
     gdk_colormap_alloc_color(cmap, &uncovered_foreground,
-			     /*writeable*/FALSE, /*best_match*/TRUE);
+			     /*writeable*/false, /*best_match*/true);
     gdk_colormap_alloc_color(cmap, &uncovered_background,
-			     /*writeable*/FALSE, /*best_match*/TRUE);
+			     /*writeable*/false, /*best_match*/true);
     gdk_colormap_alloc_color(cmap, &uninstrumented_foreground,
-			     /*writeable*/FALSE, /*best_match*/TRUE);
+			     /*writeable*/false, /*best_match*/true);
     gdk_colormap_alloc_color(cmap, &uninstrumented_background,
-			     /*writeable*/FALSE, /*best_match*/TRUE);
+			     /*writeable*/false, /*best_match*/true);
     gdk_colormap_alloc_color(cmap, &suppressed_foreground,
-			     /*writeable*/FALSE, /*best_match*/TRUE);
+			     /*writeable*/false, /*best_match*/true);
     gdk_colormap_alloc_color(cmap, &suppressed_background,
-			     /*writeable*/FALSE, /*best_match*/TRUE);
+			     /*writeable*/false, /*best_match*/true);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

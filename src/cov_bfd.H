@@ -58,7 +58,7 @@ public:
     unsigned char *get_contents(bfd_size_type *lenp);
     unsigned char *get_contents(unsigned long startaddr, unsigned long length);
 
-    gboolean find_nearest_line(unsigned long address,
+    bool find_nearest_line(unsigned long address,
 			       cov_location_t *locp/*return*/,
 			       const char **functionp/*return*/);
 
@@ -81,15 +81,15 @@ public:
     cov_bfd_t();
     ~cov_bfd_t();
 
-    gboolean open(const char *filename);
-    gboolean open(const char *filename, FILE *);
+    bool open(const char *filename);
+    bool open(const char *filename, FILE *);
     const char *filename() const;
 
-    gboolean big_endian() const
+    bool big_endian() const
     {
 	return bfd_big_endian(abfd_);
     }
-    gboolean little_endian() const
+    bool little_endian() const
     {
 	return bfd_little_endian(abfd_);
     }
@@ -122,15 +122,15 @@ public:
 
 private:
     /* utility functions */
-    gboolean get_symbols();
-    gboolean get_code_sections();
-    gboolean post_open();
+    bool get_symbols();
+    bool get_code_sections();
+    bool post_open();
 
 
     bfd *abfd_;
 
-    boolean have_symbols_:1;
-    boolean have_code_sections_:1;
+    bool have_symbols_:1;
+    bool have_code_sections_:1;
 
     unsigned int num_symbols_;
     asymbol **symbols_;
@@ -160,10 +160,10 @@ public:
     unsigned char *get_contents(bfd_size_type *lenp) { return 0; }
     unsigned char *get_contents(unsigned long startaddr, unsigned long length) { return 0; }
 
-    gboolean find_nearest_line(unsigned long address,
+    bool find_nearest_line(unsigned long address,
 			       cov_location_t *locp/*return*/,
 			       const char **functionp/*return*/)
-    { return FALSE; }
+    { return false; }
 
     unsigned long raw_size() const { return 0; }
 };
@@ -175,7 +175,7 @@ public:
 
     ~cov_bfd_t() {}
 
-    gboolean open(const char *filename);
+    bool open(const char *filename);
     const char *filename() const { return 0; }
 
     unsigned int num_symbols() { return 0; }

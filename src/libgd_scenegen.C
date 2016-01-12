@@ -64,26 +64,26 @@ libgd_scenegen_t::~libgd_scenegen_t()
 void
 libgd_scenegen_t::noborder()
 {
-    border_flag_ = FALSE;
+    border_flag_ = false;
 }
 
 void
 libgd_scenegen_t::border(unsigned int rgb)
 {
-    border_flag_ = TRUE;
+    border_flag_ = true;
     border_ = internalize_color(rgb);
 }
 
 void
 libgd_scenegen_t::nofill()
 {
-    fill_flag_ = FALSE;
+    fill_flag_ = false;
 }
 
 void
 libgd_scenegen_t::fill(unsigned int rgb)
 {
-    fill_flag_ = TRUE;
+    fill_flag_ = true;
     fill_ = internalize_color(rgb);
 }
 
@@ -133,7 +133,7 @@ libgd_scenegen_t::textbox(
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-libgd_scenegen_t::polyline_begin(gboolean arrow)
+libgd_scenegen_t::polyline_begin(bool arrow)
 {
     first_arrow_flag_ = arrow;
     points_count_ = 0;
@@ -203,7 +203,7 @@ libgd_scenegen_t::draw_arrow(const gdPoint *from, const gdPoint *to)
 }
 
 void
-libgd_scenegen_t::polyline_end(gboolean arrow)
+libgd_scenegen_t::polyline_end(bool arrow)
 {
     if (points_count_ < 2)
 	return;

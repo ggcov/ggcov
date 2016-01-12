@@ -43,18 +43,18 @@ cov_call_iterator_t::block_start(cov_block_t *b)
     pure_iter_ = b->pure_calls_.first();
 }
 
-gboolean
+bool
 cov_call_iterator_t::block_next()
 {
     if (block_ == 0)
-	return FALSE;
+	return false;
     if (state_ == 0)
     {
 	if (pure_iter_ != (cov_block_t::call_t *)0)
 	{
 	    pure_ = *pure_iter_;
 	    ++pure_iter_;
-	    return TRUE;
+	    return true;
 	}
 	state_++;
     }
@@ -69,14 +69,14 @@ cov_call_iterator_t::block_next()
 	    if (arc_->is_suppressed())
 		continue;
 	    state_++;
-	    return TRUE;
+	    return true;
 	}
     }
     block_ = 0;
     arc_ = 0;
     pure_ = 0;
     // state remains =2 so we don't try to do more if called again
-    return FALSE;
+    return false;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -94,13 +94,13 @@ cov_function_call_iterator_t::~cov_function_call_iterator_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_function_call_iterator_t::next()
 {
     for (;;)
     {
 	if (block_next())
-	    return TRUE;
+	    return true;
 	cov_block_t *b;
 	if (++bindex_ >= function_->num_blocks() ||
 	    (b = function_->nth_block(bindex_)) == 0)
@@ -108,7 +108,7 @@ cov_function_call_iterator_t::next()
 	block_start(b);
     }
 
-    return FALSE;
+    return false;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -134,7 +134,7 @@ cov_range_call_iterator_t::~cov_range_call_iterator_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_range_call_iterator_t::next()
 {
     for (;;)
@@ -142,7 +142,7 @@ cov_range_call_iterator_t::next()
 	if (block_next())
 	{
 	    if (*location() == location_)
-		return TRUE;
+		return true;
 	    continue;
 	}
 	if (*biter_)
@@ -154,7 +154,7 @@ cov_range_call_iterator_t::next()
 	for (;;)
 	{
 	    if (last_ == 0 || location_ == *last_)
-		return FALSE;
+		return false;
 	    ++location_;
 	    cov_line_t *ln = cov_file_t::find_line(&location_);
 	    if (ln != 0 && (biter_ = ln->blocks().first()) != 0)
@@ -162,7 +162,7 @@ cov_range_call_iterator_t::next()
 	}
     }
 
-    return FALSE;
+    return false;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

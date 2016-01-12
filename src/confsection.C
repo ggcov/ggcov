@@ -183,10 +183,10 @@ confsection_t::set_enum(const char *name, const confenum_t *tbl, int value)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
-confsection_t::get_bool(const char *name, gboolean deflt)
+bool
+confsection_t::get_bool(const char *name, bool deflt)
 {
-    gboolean val;
+    bool val;
     string_var key = make_key(name);
 
 #if HAVE_LIBGCONF
@@ -212,7 +212,7 @@ confsection_t::get_bool(const char *name, gboolean deflt)
 }
 
 void
-confsection_t::set_bool(const char *name, gboolean value)
+confsection_t::set_bool(const char *name, bool value)
 {
     string_var key = make_key(name);
 

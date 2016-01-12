@@ -72,7 +72,7 @@ cov_bfd_t::~cov_bfd_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_bfd_t::post_open()
 {
     if (!bfd_check_format(abfd_, bfd_object))
@@ -81,7 +81,7 @@ cov_bfd_t::post_open()
 	bfd_perror(bfd_get_filename(abfd_));
 	bfd_close(abfd_);
 	abfd_ = 0;
-	return FALSE;
+	return false;
     }
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
@@ -92,29 +92,29 @@ cov_bfd_t::post_open()
 
     abfd_->usrdata = this;
 
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 cov_bfd_t::open(const char *filename)
 {
     if ((abfd_ = bfd_openr(filename, /*target*/0)) == 0)
     {
 	/* TODO */
 	bfd_perror(filename);
-	return FALSE;
+	return false;
     }
     return post_open();
 }
 
-gboolean
+bool
 cov_bfd_t::open(const char *filename, FILE *fp)
 {
     if ((abfd_ = bfd_openstreamr(filename, /*target*/0, fp)) == 0)
     {
 	/* TODO */
 	bfd_perror(filename);
-	return FALSE;
+	return false;
     }
     return post_open();
 }
@@ -141,7 +141,7 @@ cov_bfd_t::find_section(const char *secname)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_bfd_t::get_symbols()
 {
     assert(!have_symbols_);
@@ -159,7 +159,7 @@ cov_bfd_t::get_symbols()
 	g_free(symbols_);
 	symbols_ = 0;
 	num_symbols_ = 0;
-	return FALSE;
+	return false;
     }
 
     sorted_symbols_ = g_new(asymbol*, num_symbols_);
@@ -174,7 +174,7 @@ cov_bfd_t::get_symbols()
 	    cov_bfd_t::dump_symbol(i, symbols_[i]);
     }
 
-    return TRUE;
+    return true;
 }
 
 unsigned int
@@ -202,7 +202,7 @@ cov_bfd_t::nth_symbol(unsigned int i)
 #define codesectype \
     (SEC_ALLOC|SEC_HAS_CONTENTS|SEC_RELOC|SEC_CODE|SEC_READONLY)
 
-gboolean
+bool
 cov_bfd_t::get_code_sections()
 {
     asection *sec;
@@ -211,7 +211,7 @@ cov_bfd_t::get_code_sections()
     have_code_sections_ = true;
 
     if (abfd_ == 0)
-	return FALSE;
+	return false;
 
     _log.debug("Gathering code sections from %s\n", filename());
 
@@ -230,7 +230,7 @@ cov_bfd_t::get_code_sections()
 	code_sections_[num_code_sections_++] = sec;
     }
 
-    return TRUE;
+    return true;
 }
 
 unsigned int
@@ -381,7 +381,7 @@ cov_bfd_section_t::get_relocs(unsigned int *lenp)
     unsigned int nrelocs;
 
     if (!b->have_symbols_ && !b->get_symbols())
-	return FALSE;
+	return false;
 
     _log.debug("Reading relocs from %s\n", b->filename());
 
@@ -408,7 +408,7 @@ cov_bfd_section_t::get_relocs(unsigned int *lenp)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_bfd_section_t::find_nearest_line(
     unsigned long address,
     cov_location_t *locp,
@@ -423,10 +423,10 @@ cov_bfd_section_t::find_nearest_line(
     if (b == 0 || b->abfd_ == 0)
 	return 0;
     if (!b->have_symbols_ && !b->get_symbols())
-	return FALSE;
+	return false;
     if (!bfd_find_nearest_line(sec->owner, sec, b->symbols_, address,
 			       &filename, &function, &lineno))
-	return FALSE;
+	return false;
 
     if (locp != 0)
     {
@@ -436,7 +436,7 @@ cov_bfd_section_t::find_nearest_line(
     if (functionp != 0)
 	*functionp = function;
 
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -472,10 +472,10 @@ cov_bfd_section_t::find_symbol_by_value(
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 #else
 
-gboolean cov_bfd_t::open(const char *filename)
+bool cov_bfd_t::open(const char *filename)
 {
     _log.debug("ggcov was compiled without the BFD library, cannot open %s\n", filename);
-    return FALSE;
+    return false;
 }
 
 #endif /*HAVE_LIBBFD*/

@@ -31,7 +31,7 @@ public:
     cpp_parser_t(const char *filename);
     virtual ~cpp_parser_t();
 
-    gboolean parse();
+    bool parse();
 
 protected:
     virtual void depends_changed() = 0;
@@ -39,7 +39,7 @@ protected:
     virtual void post_line() = 0;
 
     unsigned long lineno() const { return lineno_; }
-    gboolean depends(const char *var) const;
+    bool depends(const char *var) const;
 
     void dump() const;
 
@@ -94,7 +94,7 @@ private:
     int stack_pop();
     int stack_peek(int off);
     void stack_replace(int ntoks, int newtoken);
-    gboolean parse_boolean_expr(gboolean inverted);
+    bool parse_boolean_expr(bool inverted);
     void parse_if();
     void parse_ifdef();
     void parse_ifndef();
@@ -106,7 +106,7 @@ private:
     unsigned long lineno_;
     estring line_;
     unsigned int index_;    /* index into line_ which xgetc() will next return */
-    gboolean in_comment_;
+    bool in_comment_;
     estring comment_;       /* text of all comments in the line, ws-separated */
     char tokenbuf_[256];
     list_t<depend_t> depend_stack_;

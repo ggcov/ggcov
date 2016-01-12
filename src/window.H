@@ -50,9 +50,9 @@ protected:
     virtual void save_state();
 
     GtkWidget *window_;
-    boolean deleting_:1;    /* handle possible GUI recursion crap */
-    boolean shown_:1;       /* has been shown()n at least once */
-    boolean geom_dirty_:1;  /* geometry needs to be saved */
+    bool deleting_:1;    /* handle possible GUI recursion crap */
+    bool shown_:1;       /* has been shown()n at least once */
+    bool geom_dirty_:1;  /* geometry needs to be saved */
 
 private:
     void on_close_activate();

@@ -42,7 +42,7 @@ protected:
     void dirty();
 
 private:
-    gboolean dirty_;
+    bool dirty_;
     cov_stats_t stats_;
     cov::status_t status_;
 };

@@ -46,7 +46,7 @@ public:
 private:
     void init(char *str, const char *sep);
 
-    gboolean first_;
+    bool first_;
     char *buf_;
     char *state_;
     const char *sep_;

@@ -111,9 +111,9 @@ add(ui_combo_t *cbox, const char *label, gpointer data)
 		    gtk_object_get_data(GTK_OBJECT(cbox), ui_combo_sep_key);
 	tok_t tok(label, sep);
 	GtkTreeIter itr;
-	gboolean itr_valid = gtk_tree_model_get_iter_first(model, &itr);
+	bool itr_valid = gtk_tree_model_get_iter_first(model, &itr);
 	GtkTreeIter parent;
-	gboolean parent_valid = FALSE;
+	bool parent_valid = FALSE;
 	while (const char *comp = tok.next())
 	{
 	    while (itr_valid)
@@ -121,7 +121,7 @@ add(ui_combo_t *cbox, const char *label, gpointer data)
 		char *ilabel = 0;
 		gtk_tree_model_get(model, &itr, COL_LABEL, &ilabel, -1);
 		assert(ilabel);
-		boolean done = !strcmp(ilabel, comp);
+		bool done = !strcmp(ilabel, comp);
 		g_free(ilabel);
 		if (done)
 		    break;
@@ -203,7 +203,7 @@ set_active(ui_combo_t *cbox, gpointer data)
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
     GtkTreeIter treeitr;
 
-    gboolean valid = gtk_tree_model_get_iter_first(model, &treeitr);
+    bool valid = gtk_tree_model_get_iter_first(model, &treeitr);
 
     while (valid)
     {
@@ -855,7 +855,7 @@ ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-ui_list_set_column_visibility(GtkWidget *w, int col, gboolean vis)
+ui_list_set_column_visibility(GtkWidget *w, int col, bool vis)
 {
 #if !GTK2
     gtk_clist_set_column_visibility(GTK_CLIST(w), col, vis);
@@ -870,7 +870,7 @@ ui_list_set_column_visibility(GtkWidget *w, int col, gboolean vis)
 
 #if GTK2
 static PangoFontDescription *ui_text_font_desc;
-static gboolean ui_text_font_dirty = FALSE;
+static bool ui_text_font_dirty = FALSE;
 #else
 /* we have to fake a *lot* of stuff for gtk1.2 */
 static GdkFont *ui_text_font;

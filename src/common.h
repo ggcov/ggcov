@@ -44,6 +44,9 @@
 #if HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#if HAVE_STDBOOL_H
+#include <stdbool.h>
+#endif
 
 #include <glib.h>
 
@@ -71,23 +74,12 @@
 
 #define boolstr(b)      ((b) ? "true" : "false")
 
-/* boolean, true, and false need to be defined always, and
- * unsigned so that struct fields of type boolean:1 do not
- * generate whiny gcc warnings */
-#ifdef boolean
-#undef boolean
+#if !HAVE_STDBOOL_H
+typedef unsigned char _bool;
+#define bool _bool
+#define false (0U)
+#define true (1U)
 #endif
-#define boolean     unsigned int
-
-#ifdef false
-#undef false
-#endif
-#define false       (0U)
-
-#ifdef false
-#undef false
-#endif
-#define false       (0U)
 
 #define safestr(s)  ((s) == 0 ? "" : (s))
 static inline int safe_strcmp(const char *a, const char *b)

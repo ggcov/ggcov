@@ -212,7 +212,7 @@ summarywin_t::populate_function_combo(ui_combo_t *cbox)
 
     list = cov_list_all_functions();
 
-    ::populate_function_combo(cbox, list, /*add_all_item*/FALSE, &function_);
+    ::populate_function_combo(cbox, list, /*add_all_item*/false, &function_);
 
     list->remove_all();
     delete list;

@@ -301,7 +301,7 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(malloc.h sys/ioctl.h sys/time.h unistd.h memory.h)
-AC_CHECK_HEADERS(signal.h sys/filio.h stdint.h elf.h)
+AC_CHECK_HEADERS(signal.h sys/filio.h stdint.h stdbool.h elf.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_PID_T

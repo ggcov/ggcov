@@ -37,11 +37,11 @@ public:
     void box(double x, double y, double w, double h);
     void textbox(double x, double y, double w, double h,
 			 const char *text);
-    void polyline_begin(gboolean arrow);
+    void polyline_begin(bool arrow);
     void polyline_point(double x, double y);
-    void polyline_end(gboolean arrow);
+    void polyline_end(bool arrow);
 
-    gboolean check();
+    bool check();
 
     void object(cov_function_t *);
 
@@ -59,7 +59,7 @@ private:
 	dbounds_t bbox_;
     };
 
-    gboolean check_box_intersections();
+    bool check_box_intersections();
 
     /* state for boxes */
     string_var name_;

@@ -149,13 +149,13 @@ ggcov_params_t::~ggcov_params_t()
 /*
  * Read a file from the File->Open dialog.
  */
-gboolean
+bool
 ggcov_read_file(const char *filename)
 {
     if (file_is_directory(filename) == 0)
     {
-	if (!cov_read_directory(filename, /*recursive*/FALSE))
-	    return FALSE;
+	if (!cov_read_directory(filename, /*recursive*/false))
+	    return false;
     }
     else if (errno != ENOTDIR)
     {
@@ -166,21 +166,21 @@ ggcov_read_file(const char *filename)
 	if (cov_is_source_filename(filename))
 	{
 	    if (!cov_read_source_file(filename))
-		return FALSE;
+		return false;
 	}
 	else
 	{
 	    if (!cov_read_object_file(filename))
-		return FALSE;
+		return false;
 	}
     }
     else
     {
 	_log.error("%s: don't know how to handle this filename\n", filename);
-	return FALSE;
+	return false;
     }
 
-    return TRUE;
+    return true;
 }
 
 static GtkWidget *open_window = 0;

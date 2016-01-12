@@ -37,7 +37,7 @@ struct mvc_batch_s
 };
 
 static GHashTable *listeners;
-static gboolean batching;
+static bool batching;
 static GHashTable *batch;
 
 static enum { NONE, LISTEN, UNLISTEN, CHANGED, UNBATCH } state = NONE;
@@ -82,7 +82,7 @@ mvc_listen(void *obj, unsigned int feat, mvc_callback_t proc, void *closure)
 static void
 mvc_do_unlisten(
     void *obj,
-    gboolean all,
+    bool all,
     unsigned int feat,
     mvc_callback_t proc,
     void *closure)
@@ -127,7 +127,7 @@ mvc_do_unlisten(
 void
 mvc_unlisten(void *obj, unsigned int feat, mvc_callback_t proc, void *closure)
 {
-    mvc_do_unlisten(obj, /*all*/FALSE, feat, proc, closure);
+    mvc_do_unlisten(obj, /*all*/false, feat, proc, closure);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -197,7 +197,7 @@ mvc_deleted(void *obj)
 	    g_free(mb);
 	}
     }
-    mvc_do_unlisten(obj, /*all*/TRUE, 0, 0, 0);
+    mvc_do_unlisten(obj, /*all*/true, 0, 0, 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -209,7 +209,7 @@ mvc_batch(void)
     {
 	if (batch == 0)
 	    batch = g_hash_table_new(g_direct_hash, g_direct_equal);
-	batching = TRUE;
+	batching = true;
     }
 }
 
@@ -233,7 +233,7 @@ mvc_unbatch(void)
     state = UNBATCH;
 
     assert(batching);
-    batching = FALSE;
+    batching = false;
 
     g_hash_table_foreach_remove(batch, mvc_unbatch_1, 0);
 

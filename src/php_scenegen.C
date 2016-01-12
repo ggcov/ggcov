@@ -64,26 +64,26 @@ php_scenegen_t::get_color(unsigned int rgb)
 void
 php_scenegen_t::noborder()
 {
-    border_flag_ = FALSE;
+    border_flag_ = false;
 }
 
 void
 php_scenegen_t::border(unsigned int rgb)
 {
-    border_flag_ = TRUE;
+    border_flag_ = true;
     border_idx_ = get_color(rgb);
 }
 
 void
 php_scenegen_t::nofill()
 {
-    fill_flag_ = FALSE;
+    fill_flag_ = false;
 }
 
 void
 php_scenegen_t::fill(unsigned int rgb)
 {
-    fill_flag_ = TRUE;
+    fill_flag_ = true;
     fill_idx_ = get_color(rgb);
 }
 
@@ -138,7 +138,7 @@ php_scenegen_t::textbox(
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-php_scenegen_t::polyline_begin(gboolean arrow)
+php_scenegen_t::polyline_begin(bool arrow)
 {
     first_arrow_flag_ = arrow;
     points_.num_points = 0;
@@ -188,7 +188,7 @@ php_scenegen_t::polyline_point(double x, double y)
  */
 
 void
-php_scenegen_t::polyline_end(gboolean arrow)
+php_scenegen_t::polyline_end(bool arrow)
 {
     unsigned int i;
     unsigned int nc = 2*points_.num_points;

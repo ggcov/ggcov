@@ -72,7 +72,7 @@ public:
 	cov_stats_t stats;
 	return calc_stats(&stats);
     }
-    gboolean is_suppressed() const
+    bool is_suppressed() const
     {
 	return (suppression_ != 0);
     }
@@ -172,8 +172,8 @@ private:
     {
 	const char *magic_;
 	unsigned int magic_len_;
-	gboolean (cov_file_t::*read_bbg_)(covio_t *);
-	gboolean (cov_file_t::*read_da_)(covio_t *);
+	bool (cov_file_t::*read_bbg_)(covio_t *);
+	bool (cov_file_t::*read_da_)(covio_t *);
 	const char *description_;
     };
     static const format_rec_t formats[];
@@ -223,13 +223,13 @@ private:
     cov_line_t *get_nth_line(unsigned int lineno);
 
     covio_t *try_file(const char *dir, const char *ext) const;
-    covio_t *find_file(const char *ext, gboolean quiet,
+    covio_t *find_file(const char *ext, bool quiet,
 		       const char *prefix) const;
     void file_missing(const char *ext, const char *ext2) const;
 
-    gboolean exit_block_is_1() const { return !!(features_ & FF_EXITBLOCK1); }
+    bool exit_block_is_1() const { return !!(features_ & FF_EXITBLOCK1); }
 
-    gboolean
+    bool
     gcc296_braindeath() const
     {
 	return (num_missing_fake_ > 0 && num_expected_fake_ > 0);
@@ -237,41 +237,41 @@ private:
 
     static void search_path_append(const char *dir);
     static void set_gcda_prefix(const char *dir);
-    gboolean read(gboolean quiet);
+    bool read(bool quiet);
 
     int skip_oldplus_func_header(covio_t *io, const char *prefix);
-    gboolean read_bb_file(covio_t *);
-    gboolean read_old_bbg_function(covio_t *);
-    gboolean read_old_bbg_file_common(covio_t *);
-    gboolean read_old_bbg_file(covio_t *);
-    gboolean read_oldplus_bbg_file(covio_t *);
+    bool read_bb_file(covio_t *);
+    bool read_old_bbg_function(covio_t *);
+    bool read_old_bbg_file_common(covio_t *);
+    bool read_old_bbg_file(covio_t *);
+    bool read_oldplus_bbg_file(covio_t *);
     void infer_compilation_directory(const char *abspath);
     const char *make_absolute(const char *filename) const;
-    gboolean read_gcc3_bbg_file(covio_t *io, uint32_t expect_version,
+    bool read_gcc3_bbg_file(covio_t *io, uint32_t expect_version,
 				covio_t::format_t);
-    gboolean read_gcc33_bbg_file(covio_t *);
-    gboolean read_gcc34l_bbg_file(covio_t *);
-    gboolean read_gcc34b_bbg_file(covio_t *);
-    gboolean read_bbg_file(covio_t *);
-    gboolean read_old_da_file(covio_t *);
-    gboolean read_oldplus_da_file(covio_t *);
-    gboolean read_gcc3_da_file(covio_t *io, uint32_t expect_magic,
+    bool read_gcc33_bbg_file(covio_t *);
+    bool read_gcc34l_bbg_file(covio_t *);
+    bool read_gcc34b_bbg_file(covio_t *);
+    bool read_bbg_file(covio_t *);
+    bool read_old_da_file(covio_t *);
+    bool read_oldplus_da_file(covio_t *);
+    bool read_gcc3_da_file(covio_t *io, uint32_t expect_magic,
 			       covio_t::format_t);
-    gboolean read_gcc33_da_file(covio_t *);
-    gboolean read_gcc34l_da_file(covio_t *);
-    gboolean read_gcc34b_da_file(covio_t *);
-    gboolean read_da_file(covio_t *);
-    gboolean read_rtl_file(covio_t *);
-    gboolean discover_format(covio_t *io);
+    bool read_gcc33_da_file(covio_t *);
+    bool read_gcc34l_da_file(covio_t *);
+    bool read_gcc34b_da_file(covio_t *);
+    bool read_da_file(covio_t *);
+    bool read_rtl_file(covio_t *);
+    bool discover_format(covio_t *io);
 #ifdef HAVE_LIBBFD
-    gboolean o_file_add_call(cov_location_t, const char *);
-    gboolean scan_o_file_calls(cov_bfd_t *);
+    bool o_file_add_call(cov_location_t, const char *);
+    bool scan_o_file_calls(cov_bfd_t *);
     void scan_o_file_linkage(cov_bfd_t *);
-    gboolean read_o_file(covio_t *);
+    bool read_o_file(covio_t *);
 #endif
-    gboolean read_src_file();
+    bool read_src_file();
     void zero_arc_counts();
-    gboolean solve();
+    bool solve();
     void suppress(const cov_suppression_t *);
     void finalise();
 
@@ -290,8 +290,8 @@ private:
     string_var compiledir_; /* directory in which this source was compiled;
 			     * base for relative pathnames */
     const cov_suppression_t *suppression_;
-    gboolean finalised_;    /* data read & post-read connections made */
-    gboolean has_locations_;/* any locations added */
+    bool finalised_;    /* data read & post-read connections made */
+    bool has_locations_;/* any locations added */
     const format_rec_t *format_;
     uint32_t format_version_;  /* file format version */
     uint32_t features_;        /* FF_* flags */
@@ -308,7 +308,7 @@ private:
 
     friend void cov_add_search_directory(const char *fname);
     friend int cov_read_files(const cov_project_params_t &params);
-    friend gboolean cov_read_source_file_2(const char *fname, gboolean quiet);
+    friend bool cov_read_source_file_2(const char *fname, bool quiet);
     friend void cov_init(void);
     friend void cov_post_read(void);
     friend class cov_function_t;

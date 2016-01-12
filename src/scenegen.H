@@ -72,9 +72,9 @@ public:
      *     /
      */
     virtual void arrow_shape(double a, double b, double c);
-    virtual void polyline_begin(gboolean arrow) = 0;
+    virtual void polyline_begin(bool arrow) = 0;
     virtual void polyline_point(double x, double y) = 0;
-    virtual void polyline_end(gboolean arrow) = 0;
+    virtual void polyline_end(bool arrow) = 0;
 
     virtual void object(cov_function_t *);
     virtual void object(cov_file_t *);

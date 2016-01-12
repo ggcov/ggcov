@@ -39,7 +39,7 @@ cov_filename_scanner_t::~cov_filename_scanner_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_filename_scanner_t::attach(cov_bfd_t *c)
 {
     cbfd_ = c;
@@ -68,7 +68,7 @@ cov_shlib_scanner_t::~cov_shlib_scanner_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_shlib_scanner_t::attach(cov_bfd_t *c)
 {
     cbfd_ = c;
@@ -96,7 +96,7 @@ cov_call_scanner_t::~cov_call_scanner_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_call_scanner_t::attach(cov_bfd_t *c)
 {
     cbfd_ = c;
@@ -105,7 +105,7 @@ cov_call_scanner_t::attach(cov_bfd_t *c)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_call_scanner_t::setup_calldata(
     cov_bfd_section_t *sec,
     unsigned long address,

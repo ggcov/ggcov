@@ -57,7 +57,7 @@ private:
 	int rank_;
 	double x_, y_, w_, h_;      /* in [0,1] space */
 
-	gboolean
+	bool
 	have_geometry() const
 	{
 	    return (first_->rank_ >= 0 && first_idx_ >= 0);
@@ -108,7 +108,7 @@ private:
     int max_rank_of_line(unsigned int idx);
     void assign_ranks();
 
-    gboolean no_intervening_nodes(node_t *, node_t *) const;
+    bool no_intervening_nodes(node_t *, node_t *) const;
     arc_case_t classify_arc(node_t *from, node_t *to) const;
     void add_arc(cov_arc_t *a, node_t *from, node_t *to);
     void generate_arcs();

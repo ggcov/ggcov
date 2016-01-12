@@ -38,9 +38,9 @@ public:
     void box(double x, double y, double w, double h);
     void textbox(double x, double y, double w, double h,
 			 const char *text);
-    void polyline_begin(gboolean arrow);
+    void polyline_begin(bool arrow);
     void polyline_point(double x, double y);
-    void polyline_end(gboolean arrow);
+    void polyline_end(bool arrow);
 
 private:
     inline const char *fill_color() const
@@ -59,18 +59,18 @@ private:
     GnomeCanvas *canvas_;
     GnomeCanvasGroup *root_;
 
-    gboolean fill_flag_;
+    bool fill_flag_;
     char fill_buf_[8];
-    gboolean border_flag_;
+    bool border_flag_;
     char border_buf_[8];
 
     /* state for polylines */
-    gboolean first_arrow_flag_;
+    bool first_arrow_flag_;
     GnomeCanvasPoints points_;
     unsigned int points_size_;
 
     /* state for delayed object handling */
-    gboolean registered_tooltip_;
+    bool registered_tooltip_;
 };
 
 #endif /* _ggcov_canvas_scenegen_H_ */

@@ -59,30 +59,30 @@ public:
 	remain_ = len;
     }
 
-    gboolean
+    bool
     init_from_section(cov_bfd_t *cbfd, const char *name)
     {
 	cov_bfd_section_t *sec;
 
 	if ((sec = cbfd->find_section(name)) == 0 ||
 	    (base_ = sec->get_contents(&remain_)) == 0)
-	    return FALSE;
+	    return false;
 	ptr_ = base_;
-	return TRUE;
+	return true;
     }
 
     unsigned long tell() const;
-    gboolean seek(unsigned long off);
-    gboolean skip(unsigned long delta);
+    bool seek(unsigned long off);
+    bool skip(unsigned long delta);
     const unsigned char *data() const { return base_; }
 
-    gboolean get_string(const char **);
-    gboolean get_uint8(uint8_t *);
-    gboolean get_uint16(uint16_t *);
-    gboolean get_uint32(uint32_t *);
-    gboolean get_uint64(uint64_t *);
-    gboolean get_address(void **);          // TODO: use the BFD typedef?
-    gboolean get_varint(unsigned long *);
+    bool get_string(const char **);
+    bool get_uint8(uint8_t *);
+    bool get_uint16(uint16_t *);
+    bool get_uint32(uint32_t *);
+    bool get_uint64(uint64_t *);
+    bool get_address(void **);          // TODO: use the BFD typedef?
+    bool get_varint(unsigned long *);
 };
 
 unsigned long
@@ -91,28 +91,28 @@ dwarf_stream_t::tell() const
     return (ptr_ - base_);
 }
 
-gboolean
+bool
 dwarf_stream_t::seek(unsigned long off)
 {
     unsigned int len = remain_ + (ptr_ - base_);
     if (off > len)
-	return FALSE;
+	return false;
     ptr_ = base_ + off;
     remain_ = len - off;
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 dwarf_stream_t::skip(unsigned long delta)
 {
     if (delta > remain_)
-	return FALSE;
+	return false;
     ptr_ += delta;
     remain_ -= delta;
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 dwarf_stream_t::get_string(const char **valp)
 {
     unsigned int i;
@@ -120,25 +120,25 @@ dwarf_stream_t::get_string(const char **valp)
     for (i = 0 ; i <= remain_ && ptr_[i] ; i++)
 	;
     if (ptr_[i])
-	return FALSE;
+	return false;
     if (valp)
 	*valp = (const char *)ptr_;
     i++;
     ptr_ += i;
     remain_ -= i;
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 dwarf_stream_t::get_uint8(uint8_t *valp)
 {
     if (remain_ < 1)
-	return FALSE;
+	return false;
     if (valp)
 	*valp = *ptr_;
     ptr_ += 1;
     remain_ -= 1;
-    return TRUE;
+    return true;
 }
 
 /*
@@ -148,55 +148,55 @@ dwarf_stream_t::get_uint8(uint8_t *valp)
  *        a simple memcpy.
  */
 
-gboolean
+bool
 dwarf_stream_t::get_uint16(uint16_t *valp)
 {
     if (remain_ < sizeof(*valp))
-	return FALSE;
+	return false;
     if (valp)
 	memcpy((void *)valp, ptr_, sizeof(*valp));
     ptr_ += sizeof(*valp);
     remain_ -= sizeof(*valp);
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 dwarf_stream_t::get_uint32(uint32_t *valp)
 {
     if (remain_ < sizeof(*valp))
-	return FALSE;
+	return false;
     if (valp)
 	memcpy((void *)valp, ptr_, sizeof(*valp));
     ptr_ += sizeof(*valp);
     remain_ -= sizeof(*valp);
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 dwarf_stream_t::get_uint64(uint64_t *valp)
 {
     if (remain_ < sizeof(*valp))
-	return FALSE;
+	return false;
     if (valp)
 	memcpy((void *)valp, ptr_, sizeof(*valp));
     ptr_ += sizeof(*valp);
     remain_ -= sizeof(*valp);
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 dwarf_stream_t::get_address(void **valp)
 {
     if (remain_ < sizeof(*valp))
-	return FALSE;
+	return false;
     if (valp)
 	memcpy((void *)valp, ptr_, sizeof(*valp));
     ptr_ += sizeof(*valp);
     remain_ -= sizeof(*valp);
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 dwarf_stream_t::get_varint(unsigned long *valp)
 {
     unsigned int shift = 0;
@@ -213,11 +213,11 @@ dwarf_stream_t::get_varint(unsigned long *valp)
 	    i++;
 	    ptr_ += i;
 	    remain_ -= i;
-	    return TRUE;
+	    return true;
 	}
     }
 
-    return FALSE;
+    return false;
 }
 
 
@@ -245,14 +245,14 @@ class cov_dwarf2_filename_scanner_t : public cov_filename_scanner_t
 {
 public:
     ~cov_dwarf2_filename_scanner_t();
-    gboolean attach(cov_bfd_t *b);
+    bool attach(cov_bfd_t *b);
     char *next();
 
 private:
     void clear_dirs();
-    gboolean get_lineinfo();
+    bool get_lineinfo();
     char *get_lineinfo_filename();
-    gboolean get_abbrevs();
+    bool get_abbrevs();
     dwarf_abbrev_t *find_abbrev(unsigned long num) const;
     char *get_compunit_filename();
 
@@ -313,34 +313,34 @@ cov_dwarf2_filename_scanner_t::clear_dirs()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_dwarf2_filename_scanner_t::attach(cov_bfd_t *b)
 {
     cov_bfd_section_t *sec;
 
     if (!cov_filename_scanner_t::attach(b))
-	return FALSE;
+	return false;
 
     if (!line_sec_.init_from_section(cbfd_, ".debug_line"))
-	return FALSE;
+	return false;
 
     if (!abbrev_sec_.init_from_section(cbfd_, ".debug_abbrev"))
-	return FALSE;
+	return false;
 
     if (!info_sec_.init_from_section(cbfd_, ".debug_info"))
-	return FALSE;
+	return false;
 
     if ((sec = cbfd_->find_section(".debug_str")) == 0 ||
 	(strings_ = (char *)sec->get_contents(&string_size_)) == 0)
-	return FALSE;
+	return false;
 
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 /* read an external lineinfo struct, opcode lengths & dir table */
-gboolean
+bool
 cov_dwarf2_filename_scanner_t::get_lineinfo()
 {
     uint32_t length;
@@ -353,23 +353,23 @@ cov_dwarf2_filename_scanner_t::get_lineinfo()
     if (lineinfo_off_)
 	line_sec_.seek(lineinfo_off_);
     if (!line_sec_.get_uint32(&length))
-	return FALSE;
+	return false;
     /* TODO: bounds check length */
     lineinfo_off_ = line_sec_.tell() + length;
 
     if (!line_sec_.get_uint16(&version) || version != 2)
-	return FALSE;
+	return false;
     if (!line_sec_.get_uint32(/*prologue_length*/0) ||
 	!line_sec_.get_uint8(/*min_insn_length*/0) ||
 	!line_sec_.get_uint8(/*default_is_stmt*/0) ||
 	!line_sec_.get_uint8(/*line_base*/0) ||
 	!line_sec_.get_uint8(/*line_range*/0) ||
 	!line_sec_.get_uint8(&opcode_base))
-	return FALSE;
+	return false;
 
     /* read the opcode lengths */
     if (!line_sec_.skip(opcode_base-1))
-	return FALSE;
+	return false;
 
     /* read the directory table */
     if (dir_table_ == 0)
@@ -387,7 +387,7 @@ cov_dwarf2_filename_scanner_t::get_lineinfo()
     for (;;)
     {
 	if (!line_sec_.get_string(&dir))
-	    return FALSE;
+	    return false;
 	if (*dir == '\0')
 	    break;
 	dir_table_->append(g_strdup(dir));
@@ -397,7 +397,7 @@ cov_dwarf2_filename_scanner_t::get_lineinfo()
 		   dir_table_->nth(dir_table_->length()-1));
     }
 
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -426,7 +426,7 @@ cov_dwarf2_filename_scanner_t::get_lineinfo_filename()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_dwarf2_filename_scanner_t::get_abbrevs()
 {
     unsigned long a, b;
@@ -438,15 +438,15 @@ cov_dwarf2_filename_scanner_t::get_abbrevs()
     for (;;)
     {
 	if (!abbrev_sec_.get_varint(&a))
-	    return FALSE;
+	    return false;
 
 	if (a == 0)
 	    break;    /* end of section */
 
 	if (!abbrev_sec_.get_varint(&b))
-	    return FALSE;
+	    return false;
 	if (!abbrev_sec_.get_uint8(/*children*/0))
-	    return FALSE;
+	    return false;
 
 	abbrev = new dwarf_abbrev_t;
 	abbrev->entry_ = a;
@@ -458,9 +458,9 @@ cov_dwarf2_filename_scanner_t::get_abbrevs()
 	for (;;)
 	{
 	    if (!abbrev_sec_.get_varint(&a))
-		return FALSE;
+		return false;
 	    if (!abbrev_sec_.get_varint(&b))
-		return FALSE;
+		return false;
 	    if (!a)
 		break;
 	    attr = new dwarf_attr_t;
@@ -474,7 +474,7 @@ cov_dwarf2_filename_scanner_t::get_abbrevs()
     }
 
     _log.debug("get_abbrevs: end of section\n");
-    return TRUE;
+    return true;
 }
 
 dwarf_abbrev_t *

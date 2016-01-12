@@ -47,7 +47,7 @@ public:
 	return status_;
     }
     /* Check for suppression without the side effect of calculate_count() */
-    gboolean is_suppressed() const
+    bool is_suppressed() const
     {
 	return (suppression_ != 0);
     }
@@ -65,7 +65,7 @@ public:
      */
     unsigned int format_blocks(char *buf, unsigned int maxlen);
 
-    gboolean has_blocks() const
+    bool has_blocks() const
     {
 	return blocks_.head() != 0;
     }
@@ -91,7 +91,7 @@ private:
     void calculate_count();
 
     list_t<cov_block_t> blocks_;
-    boolean count_valid_;  /* covers status_, count_ */
+    bool count_valid_;  /* covers status_, count_ */
     cov::status_t status_;
     count_t count_;
     const cov_suppression_t *suppression_;

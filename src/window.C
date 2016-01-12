@@ -66,7 +66,7 @@ dnd_data_as_text(void *data, unsigned int length)
     return text;
 }
 
-extern gboolean ggcov_read_file(const char *filename);
+extern bool ggcov_read_file(const char *filename);
 
 /*
  * Parse the given string as a list of URIs and load each file
@@ -369,7 +369,7 @@ void
 load(GtkCheckMenuItem *cmi)
 {
     confsection_t *cs = confsection_t::get("gtk-toggles");
-    boolean b = cs->get_bool(GTK_WIDGET(cmi)->name, cmi->active);
+    bool b = cs->get_bool(GTK_WIDGET(cmi)->name, cmi->active);
     gtk_check_menu_item_set_active(cmi, b);
 }
 
@@ -377,7 +377,7 @@ void
 save(GtkCheckMenuItem *cmi)
 {
     confsection_t *cs = confsection_t::get("gtk-toggles");
-    boolean b = !!cmi->active;
+    bool b = !!cmi->active;
     cs->set_bool(GTK_WIDGET(cmi)->name, b);
 }
 

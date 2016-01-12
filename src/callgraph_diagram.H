@@ -52,7 +52,7 @@ private:
 	unsigned long generation_;
 	double spread_;
 	double x_, y_, h_;
-	gboolean on_path_;
+	bool on_path_;
 	unsigned int shown_;
 	enum flags
 	{
@@ -64,7 +64,7 @@ private:
 
 	unsigned int nup();
 	unsigned int ndown();
-	gboolean any_self();
+	bool any_self();
 	void push_spread_rootwards(double deltaspread);
 	void push_spread_leafwards(double deltaspread);
 	static node_t *from_callnode(cov_callnode_t *cn)
@@ -92,7 +92,7 @@ private:
     node_t *build_node(cov_callnode_t*, int rank);
     void build_ranks(node_t *);
     void calc_spread(int pass, int rank);
-    gboolean any_self_arcs(rank_t *r);
+    bool any_self_arcs(rank_t *r);
     void assign_geometry();
     void dump_ranks();
     void dump_graph_1(cov_callnode_t *cn);

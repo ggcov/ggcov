@@ -89,7 +89,7 @@ void ui_clist_set_sort_type(GtkCList *, GtkSortType ty);
  */
 gpointer ui_list_double_click_data(GtkWidget *, GdkEvent *,
 				   int col/*gtk2 closure column*/);
-void ui_list_set_column_visibility(GtkWidget *, int col, gboolean vis);
+void ui_list_set_column_visibility(GtkWidget *, int col, bool vis);
 
 /*
  * Abstraction of GtkText (gtk 1.2) and GtkTextView et al (gtk 2.0).

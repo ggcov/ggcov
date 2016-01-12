@@ -142,13 +142,13 @@ report_summary_per_directory(FILE *fp, const char *)
 static int
 report_untested_functions_per_file(FILE *fp, const char *)
 {
-    gboolean did_head1 = FALSE;
+    bool did_head1 = false;
     int nlines = 0;
 
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
 	cov_file_t *f = (*fiter);
-	gboolean did_head2 = FALSE;
+	bool did_head2 = false;
 
 	for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
 	{
@@ -159,14 +159,14 @@ report_untested_functions_per_file(FILE *fp, const char *)
 
 	    if (!did_head1)
 	    {
-		did_head1 = TRUE;
+		did_head1 = true;
 		fprintf(fp, "Uncovered functions\n");
 		fprintf(fp, "===================\n");
 		nlines += 2;
 	    }
 	    if (!did_head2)
 	    {
-		did_head2 = TRUE;
+		did_head2 = true;
 		fprintf(fp, "%s\n", f->minimal_name());
 		nlines++;
 	    }
@@ -191,13 +191,13 @@ static int
 report_poorly_covered_functions_per_file(FILE *fp, const char *)
 {
     double global_avg = global_fraction_covered();
-    gboolean did_head1 = FALSE;
+    bool did_head1 = false;
     int nlines = 0;
 
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
 	cov_file_t *f = (*fiter);
-	gboolean did_head2 = FALSE;
+	bool did_head2 = false;
 
 	for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
 	{
@@ -214,14 +214,14 @@ report_poorly_covered_functions_per_file(FILE *fp, const char *)
 
 	    if (!did_head1)
 	    {
-		did_head1 = TRUE;
+		did_head1 = true;
 		fprintf(fp, "Poorly covered functions\n");
 		fprintf(fp, "========================\n");
 		nlines += 2;
 	    }
 	    if (!did_head2)
 	    {
-		did_head2 = TRUE;
+		did_head2 = true;
 		fprintf(fp, "%s\n", f->minimal_name());
 		nlines++;
 	    }
@@ -237,13 +237,13 @@ report_poorly_covered_functions_per_file(FILE *fp, const char *)
 static int
 report_incompletely_covered_functions_per_file(FILE *fp, const char *)
 {
-    gboolean did_head1 = FALSE;
+    bool did_head1 = false;
     int nlines = 0;
 
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
 	cov_file_t *f = (*fiter);
-	gboolean did_head2 = FALSE;
+	bool did_head2 = false;
 
 	for (ptrarray_iterator_t<cov_function_t> fnitr = f->functions().first() ; *fnitr ; ++fnitr)
 	{
@@ -256,14 +256,14 @@ report_incompletely_covered_functions_per_file(FILE *fp, const char *)
 
 	    if (!did_head1)
 	    {
-		did_head1 = TRUE;
+		did_head1 = true;
 		fprintf(fp, "Incompletely covered functions\n");
 		fprintf(fp, "==============================\n");
 		nlines += 2;
 	    }
 	    if (!did_head2)
 	    {
-		did_head2 = TRUE;
+		did_head2 = true;
 		fprintf(fp, "%s\n", f->minimal_name());
 		nlines++;
 	    }

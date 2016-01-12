@@ -69,7 +69,7 @@ cpp_parser_t::getc_commentless()
 		c = xgetc();
 		if (c == '*')
 		{
-		    in_comment_ = TRUE;
+		    in_comment_ = true;
 		    comment_.truncate();
 		}
 		else if (c == '/')  /* // C++ style comment */
@@ -94,7 +94,7 @@ cpp_parser_t::getc_commentless()
 		c = xgetc();
 		if (c == '/')
 		{
-		    in_comment_ = FALSE;
+		    in_comment_ = false;
 		    got_comment(comment_, 0);
 		}
 	    }
@@ -299,11 +299,10 @@ cpp_parser_t::set_delta(depend_t *dep, const char *var, int delta)
     *dd = delta;
 }
 
-gboolean
+bool
 cpp_parser_t::depends(const char *var) const
 {
     unsigned int count[3];
-    gboolean ret;
 
     memset(count, 0, sizeof(count));
     for (list_iterator_t<depend_t> iter = depend_stack_.first() ; *iter ; ++iter)
@@ -313,7 +312,7 @@ cpp_parser_t::depends(const char *var) const
 	if (dd != 0)
 	    count[(*dd)+1]++;
     }
-    ret = (count[2] && !count[0]); // some positive and no negative
+    bool ret = (count[2] && !count[0]); // some positive and no negative
     _log.debug2("depends: %s=%d\n", var, ret);
     return ret;
 }
@@ -383,8 +382,8 @@ cpp_parser_t::stack_replace(int ntoks, int newtoken)
 	stack_dump();
 }
 
-gboolean
-cpp_parser_t::parse_boolean_expr(gboolean inverted)
+bool
+cpp_parser_t::parse_boolean_expr(bool inverted)
 {
     int tok;
     string_var tmp;
@@ -424,7 +423,7 @@ cpp_parser_t::parse_boolean_expr(gboolean inverted)
 	    inverted = !inverted;
 	    break;
 	default:
-	    return FALSE;
+	    return false;
 	}
 
 	/* reduce */
@@ -446,7 +445,7 @@ cpp_parser_t::parse_boolean_expr(gboolean inverted)
 		break;
 	}
     }
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -461,7 +460,7 @@ cpp_parser_t::parse_if()
     depend_stack_.prepend(dep);
 
     depth_ = 0;
-    parse_boolean_expr(FALSE);
+    parse_boolean_expr(false);
 
     // notify subclasses
     depends_changed();
@@ -555,7 +554,7 @@ cpp_parser_t::parse_cpp_line(unsigned long lineno)
 {
     lineno_ = lineno;
     index_ = 0;
-    in_comment_ = FALSE;
+    in_comment_ = false;
 
     _log.debug2("parse_cpp_line: line[%lu]=\"%s\"\n",
 		lineno, line_.data());
@@ -580,7 +579,7 @@ cpp_parser_t::parse_c_line(unsigned long lineno)
 {
     lineno_ = lineno;
     index_ = 0;
-    in_comment_ = FALSE;
+    in_comment_ = false;
 
     _log.debug2("parse_c_line: line[%lu]=\"%s\"\n", lineno, line_.data());
 
@@ -592,7 +591,7 @@ cpp_parser_t::parse_c_line(unsigned long lineno)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cpp_parser_t::parse()
 {
     FILE *fp;
@@ -603,7 +602,7 @@ cpp_parser_t::parse()
     if ((fp = fopen(filename_, "r")) == 0)
     {
 	perror(filename_);
-	return FALSE;
+	return false;
     }
 
     while (fgets(buf, sizeof(buf), fp) != 0)
@@ -656,7 +655,7 @@ cpp_parser_t::parse()
     }
 
     fclose(fp);
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

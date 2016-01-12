@@ -71,7 +71,7 @@ cov_block_t::describe() const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_block_t::is_epilogue() const
 {
     unsigned int nblocks = function_->num_blocks();
@@ -121,7 +121,7 @@ cov_block_t::set_count(count_t count)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_block_t::is_call_site() const
 {
     return (idx_ > 0 &&
@@ -129,7 +129,7 @@ cov_block_t::is_call_site() const
 	    out_ncalls_ > 0);
 }
 
-gboolean
+bool
 cov_block_t::needs_call() const
 {
     return (is_call_site() && call_ == 0);

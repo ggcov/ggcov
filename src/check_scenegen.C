@@ -90,7 +90,7 @@ check_scenegen_t::textbox(
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-check_scenegen_t::polyline_begin(gboolean arrow)
+check_scenegen_t::polyline_begin(bool arrow)
 {
     npoints_ = 0;
     bbox_.initialise();
@@ -117,7 +117,7 @@ check_scenegen_t::polyline_point(double x, double y)
 }
 
 void
-check_scenegen_t::polyline_end(gboolean arrow)
+check_scenegen_t::polyline_end(bool arrow)
 {
     if (npoints_ < 2)
 	return;
@@ -142,17 +142,17 @@ check_scenegen_t::object(cov_function_t *f)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 check_scenegen_t::check()
 {
-    gboolean ret = TRUE;
+    bool ret = true;
 
     ret &= check_box_intersections();
 
     return ret;
 }
 
-gboolean
+bool
 check_scenegen_t::check_box_intersections()
 {
     unsigned int n_box_intersect = 0;

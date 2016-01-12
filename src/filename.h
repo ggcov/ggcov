@@ -22,7 +22,7 @@
 
 #include "common.h"
 
-typedef gboolean (*file_apply_proc_t)(const char *filename, void *userdata);
+typedef bool (*file_apply_proc_t)(const char *filename, void *userdata);
 
 const char *file_basename_c(const char *filename);
 const char *file_extension_c(const char *filename);

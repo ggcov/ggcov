@@ -236,9 +236,9 @@ callswin_t::populate()
     _log.debug("callswin_t::populate\n");
     functions_ = cov_list_all_functions();
     ::populate_function_combo(from_function_combo_, functions_,
-			      /*add_all_item*/TRUE, /*currentp*/0);
+			      /*add_all_item*/true, /*currentp*/0);
     ::populate_function_combo(to_function_combo_, functions_,
-			      /*add_all_item*/TRUE, /*currentp*/0);
+			      /*add_all_item*/true, /*currentp*/0);
     set_active(from_function_combo_, 0);
     set_active(to_function_combo_, 0);
     update();
@@ -376,7 +376,7 @@ callswin_t::load_state()
     load(GTK_CHECK_MENU_ITEM(line_check_));
     load(GTK_CHECK_MENU_ITEM(count_check_));
     apply_toggles();
-    populating_ = FALSE;
+    populating_ = false;
 }
 
 void
@@ -456,7 +456,7 @@ callswin_t::on_clist_button_press_event(GdkEvent *event)
 
     if (call && (loc = call->location_))
 	sourcewin_t::show_lines(loc->filename, loc->lineno, loc->lineno);
-    return FALSE;
+    return false;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

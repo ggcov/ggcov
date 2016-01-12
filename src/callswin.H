@@ -57,7 +57,7 @@ private:
     GtkWidget *to_check_;
     GtkWidget *line_check_;
     GtkWidget *count_check_;
-    gboolean populating_;
+    bool populating_;
 
     GtkWidget *clist_;
 #if GTK2
