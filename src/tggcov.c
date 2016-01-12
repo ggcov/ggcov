@@ -161,7 +161,7 @@ annotate_file(tggcov_params_t &params, cov_file_t *f)
 	_log.info("Writing %s\n", ggcov_filename);
 	if ((outfp = fopen(ggcov_filename, "w")) == 0)
 	{
-	    perror(ggcov_filename);
+	    _log.perror(ggcov_filename);
 	    g_free(ggcov_filename);
 	    return;
 	}
@@ -357,7 +357,7 @@ dump_callgraph(void)
     _log.info("Writing %s\n", cgfilename);
     if ((fp = fopen(cgfilename, "w")) == 0)
     {
-	perror(cgfilename);
+	_log.perror(cgfilename);
 	return;
     }
 

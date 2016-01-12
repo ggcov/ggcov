@@ -1954,7 +1954,7 @@ cov_file_t::try_file(const char *fn, const char *ext) const
 	if (e == EISDIR)
 	    files_log.error("%s: not a regular file\n", dfilename.data());
 	else if (e != ENOENT)
-	    perror(dfilename);
+	    files_log.perror(dfilename);
 	errno = e;
 	return 0;
     }
@@ -1963,7 +1963,7 @@ cov_file_t::try_file(const char *fn, const char *ext) const
     if (!io->open_read())
     {
 	int e = errno;
-	perror(dfilename);
+	files_log.perror(dfilename);
 	delete io;
 	errno = e;
 	return 0;
@@ -2212,7 +2212,7 @@ cov_file_annotator_t::cov_file_annotator_t(cov_file_t *file)
 {
     if ((fp_ = fopen(file_->name(), "r")) == 0)
     {
-	perror(file_->name());
+	files_log.perror(file_->name());
 	return;
     }
 }

@@ -797,7 +797,7 @@ create_source_symlinks(const char *tempdir)
 	file_build_tree(tempmindir, 0755);
 	_log.debug("symlink %s -> %s\n", link.data(), f->name());
 	if (symlink(f->name(), link) < 0)
-	    perror(f->name());
+	    _log.perror(f->name());
     }
 }
 

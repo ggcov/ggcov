@@ -225,7 +225,7 @@ bool libgd_scenegen_t::save(const char *filename, const char *format)
     FILE *fp = fopen(newfilename, "w");
     if (!fp)
     {
-	perror(newfilename);
+	_log.perror(newfilename);
 	return false;
     }
 
@@ -253,7 +253,7 @@ bool libgd_scenegen_t::save(const char *filename, const char *format)
     fp = 0;
     if (rename(newfilename, filename) < 0)
     {
-	perror(filename);
+	_log.perror(filename);
 	goto error;
     }
 

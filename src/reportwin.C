@@ -115,11 +115,11 @@ open_temp_file()
     fname = g_strdup("/tmp/gcov-reportXXXXXX");
     if ((fd = mkstemp(fname)) < 0)
     {
-	perror(fname);
+	_log.perror(fname);
     }
     else if ((fp = fdopen(fd, "w+")) == 0)
     {
-	perror(fname);
+	_log.perror(fname);
 	close(fd);
     }
     g_free(fname);
@@ -194,7 +194,7 @@ reportwin_t::on_save_as_ok_clicked()
 	FILE *fp = fopen(filename, "w");
 	if (!fp)
 	{
-	    perror(filename);
+	    _log.perror(filename);
 	}
 	else
 	{
