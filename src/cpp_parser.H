@@ -22,8 +22,9 @@
 
 #include "estring.H"
 #include "string_var.H"
-#include "hashtable.H"
 #include "list.H"
+#include <tr1/unordered_map>
+#include <string>
 
 class cpp_parser_t
 {
@@ -46,11 +47,8 @@ protected:
 private:
     struct depend_t
     {
-	depend_t();
-	~depend_t();
-
 	unsigned long lineno_;
-	hashtable_t<const char, int> *deltas_;
+	std::tr1::unordered_map<std::string, int> deltas_;
     };
 
     enum token_t

@@ -25,6 +25,9 @@
 
 static logging::logger_t &_log = logging::find_logger("cpp");
 
+using namespace std;
+using namespace std::tr1;
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 cpp_parser_t::cpp_parser_t(const char *filename)
@@ -260,43 +263,23 @@ cpp_parser_t::token_as_string(int tok) const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-cpp_parser_t::depend_t::depend_t()
-{
-    deltas_ = new hashtable_t<const char, int>;
-}
-
-static gboolean
-delete_one_delta(const char *var, int *dd, void *closure)
-{
-    delete dd;
-    return TRUE;
-}
-
-cpp_parser_t::depend_t::~depend_t()
-{
-    deltas_->foreach_remove(delete_one_delta, 0);
-    delete deltas_;
-}
-
-
 void
 cpp_parser_t::set_delta(depend_t *dep, const char *var, int delta)
 {
-    int *dd;
-
-    if ((dd = dep->deltas_->lookup(var)) == 0)
+    string key = var;
+    unordered_map<string, int>::iterator itr = dep->deltas_.find(key);
+    if (itr == dep->deltas_.end())
     {
-	dd = new int;
-	dep->deltas_->insert(g_strdup(var), dd);
+	dep->deltas_.insert(pair<string, int>(key, delta));
     }
-    else if (*dd != delta)
+    else if (itr->second != delta)
     {
 	_log.warning(
 		"%s:%ld: complex expression involves %s"
 		" more than once, code suppression may not work.\n",
 		filename_.data(), lineno_, var);
+	itr->second = delta;
     }
-    *dd = delta;
 }
 
 bool
@@ -308,9 +291,10 @@ cpp_parser_t::depends(const char *var) const
     for (list_iterator_t<depend_t> iter = depend_stack_.first() ; *iter ; ++iter)
     {
 	depend_t *dep = *iter;
-	int *dd = dep->deltas_->lookup(var);
-	if (dd != 0)
-	    count[(*dd)+1]++;
+
+	unordered_map<string, int>::iterator ditr = dep->deltas_.find(string(var));
+	if (ditr != dep->deltas_.end())
+	    count[ditr->second+1]++;
     }
     bool ret = (count[2] && !count[0]); // some positive and no negative
     _log.debug2("depends: %s=%d\n", var, ret);
@@ -325,8 +309,10 @@ cpp_parser_t::dump() const
     for (list_iterator_t<depend_t> iter = depend_stack_.last() ; *iter ; --iter)
     {
 	buf.truncate();
-	for (hashtable_iter_t<const char, int> ditr = (*iter)->deltas_->first() ; *ditr ; ++ditr)
-	    buf.append_printf(" %s=%d", ditr.key(), *ditr.value());
+
+	unordered_map<string, int>::iterator ditr;
+	for (ditr = (*iter)->deltas_.begin() ; ditr != (*iter)->deltas_.end() ; ++ditr)
+	    buf.append_printf(" %s=%d", ditr->first.c_str(), ditr->second);
 	_log.debug("    [%ld]%s\n", (*iter)->lineno_, buf.data());
     }
 }
@@ -517,11 +503,9 @@ cpp_parser_t::parse_else()
 	return;
     }
     dep->lineno_ = lineno_;
-    for (hashtable_iter_t<const char, int> ditr = dep->deltas_->first() ; *ditr ; ++ditr)
-    {
-	int *dd = ditr.value();
-	*dd = -*dd;
-    }
+    unordered_map<string, int>::iterator ditr;
+    for (ditr = dep->deltas_.begin() ; ditr != dep->deltas_.end() ; ++ditr)
+	ditr->second = -(ditr->second);
 
     // notify subclasses
     depends_changed();
