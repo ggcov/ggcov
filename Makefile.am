@@ -20,6 +20,7 @@
 #
 
 SUBDIRS=	src ui php doc test scripts lib
+ACLOCAL_AMFLAGS=    -I m4
 
 EXTRA_DIST=	.gitignore .gdbinit autogen.sh
 
