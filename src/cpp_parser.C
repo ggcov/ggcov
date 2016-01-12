@@ -601,7 +601,7 @@ cpp_parser_t::parse()
 
     if ((fp = fopen(filename_, "r")) == 0)
     {
-	perror(filename_);
+	_log.perror(filename_);
 	return false;
     }
 

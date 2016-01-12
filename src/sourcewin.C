@@ -702,8 +702,7 @@ sourcewin_t::update()
 
     if ((fp = fopen(filename_, "r")) == 0)
     {
-	/* TODO: gui error report */
-	perror(filename_);
+	_log.perror(filename_);
 	return;
     }
 
@@ -1129,7 +1128,7 @@ sourcewin_t::save_with_annotations(const char *filename)
 
     if ((fp = fopen(filename, "w")) == 0)
     {
-	perror(filename);
+	_log.perror(filename);
 	return FALSE;
     }
 
@@ -1175,7 +1174,7 @@ sourcewin_t::save_with_annotations(const char *filename)
      */
     if (fwrite(contents, 1, length, fp) < length)
     {
-	perror("fwrite");
+	_log.perror("fwrite");
 	g_free(contents);
 	fclose(fp);
 	return FALSE;

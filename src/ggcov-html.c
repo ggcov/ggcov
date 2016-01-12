@@ -113,7 +113,7 @@ generate_static_files(const gghtml_params_t &params)
 
     if ((fp = fopen(filename, "r")) == 0)
     {
-	perror(filename);
+	_log.perror(filename);
 	return -1;
     }
 
@@ -488,7 +488,7 @@ generate_html(const gghtml_params_t &params)
     int r = file_build_tree(params.get_output_directory(), 0777);
     if (r < 0)
     {
-	perror(params.get_output_directory());
+	_log.perror(params.get_output_directory());
 	exit(1);
     }
 

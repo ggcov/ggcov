@@ -25,10 +25,13 @@
 #include <sys/stat.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include "logging.H"
 
 #ifndef __set_errno
 #define __set_errno(v)   errno = (v)
 #endif
+
+static logging::logger_t &_log = logging::find_logger("files");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -479,17 +482,17 @@ file_copy(const char *filefrom, const char *fileto)
 
     if ((fdfrom = open(filefrom, O_RDONLY)) < 0)
     {
-	perror(filefrom);
+	_log.perror(filefrom);
 	goto error;
     }
     if (fstat(fdfrom, &statfrom) < 0)
     {
-	perror(filefrom);
+	_log.perror(filefrom);
 	goto error;
     }
     if ((fdto = open(tmp_fileto, O_WRONLY|O_CREAT|O_TRUNC, statfrom.st_mode)) < 0)
     {
-	perror(tmp_fileto);
+	_log.perror(tmp_fileto);
 	goto error;
     }
 
@@ -501,7 +504,7 @@ file_copy(const char *filefrom, const char *fileto)
 	    int nto = write(fdto, buf+offto, nfrom);
 	    if (nto < 0)
 	    {
-		perror(tmp_fileto);
+		_log.perror(tmp_fileto);
 		goto error;
 	    }
 	    offto += nto;
@@ -510,26 +513,26 @@ file_copy(const char *filefrom, const char *fileto)
     }
     if (nfrom < 0)
     {
-	perror(filefrom);
+	_log.perror(filefrom);
 	goto error;
     }
 
     /* success */
     if (rename(tmp_fileto, fileto) < 0)
     {
-	perror(fileto);
+	_log.perror(fileto);
 	goto error;
     }
 
 out:
     if (fdfrom >= 0 && close(fdfrom) < 0)
     {
-	perror(filefrom);
+	_log.perror(filefrom);
 	r = -1;
     }
     if (fdto >= 0 && close(fdto) < 0)
     {
-	perror(fileto);	/* write errors over NFS can be reported here */
+	_log.perror(fileto);	/* write errors over NFS can be reported here */
 	r = -1;
     }
     free(tmp_fileto);

@@ -159,7 +159,7 @@ ggcov_read_file(const char *filename)
     }
     else if (errno != ENOTDIR)
     {
-	perror(filename);
+	_log.perror(filename);
     }
     else if (file_is_regular(filename) == 0)
     {

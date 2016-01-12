@@ -314,7 +314,7 @@ cov_read_directory_2(
 
     if ((dir = opendir(dirname)) == 0)
     {
-	perror(child.data());
+	_log.perror(child.data());
 	return 0;
     }
 
@@ -496,7 +496,7 @@ cov_read_files(const cov_project_params_t &params)
 	    }
 	    else if (errno != ENOTDIR)
 	    {
-		perror(filename);
+		_log.perror(filename);
 	    }
 	    else if (file_is_regular(filename) == 0)
 	    {
