@@ -42,8 +42,8 @@ public:
     int get_enum(const char *name, const confenum_t *tbl, int deflt);
     void set_enum(const char *name, const confenum_t *tbl, int value);
 
-    gboolean get_bool(const char *name, gboolean deflt);
-    void set_bool(const char *name, gboolean value);
+    bool get_bool(const char *name, bool deflt);
+    void set_bool(const char *name, bool value);
 
     int get_int(const char *name, int deflt);
     void set_int(const char *name, int value);

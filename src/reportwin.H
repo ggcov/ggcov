@@ -47,7 +47,7 @@ private:
     GtkWidget *text_;
     GtkWidget *save_as_button_;
     GtkWidget *save_dialog_;
-    gboolean populating_;
+    bool populating_;
 };
 
 #endif /* _ggcov_reportwin_H_ */

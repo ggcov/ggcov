@@ -35,18 +35,18 @@
 /* Call this to initialise the cov library */
 void cov_init(void);
 
-gboolean cov_is_source_filename(const char *filename);
+bool cov_is_source_filename(const char *filename);
 
 /* Call this before reading any object or source files */
 void cov_pre_read(void);
 /* Add a directory to the search path for .bb, .bbg, .da, and .o files */
 void cov_add_search_directory(const char *dir);
 /* Read coverage data for the given source file */
-gboolean cov_read_source_file(const char *cfilename);
+bool cov_read_source_file(const char *cfilename);
 /* Read all the coveraged source files for the given object file or executable */
-gboolean cov_read_object_file(const char *exefilename);
+bool cov_read_object_file(const char *exefilename);
 /* Read all the coveraged source files in the given directory */
-unsigned int cov_read_directory(const char *dirname, gboolean recursive);
+unsigned int cov_read_directory(const char *dirname, bool recursive);
 /* Call this after reading all files; mostly just calculates callgraph */
 void cov_post_read(void);
 

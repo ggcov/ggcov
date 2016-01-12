@@ -544,7 +544,7 @@ save_callnode_index(DB *db)
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static void
-serialize_arc_list(php_serializer_t *ser, list_t<cov_callarc_t> &arcs, gboolean out)
+serialize_arc_list(php_serializer_t *ser, list_t<cov_callarc_t> &arcs, bool out)
 {
     list_t<cov_callarc_t> copy = arcs.copy();
     copy.sort(out ? cov_callarc_t::compare_by_count_and_to :
@@ -947,8 +947,8 @@ dump_database(const webdb_params_t &params)
     DBC *dbc;
     DBT key, value;
     int ret;
-    gboolean key_flag = FALSE;
-    gboolean value_flag = FALSE;
+    bool key_flag = false;
+    bool value_flag = false;
 
     if (params.num_files() != 1)
     {
@@ -962,8 +962,8 @@ dump_database(const webdb_params_t &params)
     {
 	switch (*mode)
 	{
-	case 'k': key_flag = TRUE; break;
-	case 'v': value_flag = TRUE; break;
+	case 'k': key_flag = true; break;
+	case 'v': value_flag = true; break;
 	default:
 	    _log.error("dump_database: argument to --dump must be a "
 		       "combination of the characters 'k','v'\n");

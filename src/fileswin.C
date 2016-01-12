@@ -283,7 +283,7 @@ static void
 format_stat(
     char *buf,
     unsigned int maxlen,
-    gboolean percent_flag,
+    bool percent_flag,
     unsigned long numerator,
     unsigned long denominator)
 {
@@ -302,8 +302,8 @@ fileswin_t::add_node(
 #if GTK2
     GtkTreeIter *parent_iter,
 #endif
-    gboolean percent_flag,
-    gboolean tree_flag)
+    bool percent_flag,
+    bool tree_flag)
 {
     GdkColor *color;
     char *text[NUM_COLS];
@@ -312,7 +312,7 @@ fileswin_t::add_node(
     char functions_pc_buf[16];
     char calls_pc_buf[16];
     char branches_pc_buf[16];
-    gboolean is_leaf;
+    bool is_leaf;
 
     is_leaf = fr->is_file();
     if (tree_flag || is_leaf)
@@ -387,8 +387,8 @@ fileswin_t::add_node(
 void
 fileswin_t::update()
 {
-    gboolean percent_flag;
-    gboolean tree_flag;
+    bool percent_flag;
+    bool tree_flag;
 
     _log.debug("fileswin_t::update\n");
 
@@ -422,7 +422,7 @@ fileswin_t::update()
 void
 fileswin_t::grey_items()
 {
-    gboolean tree_flag = GTK_CHECK_MENU_ITEM(tree_check_)->active;
+    bool tree_flag = GTK_CHECK_MENU_ITEM(tree_check_)->active;
 
     gtk_widget_set_sensitive(collapse_all_btn_, tree_flag);
     gtk_widget_set_sensitive(expand_all_btn_, tree_flag);

@@ -29,7 +29,7 @@
 #include <dirent.h>
 #include "logging.H"
 
-static gboolean cov_read_one_object_file(const char *exefilename, int depth);
+static bool cov_read_one_object_file(const char *exefilename, int depth);
 static void cov_calculate_duplicate_counts(void);
 extern char *argv0;
 cov_suppression_set_t cov_suppressions;
@@ -58,7 +58,7 @@ cov_add_search_directory(const char *dir)
     cov_file_t::search_path_append(dir);
 }
 
-gboolean
+bool
 cov_is_source_filename(const char *filename)
 {
     const char *ext;
@@ -71,17 +71,17 @@ cov_is_source_filename(const char *filename)
     int i;
 
     if ((ext = file_extension_c(filename)) == 0)
-	return FALSE;
+	return false;
     for (i = 0 ; recognised_exts[i] != 0 ; i++)
     {
 	if (!strcmp(ext, recognised_exts[i]))
-	    return TRUE;
+	    return true;
     }
-    return FALSE;
+    return false;
 }
 
-gboolean
-cov_read_source_file_2(const char *fname, gboolean quiet)
+bool
+cov_read_source_file_2(const char *fname, bool quiet)
 {
     cov_file_t *f;
     const char *filename;
@@ -92,7 +92,7 @@ cov_read_source_file_2(const char *fname, gboolean quiet)
     if ((f = cov_file_t::find(filename)) != 0)
     {
 	// already seen this file, no drama
-	return TRUE;
+	return true;
     }
 
     f = new cov_file_t(filename, fname);
@@ -100,16 +100,16 @@ cov_read_source_file_2(const char *fname, gboolean quiet)
     if (!f->read(quiet))
     {
 	delete f;
-	return FALSE;
+	return false;
     }
 
-    return TRUE;
+    return true;
 }
 
-gboolean
+bool
 cov_read_source_file(const char *filename)
 {
-    return cov_read_source_file_2(filename, /*quiet*/FALSE);
+    return cov_read_source_file_2(filename, /*quiet*/false);
 }
 
 
@@ -178,13 +178,13 @@ cov_post_read(void)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_read_object_file(const char *exefilename)
 {
     return cov_read_one_object_file(exefilename, 0);
 }
 
-static gboolean
+static bool
 cov_read_shlibs(cov_bfd_t *b, int depth)
 {
     cov_factory_t<cov_shlib_scanner_t> factory;
@@ -205,7 +205,7 @@ cov_read_shlibs(cov_bfd_t *b, int depth)
     while (factory.next());
 
     if (ss == 0)
-	return FALSE;   /* no scanner can open this file */
+	return false;   /* no scanner can open this file */
 
     /*
      * TODO: instead of using the first scanner that succeeds open()
@@ -222,7 +222,7 @@ cov_read_shlibs(cov_bfd_t *b, int depth)
     return (successes > 0);
 }
 
-static gboolean
+static bool
 cov_read_one_object_file(const char *exefilename, int depth)
 {
     cov_bfd_t *b;
@@ -234,11 +234,11 @@ cov_read_one_object_file(const char *exefilename, int depth)
     _log.debug("Scanning object or exe file \"%s\"\n", exefilename);
 
     if ((b = new cov_bfd_t()) == 0)
-	return FALSE;
+	return false;
     if (!b->open(exefilename))
     {
 	delete b;
-	return FALSE;
+	return false;
     }
 
     cov_factory_t<cov_filename_scanner_t> factory;
@@ -255,7 +255,7 @@ cov_read_one_object_file(const char *exefilename, int depth)
     if (fs == 0)
     {
 	delete b;
-	return FALSE;   /* no scanner can open this file */
+	return false;   /* no scanner can open this file */
     }
 
     dir = file_dirname(exefilename);
@@ -270,7 +270,7 @@ cov_read_one_object_file(const char *exefilename, int depth)
 	_log.debug("Trying filename %s\n", file.data());
 	if (cov_is_source_filename(file) &&
 	    file_is_regular(file) == 0 &&
-	    cov_read_source_file_2(file, /*quiet*/TRUE))
+	    cov_read_source_file_2(file, /*quiet*/true))
 	    successes++;
     }
 
@@ -287,22 +287,22 @@ cov_read_one_object_file(const char *exefilename, int depth)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static boolean
+static bool
 directory_is_ignored(const char *dirname, const char *child)
 {
     if (strcmp(dirname, "."))
-	return FALSE;
+	return false;
     if (!strcmp(child, "debian") ||
 	!strcmp(child, ".git"))
-	return TRUE;
-    return FALSE;
+	return true;
+    return false;
 }
 
 static unsigned int
 cov_read_directory_2(
     const char *dirname,
-    gboolean recursive,
-    gboolean quiet)
+    bool recursive,
+    bool quiet)
 {
     DIR *dir;
     struct dirent *de;
@@ -337,11 +337,11 @@ cov_read_directory_2(
 
 	if (file_is_regular(child) == 0 &&
 	    cov_is_source_filename(child))
-	    successes += cov_read_source_file_2(child, /*quiet*/TRUE);
+	    successes += cov_read_source_file_2(child, /*quiet*/true);
 	else if (recursive &&
 		 file_is_directory(child) == 0 &&
 		 !directory_is_ignored(dirname, child))
-	    successes += cov_read_directory_2(child, recursive, /*quiet*/TRUE);
+	    successes += cov_read_directory_2(child, recursive, /*quiet*/true);
     }
 
     closedir(dir);
@@ -356,9 +356,9 @@ cov_read_directory_2(
 }
 
 unsigned int
-cov_read_directory(const char *dirname, gboolean recursive)
+cov_read_directory(const char *dirname, bool recursive)
 {
-    return cov_read_directory_2(dirname, recursive, /*quiet*/FALSE);
+    return cov_read_directory_2(dirname, recursive, /*quiet*/false);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

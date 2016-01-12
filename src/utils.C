@@ -26,7 +26,7 @@ void
 populate_function_combo(
     ui_combo_t *cbox,
     const list_t<cov_function_t> *list,
-    gboolean add_all_item,
+    bool add_all_item,
     const cov_function_t **currentp)
 {
     static const char all_functions[] = N_("All Functions");

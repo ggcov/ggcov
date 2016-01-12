@@ -36,9 +36,9 @@ private:
     void update();
     void grey_items();
 #if !GTK2
-    void add_node(file_rec_t*, file_rec_t*, gboolean, gboolean);
+    void add_node(file_rec_t*, file_rec_t*, bool, bool);
 #else
-    void add_node(file_rec_t*, file_rec_t*, GtkTreeIter *parent_iter, gboolean, gboolean);
+    void add_node(file_rec_t*, file_rec_t*, GtkTreeIter *parent_iter, bool, bool);
 #endif
     void load_state();
     void save_state();
@@ -69,7 +69,7 @@ private:
 #if GTK2
     GtkTreeStore *store_;
 #endif
-    gboolean populating_;
+    bool populating_;
 };
 
 #endif /* _ggcov_fileswin_H_ */

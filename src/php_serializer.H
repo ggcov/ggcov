@@ -52,7 +52,7 @@ public:
 
 private:
     void array_element();
-    void _begin_array(unsigned int length, gboolean known);
+    void _begin_array(unsigned int length, bool known);
 
     estring buf_;
     enum _constants
@@ -70,7 +70,7 @@ private:
 
     array_t arrays_[MAX_ARRAY_DEPTH];
     unsigned int array_depth_;
-    gboolean needs_deflation_;
+    bool needs_deflation_;
 };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

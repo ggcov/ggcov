@@ -39,12 +39,12 @@ public:
     cov_i386_call_scanner_t();
     ~cov_i386_call_scanner_t();
 
-    gboolean attach(cov_bfd_t *);
+    bool attach(cov_bfd_t *);
     int next(cov_call_scanner_t::calldata_t *);
 
     const asymbol *find_function_by_value(cov_bfd_section_t *, unsigned long);
     int scan_statics(cov_call_scanner_t::calldata_t *calld);
-    virtual boolean is_function_reloc(const arelent *) const;
+    virtual bool is_function_reloc(const arelent *) const;
 
 private:
     unsigned int section_;
@@ -73,8 +73,8 @@ public:
     cov_amd64_call_scanner_t();
     ~cov_amd64_call_scanner_t();
 
-    gboolean attach(cov_bfd_t *);
-    boolean is_function_reloc(const arelent *) const;
+    bool attach(cov_bfd_t *);
+    bool is_function_reloc(const arelent *) const;
 };
 
 COV_FACTORY_STATIC_REGISTER(cov_call_scanner_t,
@@ -94,13 +94,13 @@ cov_i386_call_scanner_t::~cov_i386_call_scanner_t()
 	g_free(buf_);
 }
 
-gboolean
+bool
 cov_i386_call_scanner_t::attach(cov_bfd_t *b)
 {
     if (b->architecture() != bfd_arch_i386)
-	return FALSE;
+	return false;
     if (b->mach() != bfd_mach_i386_i386)
-	return FALSE;
+	return false;
     return cov_call_scanner_t::attach(b);
 }
 
@@ -183,7 +183,7 @@ cov_i386_call_scanner_t::scan_statics(cov_call_scanner_t::calldata_t *calld)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-boolean
+bool
 cov_i386_call_scanner_t::is_function_reloc(const arelent *rel) const
 {
     switch (rel->howto->type)
@@ -192,14 +192,14 @@ cov_i386_call_scanner_t::is_function_reloc(const arelent *rel) const
     case R_386_GOTPC:   /* external data reference from PIC code */
     case R_386_GOTOFF:  /* external data reference from PIC code */
     case R_386_GOT32:   /* external data reference from ??? code */
-	return FALSE;
+	return false;
     case R_386_PC32:    /* function call from static code */
     case R_386_PLT32:   /* function call from PIC code */
-	return TRUE;
+	return true;
     default:
 	_log.warning("%s: unexpected 386 reloc howto type %d\n",
 		     cbfd_->filename(), rel->howto->type);
-	return FALSE;
+	return false;
     }
 }
 
@@ -281,17 +281,17 @@ cov_amd64_call_scanner_t::~cov_amd64_call_scanner_t()
 {
 }
 
-gboolean
+bool
 cov_amd64_call_scanner_t::attach(cov_bfd_t *b)
 {
     if (b->architecture() != bfd_arch_i386)
-	return FALSE;
+	return false;
     if (b->mach() != bfd_mach_x86_64)
-	return FALSE;
+	return false;
     return cov_call_scanner_t::attach(b);
 }
 
-boolean
+bool
 cov_amd64_call_scanner_t::is_function_reloc(const arelent *rel) const
 {
     switch (rel->howto->type)
@@ -302,10 +302,10 @@ cov_amd64_call_scanner_t::is_function_reloc(const arelent *rel) const
 #ifdef R_X86_64_REX_GOTPCRELX
     case R_X86_64_REX_GOTPCRELX:    /* fancy new external data reference from PIC code */
 #endif
-	return FALSE;
+	return false;
     case R_X86_64_PC32:     /* function call or external data reference from static code */
     case R_X86_64_PLT32:    /* function call from PIC code */
-	return TRUE;
+	return true;
     default:
 	const char *name = 0;
 	if (rel->sym_ptr_ptr &&
@@ -316,7 +316,7 @@ cov_amd64_call_scanner_t::is_function_reloc(const arelent *rel) const
 	_log.warning("%s: unexpected x86-64 reloc howto type %d at %p for %s\n",
 		     cbfd_->filename(), rel->howto->type,
 		     (void *)rel->address, name);
-	return FALSE;
+	return false;
     }
 }
 

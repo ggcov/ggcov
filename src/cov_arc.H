@@ -46,16 +46,16 @@ public:
     {
 	return idx_;
     }
-    boolean is_call() const
+    bool is_call() const
     {
 	return call_;
     }
-    boolean
+    bool
     is_fall_through() const
     {
 	return fall_through_;
     }
-    boolean
+    bool
     is_return() const
     {
 	cov_block_t *epilogue = to_->function()->blocks().tail();
@@ -100,7 +100,7 @@ public:
 	return from_->locations().head();
     }
 
-    boolean is_suppressed() const
+    bool is_suppressed() const
     {
 	return (suppression_ != 0);
     }
@@ -121,17 +121,17 @@ private:
     void set_count(count_t count);
     static count_t total(const list_t<cov_arc_t> &list);
     static cov_arc_t *find_invalid(const list_t<cov_arc_t> &list,
-				   gboolean may_be_call);
+				   bool may_be_call);
     void take_name(char *name); /* takes over string */
 
     cov_block_t *from_, *to_;
     unsigned int idx_;      /* serial number in from->out_arcs */
     count_t count_;
     string_var name_;               /* name of function called (if known) or NULL */
-    boolean on_tree_:1;
-    boolean call_:1;
-    boolean fall_through_:1;
-    boolean count_valid_:1;
+    bool on_tree_:1;
+    bool call_:1;
+    bool fall_through_:1;
+    bool count_valid_:1;
     const cov_suppression_t *suppression_;
 
     friend class cov_file_t;

@@ -71,7 +71,7 @@ class cov_elf_shlib_scanner_t : public cov_shlib_scanner_t
 {
 public:
     ~cov_elf_shlib_scanner_t();
-    gboolean attach(cov_bfd_t *b);
+    bool attach(cov_bfd_t *b);
     char *next();
 
 private:
@@ -201,28 +201,28 @@ cov_elf_shlib_scanner_t::add_to_rpath(const char *path)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_elf_shlib_scanner_t::attach(cov_bfd_t *b)
 {
     cov_bfd_section_t *sec;
 
     if (b->flavour() != bfd_target_elf_flavour)
-	return FALSE;
+	return false;
 
     if (!cov_shlib_scanner_t::attach(b))
-	return FALSE;
+	return false;
 
     if ((sec = cbfd_->find_section(".dynamic")) == 0 ||
 	(dyns_ = (cov_dyn_t *)sec->get_contents(&num_dyns_)) == 0)
-	return FALSE;
+	return false;
     num_dyns_ /= sizeof(cov_dyn_t);
 
     if ((sec = cbfd_->find_section(".dynstr")) == 0 ||
 	(strings_ = (char *)sec->get_contents(&string_size_)) == 0)
     if (strings_ == 0)
-	return FALSE;
+	return false;
 
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

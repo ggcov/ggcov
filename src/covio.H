@@ -53,10 +53,10 @@ public:
     {
     }
 
-    /* These functions return TRUE unless EOF */
-    virtual gboolean read_u32(covio_t &, uint32_t &) = 0;
-    virtual gboolean read_u64(covio_t &, uint64_t &) = 0;
-    virtual gboolean read_string(covio_t &, estring &) = 0;
+    /* These functions return true unless EOF */
+    virtual bool read_u32(covio_t &, uint32_t &) = 0;
+    virtual bool read_u64(covio_t &, uint64_t &) = 0;
+    virtual bool read_string(covio_t &, estring &) = 0;
 };
 
 class covio_t
@@ -66,9 +66,9 @@ public:
      :  refcount_(0),
 	fn_(fn),
 	buf_(0),
-	ownbuf_(FALSE),
+	ownbuf_(false),
 	fp_(0),
-	ownfp_(TRUE),
+	ownfp_(true),
 	format_(0)
     {
     }
@@ -76,9 +76,9 @@ public:
      :  refcount_(0),
 	fn_(fn),
 	buf_(0),
-	ownbuf_(FALSE),
+	ownbuf_(false),
 	fp_(fp),
-	ownfp_(FALSE),
+	ownfp_(false),
 	format_(0)
     {
     }
@@ -86,9 +86,9 @@ public:
      :  refcount_(0),
 	fn_(fn),
 	buf_((char *)buf),
-	ownbuf_(FALSE),
+	ownbuf_(false),
 	fp_(fmemopen((char *)buf, len, "r")),
-	ownfp_(TRUE),
+	ownfp_(true),
 	format_(0)
     {
     }
@@ -96,9 +96,9 @@ public:
      :  refcount_(0),
 	fn_(fn),
 	buf_(buf),
-	ownbuf_(TRUE),
+	ownbuf_(true),
 	fp_(fmemopen(buf, len, "r")),
-	ownfp_(TRUE),
+	ownfp_(true),
 	format_(0)
     {
     }
@@ -114,37 +114,37 @@ public:
 	    delete this;
     }
 
-    gboolean open_read();
+    bool open_read();
 
     const char *filename() const { return fn_; }
     FILE *take()
     {
 	FILE *fp = fp_;
 	fp_ = 0;
-	ownfp_ = FALSE;
+	ownfp_ = false;
 	return fp;
     }
 
-    gboolean skip(unsigned int len);
+    bool skip(unsigned int len);
     int read(char *buf, unsigned int len);
     int read(estring &e, unsigned int len);
-    gboolean gets(estring &e, unsigned int maxlen);
+    bool gets(estring &e, unsigned int maxlen);
 
     off_t tell() const { return ftell(fp_); }
     int seek(off_t off) { return fseek(fp_, off, SEEK_SET); }
-    gboolean eof() const { return feof(fp_); }
+    bool eof() const { return feof(fp_); }
 
     /* Reads an old format .bb string up to the given tag & returns a new string */
-    gboolean read_bbstring(estring &, uint32_t endtag);
-    gboolean read_u32(uint32_t &v)
+    bool read_bbstring(estring &, uint32_t endtag);
+    bool read_u32(uint32_t &v)
     {
 	return format_->read_u32(*this, v);
     }
-    gboolean read_u64(uint64_t &v)
+    bool read_u64(uint64_t &v)
     {
 	return format_->read_u64(*this, v);
     }
-    gboolean read_string(estring &v)
+    bool read_string(estring &v)
     {
 	return format_->read_string(*this, v);
     }
@@ -164,19 +164,19 @@ private:
     int refcount_;
     string_var fn_;
     char *buf_;
-    gboolean ownbuf_;
+    bool ownbuf_;
     FILE *fp_;
-    gboolean ownfp_;
+    bool ownfp_;
     covio_fmt_t *format_;
 
-    /* These functions return TRUE unless EOF */
-    gboolean read_lu32(uint32_t&); /* little-endian 32b */
-    gboolean read_bu32(uint32_t&); /* big-endian 32b */
-    gboolean read_lu64(uint64_t&); /* little-endian 64b */
-    gboolean read_bu64(uint64_t&); /* big-endian 64b */
+    /* These functions return true unless EOF */
+    bool read_lu32(uint32_t&); /* little-endian 32b */
+    bool read_bu32(uint32_t&); /* big-endian 32b */
+    bool read_lu64(uint64_t&); /* little-endian 64b */
+    bool read_bu64(uint64_t&); /* big-endian 64b */
 
     /* the given byte length into a new string */
-    gboolean read_string_len(estring &e, uint32_t len);
+    bool read_string_len(estring &e, uint32_t len);
 
     friend class covio_fmt_old_t;
     friend class covio_fmt_gcc33_t;

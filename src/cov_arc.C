@@ -104,7 +104,7 @@ cov_arc_t::total(const list_t<cov_arc_t> &list)
 }
 
 cov_arc_t *
-cov_arc_t::find_invalid(const list_t<cov_arc_t> &list, gboolean may_be_call)
+cov_arc_t::find_invalid(const list_t<cov_arc_t> &list, bool may_be_call)
 {
     list_iterator_t<cov_arc_t> iter;
 

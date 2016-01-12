@@ -280,7 +280,7 @@ static void
 format_stat(
     char *buf,
     unsigned int maxlen,
-    gboolean percent_flag,
+    bool percent_flag,
     count_t numerator,
     count_t denominator)
 {
@@ -295,7 +295,7 @@ format_stat(
 }
 
 void
-callgraphwin_t::update_clist(GtkWidget *clist, list_t<cov_callarc_t> &arcs, gboolean isin)
+callgraphwin_t::update_clist(GtkWidget *clist, list_t<cov_callarc_t> &arcs, bool isin)
 {
 #if !GTK2
     int row;
@@ -321,7 +321,7 @@ callgraphwin_t::update_clist(GtkWidget *clist, list_t<cov_callarc_t> &arcs, gboo
     {
 	cov_callarc_t *ca = *itr;
 
-	format_stat(countbuf, sizeof(countbuf), /*percent*/FALSE,
+	format_stat(countbuf, sizeof(countbuf), /*percent*/false,
 		    /*numerator*/ca->count, /*denominator*/total);
 	text[COL_COUNT] = countbuf;
 
@@ -357,8 +357,8 @@ callgraphwin_t::update()
 
     set_title(cn->unambiguous_name());
 
-    update_clist(ancestors_clist_, cn->in_arcs, TRUE);
-    update_clist(descendants_clist_, cn->out_arcs, FALSE);
+    update_clist(ancestors_clist_, cn->in_arcs, true);
+    update_clist(descendants_clist_, cn->out_arcs, false);
 }
 
 void

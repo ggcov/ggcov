@@ -260,7 +260,7 @@ static void
 format_stat(
     char *buf,
     unsigned int maxlen,
-    gboolean percent_flag,
+    bool percent_flag,
     unsigned long numerator,
     unsigned long denominator)
 {
@@ -276,7 +276,7 @@ format_stat(
 void
 functionswin_t::update()
 {
-    gboolean percent_flag;
+    bool percent_flag;
     GdkColor *color;
     char *text[NUM_COLS];
     char blocks_pc_buf[16];
@@ -354,14 +354,14 @@ functionswin_t::update()
 void
 functionswin_t::load_state()
 {
-    populating_ = TRUE; /* suppress check menu item callback */
+    populating_ = true; /* suppress check menu item callback */
     load(GTK_CHECK_MENU_ITEM(blocks_check_));
     load(GTK_CHECK_MENU_ITEM(lines_check_));
     load(GTK_CHECK_MENU_ITEM(calls_check_));
     load(GTK_CHECK_MENU_ITEM(branches_check_));
     load(GTK_CHECK_MENU_ITEM(percent_check_));
     apply_toggles();
-    populating_ = FALSE;
+    populating_ = false;
 }
 
 void

@@ -57,17 +57,17 @@ struct dbounds_t
 	y2 += deltay;
     }
 
-    inline gboolean intersects(const dbounds_t &b) const
+    inline bool intersects(const dbounds_t &b) const
     {
 	if (x1 > b.x2)
-	    return FALSE;
+	    return false;
 	if (x2 < b.x1)
-	    return FALSE;
+	    return false;
 	if (y1 > b.y2)
-	    return FALSE;
+	    return false;
 	if (y2 < b.y1)
-	    return FALSE;
-	return TRUE;
+	    return false;
+	return true;
     }
 
     inline void adjust(double bx1, double by1, double bx2, double by2)

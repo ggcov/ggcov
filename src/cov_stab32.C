@@ -50,7 +50,7 @@ class cov_stab32_filename_scanner_t : public cov_filename_scanner_t
 {
 public:
     ~cov_stab32_filename_scanner_t();
-    gboolean attach(cov_bfd_t *b);
+    bool attach(cov_bfd_t *b);
     char *next();
 
 private:
@@ -82,27 +82,27 @@ cov_stab32_filename_scanner_t::~cov_stab32_filename_scanner_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 cov_stab32_filename_scanner_t::attach(cov_bfd_t *b)
 {
     cov_bfd_section_t *sec;
 
     if (!cov_filename_scanner_t::attach(b))
-	return FALSE;
+	return false;
 
     if ((sec = cbfd_->find_section(".stab")) == 0 ||
 	(stabs_ = (cov_stab32_t *)sec->get_contents(&num_stabs_)) == 0)
-	return FALSE;
+	return false;
     num_stabs_ /= sizeof(cov_stab32_t);
 
     if ((sec = cbfd_->find_section(".stabstr")) == 0 ||
 	(strings_ = (char *)sec->get_contents(&string_size_)) == 0)
     if (strings_ == 0)
-	return FALSE;
+	return false;
 
     assert(sizeof(cov_stab32_t) == 12);
 
-    return TRUE;
+    return true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

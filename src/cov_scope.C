@@ -26,7 +26,7 @@
 
 cov_scope_t::cov_scope_t()
 {
-    dirty_ = TRUE;
+    dirty_ = true;
 }
 
 cov_scope_t::~cov_scope_t()
@@ -40,7 +40,7 @@ cov_scope_t::get_stats()
     {
 	stats_.clear();
 	status_ = calc_stats(&stats_);
-	dirty_ = FALSE;
+	dirty_ = false;
     }
     return &stats_;
 }
@@ -55,7 +55,7 @@ cov_scope_t::status()
 void
 cov_scope_t::dirty()
 {
-    dirty_ = TRUE;
+    dirty_ = true;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

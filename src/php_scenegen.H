@@ -37,9 +37,9 @@ public:
     void box(double x, double y, double w, double h);
     void textbox(double x, double y, double w, double h,
 			 const char *text);
-    void polyline_begin(gboolean arrow);
+    void polyline_begin(bool arrow);
     void polyline_point(double x, double y);
-    void polyline_end(gboolean arrow);
+    void polyline_end(bool arrow);
 
     void bounds(double x, double y, double w, double h);
     const estring &data();
@@ -61,13 +61,13 @@ private:
     unsigned int ncolors_;
     unsigned int *colors_;
 
-    gboolean fill_flag_;
+    bool fill_flag_;
     unsigned int fill_idx_;
-    gboolean border_flag_;
+    bool border_flag_;
     unsigned int border_idx_;
 
     /* state for polylines */
-    gboolean first_arrow_flag_;
+    bool first_arrow_flag_;
     struct
     {
 	unsigned int num_points;

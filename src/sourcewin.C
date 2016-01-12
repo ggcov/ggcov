@@ -87,7 +87,7 @@ sourcewin_t::update_flow_window()
  * Get the first and last line number visible in the text window.
  * Returns FALSE if there are no numbers yet.
  */
-gboolean
+bool
 sourcewin_t::get_visible_lines(
     unsigned long *begin_linenop,
     unsigned long *end_linenop)
@@ -112,14 +112,14 @@ sourcewin_t::get_visible_lines(
     _log.debug("    begin_lineno=%lu end_lineno=%lu\n", begin_lineno, end_lineno);
 
     if (begin_lineno == 0 && end_lineno == 0)
-	return FALSE;
+	return false;
 
     if (begin_linenop != 0)
 	*begin_linenop = begin_lineno;
     if (end_linenop != 0)
 	*end_linenop = end_lineno;
 
-    return TRUE;
+    return true;
 }
 
 void
@@ -140,7 +140,7 @@ sourcewin_t::update_flows_tramp(gpointer user_data)
     return sw->do_update_flows();
 }
 
-gboolean
+bool
 sourcewin_t::do_update_flows()
 {
     _log.debug("sourcewin_t::do_update_flows\n");
@@ -332,7 +332,7 @@ sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
 
     if (flow->width_ > flow_width_)
     {
-	flow_width_dirty_ = TRUE;
+	flow_width_dirty_ = true;
 	_log.debug("        flow width dirty\n");
     }
 
@@ -350,7 +350,7 @@ sourcewin_t::delete_flows()
 	gtk_widget_unref(flow->canvas_);
 	delete flow;
     }
-    flow_width_dirty_ = TRUE;
+    flow_width_dirty_ = true;
 }
 
 /*
@@ -362,7 +362,7 @@ sourcewin_t::delete_flows()
 void
 sourcewin_t::wait_for_text_validation()
 {
-    gboolean vis = FALSE;
+    bool vis = FALSE;
     int n = 5;
 
     while (g_main_context_iteration(NULL, FALSE))
@@ -524,7 +524,7 @@ sourcewin_t::on_filenames_entry_changed()
 void
 sourcewin_t::populate_filenames()
 {
-    populating_ = TRUE; /* suppress combo entry callback */
+    populating_ = true; /* suppress combo entry callback */
     clear(filenames_combo_);
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
@@ -532,7 +532,7 @@ sourcewin_t::populate_filenames()
 	add(filenames_combo_, f->minimal_name(), f);
     }
     done(filenames_combo_);
-    populating_ = FALSE;
+    populating_ = false;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -597,12 +597,12 @@ sourcewin_t::populate_functions()
 
     /* now build the menu */
 
-    populating_ = TRUE; /* suppress combo entry callback */
+    populating_ = true; /* suppress combo entry callback */
     clear(functions_combo_);
     while ((fn = functions.remove_head()) != 0)
 	add(functions_combo_, fn->name(), fn);
     done(functions_combo_);
-    populating_ = FALSE;
+    populating_ = false;
 }
 
 void
@@ -860,7 +860,7 @@ sourcewin_t::grey_items()
 {
     unsigned long start = 0;
     ui_text_get_selected_lines(text_, &start, 0);
-    gboolean selfn = !!selected_function();
+    bool selfn = !!selected_function();
 
     gtk_widget_set_sensitive(flow_diagram_item_, selfn);
     gtk_widget_set_sensitive(summarise_function_item_, selfn);
@@ -1018,14 +1018,14 @@ sourcewin_t::apply_toggles()
 void
 sourcewin_t::load_state()
 {
-    populating_ = TRUE; /* suppress check menu item callback */
+    populating_ = true; /* suppress check menu item callback */
     for (unsigned int i = 0 ; i < NUM_COLS ; i++)
 	load(GTK_CHECK_MENU_ITEM(column_checks_[i]));
     load(GTK_CHECK_MENU_ITEM(colors_check_));
     load(GTK_CHECK_MENU_ITEM(toolbar_check_));
     load(GTK_CHECK_MENU_ITEM(titles_check_));
     apply_toggles();
-    populating_ = FALSE;
+    populating_ = false;
 }
 
 void
@@ -1119,7 +1119,7 @@ sourcewin_t::on_flow_diagram_activate()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 sourcewin_t::save_with_annotations(const char *filename)
 {
     int i;
@@ -1183,7 +1183,7 @@ sourcewin_t::save_with_annotations(const char *filename)
 
     g_free(contents);
     fclose(fp);
-    return TRUE;
+    return true;
 }
 
 GLADE_CALLBACK void

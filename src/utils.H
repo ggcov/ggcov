@@ -25,7 +25,7 @@
 
 void populate_function_combo(ui_combo_t *combo,
 			     const list_t<cov_function_t> *,
-			     gboolean add_all_item,
+			     bool add_all_item,
 			     const cov_function_t **currentp);
 
 #endif /* _ggcov_utils_H_ */

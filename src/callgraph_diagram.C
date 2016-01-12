@@ -85,7 +85,7 @@ callgraph_diagram_t::node_t::ndown()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 callgraph_diagram_t::node_t::any_self()
 {
     for (list_iterator_t<cov_callarc_t> itr = callnode_->out_arcs.first() ; *itr ; ++itr)
@@ -93,9 +93,9 @@ callgraph_diagram_t::node_t::any_self()
 	node_t *to = node_t::from_callnode((*itr)->to);
 
 	if (to != 0 && to->rank_ == rank_)
-	    return TRUE;
+	    return true;
     }
-    return FALSE;
+    return false;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -445,12 +445,12 @@ callgraph_diagram_t::build_node(cov_callnode_t *cn, int rank)
 	    max_rank_ = rank;
     }
 
-    n->on_path_ = TRUE;
+    n->on_path_ = true;
     for (list_iterator_t<cov_callarc_t> itr = cn->out_arcs.first() ; *itr ; ++itr)
     {
 	build_node((*itr)->to, rank+1);
     }
-    n->on_path_ = FALSE;
+    n->on_path_ = false;
 
     return n;
 }
@@ -518,15 +518,15 @@ callgraph_diagram_t::calc_spread(int pass, int rank)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-gboolean
+bool
 callgraph_diagram_t::any_self_arcs(rank_t *r)
 {
     for (list_iterator_t<node_t> iter = r->nodes_.first() ; *iter ; ++iter)
     {
 	if ((*iter)->any_self())
-	    return TRUE;
+	    return true;
     }
-    return FALSE;
+    return false;
 }
 
 void
@@ -779,7 +779,7 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 
 	sg->arrow_size(ARROW_SIZE);
 	sg->fill(fg_rgb_by_status_[ca->count ? cov::COVERED : cov::UNCOVERED]);
-	sg->polyline_begin(FALSE);
+	sg->polyline_begin(false);
 	if (child->rank_ > n->rank_)
 	{
 	    /* downrank arc */
@@ -818,7 +818,7 @@ callgraph_diagram_t::show_node(node_t *n, scenegen_t *sg)
 	    sg->polyline_point(ix, cy);
 	    sg->polyline_point(cx, cy);
 	}
-	sg->polyline_end(TRUE);
+	sg->polyline_end(true);
     }
 
     if (_log.is_enabled(logging::DEBUG))

@@ -34,7 +34,7 @@ protected:
 public:
     virtual ~cov_call_iterator_t();
 
-    virtual gboolean next() = 0;
+    virtual bool next() = 0;
 
     cov_block_t *block() const
     {
@@ -71,14 +71,14 @@ public:
 	    return 0;
     }
 
-    gboolean is_pure() const
+    bool is_pure() const
     {
 	return (block_ != 0 && pure_ != 0);
     }
 
 protected:
     void block_start(cov_block_t *);
-    gboolean block_next();
+    bool block_next();
 
 private:
     int state_;
@@ -94,7 +94,7 @@ class cov_function_call_iterator_t : public cov_call_iterator_t
 public:
     cov_function_call_iterator_t(cov_function_t *);
     ~cov_function_call_iterator_t();
-    gboolean next();
+    bool next();
 
 private:
     cov_function_t *function_;
@@ -108,7 +108,7 @@ public:
     cov_range_call_iterator_t(const cov_location_t *first,
 			      const cov_location_t *last);
     ~cov_range_call_iterator_t();
-    gboolean next();
+    bool next();
 
 private:
     const cov_location_t *first_, *last_;

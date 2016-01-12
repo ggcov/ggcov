@@ -83,7 +83,7 @@ private:
     GtkWidget *range_start_spin_;
     GtkWidget *range_end_spin_;
     GtkWidget *range_view_;
-    gboolean populating_;
+    bool populating_;
 
     GtkWidget *lines_label_;
     GtkWidget *lines_pc_label_;

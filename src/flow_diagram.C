@@ -246,19 +246,19 @@ flow_diagram_t::arc_t::compare(const arc_t **a1p, const arc_t **a2p)
     return (*a1p)->slot_needed() - (*a2p)->slot_needed();
 }
 
-gboolean
+bool
 flow_diagram_t::no_intervening_nodes(node_t *from, node_t *to) const
 {
     int idx;
 
     if (to->first_idx_ <= from->last_idx_)
-	return FALSE;
+	return false;
     for (idx = from->last_idx_+1 ; idx < to->first_idx_ ; idx++)
     {
 	if (nodes_by_line_[idx].head() != 0)
-	    return FALSE;
+	    return false;
     }
-    return TRUE;
+    return true;
 }
 
 flow_diagram_t::arc_case_t
@@ -348,7 +348,7 @@ flow_diagram_t::generate_arcs()
 void
 flow_diagram_t::slot_distance(node_t *node, int idx, int *distances) const
 {
-    gboolean side = 0;
+    bool side = 0;
 
     for (list_iterator_t<node_t> niter = nodes_by_line_[idx].first() ; *niter ; ++niter)
     {
@@ -556,10 +556,10 @@ flow_diagram_t::show_debug_grid(scenegen_t *sg)
 	for (i = 0 ; i < num_slots_[0] ; i++)
 	{
 	    double x = xpos_[1] + SLOTGAP * i;
-	    sg->polyline_begin(FALSE);
+	    sg->polyline_begin(false);
 	    sg->polyline_point(x, ypos_[1]);
 	    sg->polyline_point(x, ypos_[2]);
-	    sg->polyline_end(FALSE);
+	    sg->polyline_end(false);
 	}
     }
 
@@ -569,10 +569,10 @@ flow_diagram_t::show_debug_grid(scenegen_t *sg)
 	for (i = 0 ; i < num_slots_[1] ; i++)
 	{
 	    double x = xpos_[6] - SLOTGAP * i;
-	    sg->polyline_begin(FALSE);
+	    sg->polyline_begin(false);
 	    sg->polyline_point(x, ypos_[1]);
 	    sg->polyline_point(x, ypos_[2]);
-	    sg->polyline_end(FALSE);
+	    sg->polyline_end(false);
 	}
     }
 
@@ -585,30 +585,30 @@ flow_diagram_t::show_debug_grid(scenegen_t *sg)
     {
 	double y = ypos_[1] + (LINE_HEIGHT + VGAP) * i;
 
-	sg->polyline_begin(FALSE);
+	sg->polyline_begin(false);
 	sg->polyline_point(xpos_[3], y);
 	sg->polyline_point(xpos_[4], y);
-	sg->polyline_end(FALSE);
+	sg->polyline_end(false);
 
-	sg->polyline_begin(FALSE);
+	sg->polyline_begin(false);
 	sg->polyline_point(xpos_[3], y+LINE_HEIGHT);
 	sg->polyline_point(xpos_[4], y+LINE_HEIGHT);
-	sg->polyline_end(FALSE);
+	sg->polyline_end(false);
     }
     /* vertical grid lines over the node area */
     for (i = 0 ; i < num_ranks ; i++)
     {
 	double x = xpos_[3] + (NODE_WIDTH + HGAP) * i;
 
-	sg->polyline_begin(FALSE);
+	sg->polyline_begin(false);
 	sg->polyline_point(x, ypos_[1]);
 	sg->polyline_point(x, ypos_[2]);
-	sg->polyline_end(FALSE);
+	sg->polyline_end(false);
 
-	sg->polyline_begin(FALSE);
+	sg->polyline_begin(false);
 	sg->polyline_point(x+NODE_WIDTH, ypos_[1]);
 	sg->polyline_point(x+NODE_WIDTH, ypos_[2]);
-	sg->polyline_end(FALSE);
+	sg->polyline_end(false);
     }
 }
 
@@ -814,7 +814,7 @@ flow_diagram_t::show_arc(arc_t *arc, scenegen_t *sg)
     node_t *from = arc->from_;
     node_t *to = arc->to_;
 
-    sg->polyline_begin(FALSE);
+    sg->polyline_begin(false);
     switch (arc->case_)
     {
     case AC_DOWN1: /* arc down from one line to the next */
@@ -854,7 +854,7 @@ flow_diagram_t::show_arc(arc_t *arc, scenegen_t *sg)
 	sg->polyline_point(to->slotx(0), to->bottomy());
 	break;
     }
-    sg->polyline_end(TRUE);
+    sg->polyline_end(true);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

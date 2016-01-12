@@ -24,7 +24,7 @@
 php_serializer_t::php_serializer_t()
 {
     array_depth_ = 0;
-    needs_deflation_ = FALSE;
+    needs_deflation_ = false;
 }
 
 php_serializer_t::~php_serializer_t()
@@ -82,7 +82,7 @@ php_serializer_t::data()
 	}
 
 	buf_.truncate_to(out - buf_.data());
-	needs_deflation_ = FALSE;
+	needs_deflation_ = false;
     }
     return buf_;
 }
@@ -107,7 +107,7 @@ php_serializer_t::array_element()
 #define INFLATED_FORMAT "%010u"
 
 void
-php_serializer_t::_begin_array(unsigned int length, gboolean known)
+php_serializer_t::_begin_array(unsigned int length, bool known)
 {
     const char *fmt;
 
@@ -128,7 +128,7 @@ php_serializer_t::_begin_array(unsigned int length, gboolean known)
 	 * Unknown length.  Format a wide field of zeros and remember where
 	 * it's stored so we can overwrite it later with the correct value.
 	 */
-	needs_deflation_ = TRUE;
+	needs_deflation_ = true;
 	a->count_offset_ = buf_.length()+2;
 	fmt = "a:" INFLATED_FORMAT ":{";
     }
@@ -138,13 +138,13 @@ php_serializer_t::_begin_array(unsigned int length, gboolean known)
 void
 php_serializer_t::begin_array(unsigned int length)
 {
-    _begin_array(length, TRUE);
+    _begin_array(length, true);
 }
 
 void
 php_serializer_t::begin_array()
 {
-    _begin_array(0, FALSE);
+    _begin_array(0, false);
 }
 
 void

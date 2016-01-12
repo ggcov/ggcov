@@ -77,15 +77,15 @@ private:
 #if GTK2
     void delete_flows();
     void update_flow_window();
-    gboolean get_visible_lines(unsigned long*, unsigned long*);
+    bool get_visible_lines(unsigned long*, unsigned long*);
     void update_flows();
     static gboolean update_flows_tramp(gpointer);
-    gboolean do_update_flows();
+    bool do_update_flows();
     flow_t *create_flow(cov_function_t *, int y, int h);
     void wait_for_text_validation();
 #endif
     cov_function_t *selected_function() const;
-    gboolean save_with_annotations(const char *filename);
+    bool save_with_annotations(const char *filename);
     static int delayed_function_activate(gpointer userdata);
     static void on_source_filename_activate(GtkWidget *w, gpointer userdata);
     static void on_source_function_activate(GtkWidget *w, gpointer userdata);
@@ -115,7 +115,7 @@ private:
     void on_text_size_decrease_activate();
     void on_text_size_normal_activate();
 
-    static gboolean initialised_;
+    static bool initialised_;
     int font_width_;
     static const int column_widths_[NUM_COLS];
     static const char *column_names_[NUM_COLS];
@@ -134,7 +134,7 @@ private:
     GtkWidget *toolbar_;
     ui_combo_t *filenames_combo_;
     ui_combo_t *functions_combo_;
-    gboolean populating_;
+    bool populating_;
     string_var filename_;
 
     GtkWidget *titles_hbox_;
@@ -147,9 +147,9 @@ private:
 #if GTK2
     list_t<flow_t> flows_;
     unsigned int flow_shown_;
-    gboolean text_initialised_;
+    bool text_initialised_;
     unsigned int flow_width_;
-    gboolean flow_width_dirty_;
+    bool flow_width_dirty_;
 #endif
     unsigned int retries_remaining_;
 };

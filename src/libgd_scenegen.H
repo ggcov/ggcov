@@ -38,9 +38,9 @@ public:
     void box(double x, double y, double w, double h);
     void textbox(double x, double y, double w, double h,
 			 const char *text);
-    void polyline_begin(gboolean arrow);
+    void polyline_begin(bool arrow);
     void polyline_point(double x, double y);
-    void polyline_end(gboolean arrow);
+    void polyline_end(bool arrow);
 
     bool save(const char *filename, const char *format = 0);
 
@@ -56,13 +56,13 @@ private:
     gdFont *font_;
     int text_color_;
 
-    gboolean fill_flag_;
+    bool fill_flag_;
     int fill_;
-    gboolean border_flag_;
+    bool border_flag_;
     int border_;
 
     /* state for polylines */
-    gboolean first_arrow_flag_;
+    bool first_arrow_flag_;
     gdPoint *points_;
     unsigned int points_count_;	    // number of valid points
     size_t points_allocated_;	    // size in bytes of points array

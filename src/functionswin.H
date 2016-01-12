@@ -53,7 +53,7 @@ private:
 #if GTK2
     GtkListStore *store_;
 #endif
-    gboolean populating_;
+    bool populating_;
 };
 
 #endif /* _ggcov_functionswin_H_ */

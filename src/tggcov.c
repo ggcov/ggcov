@@ -266,7 +266,7 @@ report(tggcov_params_t &params)
 {
     FILE *fp = stdout;
     const report_t *rep;
-    gboolean did_msg1 = FALSE;
+    bool did_msg1 = false;
 
     report_lastlines = -1;
     const char *reports = params.get_reports();
@@ -308,7 +308,7 @@ report(tggcov_params_t &params)
 		    _log.error("unknown report name \"%s\""
 			       ", use \"-R list\" to print listing.",
 			       name);
-		    did_msg1 = TRUE;
+		    did_msg1 = true;
 		}
 		else
 		{

@@ -146,11 +146,11 @@ file_open_mode(const char *filename, const char *rw, mode_t mode)
  * Return a new string which is a normalised absolute filename.
  */
 
-static gboolean
+static bool
 is_path_tail(const char *path, const char *file)
 {
     if (strlen(file) > strlen(path))
-	return FALSE;
+	return false;
     const char *tail = path + strlen(path) - strlen(file);
     return (!strcmp(tail, file) && (tail == path || tail[-1] == '/'));
 }
@@ -159,7 +159,7 @@ static const char *
 file_make_absolute_to(
     const char *filename,
     const char *absfile,
-    gboolean isdir)
+    bool isdir)
 {
     static estring abs;
     tok_t tok(filename, "/");
@@ -220,19 +220,19 @@ file_make_absolute_to(
 const char *
 file_make_absolute(const char *filename)
 {
-    return file_make_absolute_to(filename, 0, FALSE);
+    return file_make_absolute_to(filename, 0, false);
 }
 
 const char *
 file_make_absolute_to_file(const char *filename, const char *absfile)
 {
-    return file_make_absolute_to(filename, absfile, FALSE);
+    return file_make_absolute_to(filename, absfile, false);
 }
 
 const char *
 file_make_absolute_to_dir(const char *filename, const char *absdir)
 {
-    return file_make_absolute_to(filename, absdir, TRUE);
+    return file_make_absolute_to(filename, absdir, true);
 }
 
 /*
@@ -247,7 +247,7 @@ file_normalise(const char *filename)
     estring down;
     tok_t tok(filename, "/");
     const char *part;
-    gboolean is_abs = (*filename == '/');
+    bool is_abs = (*filename == '/');
 
     if (is_abs)
 	up.append_char('/');

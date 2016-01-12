@@ -42,7 +42,7 @@ canvas_scenegen_t::canvas_scenegen_t(GnomeCanvas *can)
     points_.num_points = 0;
     points_.ref_count = 1;
     points_size_ = 0;
-    registered_tooltip_ = FALSE;
+    registered_tooltip_ = false;
 }
 
 canvas_scenegen_t::~canvas_scenegen_t()
@@ -56,26 +56,26 @@ canvas_scenegen_t::~canvas_scenegen_t()
 void
 canvas_scenegen_t::noborder()
 {
-    border_flag_ = FALSE;
+    border_flag_ = false;
 }
 
 void
 canvas_scenegen_t::border(unsigned int rgb)
 {
-    border_flag_ = TRUE;
+    border_flag_ = true;
     RGB_TO_STR(border_buf_, rgb);
 }
 
 void
 canvas_scenegen_t::nofill()
 {
-    fill_flag_ = FALSE;
+    fill_flag_ = false;
 }
 
 void
 canvas_scenegen_t::fill(unsigned int rgb)
 {
-    fill_flag_ = TRUE;
+    fill_flag_ = true;
     RGB_TO_STR(fill_buf_, rgb);
 }
 
@@ -104,7 +104,7 @@ canvas_scenegen_t::handle_object(GnomeCanvasItem *item)
 			   (char *)0);
 	    gtk_signal_connect(GTK_OBJECT(canvas), "query-tooltip",
 		    GTK_SIGNAL_FUNC(on_query_tooltip), NULL);
-	    registered_tooltip_ = TRUE;
+	    registered_tooltip_ = true;
 	}
 	gtk_object_set_data(GTK_OBJECT(item), BLOCK_KEY, (gpointer)b);
 	return;
@@ -181,7 +181,7 @@ canvas_scenegen_t::textbox(
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
-canvas_scenegen_t::polyline_begin(gboolean arrow)
+canvas_scenegen_t::polyline_begin(bool arrow)
 {
     first_arrow_flag_ = arrow;
     points_.num_points = 0;
@@ -207,7 +207,7 @@ canvas_scenegen_t::polyline_point(double x, double y)
 }
 
 void
-canvas_scenegen_t::polyline_end(gboolean arrow)
+canvas_scenegen_t::polyline_end(bool arrow)
 {
     GnomeCanvasItem *item;
 

@@ -37,7 +37,7 @@ public:
 	cov_stats_t stats;
 	return calc_stats(&stats);
     }
-    gboolean is_suppressed() const
+    bool is_suppressed() const
     {
 	return (suppression_ != 0);
     }
@@ -82,7 +82,7 @@ public:
 	return count_;
     }
 
-    gboolean is_epilogue() const;
+    bool is_epilogue() const;
 
     void finalise();
 
@@ -111,8 +111,8 @@ private:
 
     void set_count(count_t);
     void add_location(const char *filename, unsigned lineno);
-    gboolean is_call_site() const;
-    gboolean needs_call() const;
+    bool is_call_site() const;
+    bool needs_call() const;
     void add_call(const char *name, const cov_location_t *loc);
     char *pop_call();
     void suppress(const cov_suppression_t *);
@@ -124,7 +124,7 @@ private:
     unsigned int idx_;      /* serial number in function */
 
     count_t count_;
-    boolean count_valid_:1;
+    bool count_valid_:1;
 
     list_t<cov_arc_t> in_arcs_;
     unsigned in_ninvalid_;   /* number of inbound non-call arcs with invalid counts */
@@ -139,7 +139,7 @@ private:
     /* used while reading .o files to get arc names */
     string_var call_;
 
-    friend gboolean cov_o_file_add_call(cov_read_state_t *rs,
+    friend bool cov_o_file_add_call(cov_read_state_t *rs,
 					unsigned long address,
 					const char *callname);
     friend class cov_file_t;
