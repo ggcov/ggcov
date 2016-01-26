@@ -1,17 +1,18 @@
 #include "common.h"
 #include "argparse.H"
 
+using namespace std;
+using namespace std::tr1;
+
 namespace argparse
 {
 
 params_t::params_t()
- :  files_(new ptrarray_t<const char>())
 {
 }
 
 params_t::~params_t()
 {
-    delete files_;
 }
 
 bool
@@ -23,25 +24,31 @@ params_t::set(const char *key, const char *value)
 void
 params_t::add_file(const char *file)
 {
-    files_->append(file);
+    files_.push_back(string(file));
 }
 
 unsigned int
 params_t::num_files() const
 {
-    return files_->length();
+    return files_.size();
 }
 
 const char *
 params_t::nth_file(unsigned i) const
 {
-    return files_->nth(i);
+    return files_[i].c_str();
 }
 
 params_t::file_iterator_t
-params_t::file_iter() const
+params_t::file_begin() const
 {
-    return files_->first();
+    return files_.begin();
+}
+
+params_t::file_iterator_t
+params_t::file_end() const
+{
+    return files_.end();
 }
 
 void
@@ -55,13 +62,11 @@ params_t::post_args()
 }
 
 simple_params_t::simple_params_t()
- :  values_(new hashtable_t<const char, const char>)
 {
 }
 
 simple_params_t::~simple_params_t()
 {
-    delete values_;
 }
 
 bool
@@ -69,20 +74,22 @@ simple_params_t::set(const char *key, const char *value)
 {
     if (!value)
 	value = "1";
-    values_->insert(key, value);
+    values_.insert(pair<string, string>(string(key), string(value)));
     return true;
 }
 
 bool
 simple_params_t::has(const char *key) const
 {
-    return values_->lookup_extended(key, NULL, NULL);
+    unordered_map<string, string>::const_iterator itr = values_.find(string(key));
+    return (itr != values_.end());
 }
 
 const char *
 simple_params_t::value(const char *key) const
 {
-    return values_->lookup(key);
+    unordered_map<string, string>::const_iterator itr = values_.find(string(key));
+    return (itr == values_.end() ? 0 : itr->second.c_str());
 }
 
 void
@@ -92,7 +99,6 @@ simple_params_t::post_args()
 
 parser_t::parser_t(params_t &params)
  :  params_(params),
-    options_(new ptrarray_t<option_t>),
     popt_options_(0)
 {
     params_.setup_parser(*this);
@@ -100,9 +106,8 @@ parser_t::parser_t(params_t &params)
 
 parser_t::~parser_t()
 {
-    for (ptrarray_iterator_t<option_t> itr = options_->first() ; *itr ; ++itr)
+    for (vector<option_t*>::iterator itr = options_.begin() ; itr != options_.end() ; ++itr)
 	delete *itr;
-    delete options_;
     delete popt_options_;
 }
 
@@ -164,7 +169,7 @@ option_t &
 parser_t::add_option(char short_name, const char *long_name)
 {
     option_t *o = new option_t(short_name, long_name);
-    options_->append(o);
+    options_.push_back(o);
     return *o;
 }
 
@@ -178,7 +183,8 @@ parser_t::popt_callback(poptContext con,
     if (reason == POPT_CALLBACK_REASON_OPTION)
     {
 	parser_t *self = (parser_t *)data;
-	self->options_->nth(opt->val)->set(self->params_, arg);
+
+	self->options_[opt->val]->set(self->params_, arg);
     }
 }
 
@@ -214,7 +220,7 @@ parser_t::get_popt_table()
 	};
 	static const unsigned int ntrailers = sizeof(trailers)/sizeof(trailers[0]);
 
-	struct poptOption *popts = new struct poptOption[nheaders + options_->length() + ntrailers];
+	struct poptOption *popts = new struct poptOption[nheaders + options_.size() + ntrailers];
 
 	memcpy(&popts[0], headers, sizeof(headers));
 	// this is for POPT_ARG_CALLBACK
@@ -222,7 +228,7 @@ parser_t::get_popt_table()
 	popts[0].descrip = (const char *)this;
 
 	int n = nheaders;
-	for (ptrarray_iterator_t<option_t> itr = options_->first() ; *itr ; ++itr)
+	for (vector<option_t*>::iterator itr = options_.begin() ; itr != options_.end() ; ++itr)
 	{
 	    (*itr)->build_popt_option(&popts[n]);
 	    popts[n].val = (n-nheaders);

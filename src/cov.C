@@ -469,17 +469,21 @@ cov_read_files(const cov_project_params_t &params)
     }
     else
     {
-	for (argparse::params_t::file_iterator_t itr = params.file_iter() ; *itr ; ++itr)
+	for (argparse::params_t::file_iterator_t itr = params.file_begin() ;
+	     itr != params.file_end() ;
+	     ++itr)
 	{
-	    const char *filename = *itr;
+	    const char *filename = itr->c_str();
 
 	    if (file_is_directory(filename) == 0)
 		cov_add_search_directory(filename);
 	}
 
-	for (argparse::params_t::file_iterator_t itr = params.file_iter() ; *itr ; ++itr)
+	for (argparse::params_t::file_iterator_t itr = params.file_begin() ;
+	     itr != params.file_end() ;
+	     ++itr)
 	{
-	    const char *filename = *itr;
+	    const char *filename = itr->c_str();
 
 	    if (file_is_directory(filename) == 0)
 	    {

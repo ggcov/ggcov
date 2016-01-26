@@ -139,8 +139,8 @@ cov_project_params_t::post_args()
 	_log.debug2("built with%s\n", build_msg.data());
 
 	estring files_msg;
-	for (file_iterator_t itr = file_iter() ; *itr ; ++itr)
-	    files_msg.append_printf(" \"%s\"", *itr);
+	for (file_iterator_t itr = file_begin() ; itr != file_end() ; ++itr)
+	    files_msg.append_printf(" \"%s\"", itr->c_str());
 	_log.debug2("files = {%s }\n", files_msg.data());
     }
 }

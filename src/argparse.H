@@ -20,11 +20,11 @@
 #ifndef __ggcov_argparse_H__
 #define __ggcov_argparse_H__ 1
 
-#include "ptrarray.H"
-#include "hashtable.H"
-#include "ptrarray.H"
 #include "string_var.H"
 #include "fakepopt.h"
+#include <tr1/unordered_map>
+#include <vector>
+#include <string>
 
 //
 // argparse is an argument parser based loosely on the
@@ -75,8 +75,9 @@ public:
     virtual void add_file(const char *file);
     virtual unsigned int num_files() const;
     virtual const char *nth_file(unsigned i) const;
-    typedef ptrarray_iterator_t<const char> file_iterator_t;
-    virtual file_iterator_t file_iter() const;
+    typedef std::vector<std::string>::const_iterator file_iterator_t;
+    virtual file_iterator_t file_begin() const;
+    virtual file_iterator_t file_end() const;
 
     // You can override this method to do the adding of options to
     // the parser for you; handy for inheriting from other params
@@ -88,7 +89,7 @@ public:
     virtual void post_args();
 
 private:
-    ptrarray_t<const char> *files_;
+    std::vector<std::string> files_;
 };
 
 typedef void (params_t::*noarg_setter_t)();
@@ -107,7 +108,7 @@ public:
     virtual void post_args();
 
 private:
-    hashtable_t<const char, const char> *values_;
+    std::tr1::unordered_map<std::string, std::string> values_;
 };
 
 class option_t
@@ -228,7 +229,7 @@ private:
 			      const void *data);
 
     params_t &params_;
-    ptrarray_t<option_t> *options_;
+    std::vector<option_t*> options_;
     struct poptOption *popt_options_;
     string_var other_option_help_;
 };
