@@ -30,6 +30,10 @@
 #include "argparse.H"
 #include "logging.H"
 #include <db.h>
+#include <tr1/unordered_map>
+
+using namespace std;
+using namespace std::tr1;
 
 #define V(major,minor,patch)    ((major)*10000+(minor)*1000+(patch))
 #define DB_VERSION_CODE V(DB_VERSION_MAJOR,DB_VERSION_MINOR,DB_VERSION_PATCH)
@@ -48,9 +52,9 @@
 
 char *argv0;
 
-static hashtable_t<void, unsigned int> *file_index;
-static hashtable_t<void, unsigned int> *function_index;
-static hashtable_t<void, unsigned int> *callnode_index;
+static unordered_map<void*, unsigned int> file_index;
+static unordered_map<void*, unsigned int> function_index;
+static unordered_map<void*, unsigned int> callnode_index;
 static list_t<cov_function_t> *all_functions;
 static logging::logger_t &_log = logging::find_logger("web");
 
@@ -91,19 +95,19 @@ inline DBT *dbt(const char *s)
 static inline unsigned int
 ftag(const cov_file_t *f)
 {
-    return *file_index->lookup((void *)f);
+    return file_index.find((void *)f)->second;
 }
 
 static inline unsigned int
 fntag(const cov_function_t *fn)
 {
-    return *function_index->lookup((void *)fn);
+    return function_index.find((void *)fn)->second;
 }
 
 static inline unsigned int
 cntag(const cov_callnode_t *cn)
 {
-    return *callnode_index->lookup((void *)cn);
+    return callnode_index.find((void *)cn)->second;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -187,9 +191,8 @@ build_filename_index(void)
     unsigned int n = 0;
 
     // Build the filename index
-    file_index = new hashtable_t<void, unsigned int>;
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
-	file_index->insert((void *)*iter, new unsigned int(++n));
+	file_index.insert(pair<void*, unsigned int>((void *)*iter, ++n));
 }
 
 static void
@@ -199,7 +202,7 @@ save_filename_index(DB *db)
     int ret;
 
     // PHP-serialise the filename index.
-    ser.begin_array(file_index->size());
+    ser.begin_array(file_index.size());
     for (list_iterator_t<cov_file_t> iter = cov_file_t::first() ; *iter ; ++iter)
     {
 	cov_file_t *f = *iter;
@@ -225,9 +228,8 @@ build_global_function_index(void)
 
     all_functions = cov_list_all_functions();
 
-    function_index = new hashtable_t<void, unsigned int>;
     for (list_iterator_t<cov_function_t> iter = all_functions->first() ; *iter ; ++iter)
-	function_index->insert((void *)*iter, new unsigned int(++n));
+	function_index.insert(pair<void*, unsigned int>((void *)*iter, ++n));
 }
 
 static gboolean
@@ -495,11 +497,10 @@ build_callnode_index(void)
 {
     unsigned int n = 0;
 
-    callnode_index = new hashtable_t<void, unsigned int>;
     for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
     {
 	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
-	    callnode_index->insert((void *)*cnitr, new unsigned int(++n));
+	    callnode_index.insert(pair<void*, unsigned int>((void *)*cnitr, ++n));
     }
 }
 
@@ -521,7 +522,7 @@ save_callnode_index(DB *db)
     all.sort(cov_callnode_t::compare_by_name_and_file);
 
     // PHP-serialise the callnode index
-    ser.begin_array(callnode_index->size());
+    ser.begin_array(callnode_index.size());
     for (list_iterator_t<cov_callnode_t> iter = all.first() ; *iter ; ++iter)
     {
 	cov_callnode_t *cn = *iter;
