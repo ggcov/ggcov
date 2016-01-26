@@ -20,6 +20,9 @@
 #include "cov.H"
 #include "cov_suppression.H"
 
+using namespace std;
+using namespace std::tr1;
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static const char * const type_descs[] =
@@ -80,9 +83,7 @@ cov_suppression_set_t::add(cov_suppression_t *sup)
 	}
 	else
 	{
-	    if (!by_word_[sup->type()])
-		by_word_[sup->type()] = new hashtable_t<const char, const cov_suppression_t>;
-	    by_word_[sup->type()]->insert(sup->word(), sup);
+	    by_word_[sup->type()].insert(pair<string, const cov_suppression_t*>(string(sup->word()), sup));
 	}
     }
     all_[sup->type()].append(sup);
@@ -93,7 +94,7 @@ cov_suppression_set_t::remove(const cov_suppression_t *sup)
 {
     all_[sup->type()].remove(sup);
     prefixed_[sup->type()].remove(sup);
-    by_word_[sup->type()]->remove(sup->word());
+    by_word_[sup->type()].erase(string(sup->word()));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -107,8 +108,9 @@ cov_suppression_set_t::find(const char *w, cov_suppression_t::type_t t) const
 	return all_[t].head();
 
     /* try an exact match */
-    if (by_word_[t] && (s = by_word_[t]->lookup(w)))
-	return s;
+    unordered_map<string, const cov_suppression_t* >::const_iterator itr = by_word_[t].find(string(w));
+    if (itr != by_word_[t].end())
+	return itr->second;
 
     /* try a prefix match */
     for (list_iterator_t<const cov_suppression_t> itr = prefixed_[t].first() ; *itr ; ++itr)

@@ -24,6 +24,7 @@
 #include "hashtable.H"
 #include "list.H"
 #include "string_var.H"
+#include <tr1/unordered_map>
 
 class cov_suppression_t
 {
@@ -113,7 +114,7 @@ private:
 	const char *word;
     };
 
-    hashtable_t<const char, const cov_suppression_t> *by_word_[cov_suppression_t::NUM_TYPES];
+    std::tr1::unordered_map<std::string, const cov_suppression_t*> by_word_[cov_suppression_t::NUM_TYPES];
     list_t<const cov_suppression_t> prefixed_[cov_suppression_t::NUM_TYPES];
     list_t<const cov_suppression_t> all_[cov_suppression_t::NUM_TYPES];
 };
