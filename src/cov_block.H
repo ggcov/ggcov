@@ -22,7 +22,6 @@
 
 #include "common.h"
 #include "list.H"
-#include "hashtable.H"
 
 class cov_file_t;
 class cov_function_t;

@@ -20,7 +20,6 @@
 #include "cov_specific.H"
 #include "string_var.H"
 #include "ptrarray.H"
-#include "hashtable.H"
 #include "filename.h"
 #include "tok.H"
 #include "logging.H"

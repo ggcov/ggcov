@@ -21,7 +21,6 @@
 #define _ggcov_cov_suppression_H_ 1
 
 #include "common.h"
-#include "hashtable.H"
 #include "list.H"
 #include "string_var.H"
 #include <tr1/unordered_map>
