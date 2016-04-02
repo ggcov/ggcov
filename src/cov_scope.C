@@ -21,6 +21,10 @@
 #include "estring.H"
 #include "string_var.H"
 #include "filename.h"
+#include <tr1/unordered_set>
+
+using namespace std;
+using namespace std::tr1;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -199,9 +203,9 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
 	end_ = lastline;		/* clamp range to file */
 
     /* we treat this as a set */
-    hashtable_t<void, void> *blocks_seen = new hashtable_t<void, void>;
+    unordered_set<cov_block_t*> blocks_seen;
     /* we treat this as a set */
-    hashtable_t<void, void> *functions_seen = new hashtable_t<void, void>;
+    unordered_set<cov_function_t*> functions_seen;
     cov_stats_t block_stats;
     cov_stats_t function_stats;
     cov_stats_t line_stats;
@@ -214,16 +218,14 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
 	for (list_iterator_t<cov_block_t> bitr = line->blocks().first() ; *bitr ; ++bitr)
 	{
 	    cov_block_t *b = *bitr;
-	    if (!blocks_seen->lookup(b))
+	    pair<unordered_set<cov_block_t*>::iterator, bool> pp = blocks_seen.insert(b);
+	    if (pp.second)
 	    {
 		b->calc_stats(&block_stats);
-		blocks_seen->insert(b, b);
 		cov_function_t *f = b->function();
-		if (!functions_seen->lookup(f))
-		{
+		pair<unordered_set<cov_function_t*>::iterator, bool> pp = functions_seen.insert(f);
+		if (pp.second)
 		    f->calc_stats(&function_stats);
-		    functions_seen->insert(f, f);
-		}
 	    }
 	}
     }
@@ -234,8 +236,6 @@ cov_range_scope_t::calc_stats(cov_stats_t *stats)
     stats->accumulate_calls(&block_stats);
     stats->accumulate_branches(&block_stats);
 
-    delete blocks_seen;
-    delete functions_seen;
     return stats->status_by_lines();
 }
 
