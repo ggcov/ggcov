@@ -94,11 +94,18 @@ public:
 	    g_free(data_);
 	return data_ = s;
     }
-    // equality operator
-    int operator==(const char *s)
+    // comparison operators
+    bool operator==(const char *s) const
     {
-	return !strcmp((data_ == 0 ? "" : data_),
-		       (s == 0 ? "" : s));
+	return strcmp(safestr(data_), safestr(s)) == 0;
+    }
+    bool operator==(const string_var &o) const
+    {
+	return strcmp(safestr(data_), safestr(o.data_)) == 0;
+    }
+    bool operator<(const string_var &o) const
+    {
+	return strcmp(safestr(data_), safestr(o.data_)) < 0;
     }
 
     unsigned int length() const

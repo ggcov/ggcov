@@ -1,5 +1,5 @@
-#include "filename.h"
 #include "estring.H"
+#include <map>
 #include "testfw.h"
 
 // extern int end;
@@ -784,4 +784,51 @@ TEST(find)
     check(e.find_last_string("the") == 32);
     check(e.find_last_string("quick") == 4);
     check(e.find_last_string("Xanadu") == -1);
+}
+
+TEST(compare)
+{
+    estring alpha("alpha");
+    estring beta("beta");
+    check(alpha < beta);
+    check(!(alpha > beta));
+    check(!(alpha == beta));
+
+    estring also_alpha("alpha");
+    check(!(alpha < also_alpha));
+    check(!(alpha > also_alpha));
+    check(alpha == also_alpha);
+}
+
+TEST(map)
+{
+    std::map<estring, int> m;
+    check(m.size() == 0);
+
+    estring k("hello");
+    int v = 42;
+    m.insert(std::make_pair(k, v));
+    check(m.size() == 1);
+    // the key "nope" is not found
+    std::map<estring, int>::iterator i = m.find(estring("nope"));
+    check(i == m.end());
+
+    // the key "hello" is found
+    i = m.find(estring("hello"));
+    check(i != m.end());
+    check(i->second == 42);
+    // the key was copied
+    check(!strcmp(i->first.data(), k.data()));
+    check((void *)&i->first != (void*)&k);
+
+    m.insert(std::make_pair(estring("world"), 37));
+    check(m.size() == 2);
+    // the key "hello" is found
+    i = m.find(estring("hello"));
+    check(i != m.end());
+    check(i->second == 42);
+    // the key "world" is found
+    i = m.find(estring("world"));
+    check(i != m.end());
+    check(i->second == 37);
 }

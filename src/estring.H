@@ -108,6 +108,23 @@ public:
 	    data_[len] = '\0';
 	}
     }
+    // copy c'tor
+    estring(const estring &o)
+    {
+	if (o.data_ == 0)
+	{
+	    data_ = 0;
+	    length_ = available_ = 0;
+	}
+	else
+	{
+	    data_ = g_new(char, o.length_+1);
+	    memcpy(data_, o.data_, o.length_);
+	    data_[o.length_] = '\0';
+	    length_ = o.length_;
+	    available_ = o.length_+1;
+	}
+    }
     // dtor
     ~estring()
     {
@@ -161,6 +178,15 @@ public:
 	    available_ = length_+1;
 	}
 	return data_;
+    }
+    // comparison operators
+    bool operator==(const estring &o) const
+    {
+	return strcmp(safestr(data_), safestr(o.data_)) == 0;
+    }
+    bool operator<(const estring &o) const
+    {
+	return strcmp(safestr(data_), safestr(o.data_)) < 0;
     }
 
     unsigned int length() const
