@@ -27,6 +27,8 @@
 #include "string_var.H"
 #include "cov_line.H"
 #include "covio.H"
+#include <string>
+#include <tr1/unordered_map>
 
 class cov_function_t;
 class cov_suppression_t;
@@ -40,7 +42,7 @@ public:
     const char *
     name() const
     {
-	return name_;
+	return name_.c_str();
     }
 
     /*
@@ -277,7 +279,8 @@ private:
 
     cov::status_t calc_stats(cov_stats_t *stats) const;
 
-    static hashtable_t<const char, cov_file_t> *files_;
+    typedef std::tr1::unordered_map<std::string, cov_file_t*> files_hash_t;
+    static files_hash_t files_;
     static list_t<cov_file_t> files_list_;
     static list_t<char> search_path_;
     static string_var gcda_prefix_;
@@ -285,7 +288,7 @@ private:
     static int common_len_;
     static void *files_model_;
 
-    string_var name_;       /* full absolute pathname of this file */
+    std::string name_;       /* full absolute pathname of this file */
     string_var relpath_;    /* relative path with which this file was found */
     string_var compiledir_; /* directory in which this source was compiled;
 			     * base for relative pathnames */

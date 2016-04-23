@@ -23,14 +23,16 @@
 #include "estring.H"
 #include "string_var.H"
 #include "tok.H"
-#include "hashtable.H"
 #include "filename.h"
 #include "demangle.h"
 #include "cpp_parser.H"
 #include "cpp_parser.H"
 #include "logging.H"
 
-hashtable_t<const char, cov_file_t> *cov_file_t::files_;
+using namespace std;
+using namespace std::tr1;
+
+cov_file_t::files_hash_t cov_file_t::files_;
 list_t<cov_file_t> cov_file_t::files_list_;
 list_t<char> cov_file_t::search_path_;
 string_var cov_file_t::gcda_prefix_;
@@ -63,7 +65,7 @@ cov_file_t::cov_file_t(const char *name, const char *relpath)
      * with an absolute filename which is not already known.
      */
     assert(name[0] == '/');
-    assert(find(name_) == 0);
+    assert(find(name_.c_str()) == 0);
 
     functions_ = new ptrarray_t<cov_function_t>();
     functions_by_name_ = new hashtable_t<const char, cov_function_t>;
@@ -71,11 +73,11 @@ cov_file_t::cov_file_t(const char *name, const char *relpath)
     lines_ = new ptrarray_t<cov_line_t>();
     null_line_ = new cov_line_t();
 
-    files_->insert(name_, this);
+    files_.insert(make_pair(name_, this));
 
-    suppress(cov_suppressions.find(name_, cov_suppression_t::FILENAME));
+    suppress(cov_suppressions.find(name_.c_str(), cov_suppression_t::FILENAME));
     if (!suppression_)
-	add_name(name_);
+	add_name(name_.c_str());
 }
 
 cov_file_t::~cov_file_t()
@@ -83,7 +85,7 @@ cov_file_t::~cov_file_t()
     unsigned int i;
 
     files_list_.remove(this);
-    files_->remove(name_);
+    files_.erase(name_);
 
     for (i = 0 ; i < functions_->length() ; i++)
 	delete functions_->nth(i);
@@ -106,7 +108,6 @@ cov_file_t::~cov_file_t()
 void
 cov_file_t::init()
 {
-    files_ = new hashtable_t<const char, cov_file_t>;
     common_path_ = 0;
     common_len_ = 0;
 }
@@ -166,9 +167,9 @@ cov_file_t::post_read()
 {
     files_list_.remove_all();
 
-    for (hashtable_iter_t<const char, cov_file_t> itr = files_->first() ; *itr ; ++itr)
+    for (files_hash_t::iterator itr = files_.begin() ; itr != files_.end() ; ++itr)
     {
-	cov_file_t *f = *itr;
+	cov_file_t *f = itr->second;
 	files_list_.prepend(f);
 	f->finalise();
     }
@@ -184,7 +185,7 @@ cov_file_t::first()
 unsigned int
 cov_file_t::length()
 {
-    return files_->size();
+    return files_.size();
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -192,8 +193,9 @@ cov_file_t::length()
 cov_file_t *
 cov_file_t::find(const char *name)
 {
-    assert(files_ != 0);
-    return files_->lookup(unminimise_name(name));
+    string_var key = unminimise_name(name);
+    files_hash_t::iterator itr = files_.find(key.data());
+    return (itr == files_.end() ? 0 : itr->second);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -256,9 +258,9 @@ cov_file_t::check_common_path()
     {
 	files_log.debug("cov_file_t::check_common_path: recalculating common path\n");
 	common_len_ = 0;
-	for (hashtable_iter_t<const char, cov_file_t> itr = files_->first() ; *itr ; ++itr)
-	    if (!(*itr)->suppression_)
-		add_name(itr.key());
+	for (files_hash_t::iterator itr = files_.begin() ; itr != files_.end() ; ++itr)
+	    if (!itr->second->suppression_)
+		add_name(itr->first.c_str());
     }
 }
 
@@ -266,9 +268,9 @@ const char *
 cov_file_t::minimal_name() const
 {
     if (suppression_)
-	return name_;
+	return name_.c_str();
     check_common_path();
-    return name_.data() + common_len_;
+    return name_.c_str() + common_len_;
 }
 
 char *
@@ -359,7 +361,7 @@ cov_file_t::add_location(
     cov_file_t *f;
     cov_line_t *ln;
 
-    if (!strcmp(filename, name_))
+    if (!strcmp(filename, name_.c_str()))
     {
 	/*
 	 * The common case is that we add locations in the file
@@ -373,7 +375,7 @@ cov_file_t::add_location(
 	f = new cov_file_t(filename, filename);
 	assert(f != 0);
     }
-    assert(f->name_[0] == '/');
+    assert(f->name_.c_str()[0] == '/');
     assert(lineno > 0);
 
     ln = f->get_nth_line(lineno);
@@ -414,7 +416,7 @@ cov_file_t::add_location(
     }
 
     ln->add_block(b);
-    b->add_location(f->name_, lineno);
+    b->add_location(f->name_.c_str(), lineno);
     f->has_locations_ = true;
 }
 
@@ -881,7 +883,7 @@ cov_file_t::infer_compilation_directory(const char *path)
     }
 
     if (path[0] != '/' &&
-	(clen = path_is_suffix(name_, path)) > 0)
+	(clen = path_is_suffix(name_.c_str(), path)) > 0)
     {
 	/*
 	 * `path' is a relative path whose last element is
@@ -891,14 +893,14 @@ cov_file_t::infer_compilation_directory(const char *path)
 	 * and thus the compiledir is the absolute path `name_'
 	 * with `path' removed from its tail.
 	 */
-	compiledir_ = g_strndup(name_, clen);
+	compiledir_ = g_strndup(name_.c_str(), clen);
 	bbg_log.debug("compiledir_=\"%s\"\n", compiledir_.data());
 	return;
     }
 
     /* This might be a problem...but probably not */
     bbg_log.debug("Could not calculate compiledir for %s from location %s\n",
-	    name_.data(), path);
+	    name_.c_str(), path);
 }
 
 const char *
@@ -910,7 +912,7 @@ cov_file_t::make_absolute(const char *filename) const
 	bbg_log.warning("no compiledir when converting "
 			"path \"%s\" to absolute, trying plan B\n",
 			filename);
-    return file_make_absolute_to_file(filename, name_);
+    return file_make_absolute_to_file(filename, name_.c_str());
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1617,7 +1619,7 @@ cov_file_t::o_file_add_call(
      */
     if (file_exists(loc.filename) < 0)
     {
-	string_var candidate = file_make_absolute_to_file(file_basename_c(loc.filename), name_);
+	string_var candidate = file_make_absolute_to_file(file_basename_c(loc.filename), name_.c_str());
 	if (file_exists(candidate) == 0)
 	{
 	    cgraph_log.debug("o_file_add_call: heuristically replacing \"%s\" with \"%s\"\n",
@@ -2101,7 +2103,7 @@ cov_file_t::read(bool quiet)
      */
     if (!has_locations_)
     {
-	files_log.debug("Ignoring file %s because it has no locations\n", name_.data());
+	files_log.debug("Ignoring file %s because it has no locations\n", name_.c_str());
 	return false;
     }
 
