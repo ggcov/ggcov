@@ -108,7 +108,7 @@ parser_t::~parser_t()
 {
     for (vector<option_t*>::iterator itr = options_.begin() ; itr != options_.end() ; ++itr)
 	delete *itr;
-    delete popt_options_;
+    delete[] popt_options_;
 }
 
 option_t::option_t(char short_option, const char *long_option)
