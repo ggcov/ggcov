@@ -92,7 +92,7 @@ operator new(size_t sz)
 }
 
 void
-operator delete(void *p)
+operator delete(void *p) noexcept
 {
     if (p != 0)     /* delete 0 is explicitly allowed */
 	free(p);

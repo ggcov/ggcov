@@ -15,7 +15,7 @@ SETUP
     struct stat sb;
     int r;
 
-    r = system("rm -rf "TESTDIR);
+    r = system("rm -rf " TESTDIR);
     if (r)
 	return -1;
     r = stat(TESTDIR, &sb);
@@ -43,7 +43,7 @@ TEARDOWN
     if (oldcwd[0] && chdir(oldcwd) < 0)
 	return -1;
 
-    r = system("rm -rf "TESTDIR);
+    r = system("rm -rf " TESTDIR);
     if (r)
 	return -1;
     return 0;

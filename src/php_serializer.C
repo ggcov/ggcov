@@ -130,7 +130,7 @@ php_serializer_t::_begin_array(unsigned int length, gboolean known)
 	 */
 	needs_deflation_ = TRUE;
 	a->count_offset_ = buf_.length()+2;
-	fmt = "a:"INFLATED_FORMAT":{";
+	fmt = "a:" INFLATED_FORMAT ":{";
     }
     buf_.append_printf(fmt, length);
 }

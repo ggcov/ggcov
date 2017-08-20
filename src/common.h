@@ -49,6 +49,12 @@
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+#if !(defined(__GXX_EXPERIMENTAL_CXX0X__) || (__cplusplus >= 201103L))
+#define noexcept
+#endif
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
 #define listdelete(v,type,dtor) \
     do { \
 	while ((v) != 0) \
@@ -113,7 +119,7 @@ extern void *gnb_xmalloc(size_t sz);
  * the overloaded global operator delete provides no value.
  */
 void *operator new(size_t sz);
-void operator delete(void *);
+void operator delete(void *) noexcept;
 #else
 #define new(ty)         ((ty *)gnb_xmalloc(sizeof(ty)))
 #define delete(p)       free((p))
