@@ -977,6 +977,10 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	if (expect_version != BBG_VERSION_GCC33)
 	    bbg_failed1("unexpected version=0x%08x", format_version_);
 	break;
+    case _NEW_VERSION(6,3,'*'):
+    case _NEW_VERSION(6,2,'*'):
+    case _NEW_VERSION(6,1,'*'):
+    case _NEW_VERSION(6,0,'*'):
     case _NEW_VERSION(5,3,'*'):
     case _NEW_VERSION(5,2,'*'):
     case _NEW_VERSION(5,1,'*'):
