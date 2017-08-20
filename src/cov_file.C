@@ -49,6 +49,14 @@ static logging::logger_t &cgraph_log = logging::find_logger("cgraph");
 	 ((uint32_t)('0'+(minor)/10)<<16)| \
 	 ((uint32_t)('0'+(minor)%10)<<8)| \
 	 ((uint32_t)(release)))
+/* yet another version numbering scheme, this one dating from
+ * svn+ssh://gcc.gnu.org/svn/gcc/trunk@238702 committed 20160725
+ * first released in gcc 7.1 */
+#define _NEWER_VERSION(major, minor, release) \
+	(((uint32_t)('A'+((major)/10))<<24)| \
+	 ((uint32_t)('0'+((major)%10))<<16)| \
+	 ((uint32_t)('0'+(minor))<<8)| \
+	 ((uint32_t)(release)))
 #define BBG_VERSION_GCC34       _NEW_VERSION(3,4,'*')
 #define BBG_VERSION_GCC33       _NEW_VERSION(3,3,'p')
 
@@ -977,6 +985,8 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	if (expect_version != BBG_VERSION_GCC33)
 	    bbg_failed1("unexpected version=0x%08x", format_version_);
 	break;
+    case _NEWER_VERSION(7,1,'*'):
+    case _NEW_VERSION(7,0,'*'):
     case _NEW_VERSION(6,3,'*'):
     case _NEW_VERSION(6,2,'*'):
     case _NEW_VERSION(6,1,'*'):
