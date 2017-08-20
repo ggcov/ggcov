@@ -20,6 +20,8 @@
 #include "cov_specific.H"
 #include "ptrarray.H"
 #include "logging.H"
+#include <vector>
+#include <map>
 
 #ifdef HAVE_LIBBFD
 
@@ -81,8 +83,11 @@ public:
     bool get_uint16(uint16_t *);
     bool get_uint32(uint32_t *);
     bool get_uint64(uint64_t *);
+    bool get_unit_header_length(uint64_t *, bool *is64bp);
+    bool get_offset(uint64_t *, bool is64b);
     bool get_address(void **);          // TODO: use the BFD typedef?
     bool get_varint(unsigned long *);
+    const unsigned char *get_bytes(const uint8_t **valp, size_t len);
 };
 
 unsigned long
@@ -185,6 +190,45 @@ dwarf_stream_t::get_uint64(uint64_t *valp)
 }
 
 bool
+dwarf_stream_t::get_unit_header_length(uint64_t *valp, bool *is64bp)
+{
+    uint32_t word;
+    if (!get_uint32(&word))
+	return false;
+    if (word == 0xffffffff)
+    {
+	*is64bp = true;
+	return get_uint64(valp);
+    }
+    else if (word > 0xfffffff0)
+    {
+	return false;
+    }
+    else
+    {
+	*is64bp = false;
+	if (valp)
+	    *valp = word;
+	return true;
+    }
+}
+
+bool
+dwarf_stream_t::get_offset(uint64_t *valp, bool is64b)
+{
+    if (!is64b)
+    {
+	uint32_t word;
+	if (!get_uint32(&word))
+	    return false;
+	if (valp)
+	    *valp = word;
+	return true;
+    }
+    return get_uint64(valp);
+}
+
+bool
 dwarf_stream_t::get_address(void **valp)
 {
     if (remain_ < sizeof(*valp))
@@ -220,20 +264,37 @@ dwarf_stream_t::get_varint(unsigned long *valp)
     return false;
 }
 
+bool
+dwarf_stream_t::get_bytes(const uint8_t **valp, size_t len)
+{
+    if (remain_ < len)
+	return false;
+    if (valp)
+	*valp = ptr_;
+    ptr_ += len;
+    remain_ -= len;
+    return true;
+}
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 struct dwarf_attr_t
 {
+    dwarf_attr_t(unsigned int tag, unsigned int form)
+     :  tag_(tag), form_(form) {}
+
     unsigned int tag_;
     unsigned int form_;
 };
 
 struct dwarf_abbrev_t
 {
+    dwarf_abbrev_t(unsigned int entry, unsigned int tag)
+     :  entry_(entry), tag_(tag) {}
+
     unsigned int entry_;
     unsigned int tag_;
-    list_t<dwarf_attr_t> attrs_;
+    vector<dwarf_attr_t> attrs_;
 };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -253,7 +314,7 @@ private:
     bool get_lineinfo();
     char *get_lineinfo_filename();
     bool get_abbrevs();
-    dwarf_abbrev_t *find_abbrev(unsigned long num) const;
+    const dwarf_abbrev_t *find_abbrev(unsigned long num) const;
     char *get_compunit_filename();
 
     /* contents of .debug_line section */
@@ -263,11 +324,11 @@ private:
 
     /* contents of .debug_abbrev section */
     dwarf_stream_t abbrev_sec_;
-    list_t<dwarf_abbrev_t> abbrevs_;
+    vector<dwarf_abbrev_t> abbrevs_;
 
     /* contents of .debug_info section */
     dwarf_stream_t info_sec_;
-    unsigned long compunit_off_;
+    uint64_t compunit_off_;
 
     /* contents of .debug_str section */
     char *strings_;
@@ -357,8 +418,16 @@ cov_dwarf2_filename_scanner_t::get_lineinfo()
     /* TODO: bounds check length */
     lineinfo_off_ = line_sec_.tell() + length;
 
-    if (!line_sec_.get_uint16(&version) || version != 2)
+    if (!line_sec_.get_uint16(&version))
 	return false;
+    switch (version)
+    {
+    case 2:
+	break;
+    default:
+	_log.warning("Cannot handle DWARF version %u\n", version);
+	return false;
+    }
     if (!line_sec_.get_uint32(/*prologue_length*/0) ||
 	!line_sec_.get_uint8(/*min_insn_length*/0) ||
 	!line_sec_.get_uint8(/*default_is_stmt*/0) ||
@@ -429,7 +498,7 @@ cov_dwarf2_filename_scanner_t::get_lineinfo_filename()
 bool
 cov_dwarf2_filename_scanner_t::get_abbrevs()
 {
-    unsigned long a, b;
+    unsigned long code, tag, name, form;
     dwarf_abbrev_t *abbrev;
     dwarf_attr_t *attr;
 
@@ -437,35 +506,31 @@ cov_dwarf2_filename_scanner_t::get_abbrevs()
 
     for (;;)
     {
-	if (!abbrev_sec_.get_varint(&a))
+	if (!abbrev_sec_.get_varint(&code))
 	    return false;
 
-	if (a == 0)
+	if (code == 0)
 	    break;    /* end of section */
 
-	if (!abbrev_sec_.get_varint(&b))
+	if (!abbrev_sec_.get_varint(&tag))
 	    return false;
 	if (!abbrev_sec_.get_uint8(/*children*/0))
 	    return false;
 
-	abbrev = new dwarf_abbrev_t;
-	abbrev->entry_ = a;
-	abbrev->tag_ = b;
-	abbrevs_.append(abbrev);
+	abbrev = new dwarf_abbrev_t(code, tag);
+	abbrevs_.push_back(abbrev);
 
 	_log.debug("abbrev entry=%d tag=%d {\n", abbrev->entry_, abbrev->tag_);
 
 	for (;;)
 	{
-	    if (!abbrev_sec_.get_varint(&a))
+	    if (!abbrev_sec_.get_varint(&name))
 		return false;
-	    if (!abbrev_sec_.get_varint(&b))
+	    if (!abbrev_sec_.get_varint(&form))
 		return false;
-	    if (!a)
+	    if (!name)
 		break;
-	    attr = new dwarf_attr_t;
-	    attr->tag_ = a;
-	    attr->form_ = b;
+	    attr = new dwarf_attr_t(name, form);
 	    abbrev->attrs_.append(attr);
 
 	    _log.debug("    attr=%d form=%d\n", attr->tag_, attr->form_);
@@ -477,16 +542,146 @@ cov_dwarf2_filename_scanner_t::get_abbrevs()
     return true;
 }
 
-dwarf_abbrev_t *
+const dwarf_abbrev_t *
 cov_dwarf2_filename_scanner_t::find_abbrev(unsigned long num) const
 {
-    for (list_iterator_t<dwarf_abbrev_t> iter = abbrevs_.first() ; *iter ; ++iter)
+    for (vector<dwarf_abbrev_t>::const_iterator iter = abbrevs_.begin() ; iter != abbrevs_.end() ; ++iter)
     {
-	dwarf_abbrev_t *abbrev = (*iter);
+	const dwarf_abbrev_t *abbrev = *iter;
 	if (abbrev->entry_ == num)
 	    return abbrev;
     }
     return 0;
+}
+
+struct dwarf_value_t
+{
+    dwarf_value_t()
+    {
+	memset(this, 0, sizeof(*this));
+    }
+    dwarf_value_t()
+    {
+	reset();
+    }
+
+    enum type_t
+    {
+	T_unknown,  // = 0
+	T_uint,
+	T_string,
+	T_bytes
+    };
+    void set_uint(uint64_t v)
+    {
+	reset();
+	type_ = T_uint;
+	uint_ = v;
+	ptr_ = 0;
+    }
+    void set_string(const char *s)
+    {
+	reset();
+	type_ = T_string;
+	uint_ = 0;
+	ptr_ = (s == 0 ? 0 : strdup(s));
+    }
+    void set_string(const char *s, size_t len)
+    {
+	reset();
+	type_ = T_string;
+	uint_ = 0;
+	if (!len)
+	{
+	    ptr_ = 0;
+	}
+	else
+	{
+	    ptr_ = gnb_xmalloc(len+1);
+	    memcpy(ptr_, s, len);
+	    ptr_[len] = '\0';
+	}
+    }
+    void set_bytes(uint8_t *val, size_t len)
+    {
+	reset();
+	type_ = T_bytes;
+	uint_ = len;
+	if (!len)
+	{
+	    ptr_ = 0;
+	}
+	else
+	{
+	    ptr_ = gnb_xmalloc(len);
+	    memcpy(ptr_, s, len);
+	}
+    }
+
+private:
+    type_t type_;
+    uint64_t uint_;
+    char *ptr_;
+
+    void reset()
+    {
+	if (type_ != T_unknown)
+	{
+	    free(ptr_);
+	    memset(this, 0, sizeof(*this));
+	}
+    }
+}
+
+struct dwarf_die_t
+{
+    unsigned int tag;
+    const dwarf_abbrev_t *abbrev;
+    vector<dwarf_value_t> values;
+};
+
+
+bool
+cov_dwarf2_filename_scanner_t::read_die(dwarf_stream_t &sec, dwarf_die_t *diep)
+{
+    unsigned long abbrevno;
+    const dwarf_abbrev_t *abbrev;
+
+    if (!sec.get_varint(&abbrevno) ||
+	abbrevno == 0 ||
+	(abbrev = find_abbrev(abbrevno)) == 0)
+	return false;
+
+    die->abbrev = abbrev;
+    die->tag = abbrev->tag_;
+    die->values.resize(abbrev->attrs_.size());
+
+    int i;
+    for (vector<dwarf_attr_t>::const_iterator iter = abbrev->attrs_.begin() ; iter != abbrev->attrs_.end() ; ++iter, ++i)
+    {
+	const dwarf_attr_t *attr = *iter;
+	dwarf_value_t *value = &die->values[i];
+	switch (attr->form_)
+	{
+	case DW_FORM_address:
+	    {
+		void *addr;
+		if (!sec.get_address(&addr))
+		    return false;
+		value->set_uint((uint64_t)addr);
+	    }
+	    break;
+	}
+	case DW_FORM_block1:
+	    {
+		uint8_t len;
+		if (!sec.get_uint8(&len))
+		    return false;
+		if (!sec.get_bytes(len))
+		    return false;
+	    }
+	    break;
+    }
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -494,35 +689,58 @@ cov_dwarf2_filename_scanner_t::find_abbrev(unsigned long num) const
 char *
 cov_dwarf2_filename_scanner_t::get_compunit_filename()
 {
-    uint32_t length;
+    uint64_t length;
+    bool is64b = false;
     uint16_t version;
-    unsigned long abbrevno;
-    dwarf_abbrev_t *abbrev;
     uint32_t name_off, comp_dir_off, producer_off;
     char *path;
 
     /* read an external CompUnit structure */
+    _log.debug("get_compunit_filename()\n");
 
     if (compunit_off_)
 	info_sec_.seek(compunit_off_);
+_log.debug("XXX %u\n", __LINE__);
 
-    if (!info_sec_.get_uint32(&length))
+    /* Read the compilation unit header */
+    if (!info_sec_.get_unit_header_length(&length, &is64b))
 	return 0;
+_log.debug("XXX %u\n", __LINE__);
     /* TODO: bounds check length */
     compunit_off_ = info_sec_.tell() + length;
 
-    if (!info_sec_.get_uint16(&version) || version != 2)
+_log.debug("XXX %u\n", __LINE__);
+    if (!info_sec_.get_uint16(&version))
 	return 0;
-    if (!info_sec_.get_uint32(/*abbrev_offset*/0) ||
+    switch (version)
+    {
+    case 2:
+	if (is64b)
+	{
+	    _log.error("Found 64b length in DWARF2 unit header\n");
+	    return 0;
+	}
+	break;
+    case 4:
+	break;
+    default:
+	_log.warning("Cannot handle DWARF version %u\n", version);
+	return 0;
+    }
+_log.debug("XXX %u\n", __LINE__);
+    if (!info_sec_.get_offset(/*abbrev_offset*/0) ||
 	!info_sec_.get_uint8(/*pointer_size*/0))
 	return 0;
+_log.debug("XXX %u\n", __LINE__);
 
-    /* hardcoded to expect a DW_TAG_compile_unit abbrev first */
-    if (!info_sec_.get_varint(&abbrevno) ||
-	abbrevno == 0 ||
-	(abbrev = find_abbrev(abbrevno)) == 0 ||
-	abbrev->tag_ != DW_TAG_compile_unit)
+    /* The first debug entry is a DW_TAG_compile_unit */
+
+    if (!read_die(info_sec_))
 	return 0;
+    if (die.tag != DW_TAG_compile_unit)
+	return 0;
+
+_log.debug("XXX %u\n", __LINE__);
 
     /* read hardcoded DW_TAG_compile_unit */
     if (!info_sec_.get_uint32(/*stmt_list*/0) ||
@@ -532,11 +750,13 @@ cov_dwarf2_filename_scanner_t::get_compunit_filename()
 	!info_sec_.get_uint32(&comp_dir_off) ||
 	!info_sec_.get_uint32(&producer_off))
 	return 0;
+_log.debug("XXX %u\n", __LINE__);
 
     if (name_off > string_size_ ||
 	comp_dir_off > string_size_ ||
 	producer_off > string_size_)
 	return 0;
+_log.debug("XXX %u\n", __LINE__);
 
     path = g_strconcat(
 		strings_+comp_dir_off,
@@ -558,6 +778,7 @@ cov_dwarf2_filename_scanner_t::next()
     {
 	switch (state_)
 	{
+#if 0
 	case 0: /* scanning LineInfo in .debug_line */
 	    state_ = (get_lineinfo() ? 1 : 2);
 	    break;
@@ -566,6 +787,11 @@ cov_dwarf2_filename_scanner_t::next()
 		return s;
 	    state_ = 0;         /* try for another LineInfo */
 	    break;
+#else
+	case 0:
+	    state_ = 2;
+	    break;
+#endif
 	case 2: /* scanning .debug_abbrev etc */
 	    if (!get_abbrevs())
 		return 0;       /* end of iteration */

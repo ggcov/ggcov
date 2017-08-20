@@ -525,9 +525,10 @@ run_tggcov ()
     while [ $# -gt 0 ] ; do
     	case "$1" in
 	-a|-G) mode="$1" ;;
+	-R|--report) mode="--report $2" ; shift ;;
 	-N) nflag="$1" ;;
 	-P|-S) flags="$flags $1" ;;
-	-D|-X|-Y|-Z) flags="$flags $1 $2" ; shift ;;
+	-D|-X|-Y|-Z|-o) flags="$flags $1 $2" ; shift ;;
 	-*) fatal "run_tggcov: unknown option \"$1\"" ;;
 	*)
 	    SRC="$SRC $1"
@@ -540,7 +541,7 @@ run_tggcov ()
     [ -z "$nflag" ] && nflag=$(_tggcov_Nflag $SRC)
     if vcapdo $TMP1 $_VALGRIND $top_builddir/${_DUP}src/tggcov $mode $nflag $flags $SRC ; then
 	cat $TMP1
-	if [ x$mode = "x-a" ] ; then
+	if [ "x$mode" = "x-a" ] ; then
 	    TGGCOV_FILES=$(sed -n -e 's:.*Writing[ \t][ \t]*'$pwd'/\([^ \t]*\.tggcov\)$:\1:p' < $TMP1)
 	    [ -z "$TGGCOV_FILES" ] && fatal "no output files from tggcov"
 	    _subtestize_files $TGGCOV_FILES

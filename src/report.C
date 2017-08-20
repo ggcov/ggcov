@@ -29,8 +29,13 @@
 #include "report.H"
 #include "tok.H"
 #include "logging.H"
+#include "unique_ptr.H"
+#include <map>
 
 static logging::logger_t &_log = logging::find_logger("report");
+
+using namespace std;
+using namespace std::tr1;
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -88,14 +93,9 @@ report_summary_all(FILE *fp, const char *)
 static int
 report_summary_per_directory(FILE *fp, const char *)
 {
-    hashtable_t<char, cov_stats_t> *ht;
-    cov_stats_t *st;
+    map<string, cov_stats_t> stats_by_dir;
     unsigned int ndirs = 0;
-    list_t<char> keys;
-    char *key;
     int nlines = 0;
-
-    ht = new hashtable_t<char, cov_stats_t>;
 
     for (list_iterator_t<cov_file_t> fiter = cov_file_t::first() ; *fiter ; ++fiter)
     {
@@ -103,37 +103,34 @@ report_summary_per_directory(FILE *fp, const char *)
 		(*fiter)->minimal_name());
 
 	string_var dir = g_dirname((*fiter)->minimal_name());
-	if ((st = ht->lookup((char *)dir.data())) == 0)
+	map<string, cov_stats_t>::iterator found = stats_by_dir.find(string(dir));
+	if (found == stats_by_dir.end())
 	{
-	    st = new cov_stats_t;
+	    cov_stats_t st;
 	    _log.debug("report_summary_per_directory: -> \"%s\"\n", dir.data());
-	    ht->insert(dir.take(), st);
+	    found = stats_by_dir.insert(make_pair(dir, st)).first;
 	    ndirs++;
 	}
 
 	cov_file_scope_t fscope(*fiter);
-	st->accumulate(fscope.get_stats());
+	found->second.accumulate(fscope.get_stats());
     }
 
-    ht->keys(&keys);
-
-    while ((key = keys.remove_head()) != 0)
+    for (map<string, cov_stats_t>::iterator itr = stats_by_dir.begin() ;
+	 itr != stats_by_dir.end() ;
+	 ++itr)
     {
+	const char *key = itr->first.c_str();
 	_log.debug("report_summary_per_directory: [2] \"%s\"\n", key);
 
-	st = ht->lookup(key);
 	if (ndirs > 1)
 	{
 	    if (nlines)
 		fputc('\n', fp);
-	    nlines += print_summary(fp, st, key);
+	    nlines += print_summary(fp, &itr->second, key);
 	}
-	ht->remove(key);
-	g_free(key);
-	delete st;
     }
 
-    delete ht;
     return nlines;
 }
 

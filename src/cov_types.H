@@ -190,6 +190,8 @@ public:
 	memset(this, 0, sizeof(*this));
     }
 
+    /* default bitwise copy c'tor is enough */
+
     void
     clear()
     {
