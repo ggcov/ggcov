@@ -301,9 +301,17 @@ dnl in a way which is super hard to test for.  Fortunately that commit also
 dnl removed function bfd_get_error_handler, which we don't care about but
 dnl removal of a function is a change we can easily test for.
 AC_MSG_CHECKING([type of error handler function])
-AC_TRY_LINK_FUNC(bfd_get_error_handler,
-		 true,
-		 AC_DEFINE(HAVE_BFD_ERROR_HANDLER_VPRINTFLIKE,1,[Whether the BFD error handler callback is vprintf like or printf like]))
+bfd_save_LIBS="$LIBS"
+LIBS="$LIBS $BFD_LIBS"
+AC_LINK_IFELSE([
+    AC_LANG_CALL([], [bfd_get_error_handler])
+],[
+    AC_MSG_RESULT(printf)
+],[
+    AC_DEFINE(HAVE_BFD_ERROR_HANDLER_VPRINTFLIKE,1,[Whether the BFD error handler callback is vprintf like or printf like])
+    AC_MSG_RESULT(vprintf)
+])
+LIBS="$bfd_save_LIBS"
 
 AC_SUBST(BFD_LIBS)
 
