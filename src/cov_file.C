@@ -606,17 +606,17 @@ cov_file_t::read_bb_file(covio_t *io)
  */
 #define bbg_failed0(fmt) \
     { \
-	bbg_log.debug("BBG:%d, " fmt "\n", __LINE__); \
+	bbg_log.debug("BBG:%d, failed: " fmt "\n", __LINE__); \
 	return FALSE; \
     }
 #define bbg_failed1(fmt, a1) \
     { \
-	bbg_log.debug("BBG:%d, " fmt "\n", __LINE__, a1); \
+	bbg_log.debug("BBG:%d, failed: " fmt "\n", __LINE__, a1); \
 	return FALSE; \
     }
 #define bbg_failed2(fmt, a1, a2) \
     { \
-	bbg_log.debug("BBG:%d, " fmt "\n", __LINE__, a1, a2); \
+	bbg_log.debug("BBG:%d, failed: " fmt "\n", __LINE__, a1, a2); \
 	return FALSE; \
     }
 
@@ -962,7 +962,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     const char *filename = NULL;
     estring funcname;
     uint32_t tmp;
-    unsigned int nblocks = 0;
+    uint32_t nblocks = 0;
     uint32_t bidx, last_bidx = (exit_block_is_1() ? 1 : 0);
     unsigned int nlines = 0;
     cov_arc_t *a;
@@ -985,6 +985,12 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	if (expect_version != BBG_VERSION_GCC33)
 	    bbg_failed1("unexpected version=0x%08x", format_version_);
 	break;
+    case _NEWER_VERSION(8,3,'R'):   /* gcc 8.3.x in Fedora 29 */
+    case _NEWER_VERSION(8,3,'*'):
+    case _NEWER_VERSION(8,2,'*'):
+    case _NEWER_VERSION(8,1,'*'):
+	features_ |= FF_UNEXECUTED_BLOCKS | FF_FNCOLUMN | FF_SIMPLE_BLOCKS;
+	/* fall through */
     case _NEWER_VERSION(7,1,'*'):
     case _NEW_VERSION(7,0,'*'):
     case _NEW_VERSION(6,3,'*'):
@@ -1044,9 +1050,18 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 
     if ((features_ & FF_TIMESTAMP))
     {
-	io->read_u32(tmp);      /* ignore the timestamp */
+	if (!io->read_u32(tmp))      /* ignore the timestamp */
+	    bbg_failed0("short file");
+	bbg_log.debug("timestamp=0x%08x\n", tmp);
 	/* TODO: should really do something useful with this */
 	len_unit = 4;   /* records lengths are in 4-byte units now */
+    }
+
+    if ((features_ & FF_UNEXECUTED_BLOCKS))
+    {
+	if (!io->read_u32(tmp))         /* ignore supports_has_unexecuted_blocks */
+	    bbg_failed0("short file");
+	bbg_log.debug("supports_has_unexecuted_blocks=%d\n", tmp);
     }
 
     while (io->read_u32(tag))
@@ -1058,12 +1073,29 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	    bbg_failed0("short file");
 	length *= len_unit;
 
-	bbg_log.debug("tag=0x%08x (%s) length=%u\n",
-		tag, gcov_tag_as_string(tag), length);
+	bbg_log.debug("tag=0x%08x (%s) length=%u offset=0x%x\n",
+		tag, gcov_tag_as_string(tag), length,
+		(unsigned long)(io->tell()-8));
 	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    if ((features_ & FF_FNCHECKSUM2))
+	    if ((features_ & FF_FNCOLUMN))
+	    {
+		estring filename;
+
+		if (!io->read_u64(funcid) ||        // ident, lineno_checksum
+		    !io->read_u32(tmp) ||           // cfg_checksum
+		    !io->read_string(funcname) ||   // name
+		    !io->read_u32(tmp) ||	    // artificial
+		    !io->read_string(filename) ||   // source
+		    !io->read_u32(tmp) ||           // start_line
+		    !io->read_u32(tmp) ||           // start_column
+		    !io->read_u32(tmp))             // end_line
+		    bbg_failed0("short file");
+		if (compiledir_ == (const char *)0)
+		    infer_compilation_directory(filename);
+	    }
+	    else if ((features_ & FF_FNCHECKSUM2))
 	    {
 		estring filename;
 
@@ -1109,11 +1141,19 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 		bbg_failed0("no FUNCTION tag seen");
 	    if (nblocks > 0)
 		bbg_failed0("duplicate BLOCKS tag");
-	    nblocks = length/4;
+	    if ((features_ & FF_SIMPLE_BLOCKS))
+	    {
+		if (!io->read_u32(nblocks))
+		    bbg_failed0("short file");
+	    }
+	    else
+	    {
+		nblocks = length/4;
+		/* skip the per-block flags */
+		io->skip(length);
+	    }
 	    for (bidx = 0 ; bidx < nblocks ; bidx++)
 		fn->add_block();
-	    /* skip the per-block flags */
-	    io->skip(length);
 	    break;
 
 	case GCOV_TAG_ARCS:

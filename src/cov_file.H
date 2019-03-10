@@ -208,7 +208,18 @@ private:
 	 * PROGRAM_SUMMARY which we ignore.  More importantly, the
 	 * special exit block in a function is now block 1 rather
 	 * than block N-1 */
-	FF_EXITBLOCK1   =(1<<7)
+	FF_EXITBLOCK1   =(1<<7),
+	/* From 8.1, an extra field appears in the GCNO file
+	 * after the timestamp and before the tags.  We just ignore it.
+	 */
+	FF_UNEXECUTED_BLOCKS   =(1<<8),
+	/* From 8.1, the function header changed yet again, and now
+	 * contains the start column to support multiple functions
+	 * per line.  */
+	FF_FNCOLUMN	       =(1<<9),
+	/* From 8.1, the blocks tag was simplified to not explicitly
+	 * list a u32 flags field for each block which was always 0 */
+	FF_SIMPLE_BLOCKS       =(1<<10)
     };
 
     static void init();
