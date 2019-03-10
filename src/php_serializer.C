@@ -103,8 +103,8 @@ php_serializer_t::array_element()
     }
 }
 
-#define INFLATED_LENGTH 8
-#define INFLATED_FORMAT "%08u"
+#define INFLATED_LENGTH 10
+#define INFLATED_FORMAT "%010u"
 
 void
 php_serializer_t::_begin_array(unsigned int length, gboolean known)
