@@ -8,7 +8,8 @@ apt-get install -y \
     <% if @gcc_version %>g++-<%= @gcc_version %><% else %>g++<% end %> \
     git autoconf automake libtool pkg-config \
     libglade2-dev libgnomeui-dev libgconf2-dev libglib2.0-dev \
-    libxml2-dev binutils-dev libgd-dev libdb-dev ruby-mustache
+    libxml2-dev binutils-dev libgd-dev libdb-dev ruby-mustache \
+    tasksel
 
 # Newer Ubuntu needs the libiberty-dev package installed to
 # build with BFD; it was split out from binutils some time ago
