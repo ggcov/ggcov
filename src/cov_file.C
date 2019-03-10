@@ -930,26 +930,54 @@ decode_new_version(uint32_t ver, unsigned int *major,
     unsigned char b;
 
     b = (ver>>24) & 0xff;
-    if (!isdigit(b))
-	return FALSE;
-    *major = b - '0';
+    if (isdigit(b))
+    {
+	/* from gcc 3.3 and up*/
+	*major = b - '0';
 
-    b = (ver>>16) & 0xff;
-    if (!isdigit(b))
-	return FALSE;
-    *minor = b - '0';
+	b = (ver>>16) & 0xff;
+	if (!isdigit(b))
+	    return FALSE;
+	*minor = b - '0';
 
-    b = (ver>>8) & 0xff;
-    if (!isdigit(b))
-	return FALSE;
-    *minor = (*minor * 10) + (b - '0');
+	b = (ver>>8) & 0xff;
+	if (!isdigit(b))
+	    return FALSE;
+	*minor = (*minor * 10) + (b - '0');
 
-    b = (ver) & 0xff;
-    if (!isalnum(b) && b != '*')
-	return FALSE;
-    *rel = b;
+	b = (ver) & 0xff;
+	if (!isalnum(b) && b != '*')
+	    return FALSE;
+	*rel = b;
 
-    return TRUE;
+	return TRUE;
+    }
+    else if (b >= 'A' && b <= ('A'+9))
+    {
+	/* from gcc 7.1 and up */
+	*major = b - 'A';
+
+	b = (ver>>16) & 0xff;
+	if (!isdigit(b))
+	    return FALSE;
+	*major = (*major * 10) + (b - '0');
+
+	b = (ver>>8) & 0xff;
+	if (!isdigit(b))
+	    return FALSE;
+	*minor = b - '0';
+
+	b = (ver) & 0xff;
+	if (!isalnum(b) && b != '*')
+	    return FALSE;
+	*rel = b;
+
+	return TRUE;
+    }
+    else
+    {
+	return FALSE;
+    }
 }
 
 gboolean
