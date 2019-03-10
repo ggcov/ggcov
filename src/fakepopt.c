@@ -171,6 +171,12 @@ handle_option(poptContext con, const struct poptOption *opt, const char *val,
 	return -2;  /* unknown option */
     if (callback)
     {
+	if (opt->argInfo == POPT_ARG_STRING)
+	{
+	    val = con->argv[++con->argi];
+	    if (val == 0)
+		return -3; /* no value */
+	}
 	callback(con, POPT_CALLBACK_REASON_OPTION, opt, val, callback_data);
 	return 0;
     }
