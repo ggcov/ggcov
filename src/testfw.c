@@ -250,6 +250,7 @@ testrunner_t *testrunner_t::current_ = 0;
 
 testrunner_t::testrunner_t()
  :  verbose_(0),
+    forking_(true),
     scheduled_(0),
     nscheduled_(0),
     nrun_(0),
@@ -287,6 +288,12 @@ void
 testrunner_t::set_verbose(int v)
 {
     verbose_ = v;
+}
+
+void
+testrunner_t::set_forking(bool v)
+{
+    forking_ = v;
 }
 
 void
@@ -334,6 +341,20 @@ testrunner_t::schedule(const char *arg)
     return r;
 }
 
+void
+testrunner_t::record_pass(testfn_t *fn)
+{
+    fprintf(stderr, "PASS %s.%s\n", fn->suite(), fn->name());
+    npass_++;
+}
+
+void
+testrunner_t::record_fail(testfn_t *fn, const char *details)
+{
+    fprintf(stderr, "Test %s.%s failed:\n", fn->suite(), fn->name());
+    fputs(details, stderr);
+}
+
 #ifndef PIPE_READ
 #define PIPE_READ 0
 #endif
@@ -342,11 +363,9 @@ testrunner_t::schedule(const char *arg)
 #endif
 
 void
-testrunner_t::run_test(testfn_t *fn)
+testrunner_t::run_test_in_child(testfn_t *fn)
 {
-    running_ = fn;
-    nrun_++;
-
+    dmsg("Making pipe");
     int pipefd[2];
     if (pipe(pipefd) < 0)
     {
@@ -361,7 +380,6 @@ testrunner_t::run_test(testfn_t *fn)
 	perror("fork");
 	close(pipefd[PIPE_READ]);
 	close(pipefd[PIPE_WRITE]);
-	running_ = 0;
 	return;
     }
     if (pid == 0)
@@ -390,10 +408,7 @@ testrunner_t::run_test(testfn_t *fn)
 	 * _check() failure or a successful test.  */
 	char buf[STATUS_LEN];
 	if (read_status(buf, sizeof(buf), pipefd[PIPE_READ]) < 0)
-	{
-	    running_ = 0;
 	    return;
-	}
 	close(pipefd[PIPE_READ]);
 
 	/* wait the for child process to exit */
@@ -401,21 +416,33 @@ testrunner_t::run_test(testfn_t *fn)
 
 	/* diagnose test failure */
 	if (r < 0 && r != -ESRCH)
-	{
-	    running_ = 0;
 	    return;
-	}
 	if (r == 0 && buf[0] == '+')
-	{
-	    fprintf(stderr, "PASS %s.%s\n", fn->suite(), fn->name());
-	    npass_++;
-	}
+            record_pass(fn);
 	else if (buf[0] != '\0')
-	{
-	    fprintf(stderr, "Test %s.%s failed:\n", fn->suite(), fn->name());
-	    fputs(buf+1, stderr);
-	}
+            record_fail(fn, buf+1);
+        // we ran the test and have a clear pass/fail
     }
+}
+
+void
+testrunner_t::run_test_directly(testfn_t *fn)
+{
+    /* run the fixtures and test function */
+    fn->run();
+    /* test succeeded if we got here */
+    record_pass(fn);
+}
+
+void
+testrunner_t::run_test(testfn_t *fn)
+{
+    running_ = fn;
+    nrun_++;
+    if (forking_)
+        run_test_in_child(fn);
+    else
+        run_test_directly(fn);
     running_ = 0;
 }
 

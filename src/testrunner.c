@@ -13,7 +13,11 @@ static void usage(void) __attribute__((noreturn));
 static void
 usage(void)
 {
-    fprintf(stderr, "Usage: testrunner [-v] [suite[:test]...]\n");
+    fprintf(stderr, "Usage: testrunner [-v] [-d] [suite[:test]...]\n");
+    fprintf(stderr, "Options:\n");
+    fprintf(stderr, "-v         be more verbose");
+    fprintf(stderr, "-l         list all tests and exit");
+    fprintf(stderr, "-d         run tests without forking (useful under gdb)");
     exit(1);
 }
 
@@ -23,12 +27,15 @@ main(int argc, char **argv)
     int i;
     testrunner_t runner;
 
-    while ((i = getopt(argc, argv, "vl")) >= 0)
+    while ((i = getopt(argc, argv, "vld")) >= 0)
     {
 	switch (i)
 	{
 	case 'v':
 	    runner.set_verbose(1);
+	    break;
+	case 'd':
+	    runner.set_forking(false);
 	    break;
 	case 'l':
 	    runner.list();

@@ -143,6 +143,7 @@ class testrunner_t
 {
 private:
     int verbose_;
+    bool forking_;
     testfn_t **scheduled_;
     unsigned int nscheduled_;
     testfn_t *running_;
@@ -152,6 +153,10 @@ private:
 
     void schedule(testfn_t *fn);
     int schedule_matching(const char *suite, const char *name);
+    void record_pass(testfn_t *fn);
+    void record_fail(testfn_t *fn, const char *details);
+    void run_test_in_child(testfn_t *fn);
+    void run_test_directly(testfn_t *fn);
     void run_test(testfn_t *fn);
 
     friend class testfn_t;
@@ -163,6 +168,7 @@ public:
     static void _check(int pass, const char *file, int line, const char *fmt, ...);
 
     void set_verbose(int v);
+    void set_forking(bool);
     void list();
     int schedule(const char *arg);
     int run();
