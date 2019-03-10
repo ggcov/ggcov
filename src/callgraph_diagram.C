@@ -647,10 +647,7 @@ const char *callgraph_diagram_t::node_t::rank_str() const
 {
     static char buf[32];
 
-    if (this)
-	snprintf(buf, sizeof(buf), " rank %d", rank_);
-    else
-	buf[0] = '\0';
+    snprintf(buf, sizeof(buf), " rank %d", rank_);
     return buf;
 }
 
