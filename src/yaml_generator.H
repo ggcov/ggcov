@@ -48,15 +48,10 @@ public:
 	o_ << std::fixed << std::setprecision(1) << v;
 	return *this;
     }
-    yaml_generator_t &value(unsigned long long v)
+    yaml_generator_t &value(uint64_t v)
     {
 	begin_value();
 	o_ << v;
-	return *this;
-    }
-    yaml_generator_t &value(uint64_t v)
-    {
-	value((unsigned long long)v);
 	return *this;
     }
     yaml_generator_t &value(int v)

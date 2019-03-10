@@ -2339,7 +2339,7 @@ cov_file_annotator_t::count_as_string() const
     else
     {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%ld", count());
+	snprintf(buf, sizeof(buf), "%llu", (unsigned long long)count());
 	return buf;
     }
 }

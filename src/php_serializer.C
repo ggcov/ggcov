@@ -192,7 +192,7 @@ php_serializer_t::string(const char *s)
     array_element();
     if (s == 0)
 	s = "";
-    buf_.append_printf("s:%lu:\"%s\";", strlen(s), s);
+    buf_.append_printf("s:%u:\"%s\";", (unsigned)strlen(s), s);
 }
 
 void
