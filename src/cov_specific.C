@@ -114,8 +114,7 @@ cov_call_scanner_t::setup_calldata(
 {
     string_var callname_dem = demangle(callname);
 
-    calld->callname = (char *)0;    /* free and null out */
-    memset(calld, 0, sizeof(*calld));
+    calld->reset();
     if (!sec->find_nearest_line(address, &calld->location, &calld->function))
 	return FALSE;
 

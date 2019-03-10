@@ -220,6 +220,13 @@ public:
 	cov_location_t location;
 	string_var callname;    /* demangled */
 	const char *function;   /* mangled */
+
+	void reset()
+	{
+	    location.reset();
+	    callname = (char *)0;    /* free and null out */
+	    function = 0;
+	}
     };
 
     /* returns 1=have call, 0=end of scan, -1=error */

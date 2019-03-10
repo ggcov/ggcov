@@ -59,6 +59,11 @@ struct cov_location_t
 	return *this;
     }
     const char *describe() const;
+    void reset()
+    {
+	filename = 0;
+	lineno = 0;
+    }
 };
 
 struct cov_location_var
