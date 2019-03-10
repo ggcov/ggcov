@@ -31,6 +31,8 @@ public:
     test_starter_t(const char *builddir);
     ~test_starter_t();
 
+    static void set_base_dir(const char *dir);
+
     class sourcefile_t
     {
     public:

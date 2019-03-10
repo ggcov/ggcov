@@ -52,6 +52,12 @@ test_starter_t::~test_starter_t()
 {
 }
 
+void
+test_starter_t::set_base_dir(const char *dir)
+{
+    base_dir = dir;
+}
+
 test_starter_t::sourcefile_t &test_starter_t::add_sourcefile(const char *filename)
 {
     sourcefile_t *sf = new sourcefile_t(filename);

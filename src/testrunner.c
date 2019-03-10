@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "teststarter.h"
 #include "testfw.h"
 
 /* some of the code needs this to exist */
@@ -26,6 +27,15 @@ main(int argc, char **argv)
 {
     int i;
     testrunner_t runner;
+
+    {
+	char *srcdir = g_dirname(argv[0]);
+	char *testdir = g_strconcat(srcdir, "/../test", (char *)0);
+	fprintf(stderr, "Setting base directory to \"%s\"\n", testdir);
+	test_starter_t::set_base_dir(testdir);
+	g_free(testdir);
+	g_free(srcdir);
+    }
 
     while ((i = getopt(argc, argv, "vld")) >= 0)
     {
