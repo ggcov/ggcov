@@ -55,13 +55,21 @@ params_t::post_args()
 }
 
 simple_params_t::simple_params_t()
- :  values_(new hashtable_t<const char, const char>)
+ :  values_(new hashtable_t<const char, char>)
 {
 }
 
 simple_params_t::~simple_params_t()
 {
+    values_->foreach_remove(delete_one, 0);
     delete values_;
+}
+
+gboolean
+simple_params_t::delete_one(const char *key, char *value, gpointer userdata)
+{
+    g_free(value);
+    return TRUE;    /* please remove me */
 }
 
 bool
@@ -69,7 +77,7 @@ simple_params_t::set(const char *key, const char *value)
 {
     if (!value)
 	value = "1";
-    values_->insert(key, value);
+    values_->insert(key, g_strdup(value));
     return true;
 }
 

@@ -107,7 +107,8 @@ public:
     virtual void post_args();
 
 private:
-    hashtable_t<const char, const char> *values_;
+    static gboolean delete_one(const char *name, char*, gpointer userdata);
+    hashtable_t<const char, char> *values_;
 };
 
 class option_t
