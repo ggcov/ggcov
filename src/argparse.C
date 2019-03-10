@@ -111,7 +111,7 @@ parser_t::~parser_t()
     for (ptrarray_iterator_t<option_t> itr = options_->first() ; *itr ; ++itr)
 	delete *itr;
     delete options_;
-    delete popt_options_;
+    delete[] popt_options_;
 }
 
 option_t::option_t(char short_option, const char *long_option)
