@@ -344,14 +344,14 @@ testrunner_t::schedule(const char *arg)
 void
 testrunner_t::record_pass(testfn_t *fn)
 {
-    fprintf(stderr, "PASS %s.%s\n", fn->suite(), fn->name());
+    fprintf(stderr, "PASS %s:%s\n", fn->suite(), fn->name());
     npass_++;
 }
 
 void
 testrunner_t::record_fail(testfn_t *fn, const char *details)
 {
-    fprintf(stderr, "Test %s.%s failed:\n", fn->suite(), fn->name());
+    fprintf(stderr, "Test %s:%s failed:\n", fn->suite(), fn->name());
     fputs(details, stderr);
 }
 
