@@ -117,6 +117,13 @@ cov_read_source_file(const char *filename)
 
 #ifdef HAVE_LIBBFD
 
+#if HAVE_BFD_ERROR_HANDLER_VPRINTFLIKE
+static void
+cov_bfd_error_handler(const char *fmt, va_list args)
+{
+    _log.vmessage(logging::ERROR, fmt, args);
+}
+#else
 static void
 cov_bfd_error_handler(const char *fmt, ...)
 {
@@ -126,6 +133,8 @@ cov_bfd_error_handler(const char *fmt, ...)
     _log.vmessage(logging::ERROR, fmt, args);
     va_end(args);
 }
+#endif /* HAVE_BFD_ERROR_HANDLER_VPRINTFLIKE */
+
 #endif /* HAVE_LIBBFD */
 
 void
