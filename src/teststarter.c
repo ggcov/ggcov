@@ -234,6 +234,9 @@ int test_starter_t::start()
 	params.set_recursive();
 	params.add_file(builddir_);
     }
+    if (testrunner_t::verbose())
+	params.set_debug_str("all,verbose");
+    params.post_args();
     r = cov_read_files(params);
 
     /* fail if cov_read_files() failed or found no files */

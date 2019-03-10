@@ -41,6 +41,7 @@ public:
 
 protected:
     void setup_parser(argparse::parser_t &);
+public:
     void post_args();
 };
 
