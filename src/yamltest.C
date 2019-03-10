@@ -26,7 +26,8 @@
 
 #define expect(_e) \
     { \
-	const char *actual = buf.str().c_str(); \
+	std::string _s = buf.str(); \
+	const char *actual = _s.c_str(); \
 	static const char expected[] = _e; \
 	check_str_equals(actual, expected); \
     }
