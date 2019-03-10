@@ -1,0 +1,2 @@
+box: "generic/fedora29"
+script_file: "fedora.sh"
