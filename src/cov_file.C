@@ -1019,12 +1019,16 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
     case _NEWER_VERSION(8,1,'*'):
 	features_ |= FF_UNEXECUTED_BLOCKS | FF_FNCOLUMN | FF_SIMPLE_BLOCKS;
 	/* fall through */
+    case _NEWER_VERSION(7,3,'R'):  /* gcc 7.3.x in Fedora 27 */
+    case _NEWER_VERSION(7,4,'*'):
+    case _NEWER_VERSION(7,3,'*'):  /* gcc 7.3.x, stock and Ubuntu bionic & cosmic */
     case _NEWER_VERSION(7,1,'*'):
     case _NEW_VERSION(7,0,'*'):
     case _NEW_VERSION(6,3,'*'):
     case _NEW_VERSION(6,2,'*'):
     case _NEW_VERSION(6,1,'*'):
     case _NEW_VERSION(6,0,'*'):
+    case _NEW_VERSION(5,4,'*'):
     case _NEW_VERSION(5,3,'*'):
     case _NEW_VERSION(5,2,'*'):
     case _NEW_VERSION(5,1,'*'):
