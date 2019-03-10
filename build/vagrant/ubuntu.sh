@@ -27,3 +27,8 @@ update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-<%= @gcc_version %> 
 export DEBIAN_FRONTEND=noninteractive
 cmd="$(tasksel --test --new-install install gnome-desktop | sed 's/debconf-apt-progress -- //')"
 $cmd
+
+# uncomment these to get latest development gcc
+# add-apt-repository ppa:ubuntu-toolchain-r/ppa
+# apt-get update
+# apt-get upgrade
