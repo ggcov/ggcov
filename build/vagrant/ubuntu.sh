@@ -1,4 +1,8 @@
 # Setup C development environment and prereqs
+
+#
+# Use ppa: ubuntu-toolchain-r/test in the VM yaml file to get toolchain test builds
+#
 <% if @ppa %>
 add-apt-repository -y ppa:<%= @ppa %>
 <% end %>
@@ -27,8 +31,3 @@ update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-<%= @gcc_version %> 
 export DEBIAN_FRONTEND=noninteractive
 cmd="$(tasksel --test --new-install install gnome-desktop | sed 's/debconf-apt-progress -- //')"
 $cmd
-
-# uncomment these to get latest development gcc
-# add-apt-repository ppa:ubuntu-toolchain-r/ppa
-# apt-get update
-# apt-get upgrade
