@@ -25,11 +25,11 @@
 #include <malloc.h>
 #include <sys/wait.h>
 #include <errno.h>
-#include "filename.H"
+#include "filename.h"
 #include "hashtable.H"
 #include "tok.H"
 #include "cov.H"
-#include "testfw.h"
+#include "testfw.H"
 #include "teststarter.h"
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

@@ -1,7 +1,7 @@
 #include "filename.h"
 #include "string_var.H"
 #include "hashtable.H"
-#include "testfw.h"
+#include "testfw.H"
 
 struct pairx
 {

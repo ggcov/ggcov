@@ -1,5 +1,5 @@
 #include "argparse.H"
-#include "testfw.h"
+#include "testfw.H"
 
 #define TESTCASE(...) \
     argparse::simple_params_t params; \

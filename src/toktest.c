@@ -1,6 +1,6 @@
 #include "common.h"
 #include "tok.H"
-#include "testfw.h"
+#include "testfw.H"
 
 // extern int end;
 

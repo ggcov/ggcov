@@ -22,7 +22,7 @@
 #include <iostream>
 #include <sstream>
 #include <string.h>
-#include "testfw.h"
+#include "testfw.H"
 
 #define expect(_e) \
     { \

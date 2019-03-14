@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include "filename.h"
-#include "testfw.h"
+#include "testfw.H"
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 

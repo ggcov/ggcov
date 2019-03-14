@@ -4,7 +4,7 @@
 #include "cov_file.H"
 #include "cov_function.H"
 #include "cov_line.H"
-#include "testfw.h"
+#include "testfw.H"
 #include "teststarter.h"
 
 #define LINE(f, n, expected_status) \

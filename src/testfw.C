@@ -25,7 +25,7 @@
 #include <malloc.h>
 #include <sys/wait.h>
 #include <errno.h>
-#include "testfw.h"
+#include "testfw.H"
 
 testfn_t *testfn_t::head_, **testfn_t::tailp_ = &head_;
 static int status_pipe = -1;

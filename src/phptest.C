@@ -1,6 +1,6 @@
 #include "common.h"
 #include "php_serializer.H"
-#include "testfw.h"
+#include "testfw.H"
 
 TEST(integer)
 {

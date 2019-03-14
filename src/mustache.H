@@ -22,7 +22,7 @@
 
 #include "common.h"
 #include "filename.h"
-#include "string_var.h"
+#include "string_var.H"
 #include "yaml_generator.H"
 
 namespace mustache

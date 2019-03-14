@@ -18,7 +18,7 @@
  */
 #include "common.h"
 #include "mustache.H"
-#include "testfw.h"
+#include "testfw.H"
 
 #define expect(_e) \
     { \

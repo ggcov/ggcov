@@ -1,6 +1,6 @@
 #include "common.h"
 #include "cov_types.H"
-#include "testfw.h"
+#include "testfw.H"
 
 TEST(merge_cov_status)
 {

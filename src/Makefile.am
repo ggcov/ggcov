@@ -146,14 +146,14 @@ licence.c: $(top_srcdir)/COPYING
 glade_callbacks.c: $(gui_SOURCES)
 	perl gencallbacks.pl $(gui_SOURCES) > $@ || ($(RM) $@ ; exit 1)
 
-EXTRA_DIST=		gencallbacks.pl
+EXTRA_DIST=		gencallbacks.pl casecheck.pl
 
 EXTRA_CLEAN=		licence.c glade_callbacks.c
 
 noinst_PROGRAMS=	testrunner mangletest \
 			popttest
 
-testrunner_SOURCES=	testrunner.c testfw.c testfw.h \
+testrunner_SOURCES=	testrunner.c testfw.C testfw.H \
 			teststarter.c teststarter.h \
 			filetest.c \
 			phptest.C php_serializer.C \
@@ -190,3 +190,5 @@ install-exec-local:
 	    [ "$$ok" = yes ] || exit 1 ;\
 	fi
 
+check-local:
+	./casecheck.pl $(foreach v,$(PROGRAMS) $(LIBRARIES),$($(subst .,_,$(subst -,_,$v))_OBJECTS))

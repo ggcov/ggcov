@@ -18,7 +18,7 @@
  */
 #include "common.h"
 #include "unique_ptr.H"
-#include "testfw.h"
+#include "testfw.H"
 
 #define MAX_INSTANCES	16
 struct foo_t

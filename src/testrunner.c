@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "teststarter.h"
-#include "testfw.h"
+#include "testfw.H"
 
 /* some of the code needs this to exist */
 const char *argv0;
