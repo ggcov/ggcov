@@ -37,12 +37,13 @@ ggcov:
 COVFLAGS=		-fprofile-arcs -ftest-coverage
 coverage:
 	cd src ; $(MAKE) \
-	    CFLAGS="$(CFLAGS) $(COVFLAGS)" \
-	    CXXFLAGS="$(CXXFLAGS) $(COVFLAGS)" \
+	    CFLAGS="`echo ' $(CFLAGS) ' | sed -e 's| -O[1-9] | |g'` $(COVFLAGS)" \
+	    CXXFLAGS="`echo ' $(CXXFLAGS) ' | sed -e 's| -O[1-9] | |g'` $(COVFLAGS)" \
 	    all
 
+PROFFLAGS=		-pg
 profile:
 	cd src ; $(MAKE) \
-	    CFLAGS="`echo ' $(CFLAGS) ' | sed -e 's| -O[1-9] | |g'` -pg" \
-	    CXXFLAGS="`echo ' $(CXXFLAGS) ' | sed -e 's| -O[1-9] | |g'` -pg" \
+	    CFLAGS="`echo ' $(CFLAGS) ' | sed -e 's| -O[1-9] | |g'` $(PROFFLAGS)" \
+	    CXXFLAGS="`echo ' $(CXXFLAGS) ' | sed -e 's| -O[1-9] | |g'` $(PROFFLAGS)" \
 	    all
