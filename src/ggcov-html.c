@@ -530,7 +530,7 @@ log_func(
     const char *msg,
     gpointer user_data)
 {
-    _log.message(log_level(level), "%s:%s:%s\n",
+    _log.message(log_level(level), "%s:%s\n",
 	(domain == 0 ? PACKAGE : domain),
 	msg);
     if (level & G_LOG_FLAG_FATAL)

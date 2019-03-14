@@ -1107,7 +1107,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	    bbg_failed0("short file");
 	length *= len_unit;
 
-	bbg_log.debug("tag=0x%08x (%s) length=%u offset=0x%x\n",
+	bbg_log.debug("tag=0x%08x (%s) length=%u offset=0x%lx\n",
 		tag, gcov_tag_as_string(tag), length,
 		(unsigned long)(io->tell()-8));
 	switch (tag)

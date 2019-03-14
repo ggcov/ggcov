@@ -42,8 +42,11 @@ enum level_t
 
 #ifdef __GNUC__
 #define __logger_expect(expr, val)      __builtin_expect(expr, val)
+#define PRINTFLIKE			__attribute__((format(printf,2,3)))
+#define PRINTFLIKE2			__attribute__((format(printf,3,4)))
 #else
 #define __logger_expect(expr, val)      (expr)
+#define PRINTFLIKE
 #endif
 
 class logger_t
@@ -61,19 +64,21 @@ public:
 	    va_end(args); \
 	} \
     }
-    void debug2(const char *fmt, ...) LOGME(logging::DEBUG2)
-    void debug(const char *fmt, ...) LOGME(logging::DEBUG)
-    void info(const char *fmt, ...) LOGME(logging::INFO)
-    void warning(const char *fmt, ...) LOGME(logging::WARNING)
-    void error(const char *fmt, ...) LOGME(logging::ERROR)
-    void fatal(const char *fmt, ...) LOGME(logging::FATAL)
-    void message(level_t level, const char *fmt, ...) LOGME(level)
+    void debug2(const char *fmt, ...) PRINTFLIKE LOGME(logging::DEBUG2)
+    void debug(const char *fmt, ...) PRINTFLIKE LOGME(logging::DEBUG)
+    void info(const char *fmt, ...) PRINTFLIKE LOGME(logging::INFO)
+    void warning(const char *fmt, ...) PRINTFLIKE LOGME(logging::WARNING)
+    void error(const char *fmt, ...) PRINTFLIKE LOGME(logging::ERROR)
+    void fatal(const char *fmt, ...) PRINTFLIKE LOGME(logging::FATAL)
+    void message(level_t level, const char *fmt, ...) PRINTFLIKE2 LOGME(level)
     void vmessage(level_t level, const char *fmt, va_list args)
     {
 	if (__logger_expect(is_enabled(level), 0))
 	    dolog(level, fmt, args);
     }
 #undef LOGME
+#undef PRINTFLIKE
+#undef PRINTFLIKE2
 
     void perror(const char *filename) { error("%s: %s\n", filename, strerror(errno)); }
 
