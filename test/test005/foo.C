@@ -13,7 +13,7 @@ struct foo_ex
 };
 					    /* C(-) */
 static void
-do_some_detailed_stuff(int x) throw(foo_ex)
+do_some_detailed_stuff(int x) noexcept(false)
 {
     printf("Got argument %d\n", x);	    /* C(1,1) C(2,2) C(3,3) C(4,42) C(5,-1) */
     if (x == 42)			    /* C(1,1) C(2,2) C(3,3) C(4,42) C(5,-1) */
