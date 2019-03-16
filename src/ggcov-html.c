@@ -83,9 +83,10 @@ private:
 };
 
 gghtml_params_t::gghtml_params_t(const char *argv0)
- :  output_directory_("html"),
-    data_directory_(file_make_absolute_to_file("../lib", argv0))
+ :  output_directory_("html")
 {
+    string_var abs_argv0 = file_make_absolute(argv0);
+    data_directory_ = file_make_absolute_to_file("../lib", abs_argv0);
 }
 
 gghtml_params_t::~gghtml_params_t()
