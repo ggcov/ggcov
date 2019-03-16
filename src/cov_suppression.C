@@ -158,6 +158,7 @@ cov_suppression_set_t::init_builtins(void)
 	 * scanning object code for calls */
 	{ cov_suppression_t::RELOC, "__bb_init_func" },        /* code inserted by gcc to instrument blocks */
 	{ cov_suppression_t::RELOC, "__gcov_init" },           /* a more modern version of the same */
+	{ cov_suppression_t::RELOC, "__gcov_exit" },           /* a more modern version of the same */
 	{ cov_suppression_t::RELOC, "_Unwind_Resume" },        /* gcc 3.4 exception handling */
 	{ cov_suppression_t::RELOC, "__cxa_call_unexpected" }, /* gcc 3.4 exception handling */
 	{ cov_suppression_t::RELOC, "__cxa_end_catch" },       /* gcc 3.4 exception handling */
