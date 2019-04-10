@@ -857,6 +857,7 @@ void
 cov_file_t::infer_compilation_directory(const char *path)
 {
     int clen;
+    const char *origpath = path;
 
     bbg_log.debug("infer_compilation_directory(\"%s\")\n", path);
 
@@ -905,8 +906,9 @@ cov_file_t::infer_compilation_directory(const char *path)
     }
 
     /* This might be a problem...but probably not */
-    bbg_log.debug("Could not calculate compiledir for %s from location %s\n",
-	    name_.data(), path);
+    bbg_log.debug("Could not calculate compiledir for "
+		  "\"%s\" from location \"%s\"\n",
+		  name_.data(), origpath);
 }
 
 const char *
@@ -914,11 +916,13 @@ cov_file_t::make_absolute(const char *filename) const
 {
     if (compiledir_ != (const char *)0)
 	return file_make_absolute_to_dir(filename, compiledir_);
-    if (*filename != '/')
+    const char *abs = file_make_absolute_to_file(filename, name_);
+    if (file_exists(abs) < 0)
 	bbg_log.warning("no compiledir when converting "
-			"path \"%s\" to absolute, trying plan B\n",
-			filename);
-    return file_make_absolute_to_file(filename, name_);
+			"path \"%s\" to absolute, and "
+			"plan B gives missing path \"%s\"\n",
+			filename, abs);
+    return abs;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
