@@ -299,6 +299,9 @@ cov_amd64_call_scanner_t::is_function_reloc(const arelent *rel) const
     case R_X86_64_32:       /* external data reference from static code */
     case R_X86_64_32S:      /* external data reference from static code */
     case R_X86_64_GOTPCREL: /* external data reference from PIC code */
+#ifdef R_X86_64_REX_GOTPCRELX
+    case R_X86_64_REX_GOTPCRELX:    /* fancy new external data reference from PIC code */
+#endif
 	return FALSE;
     case R_X86_64_PC32:     /* function call or external data reference from static code */
     case R_X86_64_PLT32:    /* function call from PIC code */
