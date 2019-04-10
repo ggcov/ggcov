@@ -1,5 +1,6 @@
 .nautilus-metafile.xml
 log.*
+*.log
 *.bck
 Makefile
 Makefile.in

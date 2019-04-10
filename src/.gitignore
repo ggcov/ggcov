@@ -9,4 +9,8 @@ ggcov-html
 ggcov-webdb
 tggcov
 *.bck
+*.bak[1-9]
+*.orig
 glade_callbacks.c
+*.gcno
+*.gcda
