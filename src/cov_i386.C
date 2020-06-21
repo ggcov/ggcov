@@ -22,7 +22,7 @@
 #include "string_var.H"
 #include "logging.H"
 
-#if defined(HAVE_LIBBFD) && (defined(COV_I386) || defined(COV_AM64))
+#if defined(HAVE_LIBBFD) && (defined(COV_I386) || defined(COV_AM64)) && defined(CALLTREE_ENABLED)
 
 static logging::logger_t &_log = logging::find_logger("cgraph");
 

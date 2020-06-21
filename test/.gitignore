@@ -4,3 +4,4 @@ log.*
 Makefile
 Makefile.in
 tmp.*.d
+variables.sh

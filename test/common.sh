@@ -27,6 +27,8 @@ top_srcdir=${top_srcdir:-../..}
 builddir=.
 srcdir=${srcdir:-.}
 
+source $(dirname ${BASH_SOURCE[0]})/variables.sh
+
 _VALGRIND=
 VALGRIND="valgrind --tool=memcheck --num-callers=16 --leak-check=yes"
 
@@ -53,6 +55,7 @@ TESTBASEDIR=`/bin/pwd`
 #   ""	    no `pass' or `fail' calls, indeterminate
 #   PASS    at least one `pass' and no `fail' calls
 #   FAIL    at least one `fail' call
+#   SKIP    the test doesn't apply on this platform or with this configuration
 #   ERROR   something went wrong with the test, exiting immediately
 #
 RESULT=
@@ -105,6 +108,7 @@ _result ()
     :*) RESULT=$res ;;	# first result of any kind, just take it
     *:PASS) ;;		# PASS doesn't change any other result
     FAIL:ERROR) ;;	# ERRORs after a FAIL are probably flow-on
+    SKIP:*) ;;          # a SKIP is final
     *) RESULT=$res ;;	# otherwise, take the new result
     esac
 }
@@ -118,7 +122,11 @@ _resonexit ()
 	_resmsg PASS $DESCRIPTION
 	;;
     esac
-    [ $RESULT = PASS ] || exit 1;
+    case "$RESULT" in
+    PASS) exit 0 ;;
+    SKIP) exit 99 ;;
+    *) exit 1 ;;
+    esac
 }
 
 pass ()
@@ -135,6 +143,12 @@ silentpass()
 fail ()
 {
     _result FAIL $*
+}
+
+skip ()
+{
+    _result SKIP $*
+    exit 99
 }
 
 fatal ()

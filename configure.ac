@@ -433,15 +433,24 @@ CC="$CXX"
 AC_CANONICAL_HOST
 
 AC_MSG_CHECKING(for cpu-specific defines)
+calltree_supported=no
 case "$host_cpu" in
 i?86|i86pc)
     AC_DEFINE(COV_I386,1,[Building on i386 platform])
     AC_MSG_RESULT([COV_I386])
+    calltree_supported=yes
     ;;
 x86_64)
     AC_DEFINE(COV_I386,1,[Building on i386 platform])
     AC_DEFINE(COV_AMD64,1,[Building on amd64 platform])
     AC_MSG_RESULT([COV_AMD64 COV_I386])
+    calltree_supported=yes
+    ;;
+aarch64)
+    dnl Calltree detection not supported on ARM yet,
+    dnl this is just boilerplate for future expansion
+    AC_DEFINE(COV_ARM64,1,[Building on arm64 platform])
+    AC_MSG_RESULT([COV_ARM64])
     ;;
 *)
     AC_MSG_RESULT([])
@@ -464,6 +473,27 @@ linux*)
     AC_MSG_RESULT([])
     ;;
 esac
+
+AC_MSG_CHECKING(whether to include calltree functionality)
+AC_ARG_ENABLE(calltree,
+[  --disable-calltree      Do not include calltree detection], [
+case "${enableval}" in
+yes|no)
+    CALLTREE_ENABLED=${enableval}
+    ;;
+*)
+    AC_MSG_ERROR(bad value ${enableval} for --enable-calltree)
+    ;;
+esac
+],[CALLTREE_ENABLED=$calltree_supported])
+AC_MSG_RESULT($CALLTREE_ENABLED)
+AM_CONDITIONAL(CALLTREE_ENABLED, test x$CALLTREE_ENABLED = xyes)
+AC_SUBST(CALLTREE_ENABLED)
+if  test x$CALLTREE_ENABLED = xno ; then
+    RPM_SPEC_CONFIGURE_ARGS="$RPM_SPEC_CONFIGURE_ARGS --disable-calltree"
+else
+    AC_DEFINE(CALLTREE_ENABLED,1,[Define to 1 if the calltree detection feature is enabled])
+fi
 
 if test x$is_linux = xyes ; then
     AC_MSG_CHECKING(for Linux distro-specific defines)
@@ -502,5 +532,6 @@ AC_OUTPUT([
     ggcov.spec
     version.m4
     test/Makefile
+    test/variables.sh
 ])
 dnl intl/Makefile po/Makefile.in

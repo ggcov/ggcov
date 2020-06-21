@@ -34,9 +34,11 @@ public:
 	COMMENT_LINE,   /* line with a comment containing word_ */
 	COMMENT_RANGE,  /* lines between a comment containing word_
 			 * and a comment containing word2_ */
-	ARC_CALLS,      /* arc is a call to named function */
+	ARC_CALLS,      /* arc is a call to named function
+                         * (requires CALLTREE_ENABLED) */
 	BLOCK_CALLS,    /* block contains an arc which is a
-			 * call to named function */
+			 * call to named function (requires
+                         * CALLTREE_ENABLED) */
 	FUNCTION,       /* named function */
 	FILENAME,       /* named filename */
 	MERGED,         /* all components are suppressed */

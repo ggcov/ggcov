@@ -1683,7 +1683,7 @@ cov_file_t::read_da_file(covio_t *io)
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#ifdef HAVE_LIBBFD
+#if defined(HAVE_LIBBFD) && defined(CALLTREE_ENABLED)
 
 gboolean
 cov_file_t::o_file_add_call(
@@ -1875,7 +1875,7 @@ cov_file_t::read_o_file(covio_t *io)
     return TRUE;
 }
 
-#endif /* HAVE_LIBBFD */
+#endif /* HAVE_LIBBFD && CALLTREE_ENABLED */
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -2219,7 +2219,7 @@ cov_file_t::read(gboolean quiet)
      * the callgraph will be irretrievably broken and there's no point
      * at all trying to read the object file.
      */
-#ifdef HAVE_LIBBFD
+#if defined(HAVE_LIBBFD) && defined(CALLTREE_ENABLED)
     if (gcc296_braindeath())
     {
 	static int count = 0;
@@ -2257,7 +2257,7 @@ cov_file_t::read(gboolean quiet)
 		files_log.warning("%s: %s", name(), warnmsg);
 	}
     }
-#endif
+#endif  /* HAVE_LIBBFD && CALLTREE_ENABLED */
 
     if (!solve())
 	return FALSE;

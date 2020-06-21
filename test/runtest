@@ -136,10 +136,13 @@ for t in $TESTS ; do
     	cd $t
 	$SHELL runtest $ARGS
     )
-    if [ $? = 0 ]; then
+    exitcode=$?
+    if [ $exitcode = 0 ]; then
 	NPASS=`expr $NPASS + 1`
     fi
-    NRUN=`expr $NRUN + 1`
+    if [ $exitcode != 99 ]; then
+        NRUN=`expr $NRUN + 1`
+    fi
 done
 
 echo "Total: $NPASS/$NRUN tests passed"

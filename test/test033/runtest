@@ -2,6 +2,8 @@
 
 . ../common.sh
 
+[ $CALLTREE_ENABLED = yes ] || skip "requires calltree support"
+
 init "Suppression of assert() failure blocks"
 
 compile_c foo.c

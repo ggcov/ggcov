@@ -69,7 +69,11 @@ libcov_a_SOURCES= \
 # objects need to be unconditionally linked instead of pulled
 # in from libcov.a on demand.
 LIBCOV_STATIC_SOURCES= \
-		cov_stab32.C cov_i386.C cov_dwarf2.C cov_elf.C
+		cov_stab32.C cov_dwarf2.C cov_elf.C $(CALLTREE_STATIC_SOURCES)
+
+if CALLTREE_ENABLED
+CALLTREE_STATIC_SOURCES= cov_i386.C
+endif
 		
 if GUI
 BASEINCLUDES=	$(GGCOV_GUI_CFLAGS)
