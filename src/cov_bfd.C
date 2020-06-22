@@ -330,11 +330,15 @@ cov_bfd_t::dump_reloc(unsigned int idx, arelent *rel)
 unsigned char *
 cov_bfd_section_t::get_contents(bfd_size_type *lenp)
 {
-    asection *sec = (asection *)this;
+    const asection *sec = (const asection *)this;
     bfd_size_type size;
     unsigned char *contents;
 
+#if HAVE_BFD_SECTION_SIZE_2ARGS
     size = bfd_section_size(sec->owner, sec);
+#else
+    size = bfd_section_size(sec);
+#endif
     contents = get_contents(0, size);
     if (lenp != 0)
 	*lenp = size;

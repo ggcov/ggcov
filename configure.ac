@@ -313,6 +313,27 @@ AC_LINK_IFELSE([
 ])
 LIBS="$bfd_save_LIBS"
 
+dnl Commit https://sourceware.org/git/?p=binutils-gdb.git;a=commit;f=bfd/bfd-in2.h;h=fd3619828e94a24a92cddec42cbc0ab33352eeb4
+dnl which appears in binutils 2.34, removed an argument from a bunch of
+dnl BFD functions, one of which dnl we use is bfd_section_size()
+dnl old signature:
+dnl     #define bfd_section_name(bfd, ptr) ((ptr)->name)
+dnl new signatute:
+dnl     static inline const char *
+dnl     bfd_section_name (const asection *sec)
+AC_MSG_CHECKING([whether bfd_section_size has one argument or two])
+AC_TRY_COMPILE([
+#include <bfd.h>
+],[
+    return bfd_section_size((struct abfd *)0, (struct asection *)0);
+],[
+    AC_DEFINE(HAVE_BFD_SECTION_SIZE_2ARGS,1,[Whether bfd_section_size is the old 2 argument form ])
+    AC_MSG_RESULT(2)
+],[
+    AC_MSG_RESULT(1)
+])
+
+
 AC_SUBST(BFD_LIBS)
 
 dnl Checks for header files.
