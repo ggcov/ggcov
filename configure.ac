@@ -139,6 +139,16 @@ dnl Stuff for gettext
 dnl ALL_LINGUAS="la"
 dnl AM_GNU_GETTEXT
 
+dnl Allow user to choose the gcov binary with an environment
+dnl variable, for consistency with CC and CXX.  This is
+dnl useful when building with an alternate toolchain.
+dnl The gcov binary is used only in the test suite (ggcov
+dnl *reimplements* gcov and does not wrap it).
+if test x"$GCOV" = x ; then
+    GCOV=gcov
+fi
+AC_CHECK_PROG(GCOV, $GCOV)
+
 dnl Check for va_copy, it might not exist or might be broken
 dnl in some compilation environments.
 AC_MSG_CHECKING([whether va_copy works])

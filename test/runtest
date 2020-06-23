@@ -26,6 +26,8 @@ SUPPRESS=
 GIVEN=no
 SHELL=bash
 
+. `dirname $0`/variables.sh
+
 usage ()
 {
     echo "Usage: runtest [test...]"
@@ -122,10 +124,20 @@ echo "Running tests"
     for f in /etc/*-release _dummy ; do
         [ $f = _dummy ] || echo "head -1 $f: \"`head -1 $f 2>/dev/null`\""
     done
-    echo "which gcc: \"`which gcc`\""
-    echo "gcc --version: \"`gcc --version | head -1`\""
-    echo "which g++: \"`which g++`\""
-    echo "g++ --version: \"`g++ --version | head -1`\""
+
+    echo "CC: \"$CC\""
+    case "$CC" in
+    /*) ;;
+    *) echo "which $CC: \"`which $CC`\"" ;;
+    esac
+    echo "$CC --version: \"`$CC --version | head -1`\""
+
+    echo "CXX: \"$CXX\""
+    case "$CXX" in
+    /*) ;;
+    *) echo "which $CXX: \"`which $CXX`\"" ;;
+    esac
+    echo "$CXX --version: \"`$CXX --version | head -1`\""
 )
 
 NPASS=0

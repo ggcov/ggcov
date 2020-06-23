@@ -142,7 +142,11 @@ int test_starter_t::build()
     static const char main_c[] =
 "#include <stdlib.h>\n"
 "\n"
+"#ifdef __cplusplus\n"
+"extern \"C\" int function_one(int arg);\n"
+"#else\n"
 "extern int function_one(int arg);\n"
+"#endif\n"
 "\n"
 "int main(int argc, char **argv)\n"
 "{\n"

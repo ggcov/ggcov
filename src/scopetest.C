@@ -23,6 +23,9 @@ TEST(one_function)
     test_starter_t starter;
 
     starter.add_sourcefile("foo.c").source(
+"#ifdef __cplusplus\n"
+"extern \"C\" int function_one(int);\n"
+"#endif\n"
 "\n"
 "int\n"
 "function_one(int x)\n"
@@ -46,15 +49,18 @@ TEST(one_function)
     cov_stats_t by_line;
     LINE(f, 1, cov::UNINSTRUMENTED);
     LINE(f, 2, cov::UNINSTRUMENTED);
-    LINE(f, 3, -1);
-    LINE(f, 4, -1);
-    LINE(f, 5, cov::COVERED);
-    LINE(f, 6, cov::COVERED);
-    LINE(f, 7, cov::UNCOVERED);
+    LINE(f, 3, cov::UNINSTRUMENTED);
+    LINE(f, 4, cov::UNINSTRUMENTED);
+    LINE(f, 5, cov::UNINSTRUMENTED);
+    LINE(f, 6, -1);
+    LINE(f, 7, -1);
     LINE(f, 8, cov::COVERED);
     LINE(f, 9, cov::COVERED);
-    LINE(f, 10, -1);
-    LINE(f, 11, cov::UNINSTRUMENTED);
+    LINE(f, 10, cov::UNCOVERED);
+    LINE(f, 11, cov::COVERED);
+    LINE(f, 12, cov::COVERED);
+    LINE(f, 13, -1);
+    LINE(f, 14, cov::UNINSTRUMENTED);
 
     /* Test the Overall scope */
     cov_overall_scope_t oscope;
@@ -89,7 +95,7 @@ TEST(one_function)
     check(*func == *overall);
 
     /* Test a Range scope scoped to the whole file */
-    cov_range_scope_t rscope_entire(f, 1, 11);
+    cov_range_scope_t rscope_entire(f, 1, 14);
     const cov_stats_t *entire = rscope_entire.get_stats();
     if (testrunner_t::verbose())
     {

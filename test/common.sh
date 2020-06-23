@@ -32,15 +32,17 @@ source $(dirname ${BASH_SOURCE[0]})/variables.sh
 _VALGRIND=
 VALGRIND="valgrind --tool=memcheck --num-callers=16 --leak-check=yes"
 
-CC="gcc"
+# CC="gcc"
 CWARNFLAGS="-Wall"
 CCOVFLAGS="-g --coverage"
 CDEFINES=
 
-CXX="c++"
+# CXX="c++"
 CXXWARNFLAGS="-Wall"
 CXXCOVFLAGS="-g --coverage"
 CXXDEFINES=
+
+# GCOV="gcov"
 
 LDLIBS=
 CXXLINK=no
@@ -501,11 +503,11 @@ run_gcov ()
     vcmd "run_gcov $*"
     local SRC="$1"
     if [ $CANNED = yes ]; then
-	echo "[skipping] gcov -b $SRC"
+	echo "[skipping] $GCOV -b $SRC"
 	return
     fi
 
-    if vcapdo $TMP1 gcov -b $SRC ; then
+    if vcapdo $TMP1 $GCOV -b $SRC ; then
 	cat $TMP1
 	GCOV_FILES=$(sed -n \
 	    -e 's|^Creating[ \t][ \t]*'\''\?\([^ \t]*\.gcov\)'\''\?\.\?$|\1|p' \
