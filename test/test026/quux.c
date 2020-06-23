@@ -1,6 +1,8 @@
 #include <stdio.h>			    /* C(-) */
 #include <stdlib.h>			    /* C(-) */
 					    /* C(-) */
+int function_one(int);			    /* C(-) */
+					    /* C(-) */
 int
 function_two(int x)
 {

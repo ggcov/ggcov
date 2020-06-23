@@ -1013,6 +1013,12 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	if (expect_version != BBG_VERSION_GCC33)
 	    bbg_failed1("unexpected version=0x%08x", format_version_);
 	break;
+    case _NEWER_VERSION(9,3,'*'):   /* gcc 9.3.0 in debian testing */
+    case _NEWER_VERSION(9,2,'*'):   /* untested */
+    case _NEWER_VERSION(9,1,'*'):   /* untested */
+        features_ |= FF_COMPILEDIR | FF_FNENDCOLUMN;
+        /* fall through */
+    case _NEWER_VERSION(9,0,'*'):   /* untested */
     case _NEWER_VERSION(8,3,'R'):   /* gcc 8.3.x in Fedora 29 */
     case _NEWER_VERSION(8,3,'*'):
     case _NEWER_VERSION(8,2,'*'):
@@ -1091,6 +1097,15 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	len_unit = 4;   /* records lengths are in 4-byte units now */
     }
 
+    if ((features_ & FF_COMPILEDIR))
+    {
+        estring compiledir;
+        if (!io->read_string(compiledir))
+	    bbg_failed0("short file");
+        compiledir_ = (const char *)compiledir;
+	bbg_log.debug("compiledir=%s\n", (const char *)compiledir);
+    }
+
     if ((features_ & FF_UNEXECUTED_BLOCKS))
     {
 	if (!io->read_u32(tmp))         /* ignore supports_has_unexecuted_blocks */
@@ -1125,7 +1140,24 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	switch (tag)
 	{
 	case GCOV_TAG_FUNCTION:
-	    if ((features_ & FF_FNCOLUMN))
+	    if ((features_ & FF_FNENDCOLUMN))
+	    {
+		estring filename;
+
+		if (!io->read_u64(funcid) ||        // ident, lineno_checksum
+		    !io->read_u32(tmp) ||           // cfg_checksum
+		    !io->read_string(funcname) ||   // name
+		    !io->read_u32(tmp) ||	    // artificial
+		    !io->read_string(filename) ||   // source
+		    !io->read_u32(tmp) ||           // start_line
+		    !io->read_u32(tmp) ||           // start_column
+		    !io->read_u32(tmp) ||           // end_line
+		    !io->read_u32(tmp))             // end_column
+		    bbg_failed0("short file");
+		if (compiledir_ == (const char *)0)
+		    infer_compilation_directory(filename);
+	    }
+	    else if ((features_ & FF_FNCOLUMN))
 	    {
 		estring filename;
 

@@ -219,7 +219,11 @@ private:
 	FF_FNCOLUMN	       =(1<<9),
 	/* From 8.1, the blocks tag was simplified to not explicitly
 	 * list a u32 flags field for each block which was always 0 */
-	FF_SIMPLE_BLOCKS       =(1<<10)
+	FF_SIMPLE_BLOCKS       =(1<<10),
+        /* From 9.1, there's a compilation directory string in the header */
+        FF_COMPILEDIR          =(1<<11),
+        /* From 9.TODO function headers have an end_column field */
+        FF_FNENDCOLUMN         =(1<<12),
     };
 
     static void init();
