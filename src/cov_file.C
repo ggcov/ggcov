@@ -1098,14 +1098,26 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	bbg_log.debug("supports_has_unexecuted_blocks=%d\n", tmp);
     }
 
+    off_t expected_record_start = io->tell();
     while (io->read_u32(tag))
     {
+        if (io->tell() - 4 != expected_record_start)
+        {
+	    bbg_log.error("%s: unexpected offset at start of record, "
+                          "expecting 0x%x got 0x%x.  Skipping file\n",
+                          io->filename(),
+                          expected_record_start,
+                          io->tell() - 4);
+            return FALSE;
+        }
 	if (tag == 0 && ((features_ & FF_DA0TAG)))
 	    break;  /* end of file */
 
 	if (!io->read_u32(length))
 	    bbg_failed0("short file");
 	length *= len_unit;
+
+        expected_record_start = io->tell() + length;
 
 	bbg_log.debug("tag=0x%08x (%s) length=%u offset=0x%x\n",
 		tag, gcov_tag_as_string(tag), length,
