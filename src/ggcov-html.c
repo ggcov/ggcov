@@ -18,7 +18,7 @@
  */
 
 /*
- * lggcov is a libcov-based static HTML generator.
+ * ggcov-html is a libcov-based static HTML generator.
  */
 
 #include "common.h"
