@@ -102,7 +102,7 @@ report_summary_per_directory(FILE *fp, const char *)
 	_log.debug("report_summary_per_directory: [1] \"%s\"\n",
 		(*fiter)->minimal_name());
 
-	string_var dir = g_dirname((*fiter)->minimal_name());
+	string_var dir = file_dirname((*fiter)->minimal_name());
 	if ((st = ht->lookup((char *)dir.data())) == 0)
 	{
 	    st = new cov_stats_t;
@@ -434,7 +434,7 @@ cob_report_t::add(cov_file_t *f)
 	return;     /* not common, probably in /usr/include */
 
     string_var fpath = path(f);
-    string_var ppath = g_dirname(fpath);
+    string_var ppath = file_dirname(fpath);
     package_t *pkg = packages_->lookup(ppath);
     if (!pkg)
     {

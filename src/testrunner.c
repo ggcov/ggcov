@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "filename.h"
 #include "teststarter.h"
 #include "testfw.H"
 
@@ -29,7 +30,7 @@ main(int argc, char **argv)
     testrunner_t runner;
 
     {
-	char *srcdir = g_dirname(argv[0]);
+	char *srcdir = file_dirname(argv[0]);
 	char *testdir = g_strconcat(srcdir, "/../test", (char *)0);
 	fprintf(stderr, "Setting base directory to \"%s\"\n", testdir);
 	test_starter_t::set_base_dir(testdir);
