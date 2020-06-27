@@ -1,3 +1,18 @@
+Sat Jun 27 16:58:33 2020  Greg Banks <gnb@fastmail.fm>
+	* Release 0.10
+	* Support for every GCC release up to 10.0
+	* Support binutils up to 2.34
+	* Add gccov-html which generates a static HTML coverage report
+	  (entirely separate from the PHP-based "ggcov-web" support).
+	* Support C++ source filenames ending in ".c++"
+	* Reimplemented runtime logging and commandline argument parsing
+	* Fix update of flow diagram in the Source window
+	* Improve accounting for Function and Overall scopes
+	* Merge in most of the Debian/Ubuntu package patches
+	* Removed various code smells like static variables, singletons,
+	  friend declarations, and ancient integer typedefs.
+	* Multiple improvements to build and unit tests.
+
 Thu Mar 13 07:44:17 2014  Greg Banks <gnb@users.sourceforge.net>
 	* Release 0.9
 

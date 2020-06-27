@@ -39,7 +39,3 @@ Description of release procedure for ggcov
     make
     make check
 
-11. Upload a new release on ggcov.sf.net
-
-12. Notify freshmeat.net
-

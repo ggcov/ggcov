@@ -19,7 +19,7 @@ dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl
 
-AC_INIT(ggcov, 0.9)
+AC_INIT(ggcov, 0.10)
 AC_CONFIG_SRCDIR(src/ggcov.c)
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
