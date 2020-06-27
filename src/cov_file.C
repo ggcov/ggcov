@@ -1013,6 +1013,7 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 	if (expect_version != BBG_VERSION_GCC33)
 	    bbg_failed1("unexpected version=0x%08x", format_version_);
 	break;
+    case _NEWER_VERSION(10,0,'e'):   /* gcc-10 package in Ubuntu Focal 20.04 */
     case _NEWER_VERSION(9,3,'*'):   /* gcc 9.3.0 in debian testing */
     case _NEWER_VERSION(9,2,'*'):   /* untested */
     case _NEWER_VERSION(9,1,'*'):   /* untested */
