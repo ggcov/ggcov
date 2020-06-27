@@ -1,8 +1,6 @@
 #
 # Based on a binary tree of depth 5, but sharing and asymmetry added
 #
-# $Id: a005.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
-#
 a ba bb
 ba baa ccc
 bb ccc bbb

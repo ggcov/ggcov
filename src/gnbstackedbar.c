@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2001-2004 Greg Banks <gnb@users.sourceforge.net>
+ * Copyright (c) 2001-2020 Greg Banks <gnb@fastmail.fm>
  *
  * Derived from gtkprogress.c, gtkprogressbar.c which bore the message:
  * GTK - The GIMP Toolkit

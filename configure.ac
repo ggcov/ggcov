@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 dnl You may need the --localdir option to get the included .m4's
 dnl
 dnl ggcov - A GTK frontend for exploring gcov coverage data
-dnl Copyright (c) 2001-2005 Greg Banks <gnb@users.sourceforge.net>
+dnl Copyright (c) 2001-2020 Greg Banks <gnb@fastmail.fm>
 dnl 
 dnl This program is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
@@ -17,8 +17,6 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-dnl 
-dnl $Id: configure.in,v 1.79 2010-05-09 05:55:03 gnb Exp $
 dnl
 
 AC_INIT(ggcov, 0.9)

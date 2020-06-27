@@ -1,6 +1,5 @@
 #
 # Binary tree of depth 3.  This is a trivial case.
-# $Id: a001.graph,v 1.1 2006-01-29 00:42:56 gnb Exp $
 #
 a aa ab
 aa aaa aab

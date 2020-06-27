@@ -1,6 +1,6 @@
 /*
  * CANT - A C implementation of the Apache/Tomcat ANT build system
- * Copyright (c) 2001-2003 Greg Banks <gnb@users.sourceforge.net>
+ * Copyright (c) 2001-2020 Greg Banks <gnb@fastmail.fm>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

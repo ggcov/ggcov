@@ -2,8 +2,6 @@
 # False roots, with intermediate node and direct leaf.
 # This is similar to a layout that happens naturally in gcml2.
 #
-# $Id: a016.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
-#
 a aa ab
 aa aaa aab
 ab aba abb

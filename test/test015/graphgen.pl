@@ -1,7 +1,4 @@
 #!/usr/bin/perl
-#
-# $Id: graphgen.pl,v 1.2 2006-08-04 12:36:05 gnb Exp $
-#
 
 use strict;
 

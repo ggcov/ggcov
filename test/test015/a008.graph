@@ -2,8 +2,6 @@
 # Simple graph based on binary tree depth 3 but with a loop
 # from a node to its parent
 #
-# $Id: a008.graph,v 1.1 2006-01-29 00:42:57 gnb Exp $
-#
 a aa ab
 aa aaa aab
 ab aba abb

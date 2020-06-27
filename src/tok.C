@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2002-2003 Greg Banks <gnb@users.sourceforge.net>
+ * Copyright (c) 2002-2020 Greg Banks <gnb@fastmail.fm>
  * copied from
  * CANT - A C implementation of the Apache/Tomcat ANT build system
  *

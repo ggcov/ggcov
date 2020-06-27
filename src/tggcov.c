@@ -1,6 +1,6 @@
 /*
  * ggcov - A GTK frontend for exploring gcov coverage data
- * Copyright (c) 2003-2015 Greg Banks <gnb@users.sourceforge.net>
+ * Copyright (c) 2003-2020 Greg Banks <gnb@fastmail.fm>
  *
  *
  * TODO: attribution for decode-gcov.c

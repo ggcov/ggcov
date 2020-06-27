@@ -1,7 +1,7 @@
 #!/bin/sh
 #
 # ggcov - A GTK frontend for exploring gcov coverage data
-# Copyright (c) 2005 Greg Banks <gnb@users.sourceforge.net>
+# Copyright (c) 2005-2020 Greg Banks <gnb@fastmail.fm>
 # 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
