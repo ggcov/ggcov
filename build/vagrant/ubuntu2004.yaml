@@ -1,0 +1,3 @@
+# Box "ubuntu/focal64" has trouble booting
+box: "bento/ubuntu-20.04"
+script_file: "ubuntu.sh"
