@@ -26,10 +26,10 @@
 #include "ptrarray.H"
 #include "string_var.H"
 #include "cov_line.H"
+#include "cov_suppression.H"
 #include "covio.H"
 
 class cov_function_t;
-class cov_suppression_t;
 class cov_bfd_t;
 class cov_project_params_t;
 
@@ -353,6 +353,11 @@ public:
     const char *blocks_as_string() const;
     const char *text() const { return buf_; }
     cov_function_t *function() const { return ln_->function(); }
+    const char *suppression_text() const
+    {
+        const cov_suppression_t *s = ln_->suppression();
+        return s ? s->describe() : (const char *)0;
+    }
 
 private:
     cov_file_t *file_;

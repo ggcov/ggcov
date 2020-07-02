@@ -20,7 +20,7 @@
       {{/flow_filler}}
       <td class="F{{status_short}} Ccount" width="1%">{{count_if_instrumented}}</td>
       <td class="F{{status_short}} Cblocks" width="1%">{{blocks}}</td>
-      <td class="F{{status_short}} Ctext">{{text}}</td>
+      <td class="F{{status_short}} Ctext{{#suppression_text}} tooltip{{/suppression_text}}">{{#suppression_text}}<span class="tooltiptext">suppressed: {{.}}</span>{{/suppression_text}}{{text}}</td>
     </tr>
     {{/lines}}
   </tbody>

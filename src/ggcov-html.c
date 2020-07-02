@@ -400,6 +400,9 @@ generate_annotated_source(const gghtml_params_t &params, cov_file_t *f,
 	yaml.key("lineno").value((unsigned int)annotator.lineno());
 	yaml.key("blocks").value(annotator.blocks_as_string());
 	yaml.key("text").value(annotator.text());
+        const char *stext = annotator.suppression_text();
+        if (stext)
+            yaml.key("suppression_text").value(stext);
 
 	if (lines_left)
 	    lines_left--;

@@ -150,3 +150,30 @@ td.Ctext {
 .BSU {
     background: #8080d0;
 }
+
+/* toy CSS-only tooltip from * https://www.w3schools.com/css/css_tooltip.asp */
+.tooltip {
+    /* tooltip container */
+    position: relative;
+    display: inline-block;
+    /* border-bottom: 1px dotted black; */
+}
+
+.tooltip .tooltiptext {
+    /* tooltip text */
+    visibility: hidden;
+    width: 700px;
+    background-color: black;
+    color: #ffffff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    position: absolute;
+    font-family: verdana,arial,helvetica,sans-serif;
+    z-index: 1;
+}
+
+.tooltip:hover .tooltiptext {
+    /* show the tooltip text when the user mouses over the container */
+    visibility: visible;
+}
