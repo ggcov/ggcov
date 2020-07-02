@@ -71,7 +71,7 @@ table.main {
     border-spacing: 0px 0px;
 }
 table.main tr:nth-child(even) {
-    background: #cccccc;
+    background: #f0f0f0;
 }
 table.main tr:nth-child(odd) {
     background: #ffffff;
