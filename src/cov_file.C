@@ -923,6 +923,12 @@ cov_file_t::make_absolute(const char *filename) const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
+gboolean cov_file_t::needs_demangling() const
+{
+    const char *ext = file_extension_c(name_);
+    return (ext && strcmp(ext, ".c"));
+}
+
 static gboolean
 decode_new_version(uint32_t ver, unsigned int *major,
 		   unsigned int *minor, unsigned char *rel)
@@ -1205,8 +1211,11 @@ cov_file_t::read_gcc3_bbg_file(covio_t *io,
 		    !io->read_u32(tmp)/* ignore the checksum */)
 		    bbg_failed0("short file");
 	    }
-	    funcname = demangle(funcname);
-	    funcname = normalise_mangled(funcname);
+            if (needs_demangling())
+            {
+                funcname = demangle(funcname);
+                funcname = normalise_mangled(funcname);
+            }
 	    fn = add_function();
 	    fn->set_name(funcname);
 	    if (funcid != 0)
@@ -1644,9 +1653,12 @@ cov_file_t::read_gcc3_da_file(covio_t *io,
 		estring funcname;
 		if (!io->read_string(funcname))
 		    da_failed0("short file");
-		if ((features_ & FF_DAMANGLED))
-		    funcname = demangle(funcname);
-		funcname = normalise_mangled(funcname);
+                if (needs_demangling())
+                {
+                    if ((features_ & FF_DAMANGLED))
+                        funcname = demangle(funcname);
+                    funcname = normalise_mangled(funcname);
+                }
 		fn = find_function(funcname);
 		if (fn == 0)
 		    da_failed1("unexpected function name \"%s\"", funcname.data());

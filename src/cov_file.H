@@ -254,6 +254,7 @@ private:
     static void set_gcda_prefix(const char *dir);
     gboolean read(gboolean quiet);
 
+    gboolean needs_demangling() const;
     int skip_oldplus_func_header(covio_t *io, const char *prefix);
     gboolean read_bb_file(covio_t *);
     gboolean read_old_bbg_function(covio_t *);
