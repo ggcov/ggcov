@@ -2076,20 +2076,24 @@ cov_file_t::set_gcda_prefix(const char *dir)
     gcda_prefix_ = dir;
 }
 
-
 //
 // Attempts to open a file given a filename 'fn' and a filename
-// extension 'ext'.  The extension replaces the existing extension on
-// the filename.  Returns a covio_t object opened for reading, or on
-// error returns NULL and sets errno.
+// extension 'ext'.  If 'replace' is true, the extension replaces
+// the existing extension on the filename, otherwise it's appended.
+// Returns a covio_t object opened for reading, or on error
+// returns NULL and sets errno.
 //
 covio_t *
-cov_file_t::try_file(const char *fn, const char *ext) const
+cov_file_t::try_file_ext(const char *fn, const char *ext, gboolean replace) const
 {
     string_var ofilename = fn;
 
     assert(ext[0] != '+');  /* this used to be a feature */
-    string_var dfilename = file_change_extension(ofilename, 0, ext);
+    string_var dfilename;
+    if (replace)
+        dfilename = file_change_extension(ofilename, 0, ext);
+    else
+        dfilename = g_strconcat(ofilename, ext, (char *)0);
 
     files_log.debug2("    try %s\n", dfilename.data());
 
@@ -2118,13 +2122,23 @@ cov_file_t::try_file(const char *fn, const char *ext) const
 }
 
 covio_t *
+cov_file_t::try_file(const char *fn, const char *ext) const
+{
+    covio_t *io = try_file_ext(fn, ext, TRUE);
+    if (!io)
+        io = try_file_ext(fn, ext, FALSE);
+    if (io)
+        files_log.debug2("Found %s\n", io->filename());
+    return io;
+}
+
+covio_t *
 cov_file_t::find_file(const char *ext, gboolean quiet,
 		      const char *prefix) const
 {
     covio_t *io;
 
-    files_log.debug2("Searching for %s file matching %s\n",
-		ext, file_basename_c(name()));
+    files_log.debug2("Searching for %s file matching %s\n", ext, name());
 
     if (prefix)
     {

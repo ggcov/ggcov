@@ -237,6 +237,7 @@ private:
     void add_location(cov_block_t *, const char *, unsigned long);
     cov_line_t *get_nth_line(unsigned int lineno);
 
+    covio_t *try_file_ext(const char *dir, const char *ext, gboolean) const;
     covio_t *try_file(const char *dir, const char *ext) const;
     covio_t *find_file(const char *ext, gboolean quiet,
 		       const char *prefix) const;
