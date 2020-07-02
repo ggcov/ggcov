@@ -88,6 +88,17 @@ public:
     const cov_location_t *get_first_location() const;
     const cov_location_t *get_last_location() const;
 
+    unsigned long get_first_line() const
+    {
+        const cov_location_t *loc = get_first_location();
+        return loc ? loc->lineno : 0;
+    }
+    unsigned long get_last_line() const
+    {
+        const cov_location_t *loc = get_last_location();
+        return loc ? loc->lineno : 0;
+    }
+
     static int compare(const cov_function_t*, const cov_function_t*);
 
     void zero_arc_counts();

@@ -361,8 +361,8 @@ static hashtable_t<void, flow_t> *generate_flow_diagrams(const gghtml_params_t &
 static int compare_funcs_by_first_line(const cov_function_t *fn1,
 				       const cov_function_t *fn2)
 {
-    return u32cmp(fn1->get_first_location()->lineno,
-		  fn2->get_first_location()->lineno);
+    return u32cmp(fn1->get_first_line(),
+		  fn2->get_first_line());
 }
 
 static void
@@ -404,11 +404,11 @@ generate_annotated_source(const gghtml_params_t &params, cov_file_t *f,
 	if (lines_left)
 	    lines_left--;
 	cov_function_t *fn = funcs.head();
-	if (fn && annotator.lineno() == fn->get_first_location()->lineno)
+	if (fn && annotator.lineno() == fn->get_first_line())
 	{
 	    funcs.remove_head();
-	    unsigned int nlines = fn->get_last_location()->lineno -
-				  fn->get_first_location()->lineno + 1;
+	    unsigned int nlines = fn->get_last_line() -
+				  fn->get_first_line() + 1;
 	    lines_left = 0;
 	    flow_t *flow = flows->lookup((void*)fn);
 	    if (flow)
@@ -455,6 +455,8 @@ generate_functions(const gghtml_params_t &params)
 	    if (st == cov::SUPPRESSED || st == cov::UNINSTRUMENTED)
 		continue;
 	    const cov_location_t *loc = fn->get_first_location();
+            if (!loc)
+                continue;
 	    string_var url = source_url(loc);
 	    yaml.begin_mapping();
 	    yaml.key("name").value(fn->name());
