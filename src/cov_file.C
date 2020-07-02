@@ -2237,20 +2237,22 @@ gboolean
 cov_file_t::read(gboolean quiet)
 {
     string_var filename;
-    const char *da_ext = ".da";
+    const char *da_ext = ".gcda";
     covio_var io;
 
-    if ((io = find_file(".bbg", TRUE, 0)) == 0)
+    io = find_file(".gcno", TRUE, 0);
+    if (!io)
     {
 	/* The .bbg file was gratuitously renamed .gcno in gcc 3.4 */
-	if ((io = find_file(".gcno", TRUE, 0)) == 0)
-	{
-	    if (!quiet)
-		file_missing(".bbg", ".gcno");
-	    return FALSE;
-	}
+	io = find_file(".bbg", TRUE, 0);
 	/* The .da file was renamed too */
-	da_ext = ".gcda";
+	da_ext = ".da";
+    }
+    if (!io)
+    {
+	if (!quiet)
+	    file_missing(".bbg", ".gcno");
+	return FALSE;
     }
 
     if (!discover_format(io))
