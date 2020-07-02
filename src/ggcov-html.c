@@ -57,7 +57,7 @@ public:
 	estring t_desc;
 	t_desc.append_printf("read HTML templates from the given directory, default \"%s\"",
 			     template_directory_.data());
-	parser.add_option('o', "output-directory")
+	parser.add_option('O', "output-directory")
 	      .description(o_desc)
 	      .setter((argparse::arg_setter_t)&gghtml_params_t::set_output_directory);
 	parser.add_option('t', "template-directory")

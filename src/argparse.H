@@ -119,6 +119,7 @@ private:
 
     bool set(params_t &params, const char *arg) const;
     void build_popt_option(struct poptOption *po);
+    char *describe() const;
 
     // defaults to long_option_ or short_option_ if long_option_ is not set
     string_var name_;

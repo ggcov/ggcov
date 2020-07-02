@@ -168,10 +168,31 @@ option_t::build_popt_option(struct poptOption *po)
     po->descrip = description_.data();
 }
 
+char *
+option_t::describe() const
+{
+    if (long_option_.length())
+        return g_strdup_printf("-%c/--%s", short_option_, long_option_.data());
+    else
+        return g_strdup_printf("-%c", short_option_);
+}
+
 option_t &
 parser_t::add_option(char short_name, const char *long_name)
 {
     option_t *o = new option_t(short_name, long_name);
+
+    for (ptrarray_iterator_t<option_t> itr = options_->first() ; *itr ; ++itr)
+    {
+        if (o->short_option_ == (*itr)->short_option_)
+        {
+            string_var new_desc = o->describe();
+            string_var old_desc = (*itr)->describe();
+            fprintf(stderr, "ERROR duplicate short commandline option %s vs %s\n",
+                    (const char *)old_desc, (const char *)new_desc);
+        }
+    }
+
     options_->append(o);
     return *o;
 }
