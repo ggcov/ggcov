@@ -2167,14 +2167,33 @@ cov_file_t::find_file(const char *ext, gboolean quiet,
 	return io;
 
     /*
-     * Now look in the search path.
+     * Now look in the search path, and successively
+     * shorter tail subsets of the name().
      */
+    ptrarray_t<const char> *trailing_subsets = new ptrarray_t<const char>();
+    const char *p = (const char *)name_;
+    while (p && *p)
+    {
+	while (*p == '/')
+	    p++;
+	if (*p)
+	    trailing_subsets->append(p);
+	p = strchr(p, '/');
+    }
+
     for (list_iterator_t<char> iter = search_path_.first() ; *iter ; ++iter)
     {
-	string_var fn = g_strconcat(*iter, "/", file_basename_c(name()), (char *)0);
-	if ((io = try_file(fn, ext)) != 0 || errno != ENOENT)
-	    return io;
+        for (ptrarray_iterator_t<const char> tailiter = trailing_subsets->first() ; *tailiter ; ++tailiter)
+	{
+	    string_var fn = g_strconcat(*iter, "/", *tailiter, (char *)0);
+	    if ((io = try_file(fn, ext)) != 0 || errno != ENOENT)
+	    {
+		delete trailing_subsets;
+		return io;
+	    }
+	}
     }
+    delete trailing_subsets;
 
     if (!quiet)
     {
