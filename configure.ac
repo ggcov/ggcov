@@ -333,7 +333,7 @@ AC_MSG_CHECKING([whether bfd_section_size has one argument or two])
 AC_TRY_COMPILE([
 #include <bfd.h>
 ],[
-    return bfd_section_size((struct abfd *)0, (struct asection *)0);
+    return bfd_section_size((struct bfd *)0, (struct bfd_section *)0);
 ],[
     AC_DEFINE(HAVE_BFD_SECTION_SIZE_2ARGS,1,[Whether bfd_section_size is the old 2 argument form ])
     AC_MSG_RESULT(2)
