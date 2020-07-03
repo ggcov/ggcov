@@ -102,7 +102,7 @@ flow_diagram_t::title()
  * First pass: create nodes
  */
 
-unsigned int
+gboolean
 flow_diagram_t::generate_nodes()
 {
     const cov_location_t *first = function_->get_first_location();
@@ -110,25 +110,17 @@ flow_diagram_t::generate_nodes()
 
     _log.debug("flow_diagram_t::prepare\n");
 
-    if (first == 0 ||
-	first->lineno == 0 ||
-	last == 0 ||
-	last->lineno == 0 ||
-	last->lineno < first->lineno)
+    assert(!!first == !!last);
+    if (!first)
     {
-	_log.error("flow_diagram_t::prepare: can't generate "
-		   "diagram for function \"%s\"\n",
+	_log.debug("can't generate diagram for function \"%s\": no locations\n",
 		   function_->name());
-	if (first == 0)
-	    _log.error("    first=(null)\n");
-	else
-	    _log.error("    first={%s,%lu}\n", first->filename, first->lineno);
-	if (last == 0)
-	    _log.error("    last=(null)\n");
-	else
-	    _log.error("    last={%s,%lu}\n", last->filename, last->lineno);
-	return 0;
+	return FALSE;
     }
+    assert(last != 0);
+    assert(first->lineno != 0);
+    assert(last->lineno != 0);
+    assert(last->lineno >= first->lineno);
 
     num_lines_ = last->lineno - first->lineno + 1;
     unsigned int num_nodes = 0;
@@ -185,7 +177,7 @@ flow_diagram_t::generate_nodes()
 	/* `node' is now the last node in the chain for this block */
     }
 
-    return num_nodes;
+    return (num_nodes > 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -512,15 +504,16 @@ flow_diagram_t::assign_geometry()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
+gboolean
 flow_diagram_t::prepare()
 {
     if (!generate_nodes())
-	return;
+	return FALSE;
     assign_ranks();
     generate_arcs();
     allocate_arc_slots();
     assign_geometry();
+    return TRUE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

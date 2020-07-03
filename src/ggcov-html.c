@@ -321,7 +321,8 @@ static flow_t *generate_flow_diagram(const gghtml_params_t &params, cov_function
 {
     unique_ptr<diagram_t> diag = new flow_diagram_t(fn);
     set_diagram_colors(diag.get());
-    diag->prepare();
+    if (!diag->prepare())
+        return 0;
     dbounds_t bounds;
     diag->get_bounds(&bounds);
     unsigned int width = (unsigned int)(4.0 * bounds.width() + 0.5);
@@ -351,7 +352,9 @@ static hashtable_t<void, flow_t> *generate_flow_diagrams(const gghtml_params_t &
     for (i = 0 ; i < f->num_functions() ; i++)
     {
 	cov_function_t *fn = f->nth_function(i);
-	flows->insert((void*)fn, generate_flow_diagram(params, fn));
+        flow_t *flow = generate_flow_diagram(params, fn);
+        if (flow)
+            flows->insert((void*)fn, flow);
     }
     return flows;
 }

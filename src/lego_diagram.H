@@ -32,7 +32,7 @@ public:
 
     const char *name();
     const char *title();
-    void prepare();
+    gboolean prepare();
     void render(scenegen_t *);
     void get_bounds(dbounds_t *db);
 

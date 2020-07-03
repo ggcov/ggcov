@@ -690,7 +690,7 @@ callgraph_diagram_t::dump_graph()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
+gboolean
 callgraph_diagram_t::prepare()
 {
     list_iterator_t<node_t> iter;
@@ -708,7 +708,7 @@ callgraph_diagram_t::prepare()
 	balance_ranks(*iter);
 
     if (roots_.head() == 0)
-	return;
+	return FALSE;
 
     ranks_ = new ptrarray_t<rank_t>;
     max_file_ = 0;
@@ -730,6 +730,7 @@ callgraph_diagram_t::prepare()
     }
 
     assign_geometry();
+    return TRUE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

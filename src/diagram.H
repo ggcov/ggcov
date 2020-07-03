@@ -33,7 +33,7 @@ public:
 
     virtual const char *name() = 0;
     virtual const char *title() = 0;
-    virtual void prepare() = 0;
+    virtual gboolean prepare() = 0;
     virtual void render(scenegen_t *) = 0;
     virtual void get_bounds(dbounds_t *) = 0;
 

@@ -33,7 +33,7 @@ public:
 
     const char *name();
     const char *title();
-    void prepare();
+    gboolean prepare();
     void render(scenegen_t *);
     void get_bounds(dbounds_t *db);
 
@@ -103,7 +103,7 @@ private:
 	double direct_toy() const;
     };
 
-    unsigned int generate_nodes();
+    gboolean generate_nodes();
 
     int max_rank_of_line(unsigned int idx);
     void assign_ranks();

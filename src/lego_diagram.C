@@ -136,7 +136,7 @@ lego_diagram_t::root_name() const
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-void
+gboolean
 lego_diagram_t::prepare()
 {
     _log.debug("lego_diagram_t::prepare\n");
@@ -204,6 +204,8 @@ lego_diagram_t::prepare()
     /* Debug: dump tree */
     if (_log.is_enabled(logging::DEBUG2))
 	dump_node(root_);
+
+    return TRUE;
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
