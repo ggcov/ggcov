@@ -184,7 +184,7 @@ parser_t::add_option(char short_name, const char *long_name)
 
     for (ptrarray_iterator_t<option_t> itr = options_->first() ; *itr ; ++itr)
     {
-        if (o->short_option_ == (*itr)->short_option_)
+        if (o->short_option_ && o->short_option_ == (*itr)->short_option_)
         {
             string_var new_desc = o->describe();
             string_var old_desc = (*itr)->describe();
