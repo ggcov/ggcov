@@ -434,7 +434,12 @@ cov_function_t::solve()
 			solve_log.warning("Function %s cannot be solved because "
 					  "the arc counts are inconsistent, suppressing\n",
 					  name_.data());
-			suppress(cov_suppressions.find(0, cov_suppression_t::UNSOLVABLE));
+                        cov_suppression_t *s = new cov_suppression_t(
+                            name_.data(),
+                            cov_suppression_t::UNSOLVABLE,
+                            "automatic due to inconsistent arc counts in .gcda files");
+                        cov_suppressions.add(s);
+                        suppress(s);
 			return TRUE;
 		    }
 		    assert(b->count_ >= out_total);
@@ -458,7 +463,12 @@ cov_function_t::solve()
 			solve_log.warning("Function %s cannot be solved because "
 					  "the arc counts are inconsistent, suppressing\n",
 					  name_.data());
-			suppress(cov_suppressions.find(0, cov_suppression_t::UNSOLVABLE));
+                        cov_suppression_t *s = new cov_suppression_t(
+                            name_.data(),
+                            cov_suppression_t::UNSOLVABLE,
+                            "automatic due to inconsistent arc counts in .gcda files");
+                        cov_suppressions.add(s);
+                        suppress(s);
 			return TRUE;
 		    }
 		    assert(b->count_ >= in_total);
