@@ -29,7 +29,7 @@ libcommon_a_SOURCES= \
 		estring.H estring.C string_var.H tok.H tok.C \
 		cached_string.H cached_string.C \
 		filename.h filename.c \
-		list.H \
+		list.H list.C \
 		hashtable.H hashtable.C \
 		ptrarray.H \
 		mvc.h mvc.c \

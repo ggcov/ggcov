@@ -306,3 +306,86 @@ TEST(iterator)
 }
 
 #endif
+
+static gboolean
+remove_one(char *item, void *closure)
+{
+    free(item);
+    return TRUE;
+}
+
+TEST(join)
+{
+    list_t<char> list;
+    char *s;
+
+    s = join("", list);
+    check_not_null(s);
+    check_str_equals(s, "");
+    free(s);
+
+    s = join(NULL, list);
+    check_not_null(s);
+    check_str_equals(s, "");
+    free(s);
+
+    s = join("XYZ", list);
+    check_not_null(s);
+    check_str_equals(s, "");
+    free(s);
+
+    list.append(strdup("mustache"));
+
+    s = join("", list);
+    check_not_null(s);
+    check_str_equals(s, "mustache");
+    free(s);
+
+    s = join(NULL, list);
+    check_not_null(s);
+    check_str_equals(s, "mustache");
+    free(s);
+
+    s = join("XYZ", list);
+    check_not_null(s);
+    check_str_equals(s, "mustache");
+    free(s);
+
+    list.append(strdup("tofu"));
+
+    s = join("", list);
+    check_not_null(s);
+    check_str_equals(s, "mustachetofu");
+    free(s);
+
+    s = join(NULL, list);
+    check_not_null(s);
+    check_str_equals(s, "mustachetofu");
+    free(s);
+
+    s = join("XYZ", list);
+    check_not_null(s);
+    check_str_equals(s, "mustacheXYZtofu");
+    free(s);
+
+    list.append(strdup("seitan"));
+
+    s = join("", list);
+    check_not_null(s);
+    check_str_equals(s, "mustachetofuseitan");
+    free(s);
+
+    s = join(NULL, list);
+    check_not_null(s);
+    check_str_equals(s, "mustachetofuseitan");
+    free(s);
+
+    s = join("XYZ", list);
+    check_not_null(s);
+    check_str_equals(s, "mustacheXYZtofuXYZseitan");
+    free(s);
+
+    check_num_equals(list.length(), 3);
+    list.foreach_remove(remove_one, NULL);
+    check_num_equals(list.length(), 0);
+}

@@ -316,6 +316,6 @@ public:
 
 };
 
-
+extern char *join(const char *sep, const list_t<char> &list);
 
 #endif /* _list_H_ */
