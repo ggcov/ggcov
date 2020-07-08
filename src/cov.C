@@ -415,54 +415,49 @@ cov_read_files(const cov_project_params_t &params)
 
     cov_init();
 
-    if (params.get_suppressed_calls() != 0)
+    for (list_iterator_t<char> itr = params.get_suppressed_calls().first() ; *itr ; ++itr)
     {
-	tok_t tok(params.get_suppressed_calls(), ", \t");
-	const char *v;
-
-	while ((v = tok.next()) != 0)
-	    cov_suppressions.add(new cov_suppression_t(v, cov_suppression_t::BLOCK_CALLS,
-				  "commandline --suppress-call option"));
+        cov_suppressions.add(new cov_suppression_t(*itr, cov_suppression_t::ARC_CALLS,
+                             "commandline --suppress-call option"));
+        cov_suppressions.add(new cov_suppression_t(*itr, cov_suppression_t::BLOCK_CALLS,
+                             "commandline --suppress-call option"));
     }
 
-    if (params.get_suppressed_ifdefs() != 0)
+    for (list_iterator_t<char> itr = params.get_suppressed_ifdefs().first() ; *itr ; ++itr)
     {
-	tok_t tok(params.get_suppressed_ifdefs(), ", \t");
-	const char *v;
-
-	while ((v = tok.next()) != 0)
-	    cov_suppressions.add(new cov_suppression_t(v, cov_suppression_t::IFDEF,
-				  "commandline -X option"));
+        cov_suppressions.add(new cov_suppression_t(*itr, cov_suppression_t::IFDEF,
+                              "commandline -X/--suppress-ifdef option"));
     }
 
-    if (params.get_suppressed_comment_lines() != 0)
+    for (list_iterator_t<char> itr = params.get_suppressed_comment_lines().first() ; *itr ; ++itr)
     {
-	tok_t tok(params.get_suppressed_comment_lines(), ", \t");
-	const char *v;
-
-	while ((v = tok.next()) != 0)
-	    cov_suppressions.add(new cov_suppression_t(v, cov_suppression_t::COMMENT_LINE,
-				  "commandline -Y option"));
+        cov_suppressions.add(new cov_suppression_t(*itr, cov_suppression_t::COMMENT_LINE,
+                              "commandline -Y/--suppress-comment option"));
     }
 
-    if (params.get_suppressed_comment_ranges() != 0)
+    list_iterator_t<char> itr = params.get_suppressed_comment_ranges().first();
+    while (*itr)
     {
-	tok_t tok(params.get_suppressed_comment_ranges(), ", \t");
-	const char *s, *e;
+        const char *s = *itr;
+        ++itr;
+        const char *e = *itr;
+        ++itr;
+        if (!e)
+        {
+            _log.error("%s: -Z/--suppress-comment-between option requires pairs of words\n", argv0);
+            return -1;
+        }
+        cov_suppression_t *sup;
+        sup = new cov_suppression_t(s, cov_suppression_t::COMMENT_RANGE,
+                                    "commandline -Z/--suppress-comment-between option");
+        sup->set_word2(e);
+        cov_suppressions.add(sup);
+    }
 
-	while ((s = tok.next()) != 0)
-	{
-	    if ((e = tok.next()) == 0)
-	    {
-		_log.error("%s: -Z option requires pairs of words\n", argv0);
-		return -1;
-	    }
-	    cov_suppression_t *sup;
-	    sup = new cov_suppression_t(s, cov_suppression_t::COMMENT_RANGE,
-					"commandline -Z option");
-	    sup->set_word2(e);
-	    cov_suppressions.add(sup);
-	}
+    for (list_iterator_t<char> itr = params.get_suppressed_functions().first() ; *itr ; ++itr)
+    {
+        cov_suppressions.add(new cov_suppression_t(*itr, cov_suppression_t::FUNCTION,
+                              "commandline --suppress-function option"));
     }
 
     cov_pre_read();

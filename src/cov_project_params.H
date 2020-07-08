@@ -29,10 +29,11 @@ public:
     ~cov_project_params_t();
 
     ARGPARSE_BOOL_PROPERTY(recursive);
-    ARGPARSE_STRING_PROPERTY(suppressed_calls);
-    ARGPARSE_STRING_PROPERTY(suppressed_ifdefs);
-    ARGPARSE_STRING_PROPERTY(suppressed_comment_lines);
-    ARGPARSE_STRING_PROPERTY(suppressed_comment_ranges);
+    ARGPARSE_STRINGLIST_PROPERTY(suppressed_calls);
+    ARGPARSE_STRINGLIST_PROPERTY(suppressed_ifdefs);
+    ARGPARSE_STRINGLIST_PROPERTY(suppressed_comment_lines);
+    ARGPARSE_STRINGLIST_PROPERTY(suppressed_comment_ranges);
+    ARGPARSE_STRINGLIST_PROPERTY(suppressed_functions);
     ARGPARSE_STRING_PROPERTY(object_directory);
     ARGPARSE_BOOL_PROPERTY(solve_fuzzy);
     ARGPARSE_STRING_PROPERTY(gcda_prefix);

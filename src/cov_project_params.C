@@ -42,17 +42,20 @@ cov_project_params_t::setup_parser(argparse::parser_t &parser)
 	  .description("recursively scan directories for source")
 	  .setter((argparse::noarg_setter_t)&cov_project_params_t::set_recursive);
     parser.add_option(0, "suppress-call")
-	  .description("suppress blocks which call this function")
+	  .description("suppress blocks and arcs which call this function (or multiple functions comma-separated)")
 	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_calls);
     parser.add_option('X', "suppress-ifdef")
-	  .description("suppress source which is conditional on this cpp define")
+	  .description("suppress source which is conditional on this cpp define (or multiple defines comma-separated)")
 	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_ifdefs);
     parser.add_option('Y', "suppress-comment")
-	  .description("suppress source on lines containing this comment")
+	  .description("suppress source on lines containing this comment (or multiple comments comma-separated)")
 	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_comment_lines);
     parser.add_option('Z', "suppress-comment-between")
-	  .description("suppress source between lines containing these start and end comments")
+	  .description("suppress source between lines containing these start and end comments (or multiple pairs of comments comma-separated")
 	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_comment_ranges);
+    parser.add_option(0, "suppress-function")
+	  .description("suppress this function name (or multiple names comma-separated)")
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_functions);
     parser.add_option('p', "gcda-prefix")
 	  .description("directory underneath which to find .gcda files")
 	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_gcda_prefix);
@@ -87,10 +90,16 @@ cov_project_params_t::post_args()
 	string_var debug_loggers = logging::logger_t::describe_debug_enabled_loggers();
 
 	_log.debug2("recursive=%d\n", recursive_);
-	_log.debug2("suppressed_calls=%s\n", suppressed_calls_.data());
-	_log.debug2("suppressed_ifdefs=%s\n", suppressed_ifdefs_.data());
-	_log.debug2("suppressed_comment_lines=%s\n", suppressed_comment_lines_.data());
-	_log.debug2("suppressed_comment_ranges=%s\n", suppressed_comment_ranges_.data());
+        string_var s = join(",", suppressed_calls_);
+	_log.debug2("suppressed_calls=%s\n", s.data());
+        s = join(",", suppressed_ifdefs_);
+	_log.debug2("suppressed_ifdefs=%s\n", s.data());
+        s = join(",", suppressed_comment_lines_);
+	_log.debug2("suppressed_comment_lines=%s\n", s.data());
+        s = join(",", suppressed_comment_ranges_);
+	_log.debug2("suppressed_comment_ranges=%s\n", s.data());
+        s = join(",", suppressed_functions_);
+	_log.debug2("suppressed_functions=%s\n", s.data());
 	_log.debug2("debug = %s\n", debug_loggers.data());
 
 	static const struct { const char *name; int value; } build_options[] =
