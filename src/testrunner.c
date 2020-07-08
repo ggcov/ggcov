@@ -17,9 +17,9 @@ usage(void)
 {
     fprintf(stderr, "Usage: testrunner [-v] [-d] [suite[:test]...]\n");
     fprintf(stderr, "Options:\n");
-    fprintf(stderr, "-v         be more verbose");
-    fprintf(stderr, "-l         list all tests and exit");
-    fprintf(stderr, "-d         run tests without forking (useful under gdb)");
+    fprintf(stderr, "-v         be more verbose\n");
+    fprintf(stderr, "-l         list all tests and exit\n");
+    fprintf(stderr, "-d         run tests without forking (useful under gdb)\n");
     exit(1);
 }
 
