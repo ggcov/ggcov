@@ -2450,5 +2450,18 @@ cov_file_annotator_t::blocks_as_string() const
     return buf;
 }
 
+const char *
+cov_file_annotator_t::suppression_text() const
+{
+    const cov_suppression_t *s = ln_->suppression();
+    if (!s)
+    {
+        cov_function_t *fn = function();
+        if (fn)
+            s = fn->suppression();
+    }
+    return (s ? s->describe() : (const char *)0);
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

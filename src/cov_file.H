@@ -353,11 +353,7 @@ public:
     const char *blocks_as_string() const;
     const char *text() const { return buf_; }
     cov_function_t *function() const { return ln_->function(); }
-    const char *suppression_text() const
-    {
-        const cov_suppression_t *s = ln_->suppression();
-        return s ? s->describe() : (const char *)0;
-    }
+    const char *suppression_text() const;
 
 private:
     cov_file_t *file_;
