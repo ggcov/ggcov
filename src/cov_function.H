@@ -102,6 +102,12 @@ public:
         const cov_location_t *loc = get_last_location();
         return loc ? loc->lineno : 0;
     }
+    unsigned long get_num_lines() const
+    {
+        unsigned long first = get_first_line();
+        unsigned long last = get_last_line();
+        return (first ? last - first + 1 : 0);
+    }
 
     static int compare(const cov_function_t*, const cov_function_t*);
 

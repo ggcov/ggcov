@@ -354,6 +354,7 @@ public:
     const char *text() const { return buf_; }
     cov_function_t *function() const { return ln_->function(); }
     const char *suppression_text() const;
+    bool is_first_line_in_function() const;
 
 private:
     cov_file_t *file_;

@@ -361,13 +361,6 @@ static hashtable_t<void, flow_t> *generate_flow_diagrams(const gghtml_params_t &
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-static int compare_funcs_by_first_line(const cov_function_t *fn1,
-				       const cov_function_t *fn2)
-{
-    return u32cmp(fn1->get_first_line(),
-		  fn2->get_first_line());
-}
-
 static void
 generate_annotated_source(const gghtml_params_t &params, cov_file_t *f,
 			  hashtable_t<void, flow_t> *flows)
@@ -378,12 +371,12 @@ generate_annotated_source(const gghtml_params_t &params, cov_file_t *f,
 
     string_var out_name = source_url(f);
 
-    list_t<cov_function_t> funcs;
-    for (unsigned int i = 0 ; i < f->num_functions() ; i++)
-	funcs.append(f->nth_function(i));
-    funcs.sort(compare_funcs_by_first_line);
+    /*
+     * We can't use annotator.function() because it's not true
+     * for every line between the first line and the last line
+     * of a function, so we need to run our own counter
+     */
     unsigned int lines_left = 0;
-
     unique_ptr<mustache::template_t> tmpl = menv.make_template("source.html", out_name);
     yaml_generator_t &yaml = tmpl->begin_render();
 
@@ -407,30 +400,26 @@ generate_annotated_source(const gghtml_params_t &params, cov_file_t *f,
         if (stext)
             yaml.key("suppression_text").value(stext);
 
-	if (lines_left)
-	    lines_left--;
-	cov_function_t *fn = funcs.head();
-	if (fn && annotator.lineno() == fn->get_first_line())
-	{
-	    funcs.remove_head();
-	    unsigned int nlines = fn->get_last_line() -
-				  fn->get_first_line() + 1;
-	    lines_left = 0;
+        if (annotator.is_first_line_in_function())
+        {
+            cov_function_t *fn = annotator.function();
 	    flow_t *flow = flows->lookup((void*)fn);
 	    if (flow)
 	    {
+                lines_left = fn->get_num_lines();
 		yaml.key("flow_diagram").begin_mapping();
-		yaml.key("nlines").value(nlines);
+		yaml.key("nlines").value(fn->get_num_lines());
 		double sf = 0.445;
 		yaml.key("width").value((unsigned int)(sf * flow->width + 0.5));
 		yaml.key("height").value((unsigned int)(sf * flow->height + 0.5));
 		yaml.key("url").value(flow->url);
 		yaml.end_mapping();
-		lines_left = nlines;
 	    }
 	}
 	if (!lines_left)
 	    yaml.key("flow_filler").bool_value(true);
+        if (lines_left)
+            lines_left--;
 
 	yaml.end_mapping();
     }

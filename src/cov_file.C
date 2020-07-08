@@ -2463,5 +2463,12 @@ cov_file_annotator_t::suppression_text() const
     return (s ? s->describe() : (const char *)0);
 }
 
+bool
+cov_file_annotator_t::is_first_line_in_function() const
+{
+    cov_function_t *fn = function();
+    return (fn && lineno_ && fn->get_first_line() == lineno_);
+}
+
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/
