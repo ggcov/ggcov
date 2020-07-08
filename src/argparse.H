@@ -24,6 +24,7 @@
 #include "hashtable.H"
 #include "ptrarray.H"
 #include "string_var.H"
+#include "tok.H"
 #include "fakepopt.h"
 
 //
@@ -250,6 +251,27 @@ private:
     const char *_PASTE_(get_,nm)() const { return _PASTE_(nm,_); } \
     private: \
     string_var _PASTE_(nm,_)
+
+// Convenience macro to be used in the declaration of a params class
+// which derives from params_t.  It declares and defines a variable
+// which is a list of strings and getter and setter methods for it.
+// The setter method will be called set_foo() where foo is the argument
+// to this macro, and is suitable for passing to option_t::setter().
+// The setter actually *appends* rather than setting.  Values are
+// are split by commas and whitespace.
+#define ARGPARSE_STRINGLIST_PROPERTY(nm) \
+    public: \
+    void _PASTE_(set_,nm)(const char *v) { \
+        tok_t t(v, ", \t"); \
+        const char *p; \
+        while ((p = t.next())) { \
+            _PASTE_(nm,_).append(g_strdup(p)); \
+        } \
+    } \
+    const list_t<char> &_PASTE_(get_,nm)() const { return _PASTE_(nm,_); } \
+    private: \
+    list_t<char> _PASTE_(nm,_)
+    /* TODO: this will be leaked because it needs an explicitly coded dtor */
 
 // Convenience macro to be used in the declaration of a params class
 // which derives from params_t.  It declares and defines a boolean
