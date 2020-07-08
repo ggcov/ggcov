@@ -201,14 +201,14 @@ public:
 	    tail_ = tail_->prev;
 	else
 	    tail_ = 0;  // invalidate tail
-	head_ = g_list_remove_link(head_, itr.elem_);
+	head_ = g_list_delete_link(head_, itr.elem_);
 	return item;
     }
 
     void remove_all()
     {
 	while (head_ != 0)
-	    head_ = g_list_remove_link(head_, head_);
+	    head_ = g_list_delete_link(head_, head_);
 	tail_ = 0;
     }
 
@@ -220,7 +220,7 @@ public:
 	    item = (T *)head_->data;
 	    if (head_ == tail_)
 		tail_ = 0;
-	    head_ = g_list_remove_link(head_, head_);
+	    head_ = g_list_delete_link(head_, head_);
 	}
 	return item;
     }
@@ -230,7 +230,7 @@ public:
 	while (head_ != 0)
 	{
 	    T *item = (T *)head_->data;
-	    head_ = g_list_remove_link(head_, head_);
+	    head_ = g_list_delete_link(head_, head_);
 	    (*dtor)(item);
 	}
 	tail_ = 0;
@@ -241,7 +241,7 @@ public:
 	while (head_ != 0)
 	{
 	    delete (T *)head_->data;
-	    head_ = g_list_remove_link(head_, head_);
+	    head_ = g_list_delete_link(head_, head_);
 	}
 	tail_ = 0;
     }
