@@ -16,56 +16,21 @@
 .\" along with this program; if not, write to the Free Software
 .\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 .\"
-.TH GGCOV-WEBDB "1" "May 2005" "GGCOV" "Greg Banks"
+.TH GGCOV-HTML "1" "July 2020" "GGCOV" "Greg Banks"
 .SH NAME
-ggcov\-webdb \- generate intermediate database for ggcov web interface
+ggcov\-html \- generate static HTML coverage report
 .SH SYNOPSIS
-\fBggcov\-webdb\fP [[\fB\-r\fP] \fIdirectory\fP|\fIfile\fP] ...
+\fBggcov\-html\fP [[\fB\-r\fP] \fIdirectory\fP|\fIfile\fP] ...
 .SH DESCRIPTION
 .PP
-You may want to try \fBggcov\-html\fP which is a more convenient way
-of generating a HTML report than \fBggcov\-webdb\fP.
-.PP
-\fBGgcov\-webdb\fP generates an intermediate database and tree of
-source files from a development directory, in the form of a tarball.
-The files in this tarball are later used by the \fBggcov\fP PHP pages
-to present test coverage data to WWW browsers.
+\fBGgcov\-html\fP generates a static HTML coverage report as
+files in a directory, which can be directly viewed in a web
+browser, no web server needed.
 .PP
 Test coverage data is produced by C and C++ programs compiled
-with \fIgcc \-\-coverage\fP.  So the combination
-of \fBggcov\-webdb\fP and the \fBggcov\fP PHP pages is basically a WWW
-replacement for the \fBgcov\fP program that comes with \fBgcc\fP.
-.PP
-The intermediate database approach is used to handle the common
-case where the development machine and the web server machine are
-separate.  The database contains coverage data in an indexed,
-platform\-independent, PHP\-friendly form.  Because the database
-format is platform\-independant the PHP pages can be deployed on
-web servers of a different architecture to the development machines.
-In fact the \fBggcov\fP web pages support any web server that meets
-the following criteria:
-.TP
-\(bu
-supports PHP version 4.3 or later, and
-.TP
-\(bu
-provides the \fBdba\fP extension with the \fBdb4\fP provider (which
-\fBggcov\fP uses to read the intermediate database), and
-.TP
-\(bu
-provides the \fBgd\fP extension (which \fBggcov\fP uses to generate
-the bargraphs on the Summary page).
-.PP
-The \fIsourceforge.net\fP project web server is an example of
-such a server.
-.PP
-\fBGgcov-webdb\fP produces a gzipped tarball containing the
-intermediate database itself and copies of all the source files
-which are mentioned in the database.  This is all the information
-that the \fBggcov\fP web pages need, in one bundle which is
-convenient to copy from the development machine to the web server.
-Usually this tarball would be extracted into a subdirectory
-of \fI/var/cache/ggcov/tests/\fP on the web server.
+with \fIgcc \-\-coverage\fP.  So \fBggcov\-html\fP is basically a
+replacement for the \fBgcov\fP program that comes with \fBgcc\fP,
+and is equivalent in purpose to \fBlcov\fP.
 .PP
 Arguments are used to specify how to find coverage data files.
 The arguments can combinations of:
@@ -93,10 +58,33 @@ as the source file and then in all the directories specified on the
 command line (in the order they were specified).
 .SH OPTIONS
 .TP
-\fB\-f\fP \fItest.tgz\fP, \fB\-\-output\-file\fP=\fItest.tgz\fP
-Generate output to filename \fItest.tgz\fP instead of the
-default \fBggcov.webdb.tgz\fP.  The special filename \fB-\fP can
-be used to generate output to stdout.
+\fB\-O\fP \fIdir\fP, \fB\-\-output\-directory\fP=\fIdir\fP
+Generate output into directory \fIdir\fP instead of the
+default \fBhtml/\fP.
+.TP
+\fB\-t\fP \fIdir\fP, \fB\-\-template\-directory\fP=\fIdir\fP
+Use HTML templates from the directory \fIdir\fP instead of the
+built-in default.  This allows replacing the styling of the
+HTML report with custom HTML.  The directory needs to contain
+at least the following files in \fBmustache\fP template syntax.
+.IP
+\(bu \fIindex.html\fP
+is the first page seen by users and contains an overall coverage summary.
+.IP
+\(bu \fItree.html\fP
+shows a directory tree of source files with their coverage.
+.IP
+\(bu \fIsource.html\fP
+shows the annotated source for a single source file.
+.IP
+\(bu \fIfunctions.html\fP
+shows a list of all functions in the project with their coverage.
+.IP
+\(bu \fIstatic.files\fP
+is a list of filenames in the template directory which are to be copied
+directly to the output directory without template expansion.  Typically
+this would include CSS files, logo images etc.
+
 .TP
 \fB\-o\fP \fIdir\fP, \fB\-\-object\-directory\fP=\fIdir\fP
 Add the directory \fIdir\fP to the search path for object
@@ -115,7 +103,8 @@ coverage data files recursively in all child directories.
 Suppress code inside C pre-processor directives which depend on
 any of the given \fIsymbols\fP.  Suppressed code is not included
 in statistics or summaries.  One or
-more symbols may be given, separated by commas or whitespace.  \fBGgcov\-webdb\fP
+more symbols may be given, separated by commas or whitespace.
+\fBGgcov\-html\fP
 understands the following subset of the C pre-processor command set:
 .IP
 \(bu \fI#if SYMBOL\fP
@@ -167,7 +156,7 @@ my_function(unsigned int x)
 }
 .fi
 .IP
-Note, \fBggcov\-webdb\fP will automatically suppress asserts on
+Note, \fBggcov\-html\fP will automatically suppress asserts on
 platforms which support the calltree feature, so this example is moot.
 .IP
 This option is useful for suppressing test infrastructure code, debugging
@@ -245,25 +234,24 @@ but whose coverage is not significant.
 
 .SH EXAMPLES
 .PP
-Generate intermediate database for all the available source
+Generate a static HTML coverage report for all the available source
 in the executable \fBa.out\fP (on some platforms only), and
 install as test \fBfoo\fP in the default tests location.
 .IP
-.B mkdir /var/cache/ggcov/tests/foo
-.br
-.B ggcov\-webdb -f - a.out |
-.br
-.B "    " (cd /var/cache/ggcov/tests/foo ; tar \-xzf \- )
+.B ggcov\-html a.out
 .br
 .PP
-Generate intermediate database for all the C source in the current directory.
+Generate a static HTML coverage report for all the C source in the current directory.
 .IP
-.B ggcov\-webdb *.c
+.B ggcov\-html *.c
 .PP
-Generate intermediate database for all the C source in one directory where the
+Generate a static HTML coverage report for all the C source in one directory where the
 object files and test coverage data files are in different directories:
 .IP
-.B ggcov\-webdb /foo/obj/ /foo/cov\-data/ /foo/src/
+.B ggcov\-html /foo/obj/ /foo/cov\-data/ /foo/src/
+.SH CAVEATS
+.PP
+\fBGgcov\-html\fP runs the Ruby program \fBmustache\fP to do template expansion.
 .SH AUTHOR
 Written by Greg Banks
 .IR <gnb@fastmail.fm> .
@@ -274,5 +262,4 @@ This is free software; see the COPYING file for copying conditions.  There
 is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.
 .SH SEE ALSO
-.PP
-\fBggcov-html\fP(1).
+\fIhttps://mustache.github.io/mustache.5.html\fP

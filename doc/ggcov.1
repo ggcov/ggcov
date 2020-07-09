@@ -25,7 +25,7 @@ ggcov \- a GNOME frontend for exploring gcov coverage data
 .SH DESCRIPTION
 .PP
 \fBGgcov\fP is a GTK+ GUI for exploring test coverage data produced by
-C and C++ programs compiled with \fIgcc \-fprofile-arcs \-ftest-coverage\fP.
+C and C++ programs compiled with \fIgcc \-\-coverage\fP.
 So it's basically a GUI replacement for the \fBgcov\fP program that comes
 with \fBgcc\fP.
 .PP
@@ -45,10 +45,10 @@ it had been specified on the command line (except that missing coverage
 data files are silently ignored).  Any shared libraries on which the
 executable depends are also scanned.  Multiple executables can
 be specified and are scanned in the order given.  This feature is
-only available on some platforms (for example, i386-linux).
+only available on some platforms (for example, x86\-64\-linux and i386\-linux).
 .IP \fIsource-file\fP
 Is any regular file ending in one of the file extensions \fI.c\fP,
-\fI.cc\fP, \fI.cxx\fP, \fI.cpp\fP, or \fI.C\fP.  Source files are
+\fI.cc\fP, \fI.cxx\fP, \fI.cpp\fP, \fI.C\fP or \fI.c++\fP.  Source files are
 matched to their corresponding coverage data files (\fI.gcno\fP and
 \fI.gcda\fP files) and object files by searching for a file of the same
 basename and the appropriate extension first in the same directory
@@ -80,10 +80,26 @@ coverage data files recursively in all child directories.
 \fB\-w\fP \fIwindows\fP, \fB\-\-initial\-windows\fP=\fIwindows\fP
 Open the named windows when \fBggcov\fP starts.  One or more
 window names may be given, separated by commas or whitespace.
-Defined window names
-are \fIsummary\fP, \fIfiles\fP, \fIfunctions\fP, \fIcalls\fP,
-\fIcallbutterfly\fP, \fIcallgraph\fP, \fIlego\fP, \fIsource\fP,
-and \fIreports\fP.  The default window is \fIsummary\fP.
+By default only the \fIsummary\fP window is shown.  Defined
+window names are:
+.IP
+\(bu \fIcallbutterfly\fP
+.br
+\(bu \fIcallgraph\fP
+.br
+\(bu \fIcalls\fP
+.br
+\(bu \fIfiles\fP
+.br
+\(bu \fIfunctions\fP
+.br
+\(bu \fIlego\fP
+.br
+\(bu \fIreports\fP
+.br
+\(bu \fIsource\fP
+.br
+\(bu \fIsummary\fP
 
 .TP
 \fB\-X\fP \fIsymbols\fP, \fB\-\-suppress\-ifdef=\fP\fIsymbols\fP
@@ -142,6 +158,9 @@ my_function(unsigned int x)
 }
 .fi
 .IP
+Note, \fBggcov\-webdb\fP will automatically suppress asserts on
+platforms which support the calltree feature, so this example is moot.
+.IP
 This option is useful for suppressing test infrastructure code, debugging
 code, or other code which is compiled into the coverage test executable
 but whose coverage is not significant.
@@ -164,6 +183,51 @@ my_function(unsigned int x)
     return x;
 }
 // ENDIGNORE
+.fi
+.IP
+This option is useful for suppressing test infrastructure code, debugging
+code, or other code which is compiled into the coverage test executable
+but whose coverage is not significant.
+
+.TP
+\fB\-\-suppress\-call=\fP\fIfunction,...\fP
+Suppress code (blocks and arcs) which calls the given \fIfunction\fP.
+Suppressed code is not included in statistics or summaries.
+One or more functions may be given, separated by commas or whitespace.
+For C++, the mangled function name (as shown by the \fInm\fP utility)
+must be given.  For example, \fB\-\-suppress\-call fatal\fP
+will suppress the call to \fIfatal\fP in this code:
+.IP
+.nf
+unsigned int
+my_function(unsigned int x)
+{
+    if (x == 42)
+        fatal();   /* this line is suppressed */
+    return x;
+}
+.fi
+.IP
+This option is useful for suppressing test infrastructure code, debugging
+code, or other code which is compiled into the coverage test executable
+but whose coverage is not significant.
+
+.TP
+\fB\-\-suppress\-function=\fP\fIfunction,...\fP
+Suppress the entire \fIfunction\fP.
+Suppressed code is not included in statistics or summaries.
+One or more functions may be given, separated by commas or whitespace.
+For C++, the mangled function name (as shown by the \fInm\fP utility)
+must be given.  For example, \fB\-\-suppress\-function fatal\fP
+will suppress the entire \fIfatal\fP function in this code:
+.IP
+.nf
+unsigned int        /* entire function is suppressed */
+fatal(void)
+{
+    fprintf(stderr, "Internal error!\n");
+    exit(1);
+}
 .fi
 .IP
 This option is useful for suppressing test infrastructure code, debugging
