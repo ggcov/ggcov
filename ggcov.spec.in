@@ -7,7 +7,7 @@ Group: Development/C
 Source: http://sourceforge.net/projects/ggcov/files/ggcov-%{version}.tar.gz
 Url: http://ggcov.sourceforge.net/
 BuildRoot: /var/tmp/%{name}-root
-@WEB_TRUE@BuildPreReq: gdbm-devel
+@WEB_TRUE@BuildRequires: gdbm-devel
 Vendor: Greg Banks <gnb@users.sourceforge.net>
 
 @GUI_TRUE@%package gnome
@@ -85,12 +85,15 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/tggcov
 %{_bindir}/git-history-coverage
 %{_bindir}/ggcov-run
+%{_bindir}/ggcov-html
 %{_libdir}/ggcov/libggcov.la
 %{_libdir}/ggcov/libggcov.so*
+%{_datadir}/ggcov/templates/*
 %doc NEWS AUTHORS README INSTALL COPYING ChangeLog TODO
 %docdir %{_mandir}
 %{_mandir}/man1/git-history-coverage.1*
 %{_mandir}/man1/ggcov-run.1*
+%{_mandir}/man1/ggcov-html.1*
 
 @WEB_TRUE@%files web
 @WEB_TRUE@%defattr(-,root,root)

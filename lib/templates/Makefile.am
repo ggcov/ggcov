@@ -23,7 +23,7 @@ FRAGMENTS=	foot.html head.html
 
 EXTRA_DIST=	$(PAGE_TEMPLATES:.html=.html.in) $(STATIC_FILES) $(FRAGMENTS)
 
-templatesdir=	$(libdir)/templates
+templatesdir=	$(pkgdatadir)/templates
 templates_DATA=	$(PAGE_TEMPLATES) $(STATIC_FILES) static.files
 
 $(PAGE_TEMPLATES): %: %.in head.html foot.html

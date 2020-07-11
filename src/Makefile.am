@@ -41,7 +41,8 @@ libcommon_a_SOURCES= \
 		unicode.H unicode.C \
 		filerec.H filerec.C \
 		libgd_scenegen.H libgd_scenegen.C \
-		logging.H logging.C
+		logging.H logging.C \
+		unique_ptr.H
 
 libcov_a_SOURCES= \
 		covio.H covio.C \
@@ -56,6 +57,7 @@ libcov_a_SOURCES= \
 		cov_calliter.H cov_calliter.C \
 		cov_arc.H cov_arc.C \
 		cov_callgraph.H cov_callgraph.C \
+		cov_priv.H \
 		cov_scope.H cov_scope.C \
 		cov_types.H cov.H cov.C \
 		report.H report.C \

@@ -84,8 +84,30 @@ private:
 
 gghtml_params_t::gghtml_params_t(const char *argv0)
  :  output_directory_("html"),
-    data_directory_(file_make_absolute_to_file("../lib", argv0))
+    data_directory_(PKGDATADIR)
 {
+    /*
+     * If we're being run from the source directory, fiddle the
+     * data directory to point to ../lib instead of the configured
+     * PKGDATADIR.  This means we can run ggcov-html before
+     * installation without having to use the -t option.
+     */
+    estring dir = file_make_absolute(argv0);
+    const char *p = strrchr(dir, '/');
+    if (p != 0 &&
+        (p -= 4) >= dir.data() &&
+        !strncmp(p, "/src/", 5))
+    {
+        dir.truncate_to(p - dir);
+        dir.append_string("/lib");
+        if (!file_is_directory(dir))
+        {
+            _log.info("running from source directory, "
+                      "so using %s to find HTML templates\n",
+                      dir.data());
+            data_directory_ = dir;
+        }
+    }
 }
 
 gghtml_params_t::~gghtml_params_t()
