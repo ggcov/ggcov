@@ -370,25 +370,30 @@ PKG_PROG_PKG_CONFIG
 #
 # GUI libraries: Glade, GTK and Gnome.
 #
+have_libglade=no
+have_libgnomeui=no
 have_gconf=no
 libpopt=
 if test x$gui = xyes ; then
     # gui enabled
-    PKG_CHECK_MODULES(GGCOV_GUI, libglade-2.0 >= 2.0.0 libgnomeui-2.0 >= 2.0.0,
-    	    	      [gtk2=yes],[gtk2=no])
-    if test $gtk2 = yes ; then
+    PKG_CHECK_MODULES(LIBGLADE, libglade-2.0 >= 2.0.0, have_libglade=yes, have_libglade=no)
+    PKG_CHECK_MODULES(LIBGNOMEUI, libgnomeui-2.0 >= 2.0.0, have_libgnomeui=yes, have_libgnomeui=no)
+    if test x$have_libglade = xyes ; then
 	PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.4.0,have_gconf=yes)
 	PKG_CHECK_MODULES(GGCOV_CLI, glib-2.0 >= 2.0.0 libxml-2.0 >= 2.0.0 gdlib >= 2.0.0)
 
 	dnl we don't need --export-dynamic anymore, remove it
 	dnl so the executable will be smaller
-	GGCOV_GUI_LIBS=`echo "$GGCOV_GUI_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
+	LIBGLADE_LIBS=`echo "$LIBGLADE_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
+	LIBGNOMEUI_LIBS=`echo "$LIBGNOMEUI_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
 	GCONF_LIBS=`echo "$GCONF_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
 
 	dnl some modern distros don't make X11 symbols visible
 	dnl by default when you link against GTK2 so for them
 	dnl we need to link against libX11 explicitly.
-	GGCOV_GUI_LIBS="$GGCOV_GUI_LIBS -lX11"
+	GGCOV_GUI_LIBS="$LIBGLADE_LIBS $LIBGNOMEUI_LIBS $GCONF_LIBS -lX11"
+
+	GGCOV_GUI_CFLAGS="$LIBGLADE_CFLAGS $LIBGNOMEUI_CFLAGS $GCONF_CFLAGS"
 
 	AC_CHECK_LIB(gtk-x11-2.0, gtk_text_buffer_select_range,
 		  AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE,1,[
@@ -434,6 +439,12 @@ fi
 GGCOV_CLI_LIBS="$GGCOV_CLI_LIBS$libpopt"
 AC_SUBST(GGCOV_CLI_CFLAGS)
 AC_SUBST(GGCOV_CLI_LIBS)
+
+if test $have_libgnomeui = yes ; then
+    AC_DEFINE(HAVE_LIBGNOMEUI,1,[
+    	Whether the GnomeUI library is available.])
+fi
+AM_CONDITIONAL(LIBGNOMEUI, test $have_libgnomeui = yes)
 
 if test $have_gconf = yes ; then
     GCONF=

@@ -21,7 +21,9 @@
 #include "summarywin.H"
 #include "diagwin.H"
 #include "flow_diagram.H"
+#if HAVE_LIBGNOMEUI
 #include "canvas_scenegen.H"
+#endif
 #include "cov.H"
 #include "estring.H"
 #include "prefs.H"
@@ -143,6 +145,7 @@ sourcewin_t::update_flows_tramp(gpointer user_data)
 gboolean
 sourcewin_t::do_update_flows()
 {
+#if HAVE_LIBGNOMEUI
     _log.debug("sourcewin_t::do_update_flows\n");
     GtkTextView *tv = GTK_TEXT_VIEW(text_);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(tv);
@@ -262,6 +265,7 @@ sourcewin_t::do_update_flows()
 	update_title_buttons();
     }
 
+#endif
     return G_SOURCE_REMOVE;	    // all done, yay
 }
 
@@ -283,6 +287,7 @@ set_diagram_colors(diagram_t *di)
 sourcewin_t::flow_t *
 sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
 {
+#if HAVE_LIBGNOMEUI
     flow_t *flow = new flow_t;
     flow->function_ = fn;
     flow->bufy_ = y;
@@ -337,11 +342,15 @@ sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
     }
 
     return flow;
+#else
+    return (flow_t *)0;
+#endif
 }
 
 void
 sourcewin_t::delete_flows()
 {
+#if HAVE_LIBGNOMEUI
     flow_t *flow;
 
     while ((flow = flows_.remove_head()))
@@ -351,6 +360,7 @@ sourcewin_t::delete_flows()
 	delete flow;
     }
     flow_width_dirty_ = TRUE;
+#endif
 }
 
 /*

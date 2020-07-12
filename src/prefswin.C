@@ -20,7 +20,9 @@
 #include "common.h"
 #include "prefswin.H"
 #include "prefs.H"
+#if HAVE_LIBGNOMEUI
 #include <libgnomeui/libgnomeui.h>
+#endif
 #include "logging.H"
 
 prefswin_t *prefswin_t::instance_ = 0;
@@ -44,6 +46,7 @@ prefswin_t::prefswin_t()
 				    "preferences_general_reuse_srcwin_check");
     reuse_summwin_check_ = glade_xml_get_widget(xml,
 				    "preferences_general_reuse_summwin_check");
+    /* TODO: replace GnomeColorPicker widgets with GtkColorButton in the glade file */
     color_pickers_[0] = glade_xml_get_widget(xml,
 				"preferences_colors_covered_foreground");
     color_pickers_[1] = glade_xml_get_widget(xml,
@@ -86,8 +89,12 @@ prefswin_t::instance()
 void
 prefswin_t::update_picker(int i, const GdkColor *col)
 {
+#if HAVE_LIBGNOMEUI
     gnome_color_picker_set_i16(GNOME_COLOR_PICKER(color_pickers_[i]),
 			       col->red, col->green, col->blue, 65535);
+#else
+    gtk_color_button_set_color(GTK_COLOR_BUTTON(color_pickers_[i]), col);
+#endif
 }
 
 
@@ -132,10 +139,14 @@ prefswin_t::grey_items()
 void
 prefswin_t::apply_picker(int i, GdkColor *col)
 {
+#if HAVE_LIBGNOMEUI
     gushort dummy;
 
     gnome_color_picker_get_i16(GNOME_COLOR_PICKER(color_pickers_[i]),
 			       &col->red, &col->green, &col->blue, &dummy);
+#else
+    gtk_color_button_get_color(GTK_COLOR_BUTTON(color_pickers_[i]), col);
+#endif
 }
 
 void

@@ -19,7 +19,9 @@
 
 #include "diagwin.H"
 #include "cov.H"
+#if HAVE_LIBGNOMEUI
 #include "canvas_scenegen.H"
+#endif
 #include "prefs.H"
 #include "logging.H"
 
@@ -40,8 +42,10 @@ diagwin_t::diagwin_t(diagram_t *di)
     set_window(glade_xml_get_widget(xml, "diag"));
     set_title(diagram_->title());
 
+#if HAVE_LIBGNOMEUI
     canvas_ = glade_xml_get_widget(xml, "diag_canvas");
     gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas_), zoom_);
+#endif
 
     ui_register_windows_menu(ui_get_dummy_menu(xml, "diag_windows_dummy"));
 }
@@ -57,7 +61,9 @@ void
 diagwin_t::zoom_to(double factor)
 {
     zoom_ = factor;
+#if HAVE_LIBGNOMEUI
     gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas_), zoom_);
+#endif
 }
 
 void
@@ -68,6 +74,7 @@ diagwin_t::zoom_all()
 
     diagram_->get_bounds(&bounds);
 
+#if HAVE_LIBGNOMEUI
     zoomx = canvas_->allocation.width / bounds.width();
     zoomy = canvas_->allocation.height / bounds.height();
     zoom_ = MIN(zoomx, zoomy);
@@ -75,6 +82,7 @@ diagwin_t::zoom_all()
 		zoomx, zoomy, zoom_);
 
     gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(canvas_), zoom_);
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -105,6 +113,7 @@ void diagwin_t::diagwin_realize_cb(GtkWidget *w)
 void
 diagwin_t::populate()
 {
+#if HAVE_LIBGNOMEUI
     GnomeCanvasGroup *root = gnome_canvas_root(GNOME_CANVAS(canvas_));
 
     _log.debug("diagwin_t::populate\n");
@@ -133,6 +142,7 @@ diagwin_t::populate()
 			   GTK_SIGNAL_FUNC(diagwin_realize_cb), 0);
     else
 	zoom_all();
+#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

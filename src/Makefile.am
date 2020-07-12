@@ -84,6 +84,11 @@ endif
 bin_PROGRAMS=	$(GUIPROG) tggcov ggcov-html $(WEBPROG)
 EXTRA_PROGRAMS= ggcov ggcov-webdb
 
+if LIBGNOMEUI
+CANVAS_SOURCES=	canvas_scenegen.H canvas_scenegen.C \
+		canvas_function_popup.H canvas_function_popup.C
+endif
+
 gui_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		gnbstackedbar.h gnbstackedbar.c \
 		confsection.H confsection.C \
@@ -97,8 +102,7 @@ gui_SOURCES=	uicommon.h ui.h ui.c uix.h uix.c \
 		reportwin.H reportwin.C \
 		fileswin.H fileswin.C \
 		prefswin.H prefswin.C \
-		canvas_scenegen.H canvas_scenegen.C \
-		canvas_function_popup.H canvas_function_popup.C \
+		$(CANVAS_SOURCES) \
 		diagwin.H diagwin.C \
 		utils.H utils.C \
 		help.c ggcov.c

@@ -34,7 +34,9 @@
 #include "functionswin.H"
 #include "fileswin.H"
 #include "reportwin.H"
+#if HAVE_LIBGNOMEUI
 #include <libgnomeui/libgnomeui.h>
+#endif
 #include "fakepopt.h"
 #include "logging.H"
 
