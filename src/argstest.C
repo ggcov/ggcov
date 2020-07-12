@@ -3,7 +3,7 @@
 
 #define TESTCASE(...) \
     argparse::simple_params_t params; \
-    argparse::parser_t parser(params); \
+    argparse::default_parser_t parser(params); \
     parser.add_option('s', "seitan").without_arg(); \
     parser.add_option('b', "brooklyn").with_arg(); \
     static const char * const _argv[] = { __VA_ARGS__, NULL }; \
@@ -162,7 +162,7 @@ argstest_params_t::~argstest_params_t()
 
 #define TESTCASE(...) \
     argstest_params_t params; \
-    argparse::parser_t parser(params); \
+    argparse::default_parser_t parser(params); \
     static const char * const _argv[] = { __VA_ARGS__, NULL }; \
     dmsg("line %d", __LINE__); \
     int r = parser.parse(sizeof(_argv)/sizeof(_argv[0])-1, (char **)_argv)

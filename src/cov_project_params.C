@@ -43,31 +43,39 @@ cov_project_params_t::setup_parser(argparse::parser_t &parser)
 	  .setter((argparse::noarg_setter_t)&cov_project_params_t::set_recursive);
     parser.add_option(0, "suppress-call")
 	  .description("suppress blocks and arcs which call this function (or multiple functions comma-separated)")
-	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_calls);
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_calls)
+          .metavar("FUNCTION,...");
     parser.add_option('X', "suppress-ifdef")
 	  .description("suppress source which is conditional on this cpp define (or multiple defines comma-separated)")
-	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_ifdefs);
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_ifdefs)
+          .metavar("SYMBOL,...");
     parser.add_option('Y', "suppress-comment")
 	  .description("suppress source on lines containing this comment (or multiple comments comma-separated)")
-	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_comment_lines);
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_comment_lines)
+          .metavar("KEYWORD,...");
     parser.add_option('Z', "suppress-comment-between")
 	  .description("suppress source between lines containing these start and end comments (or multiple pairs of comments comma-separated")
-	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_comment_ranges);
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_comment_ranges)
+          .metavar("START_KEYWORD,END_KEYWORD,...");
     parser.add_option(0, "suppress-function")
 	  .description("suppress this function name (or multiple names comma-separated)")
-	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_functions);
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_suppressed_functions)
+          .metavar("FUNCTION,...");
     parser.add_option('p', "gcda-prefix")
 	  .description("directory underneath which to find .gcda files")
-	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_gcda_prefix);
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_gcda_prefix)
+          .metavar("DIR");
     parser.add_option('o', "object-directory")
 	  .description("directory in which to find .o,.gcno,.gcda files")
-	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_object_directory);
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_object_directory)
+          .metavar("DIR");
     parser.add_option('F', "solve-fuzzy")
 	  .description("(silently ignored for compatibility)")
 	  .setter((argparse::noarg_setter_t)&cov_project_params_t::set_solve_fuzzy);
     parser.add_option('D', "debug")
 	  .description("enable ggcov debugging features")
-	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_debug_str);
+	  .setter((argparse::arg_setter_t)&cov_project_params_t::set_debug_str)
+          .metavar("WORD,...");
     parser.add_option('v', "version")
 	  .description("print version and exit")
 	  .setter((argparse::noarg_setter_t)&cov_project_params_t::set_print_version_flag);

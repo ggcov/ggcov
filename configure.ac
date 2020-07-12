@@ -419,6 +419,14 @@ if test x$gui = xyes ; then
     Whether to use the GnomeProgram feature to initialise GNOME.
     ])
 	fi
+
+	AC_CHECK_LIB(gtk-x11-2.0, gtk_init_with_args,
+		  AC_DEFINE(HAVE_GTK_INIT_WITH_ARGS,1,[
+     * Whether the function gtk_init_with_args and associated
+     * support for glib option parsing is available.
+    ]),,
+		  [$GGCOV_GUI_LIBS])
+
     else
 	AC_MSG_ERROR([ggcov requires the GNOME libraries, unless configured with --disable-gui])
     fi

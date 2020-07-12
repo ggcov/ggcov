@@ -67,7 +67,8 @@ public:
 	cov_project_params_t::setup_parser(parser);
 	parser.add_option('R', "report")
 	      .description("display named reports or \"all\"")
-	      .setter((argparse::arg_setter_t)&tggcov_params_t::set_reports);
+	      .setter((argparse::arg_setter_t)&tggcov_params_t::set_reports)
+              .metavar("REPORT,...");
 	parser.add_option('a', "annotate")
 	      .description("save annotated source to FILE.tggcov")
 	      .setter((argparse::noarg_setter_t)&tggcov_params_t::set_annotate_flag);
@@ -94,7 +95,8 @@ public:
 	      .setter((argparse::noarg_setter_t)&tggcov_params_t::set_dump_callgraph_flag);
 	parser.add_option('o', "output")
 	      .description("output file for annotation")
-	      .setter((argparse::arg_setter_t)&tggcov_params_t::set_output_filename);
+	      .setter((argparse::arg_setter_t)&tggcov_params_t::set_output_filename)
+              .metavar("FILE");
 	parser.set_other_option_help("[OPTIONS] [executable|source|directory]...");
     }
 
@@ -467,7 +469,7 @@ main(int argc, char **argv)
 		      log_func, /*user_data*/0);
 
     tggcov_params_t params;
-    argparse::parser_t parser(params);
+    argparse::default_parser_t parser(params);
     if (parser.parse(argc, argv) < 0)
     {
 	exit(1);	/* error message emitted in parse_args() */

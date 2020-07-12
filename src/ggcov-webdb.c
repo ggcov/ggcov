@@ -828,10 +828,12 @@ protected:
 	cov_project_params_t::setup_parser(parser);
 	parser.add_option('f', "output-file")
 	      .description("name of the output (in .tgz format), or - for stdout")
-	      .setter((argparse::arg_setter_t)&webdb_params_t::set_output_tarball);
+	      .setter((argparse::arg_setter_t)&webdb_params_t::set_output_tarball)
+              .metavar("FILE");
 	parser.add_option('\0', "dump")
 	      .description("dump the entire database")
-	      .setter((argparse::arg_setter_t)&webdb_params_t::set_dump_mode);
+	      .setter((argparse::arg_setter_t)&webdb_params_t::set_dump_mode)
+              .metavar("k|v");
 	parser.set_other_option_help("[OPTIONS] [executable|source|directory]...");
     }
 };
@@ -1031,7 +1033,7 @@ main(int argc, char **argv)
 		      log_func, /*user_data*/0);
 
     webdb_params_t params;
-    argparse::parser_t parser(params);
+    argparse::default_parser_t parser(params);
     parser.parse(argc, argv);
 
     if (params.get_dump_mode() != NULL)

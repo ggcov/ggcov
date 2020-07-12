@@ -101,9 +101,16 @@ simple_params_t::post_args()
 parser_t::parser_t(params_t &params)
  :  params_(params),
     options_(new ptrarray_t<option_t>),
-    popt_options_(0)
+    options_by_name_(new hashtable_t<char, option_t>)
 {
     params_.setup_parser(*this);
+}
+
+static gboolean
+remove_one_option_key(char *key, option_t *val, void *closure)
+{
+    free(key);
+    return TRUE;
 }
 
 parser_t::~parser_t()
@@ -111,7 +118,9 @@ parser_t::~parser_t()
     for (ptrarray_iterator_t<option_t> itr = options_->first() ; *itr ; ++itr)
 	delete *itr;
     delete options_;
-    delete[] popt_options_;
+
+    options_by_name_->foreach_remove(remove_one_option_key, NULL);
+    delete options_by_name_;
 }
 
 option_t::option_t(char short_option, const char *long_option)
@@ -158,15 +167,6 @@ option_t::set(params_t &params, const char *arg) const
     }
 }
 
-void
-option_t::build_popt_option(struct poptOption *po)
-{
-    memset(po, 0, sizeof(*po));
-    po->longName = long_option_.data();
-    po->shortName = short_option_;
-    po->argInfo = ((flags_ & F_ARG) ? POPT_ARG_STRING : POPT_ARG_NONE);
-    po->descrip = description_.data();
-}
 
 char *
 option_t::describe() const
@@ -182,37 +182,60 @@ parser_t::add_option(char short_name, const char *long_name)
 {
     option_t *o = new option_t(short_name, long_name);
 
-    for (ptrarray_iterator_t<option_t> itr = options_->first() ; *itr ; ++itr)
+    char *short_key = (short_name ? g_strdup_printf("-%c", short_name) : NULL);
+    char *long_key = (long_name ? g_strdup_printf("--%s", long_name) : NULL);
+
+    if (short_key)
     {
-        if (o->short_option_ && o->short_option_ == (*itr)->short_option_)
+        option_t *old = options_by_name_->lookup(short_key);
+        if (old)
         {
             string_var new_desc = o->describe();
-            string_var old_desc = (*itr)->describe();
+            string_var old_desc = old->describe();
             fprintf(stderr, "ERROR duplicate short commandline option %s vs %s\n",
                     (const char *)old_desc, (const char *)new_desc);
         }
+        /* TODO: if there's a dup the old key will be leaked */
+        options_by_name_->insert(short_key, o);
     }
+    if (long_key)
+        options_by_name_->insert(long_key, o);
 
     options_->append(o);
     return *o;
 }
 
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+
+popt_parser_t::popt_parser_t(params_t &params)
+  : parser_t(params),
+    popt_options_(NULL)
+{
+}
+
+popt_parser_t::~popt_parser_t()
+{
+    delete[] popt_options_;
+}
+
 void
-parser_t::popt_callback(poptContext con,
-			enum poptCallbackReason reason,
-			const struct poptOption *opt,
-			const char *arg,
-			const void *data)
+popt_parser_t::popt_callback(poptContext con,
+                             enum poptCallbackReason reason,
+                             const struct poptOption *opt,
+                             const char *arg,
+                             const void *data)
 {
     if (reason == POPT_CALLBACK_REASON_OPTION)
     {
 	parser_t *self = (parser_t *)data;
-	self->options_->nth(opt->val)->set(self->params_, arg);
+        option_t *o = self->get_nth_option(opt->val);
+        assert(o);
+        self->set(o, arg);
     }
 }
 
 struct poptOption *
-parser_t::get_popt_table()
+popt_parser_t::get_popt_table()
 {
     if (popt_options_ == 0)
     {
@@ -253,8 +276,14 @@ parser_t::get_popt_table()
 	int n = nheaders;
 	for (ptrarray_iterator_t<option_t> itr = options_->first() ; *itr ; ++itr)
 	{
-	    (*itr)->build_popt_option(&popts[n]);
-	    popts[n].val = (n-nheaders);
+            option_t *o = *itr;
+            struct poptOption *po = &popts[n];
+            memset(po, 0, sizeof(*po));
+            po->longName = o->long_option();
+            po->shortName = o->short_option();
+            po->argInfo = (o->has_argument() ? POPT_ARG_STRING : POPT_ARG_NONE);
+            po->descrip = o->description();
+            po->val = (n-nheaders);
 	    n++;
 	}
 
@@ -267,7 +296,7 @@ parser_t::get_popt_table()
 }
 
 int
-parser_t::parse(int argc, char **argv)
+popt_parser_t::parse(int argc, char **argv)
 {
     poptContext popt_context = poptGetContext(PACKAGE, argc, (const char**)argv, get_popt_table(), 0);
     if (other_option_help_.data())
@@ -294,13 +323,88 @@ parser_t::parse(int argc, char **argv)
 }
 
 void
-parser_t::handle_popt_tail(poptContext popt_context)
+popt_parser_t::handle_popt_tail(poptContext popt_context)
 {
     const char *file;
     while ((file = poptGetArg(popt_context)) != 0)
 	params_.add_file(file);
     params_.post_args();
 }
+
+
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
+#if HAVE_GTK_INIT_WITH_ARGS
+
+goption_parser_t *goption_parser_t::instance_ = NULL;
+
+goption_parser_t::goption_parser_t(params_t &params)
+  : parser_t(params),
+    goptions_(NULL)
+{
+    assert(instance_ == NULL);
+    instance_ = this;
+}
+
+goption_parser_t::~goption_parser_t()
+{
+    delete[] goptions_;
+    assert(instance_ == this);
+    instance_ = NULL;
+}
+
+gboolean
+goption_parser_t::goption_callback(const char *option_name,
+                                   const char *value,
+                                   gpointer data,   /* if only we could control this */
+                                   GError **error)
+{
+    option_t *o = instance_->get_option_by_name(option_name);
+    assert(o);
+    instance_->set(o, value);
+    return TRUE;
+}
+
+GOptionEntry *
+goption_parser_t::get_goption_table()
+{
+    if (goptions_ == 0)
+    {
+	GOptionEntry *gopts = new GOptionEntry[options_->length()];
+
+	int n = 0;
+	for (ptrarray_iterator_t<option_t> itr = options_->first() ; *itr ; ++itr)
+	{
+            option_t *o = *itr;
+            GOptionEntry *go = &gopts[n];
+            memset(go, 0, sizeof(*go));
+            go->long_name = o->long_option();
+            go->short_name = o->short_option();
+            go->flags = (o->has_argument() ? G_OPTION_FLAG_NONE : G_OPTION_FLAG_NO_ARG);
+            go->arg = G_OPTION_ARG_CALLBACK;
+            go->arg_data = (gpointer)goption_callback;
+            go->description = o->description();
+            go->arg_description = o->metavar();
+            n++;
+	}
+
+        goptions_ = gopts;
+    }
+    return goptions_;
+}
+
+int
+goption_parser_t::parse(int argc, char **argv)
+{
+    /*
+     * This function is not needed, if we have GOption then
+     * we're using gtk_init_with_args() to do the parsing.
+     */
+    fprintf(stderr, "Internal error: goption_parser_t::parse() not implemented\n");
+    exit(1);
+}
+
+#endif
+/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 // close the namespace
 }

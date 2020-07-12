@@ -26,6 +26,9 @@
 #include "string_var.H"
 #include "tok.H"
 #include "fakepopt.h"
+#if HAVE_GTK_INIT_WITH_ARGS
+#include <glib.h>
+#endif
 
 //
 // argparse is an argument parser based loosely on the
@@ -119,7 +122,6 @@ private:
     ~option_t();
 
     bool set(params_t &params, const char *arg) const;
-    void build_popt_option(struct poptOption *po);
     char *describe() const;
 
     // defaults to long_option_ or short_option_ if long_option_ is not set
@@ -127,6 +129,7 @@ private:
     char short_option_;
     string_var long_option_;
     string_var description_;
+    string_var metavar_;
     enum
     {
 	F_SETTER=(1<<0),	// 1:call the setter_ function 0:call params_t::set() with option's name
@@ -202,8 +205,31 @@ public:
 	flags_ |= F_ARG;	    /* setter/generic has 1 argument */
 	return *this;
     }
+
+    // Specify the string that will be used to stand in for the
+    // argument in automatically generated help messages.  Default
+    // is "ARG".  Only used if the option takes an argument.
+    option_t &metavar(const char *v)
+    {
+        metavar_ = v;
+        return *this;
+    }
+
+    // accessors
+    char short_option() const { return short_option_; }
+    const char *long_option() const { return long_option_.data(); }
+    gboolean has_argument() const { return !!(flags_ & F_ARG); }
+    const char *description() const { return description_.data(); }
+    const char *metavar() const
+    {
+        return (!has_argument() ? NULL :
+                (metavar_.data() ? metavar_.data() : "ARG"));
+    }
 };
 
+/*
+ * Abstract base class for argument parsers.
+ */
 class parser_t
 {
 public:
@@ -217,6 +243,32 @@ public:
 
     void set_other_option_help(const char *v) { other_option_help_ = v; }
 
+    virtual int parse(int argc, char **argv) = 0;
+
+    option_t *get_nth_option(unsigned int i) const { return options_->nth(i); }
+    /* Given a string like either "-f" for short option or "--foo" for
+     * long option, return an option_t or NULL if it doesn't exist */
+    option_t *get_option_by_name(const char *name) const { return options_by_name_->lookup((char *)name); }
+
+    bool set(const option_t *o, const char *arg) { return o->set(params_, arg); }
+
+protected:
+    params_t &params_;
+    ptrarray_t<option_t> *options_;
+    hashtable_t<char, option_t> *options_by_name_;    /* indexed by -SHORT and --LONG */
+    string_var other_option_help_;
+};
+
+/*
+ * This derived parser class is for using the POPT library API to parse
+ * arguments, either the real one or our faked local reimplementation.
+ */
+class popt_parser_t : public parser_t
+{
+public:
+    popt_parser_t(params_t &params);
+    ~popt_parser_t();
+
     int parse(int argc, char **argv);
 
     // This is public so we can integrate with GNOME 1.x
@@ -229,12 +281,47 @@ private:
 			      const struct poptOption *opt,
 			      const char *arg,
 			      const void *data);
-
-    params_t &params_;
-    ptrarray_t<option_t> *options_;
     struct poptOption *popt_options_;
-    string_var other_option_help_;
 };
+
+/*
+ * This typedef is used by CLIs which don't need to care about details of
+ * parser implementations or integrating with GTK or GNOME, they just setup
+ * some options and call parse().  We have our own implementation of the popt
+ * API so we can just always assume that works and use it.
+ */
+typedef popt_parser_t default_parser_t;
+
+#if HAVE_GTK_INIT_WITH_ARGS
+
+/*
+ * This derived parser class is for using the GOption feature of modern
+ * versions of the GLib library to parse arguments.
+ */
+class goption_parser_t : public parser_t
+{
+public:
+    goption_parser_t(params_t &params);
+    ~goption_parser_t();
+
+    virtual int parse(int argc, char **argv);
+    GOptionEntry *get_goption_table();
+
+    void post_args() { params_.post_args(); }
+
+private:
+    static gboolean goption_callback(const char *option_name,
+                                     const char *value,
+                                     gpointer data,   /* if only we could control this */
+                                     GError **error);
+
+    /* This class needs to be a singleton because gtk_init_with_args()
+     * does not provide a way to set the GOption callback closure.  */
+    static goption_parser_t *instance_;
+    GOptionEntry *goptions_;
+};
+
+#endif
 
 #ifndef _PASTE_
 #define _PASTE_(x,y) x##y

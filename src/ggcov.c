@@ -101,7 +101,8 @@ protected:
 	add_all_window_names(w_desc);
 	parser.add_option('w', "initial-windows")
 	      .description(w_desc)
-	      .setter((argparse::arg_setter_t)&ggcov_params_t::set_initial_windows);
+	      .setter((argparse::arg_setter_t)&ggcov_params_t::set_initial_windows)
+              .metavar("WINDOW,...");
 	parser.add_option(0, "profile")
 	      .setter((argparse::noarg_setter_t)&ggcov_params_t::set_profile_mode);
     }
@@ -446,9 +447,24 @@ main(int argc, char **argv)
     stash_argv(argc, argv);
 
     ggcov_params_t params;
-    argparse::parser_t parser(params);
 
-#if HAVE_GNOME_PROGRAM_INIT
+#if HAVE_GTK_INIT_WITH_ARGS
+    argparse::goption_parser_t parser(params);
+    GError *error = NULL;
+    gboolean res = gtk_init_with_args(
+	    &argc, &argv,
+	    "sourcefile|executable|directory",
+	    parser.get_goption_table(),
+	    /*translation_domain*/NULL,
+	    &error);
+    if (error)
+        _log.error(error->message);
+    /* hopefully gtk either returned a GError or logged why it failed */
+    if (error || !res)
+        exit(1);
+    parser.post_args();
+#elif HAVE_GNOME_PROGRAM_INIT
+    argparse::popt_parser_t parser(params);
     GnomeProgram *prog;
     poptContext popt_context;
 
@@ -460,10 +476,12 @@ main(int argc, char **argv)
     g_object_get(prog, GNOME_PARAM_POPT_CONTEXT, &popt_context, (char *)0);
     parser.handle_popt_tail(popt_context);
 #elif GTK2
+    argparse::popt_parser_t parser(params);
     gtk_init(&argc, &argv);
     /* As of 2.0 we don't need to explicitly initialise libGlade anymore */
     parser.parse(argc, argv);
 #else
+    argparse::popt_parser_t parser(params);
     poptContext popt_context;
     gnome_init_with_popt_table(PACKAGE, VERSION, argc, argv,
 			       parser.get_popt_table(), /*popt flags*/0,

@@ -59,10 +59,12 @@ public:
 			     template_directory_.data());
 	parser.add_option('O', "output-directory")
 	      .description(o_desc)
-	      .setter((argparse::arg_setter_t)&gghtml_params_t::set_output_directory);
+	      .setter((argparse::arg_setter_t)&gghtml_params_t::set_output_directory)
+              .metavar("DIR");
 	parser.add_option('t', "template-directory")
 	      .description(t_desc)
-	      .setter((argparse::arg_setter_t)&gghtml_params_t::set_template_directory);
+	      .setter((argparse::arg_setter_t)&gghtml_params_t::set_template_directory)
+              .metavar("DIR");
 	parser.set_other_option_help("[OPTIONS] [executable|source|directory]...");
     }
 
@@ -566,7 +568,7 @@ main(int argc, char **argv)
 		      log_func, /*user_data*/0);
     argv0 = argv[0];
     gghtml_params_t params(argv[0]);
-    argparse::parser_t parser(params);
+    argparse::default_parser_t parser(params);
     if (parser.parse(argc, argv) < 0)
     {
 	exit(1);	/* error message emitted in parse_args() */
