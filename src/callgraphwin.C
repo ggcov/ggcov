@@ -25,68 +25,14 @@
 
 #define COL_COUNT   0
 #define COL_NAME    1
-#if !GTK2
-#define COL_CLOSURE     0
-#define NUM_COLS        2
-#else
 #define COL_CLOSURE     2
 #define NUM_COLS        3
 #define COL_TYPES \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER
-#endif
 
 static logging::logger_t &_log = logging::find_logger("graphwin");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-#if !GTK2
-static int
-callgraphwin_ancestors_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
-{
-    cov_callarc_t *ca1 = (cov_callarc_t *)((GtkCListRow *)ptr1)->data;
-    cov_callarc_t *ca2 = (cov_callarc_t *)((GtkCListRow *)ptr2)->data;
-
-    switch (clist->sort_column)
-    {
-    case COL_COUNT:
-	return u64cmp(ca1->count, ca2->count);
-
-    case COL_NAME:
-	return strcmp(ca1->from->name, ca2->from->name);
-
-    default:
-	return 0;
-    }
-}
-
-static int
-callgraphwin_descendants_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
-{
-    cov_callarc_t *ca1 = (cov_callarc_t *)((GtkCListRow *)ptr1)->data;
-    cov_callarc_t *ca2 = (cov_callarc_t *)((GtkCListRow *)ptr2)->data;
-
-    switch (clist->sort_column)
-    {
-    case COL_COUNT:
-	return u64cmp(ca1->count, ca2->count);
-
-    case COL_NAME:
-	int r = strcmp(ca1->to->name, ca2->to->name);
-	if (!r)
-	{
-	    cov_function_t *f1 = ca1->to->function;
-	    cov_function_t *f2 = ca2->to->function;
-	    if (f1 && f2)
-		r = strcmp(f1->file()->name(), f2->file()->name());
-	}
-	return r;
-
-    default:
-	return 0;
-    }
-}
-
-#else
 
 static int
 callgraphwin_count_compare(
@@ -104,24 +50,8 @@ callgraphwin_count_compare(
     return u64cmp(ca1->count, ca2->count);
 }
 
-#endif
-
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if !GTK2
-void
-callgraphwin_t::init_clist(
-    GtkCList *clist,
-    int (*sortfn)(GtkCList *, const void*, const void*))
-{
-    gtk_clist_column_titles_passive(clist);
-    ui_clist_init_column_arrow(clist, COL_COUNT);
-    ui_clist_init_column_arrow(clist, COL_NAME);
-    gtk_clist_set_compare_func(clist, sortfn);
-    ui_clist_set_sort_column(clist, COL_COUNT);
-    ui_clist_set_sort_type(clist, GTK_SORT_DESCENDING);
-}
-#else
 void
 callgraphwin_t::init_tree_view(GtkTreeView *tv)
 {
@@ -154,7 +84,6 @@ callgraphwin_t::init_tree_view(GtkTreeView *tv)
     /* the TreeView has another reference, so we can safely drop ours */
     g_object_unref(G_OBJECT(store));
 }
-#endif
 
 callgraphwin_t::callgraphwin_t()
 {
@@ -171,20 +100,10 @@ callgraphwin_t::callgraphwin_t()
     function_view_ = glade_xml_get_widget(xml, "callgraph_function_view");
 
     ancestors_clist_ = glade_xml_get_widget(xml, "callgraph_ancestors_clist");
-#if !GTK2
-    init_clist(GTK_CLIST(ancestors_clist_),
-			    callgraphwin_ancestors_compare);
-#else
     init_tree_view(GTK_TREE_VIEW(ancestors_clist_));
-#endif
 
     descendants_clist_ = glade_xml_get_widget(xml, "callgraph_descendants_clist");
-#if !GTK2
-    init_clist(GTK_CLIST(descendants_clist_),
-			    callgraphwin_descendants_compare);
-#else
     init_tree_view(GTK_TREE_VIEW(descendants_clist_));
-#endif
 
     ui_register_windows_menu(ui_get_dummy_menu(xml, "callgraph_windows_dummy"));
 
@@ -202,7 +121,6 @@ callgraphwin_t::~callgraphwin_t()
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if GTK2
 void
 callgraphwin_t::populate_function_combo(GtkComboBox *combo)
 {
@@ -226,30 +144,6 @@ callgraphwin_t::populate_function_combo(GtkComboBox *combo)
 
     list.remove_all();
 }
-#else
-void
-callgraphwin_t::populate_function_combo(GtkCombo *combo)
-{
-    list_t<cov_callnode_t> list;
-
-    ui_combo_clear(combo);    /* stupid glade2 */
-
-    for (cov_callspace_iter_t csitr = cov_callgraph.first() ; *csitr ; ++csitr)
-    {
-	for (cov_callnode_iter_t cnitr = (*csitr)->first() ; *cnitr ; ++cnitr)
-	    list.prepend(*cnitr);
-    }
-    list.sort(cov_callnode_t::compare_by_name_and_file);
-
-    for (list_iterator_t<cov_callnode_t> itr = list.first() ; *itr ; ++itr)
-    {
-	cov_callnode_t *cn = *itr;
-	ui_combo_add_data(combo, cn->unambiguous_name(), cn);
-    }
-
-    list.remove_all();
-}
-#endif
 
 void
 callgraphwin_t::populate()
@@ -297,25 +191,16 @@ format_stat(
 void
 callgraphwin_t::update_clist(GtkWidget *clist, list_t<cov_callarc_t> &arcs, gboolean isin)
 {
-#if !GTK2
-    int row;
-#else
     GtkListStore *store = (GtkListStore *)gtk_tree_view_get_model(
 							GTK_TREE_VIEW(clist));
     GtkTreeIter titer;
-#endif
     count_t total;
     char *text[NUM_COLS];
     char countbuf[32];
 
     total = cov_callarcs_total(arcs);
 
-#if !GTK2
-    gtk_clist_freeze(GTK_CLIST(clist));
-    gtk_clist_clear(GTK_CLIST(clist));
-#else
     gtk_list_store_clear(store);
-#endif
 
     for (list_iterator_t<cov_callarc_t> itr = arcs.first() ; *itr ; ++itr)
     {
@@ -327,24 +212,13 @@ callgraphwin_t::update_clist(GtkWidget *clist, list_t<cov_callarc_t> &arcs, gboo
 
 	text[COL_NAME] = (char *)(isin ? ca->from : ca->to)->unambiguous_name();
 
-#if !GTK2
-	row = gtk_clist_prepend(GTK_CLIST(clist), text);
-	gtk_clist_set_row_data(GTK_CLIST(clist), row, ca);
-#else
 	gtk_list_store_append(store, &titer);
 	gtk_list_store_set(store,  &titer,
 	    COL_COUNT, text[COL_COUNT],
 	    COL_NAME, text[COL_NAME],
 	    COL_CLOSURE, ca,
 	    -1);
-#endif
     }
-
-#if !GTK2
-    gtk_clist_sort(GTK_CLIST(clist));
-    gtk_clist_columns_autosize(GTK_CLIST(clist));
-    gtk_clist_thaw(GTK_CLIST(clist));
-#endif
 }
 
 void

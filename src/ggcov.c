@@ -475,19 +475,11 @@ main(int argc, char **argv)
 			      GNOME_PARAM_NONE);
     g_object_get(prog, GNOME_PARAM_POPT_CONTEXT, &popt_context, (char *)0);
     parser.handle_popt_tail(popt_context);
-#elif GTK2
+#else
     argparse::popt_parser_t parser(params);
     gtk_init(&argc, &argv);
     /* As of 2.0 we don't need to explicitly initialise libGlade anymore */
     parser.parse(argc, argv);
-#else
-    argparse::popt_parser_t parser(params);
-    poptContext popt_context;
-    gnome_init_with_popt_table(PACKAGE, VERSION, argc, argv,
-			       parser.get_popt_table(), /*popt flags*/0,
-			       &popt_context);
-    glade_gnome_init();
-    parser.handle_popt_tail(popt_context);
 #endif
 
     int r = cov_read_files(params);

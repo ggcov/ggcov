@@ -135,9 +135,7 @@ canvas_scenegen_t::box(double x, double y, double w, double h)
 		"y2",           y+h,
 		"fill_color",   fill_color(),
 		"outline_color",border_color(),
-#if GTK2
 		"width_pixels", (border_flag_ ? 1 : 0),
-#endif
 		(char *)0);
     handle_object(item);
 }

@@ -28,6 +28,12 @@
 #define GTK2 0
 #endif
 
+#if GTK_CHECK_VERSION(2,99,0)
+#define GTK3 1
+#else
+#define GTK3 0
+#endif
+
 #ifdef __cplusplus
 #define GLADE_CALLBACK extern "C"
 #else

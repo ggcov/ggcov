@@ -29,21 +29,16 @@
 static logging::logger_t &_log = logging::find_logger("uicore");
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-#if GTK2
 #define COL_LABEL   0
 #define COL_DATA    1
 #define COL_ICON    2
 #define COLUMN_TYPES \
     3, G_TYPE_STRING, G_TYPE_POINTER, G_TYPE_STRING
 static const char ui_combo_sep_key[] = "ui_combo_sep_key";
-#else
-static const char ui_combo_item_key[] = "ui_combo_item_key";
-#endif
 
 ui_combo_t *
 init(ui_combo_t *cbox, const char *sep)
 {
-#if GTK2
     GtkCellRenderer *rend;
     if (sep)
     {
@@ -69,18 +64,14 @@ init(ui_combo_t *cbox, const char *sep)
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cbox), rend, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cbox), rend, "text", COL_LABEL, (char *)0);
     }
-#endif
     return cbox;
 }
 
-#if GTK2
 static const char pending_model_key[] = "ui-pending-model";
-#endif
 
 void
 clear(ui_combo_t *cbox)
 {
-#if GTK2
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
     /* Detach the model from the cbox temporarily.  This was found
      * experimentally to have a huge performance impact, at least
@@ -93,15 +84,11 @@ clear(ui_combo_t *cbox)
     else
 	gtk_list_store_clear(GTK_LIST_STORE(model));
     g_object_set_data(G_OBJECT(cbox), pending_model_key, model);
-#else
-    gtk_list_clear_items(GTK_LIST(cbox->list), 0, -1);
-#endif
 }
 
 void
 add(ui_combo_t *cbox, const char *label, gpointer data)
 {
-#if GTK2
     GtkTreeModel *model = (GtkTreeModel *)
 	g_object_get_data(G_OBJECT(cbox), pending_model_key);
 
@@ -155,51 +142,31 @@ add(ui_combo_t *cbox, const char *label, gpointer data)
 	gtk_list_store_insert_with_values(store, &treeitr, 0x7fffffff,
 					  COL_LABEL, label, COL_DATA, data, -1);
     }
-#else
-    GtkWidget *item;
-
-    item = gtk_list_item_new_with_label(label);
-    gtk_object_set_data(GTK_OBJECT(item), ui_combo_item_key, data);
-    gtk_widget_show(item);
-    gtk_container_add(GTK_CONTAINER(cbox->list), item);
-#endif
 }
 
 void
 done(ui_combo_t *cbox)
 {
-#if GTK2
     GtkTreeModel *model = (GtkTreeModel *)
 	g_object_steal_data(G_OBJECT(cbox), pending_model_key);
     gtk_combo_box_set_model(cbox, model);
     g_object_unref(G_OBJECT(model));
-#endif
 }
 
 gpointer
 get_active(ui_combo_t *cbox)
 {
-#if GTK2
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
     GtkTreeIter treeitr;
     void *data = 0;
     if (gtk_combo_box_get_active_iter(cbox, &treeitr))
 	gtk_tree_model_get(model, &treeitr, COL_DATA, &data, -1);
     return data;
-#else
-    GtkList *listw = GTK_LIST(cbox->list);
-
-    if (listw->selection == 0)
-	return 0;
-    return gtk_object_get_data(GTK_OBJECT(listw->selection->data),
-			       ui_combo_item_key);
-#endif
 }
 
 void
 set_active(ui_combo_t *cbox, gpointer data)
 {
-#if GTK2
     GtkTreeModel *model = gtk_combo_box_get_model(cbox);
     GtkTreeIter treeitr;
 
@@ -216,21 +183,6 @@ set_active(ui_combo_t *cbox, gpointer data)
 	}
 	valid = gtk_tree_model_iter_next(model, &treeitr);
     }
-#else
-    GtkList *listw = GTK_LIST(cbox->list);
-    GList *iter;
-
-    for (iter = listw->children ; iter != 0 ; iter = iter->next)
-    {
-	GtkWidget *item = (GtkWidget *)iter->data;
-
-	if (gtk_object_get_data(GTK_OBJECT(item), ui_combo_item_key) == data)
-	{
-	    gtk_list_select_child(listw, item);
-	    return;
-	}
-    }
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -321,19 +273,13 @@ ui_custom_widget_handler(
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if GTK2
-#define LIBGLADE    "-glade2"
-#else
-#define LIBGLADE
-#endif
-
 GladeXML *
 ui_load_tree(const char *root)
 {
     GladeXML *xml = 0;
     /* load & create the interface */
     static char *filename = 0;
-    static const char gladefile[] = PACKAGE LIBGLADE ".glade";
+    static const char gladefile[] = PACKAGE "-glade2.glade";
 
     if (filename == 0)
     {
@@ -345,11 +291,7 @@ ui_load_tree(const char *root)
 
     glade_set_custom_handler(ui_custom_widget_handler, (gpointer)0);
 
-#if GTK2
     xml = glade_xml_new(filename, root, /* translation domain */PACKAGE);
-#else
-    xml = glade_xml_new(filename, root);
-#endif
 
     if (xml == 0)
 	fatal("can't load Glade UI from file \"%s\"\n", filename);
@@ -385,11 +327,7 @@ static GtkWidget *
 _ui_virtual_parent(GtkWidget *w)
 {
     if (GTK_IS_MENU(w))
-#if GTK2
 	return gtk_menu_get_attach_widget(GTK_MENU(w));
-#else
-	return GTK_MENU(w)->parent_menu_item;
-#endif
     return GTK_WIDGET(w)->parent;
 }
 
@@ -662,167 +600,10 @@ ui_menu_add_seperator(GtkWidget *menu)
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-#if !GTK2
-/* column sorting is trivial in gtk2.x, extremely painful in gtk1.2 */
-
-static const char ui_clist_arrow_key[] = "ui_clist_arrow_key";
-
-static gboolean
-ui_clist_is_sortable_column(GtkCList *clist, int col)
-{
-    GArray *sortables;
-    unsigned int i;
-
-    sortables = (GArray *)gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
-    assert(sortables != 0);
-
-    for (i = 0 ; i < sortables->len ; i++)
-	if (g_array_index(sortables, int, i) == col)
-	    return TRUE;
-
-    return FALSE;   /* this column not sortable */
-}
-
-static void
-ui_clist_sortables_destroy(gpointer userdata)
-{
-    g_array_free((GArray *)userdata, /*free_segment*/TRUE);
-}
-
-static void
-ui_on_clist_click_column(GtkCList *clist, int col, gpointer userdata)
-{
-    /* first, check this is a sortable column */
-    if (!ui_clist_is_sortable_column(clist, col))
-	return;         /* this column not sortable */
-
-    /* now we can update the sort specifications */
-    if (col == clist->sort_column)
-	/* toggle the sort direction */
-	ui_clist_set_sort_type(clist, (clist->sort_type == GTK_SORT_ASCENDING ?
-				       GTK_SORT_DESCENDING : GTK_SORT_ASCENDING));
-    else
-	/* make this the sortable column */
-	ui_clist_set_sort_column(clist, col);
-
-    /* update the order in the list */
-    gtk_clist_sort(clist);
-}
-
-void
-ui_clist_init_column_arrow(GtkCList *clist, int col)
-{
-    GtkWidget *hbox;
-    GtkWidget *label;
-    GtkWidget *arrow;
-    GtkWidget *oldlabel;
-    char *oldstr = 0;
-    GArray *sortables;
-
-    oldlabel = gtk_clist_get_column_widget(clist, col);
-    if (GTK_IS_BIN(oldlabel))
-	oldlabel = GTK_BIN(oldlabel)->child;
-    if (!GTK_IS_LABEL(oldlabel))
-	return;
-    gtk_label_get(GTK_LABEL(oldlabel), &oldstr);
-
-    hbox = gtk_hbox_new(/*homogeneous*/FALSE, /*spacing*/4);
-    gtk_widget_show(hbox);
-
-    label = gtk_label_new(oldstr);
-    gtk_box_pack_start(GTK_BOX(hbox), label,
-		       /*expand*/TRUE, /*fill*/TRUE, /*padding*/0);
-    gtk_widget_show(label);
-
-    arrow = gtk_arrow_new(GTK_ARROW_DOWN,
-	       (col == clist->sort_column ? GTK_SHADOW_OUT : GTK_SHADOW_NONE));
-    gtk_box_pack_start(GTK_BOX(hbox), arrow,
-		      /*expand*/FALSE, /*fill*/TRUE, /*padding*/0);
-    gtk_widget_show(arrow);
-
-    gtk_clist_set_column_widget(clist, col, hbox);
-    gtk_clist_column_title_active(clist, col);
-
-    /* Setup signal handler and update sortables array */
-    sortables = (GArray *)gtk_object_get_data(GTK_OBJECT(clist), ui_clist_arrow_key);
-    if (sortables == 0)
-    {
-	sortables = g_array_new(/*zero_terminated*/FALSE, /*clear*/FALSE, sizeof(int));
-	gtk_object_set_data_full(GTK_OBJECT(clist), ui_clist_arrow_key,
-				 sortables, ui_clist_sortables_destroy);
-	gtk_signal_connect(GTK_OBJECT(clist), "click_column",
-			GTK_SIGNAL_FUNC(ui_on_clist_click_column), 0);
-    }
-    g_array_append_val(sortables, col);
-}
-
-static GtkWidget *
-ui_clist_get_column_arrow(GtkCList *clist, int col)
-{
-    GtkWidget *button = clist->column[col].button;
-    GtkWidget *hbox = GTK_BIN(button)->child;
-    GtkBoxChild *boxchild = (GtkBoxChild *)g_list_nth_data(GTK_BOX(hbox)->children, 1);
-    return boxchild->widget;
-}
-
-void
-ui_clist_set_sort_column(GtkCList *clist, int col)
-{
-    GtkWidget *arrow;
-
-    if (!ui_clist_is_sortable_column(clist, col))
-	return;
-
-    if (ui_clist_is_sortable_column(clist, clist->sort_column))
-    {
-	arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
-	gtk_arrow_set(GTK_ARROW(arrow), GTK_ARROW_DOWN, GTK_SHADOW_NONE);
-    }
-
-    gtk_clist_set_sort_column(clist, col);
-
-    arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
-    gtk_arrow_set(GTK_ARROW(arrow),
-      (clist->sort_type == GTK_SORT_ASCENDING ? GTK_ARROW_DOWN : GTK_ARROW_UP),
-      GTK_SHADOW_OUT);
-}
-
-void
-ui_clist_set_sort_type(GtkCList *clist, GtkSortType type)
-{
-    GtkWidget *arrow;
-
-    if (!ui_clist_is_sortable_column(clist, clist->sort_column))
-	return;
-
-    gtk_clist_set_sort_type(clist, type);
-    arrow = ui_clist_get_column_arrow(clist, clist->sort_column);
-    gtk_arrow_set(GTK_ARROW(arrow),
-      (clist->sort_type == GTK_SORT_ASCENDING ? GTK_ARROW_DOWN : GTK_ARROW_UP),
-      GTK_SHADOW_OUT);
-}
-
-#endif /* !GTK2 */
-/*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 gpointer
 ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
 {
-#if !GTK2
-    GtkCList *clist = GTK_CLIST(w);
-    int row, col;
-
-    if (event->type == GDK_2BUTTON_PRESS &&
-	gtk_clist_get_selection_info(clist,
-				     (int)event->button.x,
-				     (int)event->button.y,
-				     &row, &col))
-    {
-	_log.debug("ui_list_double_click_data: row=%d col=%d\n", row, col);
-	return gtk_clist_get_row_data(clist, row);
-    }
-    return 0;
-#else
     GtkTreeView *tv = GTK_TREE_VIEW(w);
     GtkTreeModel *model;
     GtkTreePath *path = 0;
@@ -849,7 +630,6 @@ ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
 	return data;
     }
     return 0;
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -857,76 +637,22 @@ ui_list_double_click_data(GtkWidget *w, GdkEvent *event, int column )
 void
 ui_list_set_column_visibility(GtkWidget *w, int col, gboolean vis)
 {
-#if !GTK2
-    gtk_clist_set_column_visibility(GTK_CLIST(w), col, vis);
-#else
     gtk_tree_view_column_set_visible(
 	    gtk_tree_view_get_column(GTK_TREE_VIEW(w), col),
 	    vis);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if GTK2
 static PangoFontDescription *ui_text_font_desc;
 static gboolean ui_text_font_dirty = FALSE;
-#else
-/* we have to fake a *lot* of stuff for gtk1.2 */
-static GdkFont *ui_text_font;
 
-struct ui_text_tag_s
-{
-    char *name;
-    GdkColor foreground;
-};
-
-typedef struct
-{
-    GList *tags;                /* list of tags */
-    int lineno;                 /* current line number */
-    GArray *offsets_by_line;    /* for selecting by line number */
-} ui_text_data;
-
-static const char ui_text_data_key[] = "ui_text_data_key";
-
-static void
-ui_text_on_destroy(GtkWidget *w, gpointer closure)
-{
-    ui_text_data *td = (ui_text_data *)closure;
-
-    while (td->tags != 0)
-    {
-	ui_text_tag *tag = (ui_text_tag *)td->tags->data;
-
-	g_free(tag->name);
-	g_free(tag);
-
-	td->tags = g_list_remove_link(td->tags, td->tags);
-    }
-    g_array_free(td->offsets_by_line, /*free_segment*/TRUE);
-    g_free(td);
-}
-
-static void
-ui_text_line_start(GtkText *text, ui_text_data *td)
-{
-    unsigned int offset = gtk_text_get_length(text);
-    _log.debug2("offsets_by_line[%d] = %d\n", td->offsets_by_line->len, offset);
-    g_array_append_val(td->offsets_by_line, offset);
-}
-
-#endif /* !GTK2 */
-
-#if GTK2
 #define UI_TEXT_SCALE_FACTOR    1.1
 #define UI_TEXT_DEFAULT_SIZE    10240
-#endif
 
 void
 ui_text_setup(GtkWidget *w)
 {
-#if GTK2
     assert(GTK_IS_TEXT_VIEW(w));
 
     /*
@@ -952,24 +678,6 @@ ui_text_setup(GtkWidget *w)
 
     /* Suppress wrap: it screws up our pretence of being multi-column */
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(w), GTK_WRAP_NONE);
-
-#else /* !GTK2 */
-    ui_text_data *td;
-
-    assert(GTK_IS_TEXT(w));
-
-    td = new(ui_text_data);
-
-    if (ui_text_font == 0)
-	ui_text_font = uix_fixed_width_font(gtk_widget_get_style(w)->font);
-
-    td->offsets_by_line = g_array_new(/*zero_terminated*/TRUE,
-				      /*clear*/TRUE,
-				      sizeof(unsigned int));
-    gtk_object_set_data(GTK_OBJECT(w), ui_text_data_key, td);
-    gtk_signal_connect(GTK_OBJECT(w), "destroy",
-	GTK_SIGNAL_FUNC(ui_text_on_destroy), td);
-#endif /* !GTK2 */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -977,16 +685,11 @@ ui_text_setup(GtkWidget *w)
 int
 ui_text_font_width(GtkWidget *w)
 {
-#if GTK2
     PangoLayout *layout = gtk_widget_create_pango_layout(w, "W");
     PangoRectangle ink, logical;
     pango_layout_get_pixel_extents(layout, &ink, &logical);
     g_object_unref(layout);
     return logical.width;
-
-#else /* !GTK2 */
-    return uix_font_width(ui_text_font);
-#endif /* !GTK2 */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -994,7 +697,6 @@ ui_text_font_width(GtkWidget *w)
 void
 ui_text_adjust_text_size(GtkWidget *w, int dirn)
 {
-#if GTK2
     static const char normal_size_key[] = "ui-text-normal-size";
 
     PangoFontDescription *font_desc = w->style->font_desc;
@@ -1023,7 +725,6 @@ ui_text_adjust_text_size(GtkWidget *w, int dirn)
     confsection_t::get("general")->set_int("text_size", size);
     confsection_t::sync();
     ui_text_font_dirty = TRUE;
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1031,24 +732,11 @@ ui_text_adjust_text_size(GtkWidget *w, int dirn)
 ui_text_tag *
 ui_text_create_tag(GtkWidget *w, const char *name, GdkColor *fg)
 {
-#if GTK2
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
 
     return gtk_text_buffer_create_tag(buffer, name,
 		"foreground-gdk",       fg,
 		(char *)0);
-#else /* !GTK2 */
-    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-							   ui_text_data_key);
-    ui_text_tag *tag;
-
-    tag = new(ui_text_tag);
-    tag->name = g_strdup(name);
-    tag->foreground = *fg;
-    td->tags = g_list_prepend(td->tags, tag);
-
-    return tag;
-#endif /* !GTK2 */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1056,17 +744,12 @@ ui_text_create_tag(GtkWidget *w, const char *name, GdkColor *fg)
 gfloat
 ui_text_vscroll_sample(GtkWidget *w)
 {
-#if GTK2
     return GTK_TEXT_VIEW(w)->vadjustment->value;
-#else /* !GTK2 */
-    return GTK_TEXT(w)->vadj->value;
-#endif /* !GTK2 */
 }
 
 void
 ui_text_vscroll_restore(GtkWidget *w, gfloat vs)
 {
-#if GTK2
     GtkTextView *tv = GTK_TEXT_VIEW(w);
 
     /* Work around rounding bug in gtk 2.0.2 */
@@ -1074,9 +757,6 @@ ui_text_vscroll_restore(GtkWidget *w, gfloat vs)
 	vs = tv->vadjustment->upper - tv->vadjustment->page_size - 0.5;
 
     gtk_adjustment_set_value(tv->vadjustment, vs);
-#else /* !GTK2 */
-    gtk_adjustment_set_value(GTK_TEXT(w)->vadj, vs);
-#endif /* !GTK2 */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1084,66 +764,25 @@ ui_text_vscroll_restore(GtkWidget *w, gfloat vs)
 void
 ui_text_begin(GtkWidget *w)
 {
-#if GTK2
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
 
     gtk_text_buffer_set_text(buffer, "", -1);
-#else /* !GTK2 */
-    GtkText *text = GTK_TEXT(w);
-    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-							   ui_text_data_key);
-
-    gtk_text_freeze(text);
-    gtk_editable_delete_text(GTK_EDITABLE(text), 0, -1);
-    g_array_set_size(td->offsets_by_line, 0);
-    ui_text_line_start(text, td);   /* skip 0th entry */
-#endif /* !GTK2 */
 }
 
 void
 ui_text_add(GtkWidget *w, ui_text_tag *tag, const char *str, int len)
 {
-#if GTK2
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
     GtkTextIter end;
 
     gtk_text_buffer_get_end_iter(buffer, &end);
     gtk_text_buffer_insert_with_tags(buffer, &end, str, len,
 				     tag, (char*)0);
-#else /* !GTK2 */
-    GtkText *text = GTK_TEXT(w);
-    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-							   ui_text_data_key);
-    const char *s, *e;
-    GdkColor *fg = (tag == 0 ? 0 : &tag->foreground);
-    GdkColor *bg = 0;
-
-    if (len < 0)
-	len = strlen(str);
-
-    /* parse the string for newlines so we can track line offsets */
-    s = str;
-    while (len > 0 && (e = strchr(s, '\n')) != 0)
-    {
-	e++;
-	gtk_text_insert(text, ui_text_font, fg, bg, s, (e-s));
-	ui_text_line_start(text, td);
-	len -= (e-s);
-	s = e;
-    }
-    if (len > 0)
-	gtk_text_insert(text, ui_text_font, fg, bg, s, len);
-#endif /* !GTK2 */
 }
 
 void
 ui_text_end(GtkWidget *w)
 {
-#if !GTK2
-    GtkText *text = GTK_TEXT(w);
-
-    gtk_text_thaw(text);
-#endif /* !GTK2 */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1151,7 +790,6 @@ ui_text_end(GtkWidget *w)
 void
 ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endline)
 {
-#if GTK2
 #ifdef HAVE_GTK_TEXT_BUFFER_SELECT_RANGE
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
     GtkTextIter start, end;
@@ -1164,7 +802,7 @@ ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endlin
 
     /* this function appeared sometime after 2.0.2 */
     gtk_text_buffer_select_range(buffer, &start, &end);
-#else /* GTK2 && !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
+#else /* !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
     /*
      * In GTK late 1.99 there is no way I can see to use the official
      * API to select a range of rows.  However, we can fake it by
@@ -1190,40 +828,7 @@ ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endlin
 	(*klass->move_cursor)(tview, GTK_MOVEMENT_DISPLAY_LINES,
 			      (gint)(endline - startline + 1),
 			      /*extend_selection*/TRUE);
-#endif /* GTK2 && !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
-#else /* !GTK2 */
-    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-							   ui_text_data_key);
-    int endoff;
-
-    assert(td->offsets_by_line->len > 0);
-
-    if (startline < 1)
-	startline = 1;
-    if (endline < 1)
-	endline = startline;
-    if (startline > td->offsets_by_line->len)
-	startline = td->offsets_by_line->len;
-    if (endline > td->offsets_by_line->len)
-	endline = td->offsets_by_line->len;
-    if (startline > endline)
-	return;
-
-    assert(startline >= 1);
-    assert(startline <= td->offsets_by_line->len);
-    assert(endline >= 1);
-    assert(endline <= td->offsets_by_line->len);
-
-    /* set endoff to the first location after the last line to be selected */
-    if (endline == td->offsets_by_line->len)
-	endoff = -1;
-    else
-	endoff = g_array_index(td->offsets_by_line, unsigned int, endline)-1;
-
-    gtk_editable_select_region(GTK_EDITABLE(w),
-	    g_array_index(td->offsets_by_line, unsigned int, startline-1),
-	    endoff);
-#endif /* !GTK2 */
+#endif /* !HAVE_GTK_TEXT_BUFFER_SELECT_RANGE */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1231,67 +836,15 @@ ui_text_select_lines(GtkWidget *w, unsigned long startline, unsigned long endlin
 void
 ui_text_ensure_visible(GtkWidget *w, unsigned long line)
 {
-#if GTK2
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
     GtkTextIter iter;
 
     gtk_text_buffer_get_iter_at_line(buffer, &iter, line);
     gtk_text_view_scroll_to_iter(GTK_TEXT_VIEW(w), &iter,
 				 0.0, FALSE, 0.0, 0.0);
-#else
-    /* This mostly works.  Not totally predictable but good enough for now */
-    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-							   ui_text_data_key);
-    GtkAdjustment *adj = GTK_TEXT(w)->vadj;
-
-    gtk_adjustment_set_value(adj,
-		adj->upper * (double)line / (double)td->offsets_by_line->len
-		    - adj->page_size/2.0);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-
-#if !GTK2
-static unsigned long
-ui_text_offset_to_lineno(ui_text_data *td, unsigned int offset)
-{
-    unsigned int top, bottom;
-
-    if (offset == 0)
-	return 0;
-
-    top = td->offsets_by_line->len-1;
-    bottom = 0;
-
-    _log.debug2(
-	    "ui_text_offset_to_lineno: { offset=%u top=%u bottom=%u\n",
-	    offset, top, bottom);
-
-    while (top - bottom > 1)
-    {
-	unsigned int mid = (top + bottom)/2;
-	unsigned int midoff = g_array_index(td->offsets_by_line, unsigned int, mid);
-
-	_log.debug2(
-		"ui_text_offset_to_lineno:     top=%d bottom=%d mid=%d midoff=%u\n",
-		 top, bottom, mid, midoff);
-
-	if (midoff == offset)
-	    top = bottom = mid;
-	else if (midoff < offset)
-	    bottom = mid;
-	else
-	    top = mid;
-    }
-
-    _log.debug2(
-	    "ui_text_offset_to_lineno: offset=%u line=%u }\n",
-	    offset, bottom);
-
-    return (unsigned long)bottom+1;
-}
-#endif /* !GTK2 */
 
 
 void
@@ -1300,7 +853,6 @@ ui_text_get_selected_lines(
     unsigned long *startp,
     unsigned long *endp)
 {
-#if GTK2
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
     GtkTextIter start_iter, end_iter;
 
@@ -1318,28 +870,6 @@ ui_text_get_selected_lines(
 	if (endp != 0)
 	    *endp = gtk_text_iter_get_line(&end_iter)+1;
     }
-#else /* !GTK2 */
-    ui_text_data *td = (ui_text_data *)gtk_object_get_data(GTK_OBJECT(w),
-							   ui_text_data_key);
-
-    if (GTK_EDITABLE(w)->selection_start_pos == 0 &&
-	GTK_EDITABLE(w)->selection_end_pos == 0)
-    {
-	if (startp != 0)
-	    *startp = 0;
-	if (endp != 0)
-	    *endp = 0;
-    }
-    else
-    {
-	if (startp != 0)
-	    *startp = ui_text_offset_to_lineno(td,
-				GTK_EDITABLE(w)->selection_start_pos);
-	if (endp != 0)
-	    *endp = ui_text_offset_to_lineno(td,
-				GTK_EDITABLE(w)->selection_end_pos-1);
-    }
-#endif /* !GTK2 */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -1347,16 +877,12 @@ ui_text_get_selected_lines(
 char *
 ui_text_get_contents(GtkWidget *w)
 {
-#if GTK2
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(w));
     GtkTextIter start, end;
 
     gtk_text_buffer_get_bounds(buffer, &start, &end);
     return gtk_text_buffer_get_text(buffer, &start, &end,
 				    /*include_hidden_chars*/FALSE);
-#else /* !GTK2 */
-    return gtk_editable_get_chars(GTK_EDITABLE(w), 0, -1);
-#endif /* !GTK2 */
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

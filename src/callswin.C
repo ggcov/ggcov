@@ -30,16 +30,11 @@
 #define COL_TO      1
 #define COL_LINE    2
 #define COL_COUNT   3
-#if !GTK2
-#define COL_CLOSURE     0
-#define NUM_COLS        4
-#else
 #define COL_CLOSURE     4
 #define NUM_COLS        5
 #define COL_TYPES \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
     G_TYPE_STRING, G_TYPE_POINTER
-#endif
 
 static logging::logger_t &_log = logging::find_logger("callswin");
 
@@ -112,16 +107,6 @@ struct callswin_call_t
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
-#if !GTK2
-static int
-callswin_clist_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
-{
-    return callswin_call_t::compare(
-	(callswin_call_t *)((GtkCListRow *)ptr1)->data,
-	(callswin_call_t *)((GtkCListRow *)ptr2)->data,
-	clist->sort_column);
-}
-#else
 static int
 callswin_tree_iter_compare(
     GtkTreeModel *tm,
@@ -136,17 +121,14 @@ callswin_tree_iter_compare(
     gtk_tree_model_get(tm, iter2, COL_CLOSURE, &b, -1);
     return callswin_call_t::compare(a, b, GPOINTER_TO_INT(data));
 }
-#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 callswin_t::callswin_t()
 {
     GladeXML *xml;
-#if GTK2
     GtkTreeViewColumn *col;
     GtkCellRenderer *rend;
-#endif
     GtkWidget *w;
 
     /* load the interface & connect signals */
@@ -168,14 +150,6 @@ callswin_t::callswin_t()
     count_check_ = glade_xml_get_widget(xml, "calls_count_check");
 
     clist_ = glade_xml_get_widget(xml, "calls_clist");
-#if !GTK2
-    gtk_clist_column_titles_passive(GTK_CLIST(clist_));
-    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_FROM);
-    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_TO);
-    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_COUNT);
-    gtk_clist_set_compare_func(GTK_CLIST(clist_), callswin_clist_compare);
-    ui_clist_set_sort_type(GTK_CLIST(clist_), GTK_SORT_ASCENDING);
-#else
     store_ = gtk_list_store_new(NUM_COLS, COL_TYPES);
     /* default alphabetic sort is adequate for COL_FROM, COL_TO */
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_LINE,
@@ -214,16 +188,13 @@ callswin_t::callswin_t()
     gtk_tree_view_set_reorderable(GTK_TREE_VIEW(clist_), TRUE);
     gtk_tree_view_set_enable_search(GTK_TREE_VIEW(clist_), TRUE);
     gtk_tree_view_set_search_column(GTK_TREE_VIEW(clist_), COL_FROM);
-#endif
 
     ui_register_windows_menu(ui_get_dummy_menu(xml, "calls_windows_dummy"));
 }
 
 callswin_t::~callswin_t()
 {
-#if GTK2
     g_object_unref(G_OBJECT(store_));
-#endif
     functions_->remove_all();
     delete functions_;
 }
@@ -249,11 +220,7 @@ callswin_t::populate()
 void
 callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 {
-#if GTK2
     GtkTreeIter titer;
-#else
-    int row;
-#endif
     const cov_location_t *loc;
     callswin_call_t *call;
     const char *text[NUM_COLS];
@@ -283,10 +250,6 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 
 	call = new callswin_call_t(from_fn, itr);
 
-#if !GTK2
-	row = gtk_clist_append(GTK_CLIST(clist_), (char **)text);
-	gtk_clist_set_row_data(GTK_CLIST(clist_), row, call);
-#else
 	gtk_list_store_append(store_, &titer);
 	gtk_list_store_set(store_,  &titer,
 	    COL_FROM, text[COL_FROM],
@@ -295,7 +258,6 @@ callswin_t::update_for_func(cov_function_t *from_fn, cov_function_t *to_fn)
 	    COL_COUNT, text[COL_COUNT],
 	    COL_CLOSURE, call,
 	    -1);
-#endif
     }
     delete itr;
 }
@@ -328,12 +290,7 @@ callswin_t::update()
     gtk_widget_set_sensitive(from_function_view_, (from_fn != 0));
     gtk_widget_set_sensitive(to_function_view_, (to_fn != 0));
 
-#if !GTK2
-    gtk_clist_freeze(GTK_CLIST(clist_));
-    gtk_clist_clear(GTK_CLIST(clist_));
-#else
     gtk_list_store_clear(store_);
-#endif
 
     if (from_fn != 0)
     {
@@ -345,11 +302,6 @@ callswin_t::update()
 	for (list_iterator_t<cov_function_t> iter = functions_->first() ; *iter ; ++iter)
 	    update_for_func(*iter, to_fn);
     }
-
-#if !GTK2
-    gtk_clist_columns_autosize(GTK_CLIST(clist_));
-    gtk_clist_thaw(GTK_CLIST(clist_));
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

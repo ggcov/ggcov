@@ -39,12 +39,7 @@ public:
 private:
     void populate_function_combo(ui_combo_t *combo);
     void populate();
-#if !GTK2
-    static void init_clist(GtkCList *clist,
-			   int (*sortfn)(GtkCList *, const void*, const void*));
-#else
     static void init_tree_view(GtkTreeView *tv);
-#endif
     static void update_clist(GtkWidget *clist, list_t<cov_callarc_t> &arcs, gboolean isin);
     static void on_callgraph_show(GtkWidget *w, gpointer data);
     void update();
@@ -64,10 +59,8 @@ private:
 
     GtkWidget *ancestors_clist_;
     GtkWidget *descendants_clist_;
-#if GTK2
     GtkListStore *ancestors_store_;
     GtkListStore *descendants_store_;
-#endif
 
     GtkWidget *hpaned_;
 };

@@ -50,9 +50,7 @@ private:
     GtkWidget *branches_check_;
     GtkWidget *percent_check_;
     GtkWidget *clist_;
-#if GTK2
     GtkListStore *store_;
-#endif
     gboolean populating_;
 };
 

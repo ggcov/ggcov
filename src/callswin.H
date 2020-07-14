@@ -60,9 +60,7 @@ private:
     gboolean populating_;
 
     GtkWidget *clist_;
-#if GTK2
     GtkListStore *store_;
-#endif
     list_t<cov_function_t> *functions_;
 };
 

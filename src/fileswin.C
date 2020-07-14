@@ -36,9 +36,6 @@
 #define COL_FUNCTIONS   3
 #define COL_CALLS       4
 #define COL_BRANCHES    5
-#if !GTK2
-#define NUM_COLS        6
-#else
 #define COL_CLOSURE     6
 #define COL_FG_GDK      7
 #define COL_ICON        8
@@ -47,7 +44,6 @@
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_POINTER, GDK_TYPE_COLOR, \
     G_TYPE_STRING
-#endif
 
 static logging::logger_t &_log = logging::find_logger("fileswin");
 
@@ -97,16 +93,6 @@ fileswin_compare(file_rec_t *fr1, file_rec_t *fr2, int column)
     }
 }
 
-#if !GTK2
-static int
-fileswin_clist_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
-{
-    return fileswin_compare(
-	(file_rec_t *)((GtkCListRow *)ptr1)->data,
-	(file_rec_t *)((GtkCListRow *)ptr2)->data,
-	clist->sort_column);
-}
-#else
 static int
 fileswin_tree_iter_compare(
     GtkTreeModel *tm,
@@ -121,7 +107,6 @@ fileswin_tree_iter_compare(
     gtk_tree_model_get(tm, iter2, COL_CLOSURE, &fr2, -1);
     return fileswin_compare(fr1, fr2, GPOINTER_TO_INT(data));
 }
-#endif
 
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -129,10 +114,8 @@ fileswin_tree_iter_compare(
 fileswin_t::fileswin_t()
 {
     GladeXML *xml;
-#if GTK2
     GtkTreeViewColumn *col;
     GtkCellRenderer *rend;
-#endif
 
     /* load the interface & connect signals */
     xml = ui_load_tree("files");
@@ -150,30 +133,6 @@ fileswin_t::fileswin_t()
     expand_all_btn_ = glade_xml_get_widget(xml, "files_expand_all");
 
     ctree_ = glade_xml_get_widget(xml, "files_ctree");
-#if !GTK2
-    gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_BLOCKS,
-				       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_LINES,
-				       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_FUNCTIONS,
-				       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_CALLS,
-				       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_BRANCHES,
-				       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(ctree_), COL_FILE,
-				       GTK_JUSTIFY_LEFT);
-    gtk_clist_set_compare_func(GTK_CLIST(ctree_), fileswin_clist_compare);
-
-    ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_BLOCKS);
-    ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_LINES);
-    ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_FUNCTIONS);
-    ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_CALLS);
-    ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_BRANCHES);
-    ui_clist_init_column_arrow(GTK_CLIST(ctree_), COL_FILE);
-    ui_clist_set_sort_column(GTK_CLIST(ctree_), COL_BLOCKS);
-    ui_clist_set_sort_type(GTK_CLIST(ctree_), GTK_SORT_DESCENDING);
-#else
     store_ = gtk_tree_store_new(NUM_COLS, COL_TYPES);
     /* default alphabetic sort is adequate for COL_FILE */
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_BLOCKS,
@@ -242,16 +201,13 @@ fileswin_t::fileswin_t()
     gtk_tree_view_set_reorderable(GTK_TREE_VIEW(ctree_), TRUE);
     gtk_tree_view_set_enable_search(GTK_TREE_VIEW(ctree_), TRUE);
     gtk_tree_view_set_search_column(GTK_TREE_VIEW(ctree_), COL_FILE);
-#endif
 
     ui_register_windows_menu(ui_get_dummy_menu(xml, "files_windows_dummy"));
 }
 
 fileswin_t::~fileswin_t()
 {
-#if GTK2
     g_object_unref(G_OBJECT(store_));
-#endif
     delete root_;
 }
 
@@ -299,9 +255,7 @@ void
 fileswin_t::add_node(
     file_rec_t *fr,
     file_rec_t *parent,
-#if GTK2
     GtkTreeIter *parent_iter,
-#endif
     gboolean percent_flag,
     gboolean tree_flag)
 {
@@ -343,26 +297,6 @@ fileswin_t::add_node(
 
 	color = foregrounds_by_status[fr->get_scope()->status()];
 
-#if !GTK2
-	GtkCTreeNode *node = gtk_ctree_insert_node(
-		GTK_CTREE(ctree_),
-		(parent == 0 || !tree_flag ? 0 : (GtkCTreeNode *)parent->get_client_data()),
-		(GtkCTreeNode *)0,          /* sibling */
-		text,
-		4,                  /* spacing */
-		(GdkPixmap *)0,     /* pixmap_closed */
-		(GdkBitmap *)0,     /* mask_closed */
-		(GdkPixmap *)0,     /* pixmap_opened */
-		(GdkBitmap *)0,     /* mask_opened */
-		is_leaf,                    /* is_leaf */
-		TRUE);                      /* expanded*/
-	fr->set_client_data(node);
-	gtk_ctree_node_set_row_data(GTK_CTREE(ctree_), node, fr);
-	if (color != 0)
-	    gtk_ctree_node_set_foreground(GTK_CTREE(ctree_), node, color);
-	for (list_iterator_t<file_rec_t> friter = fr->first_child() ; *friter ; ++friter)
-	    add_node((*friter), fr, percent_flag, tree_flag);
-#else
 	GtkTreeIter iter;
 	gtk_tree_store_append(store_, &iter,
 	    (parent == 0 || !tree_flag ? 0 : parent_iter));
@@ -379,7 +313,6 @@ fileswin_t::add_node(
 	    -1);
 	for (list_iterator_t<file_rec_t> friter = fr->first_child() ; *friter ; ++friter)
 	    add_node((*friter), fr, &iter, percent_flag, tree_flag);
-#endif
     }
 }
 
@@ -395,25 +328,10 @@ fileswin_t::update()
     percent_flag = GTK_CHECK_MENU_ITEM(percent_check_)->active;
     tree_flag = GTK_CHECK_MENU_ITEM(tree_check_)->active;
 
-#if !GTK2
-    gtk_clist_freeze(GTK_CLIST(ctree_));
-    gtk_clist_clear(GTK_CLIST(ctree_));
-
-    gtk_ctree_set_line_style(GTK_CTREE(ctree_),
-	    tree_flag ? GTK_CTREE_LINES_SOLID : GTK_CTREE_LINES_NONE);
-#else
     gtk_tree_store_clear(store_);
-#endif
 
-#if !GTK2
-    add_node(root_, 0, percent_flag, tree_flag);
-    gtk_clist_columns_autosize(GTK_CLIST(ctree_));
-    gtk_clist_sort(GTK_CLIST(ctree_));
-    gtk_clist_thaw(GTK_CLIST(ctree_));
-#else
     add_node(root_, 0, 0, percent_flag, tree_flag);
     gtk_tree_view_expand_all(GTK_TREE_VIEW(ctree_));
-#endif
     grey_items();
 }
 
@@ -522,22 +440,13 @@ fileswin_t::on_tree_check_activate()
 GLADE_CALLBACK void
 fileswin_t::on_collapse_all_activate()
 {
-#if !GTK2
-    gtk_ctree_collapse_recursive(GTK_CTREE(ctree_), root_->node);
-    gtk_ctree_expand(GTK_CTREE(ctree_), root_->node);
-#else
     gtk_tree_view_collapse_all(GTK_TREE_VIEW(ctree_));
-#endif
 }
 
 GLADE_CALLBACK void
 fileswin_t::on_expand_all_activate()
 {
-#if !GTK2
-    gtk_ctree_expand_recursive(GTK_CTREE(ctree_), (GtkCTreeNode *)root_->get_client_data());
-#else
     gtk_tree_view_expand_all(GTK_TREE_VIEW(ctree_));
-#endif
 }
 
 GLADE_CALLBACK gboolean

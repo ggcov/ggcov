@@ -51,11 +51,7 @@
 static void gnb_stacked_bar_class_init(GnbStackedBarClass *klass);
 static void gnb_stacked_bar_init(GnbStackedBar *sbar);
 static void gnb_stacked_bar_paint(GnbStackedBar *sbar);
-#if GTK2
 static void gnb_stacked_bar_finalize(GObject *object);
-#else
-static void gnb_stacked_bar_finalize(GtkObject *object);
-#endif
 static void gnb_stacked_bar_realize(GtkWidget *widget);
 static gint gnb_stacked_bar_expose(GtkWidget *widget, GdkEventExpose *event);
 static void gnb_stacked_bar_size_allocate(GtkWidget *, GtkAllocation *);
@@ -92,11 +88,7 @@ gnb_stacked_bar_get_type(void)
 static void
 gnb_stacked_bar_class_init(GnbStackedBarClass *klass)
 {
-#if GTK2
     GObjectClass *object_class = (GObjectClass *)klass;
-#else
-    GtkObjectClass *object_class = (GtkObjectClass *)klass;
-#endif
     GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
     parent_class = (GtkWidgetClass *)gtk_type_class(GTK_TYPE_WIDGET);
@@ -154,13 +146,7 @@ gnb_stacked_bar_realize(GtkWidget *widget)
 
 
 static void
-gnb_stacked_bar_finalize(
-#if GTK2
-    GObject *object
-#else
-    GtkObject *object
-#endif
-    )
+gnb_stacked_bar_finalize(GObject *object)
 {
     GnbStackedBar *sbar;
     guint i;
@@ -281,13 +267,8 @@ gnb_stacked_bar_paint(GnbStackedBar *sbar)
     widget = GTK_WIDGET(sbar);
 
     /* The style [xy]thickness need to be halved for SHADOW_IN */
-#if GTK2
     xthick = widget->style->xthickness/2;
     ythick = widget->style->ythickness/2;
-#else
-    xthick = widget->style->klass->xthickness/2;
-    ythick = widget->style->klass->ythickness/2;
-#endif
     space = widget->allocation.width - 2 * xthick;
 
     total = 0;

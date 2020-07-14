@@ -31,17 +31,12 @@
 #define COL_CALLS       2
 #define COL_BRANCHES    3
 #define COL_FUNCTION    4
-#if !GTK2
-#define COL_CLOSURE     0
-#define NUM_COLS        5
-#else
 #define COL_CLOSURE     5
 #define COL_FG_GDK      6
 #define NUM_COLS        7
 #define COL_TYPES \
     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, \
     G_TYPE_POINTER, GDK_TYPE_COLOR
-#endif
 
 static logging::logger_t &_log = logging::find_logger("funcswin");
 
@@ -102,16 +97,6 @@ functionswin_compare(
     return ret;
 }
 
-#if !GTK2
-static int
-functionswin_clist_compare(GtkCList *clist, const void *ptr1, const void *ptr2)
-{
-    return functionswin_compare(
-	(cov_function_scope_t *)((GtkCListRow *)ptr1)->data,
-	(cov_function_scope_t *)((GtkCListRow *)ptr2)->data,
-	clist->sort_column);
-}
-#else
 static int
 functionswin_tree_iter_compare(
     GtkTreeModel *tm,
@@ -126,17 +111,14 @@ functionswin_tree_iter_compare(
     gtk_tree_model_get(tm, iter2, COL_CLOSURE, &fs2, -1);
     return functionswin_compare(fs1, fs2, GPOINTER_TO_INT(data));
 }
-#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 functionswin_t::functionswin_t()
 {
     GladeXML *xml;
-#if GTK2
     GtkTreeViewColumn *col;
     GtkCellRenderer *rend;
-#endif
 
     /* load the interface & connect signals */
     xml = ui_load_tree("functions");
@@ -149,27 +131,6 @@ functionswin_t::functionswin_t()
     branches_check_ = glade_xml_get_widget(xml, "functions_branches_check");
     percent_check_ = glade_xml_get_widget(xml, "functions_percent_check");
     clist_ = glade_xml_get_widget(xml, "functions_clist");
-#if !GTK2
-    gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_BLOCKS,
-				       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_LINES,
-				       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_CALLS,
-				       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_BRANCHES,
-				       GTK_JUSTIFY_RIGHT);
-    gtk_clist_set_column_justification(GTK_CLIST(clist_), COL_FUNCTION,
-				       GTK_JUSTIFY_LEFT);
-    gtk_clist_set_compare_func(GTK_CLIST(clist_), functionswin_clist_compare);
-
-    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_BLOCKS);
-    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_LINES);
-    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_CALLS);
-    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_BRANCHES);
-    ui_clist_init_column_arrow(GTK_CLIST(clist_), COL_FUNCTION);
-    ui_clist_set_sort_column(GTK_CLIST(clist_), COL_BLOCKS);
-    ui_clist_set_sort_type(GTK_CLIST(clist_), GTK_SORT_DESCENDING);
-#else
     store_ = gtk_list_store_new(NUM_COLS, COL_TYPES);
     /* default alphabetic sort is adequate for COL_FUNCTION */
     gtk_tree_sortable_set_sort_func((GtkTreeSortable *)store_, COL_BLOCKS,
@@ -219,16 +180,13 @@ functionswin_t::functionswin_t()
     gtk_tree_view_set_reorderable(GTK_TREE_VIEW(clist_), TRUE);
     gtk_tree_view_set_enable_search(GTK_TREE_VIEW(clist_), TRUE);
     gtk_tree_view_set_search_column(GTK_TREE_VIEW(clist_), COL_FUNCTION);
-#endif
 
     ui_register_windows_menu(ui_get_dummy_menu(xml, "functions_windows_dummy"));
 }
 
 functionswin_t::~functionswin_t()
 {
-#if GTK2
     g_object_unref(G_OBJECT(store_));
-#endif
     functions_.delete_all();
 }
 
@@ -288,21 +246,12 @@ functionswin_t::update()
 
     percent_flag = GTK_CHECK_MENU_ITEM(percent_check_)->active;
 
-#if !GTK2
-    gtk_clist_freeze(GTK_CLIST(clist_));
-    gtk_clist_clear(GTK_CLIST(clist_));
-#else
     gtk_list_store_clear(store_);
-#endif
 
     for (list_iterator_t<cov_function_scope_t> iter = functions_.first() ; *iter ; ++iter)
     {
 	const cov_stats_t *stats = (*iter)->get_stats();
-#if !GTK2
-	int row;
-#else
 	GtkTreeIter titer;
-#endif
 
 	format_stat(blocks_pc_buf, sizeof(blocks_pc_buf), percent_flag,
 		       stats->blocks_executed(), stats->blocks_total());
@@ -324,11 +273,6 @@ functionswin_t::update()
 
 	color = foregrounds_by_status[(*iter)->function()->status()];
 
-#if !GTK2
-	row = gtk_clist_prepend(GTK_CLIST(clist_), text);
-	gtk_clist_set_row_data(GTK_CLIST(clist_), row, (*iter));
-	gtk_clist_set_foreground(GTK_CLIST(clist_), row, color);
-#else
 	gtk_list_store_append(store_, &titer);
 	gtk_list_store_set(store_,  &titer,
 	    COL_FUNCTION, text[COL_FUNCTION],
@@ -339,14 +283,7 @@ functionswin_t::update()
 	    COL_CLOSURE, (*iter),
 	    COL_FG_GDK, color,
 	    -1);
-#endif
     }
-
-#if !GTK2
-    gtk_clist_columns_autosize(GTK_CLIST(clist_));
-    gtk_clist_sort(GTK_CLIST(clist_));
-    gtk_clist_thaw(GTK_CLIST(clist_));
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/

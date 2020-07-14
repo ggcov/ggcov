@@ -29,13 +29,8 @@ GladeXML *ui_load_tree(const char *root);
 void ui_prepend_glade_path(const char *dir);
 GtkWidget *ui_get_dummy_menu(GladeXML *xml, const char *name);
 
-#if GTK2
 #define ui_combo_t  GtkComboBox
 #define UI_COMBO(w) GTK_COMBO_BOX(w)
-#else
-#define ui_combo_t  GtkCombo
-#define UI_COMBO(w) GTK_COMBO(w)
-#endif
 
 /* combobox add/get current item using data */
 ui_combo_t *init(ui_combo_t *, const char *sep = 0);
@@ -76,12 +71,6 @@ GtkWidget *ui_menu_add_simple_item(GtkWidget *menu, const char *label,
 	       void (*callback)(GtkWidget*, gpointer), gpointer calldata);
 GtkWidget *ui_menu_add_seperator(GtkWidget *menu);
 
-#if !GTK2
-/* Functions for making the column labels in a clist have sort arrows */
-void ui_clist_init_column_arrow(GtkCList *, int col);
-void ui_clist_set_sort_column(GtkCList *, int col);
-void ui_clist_set_sort_type(GtkCList *, GtkSortType ty);
-#endif
 
 /*
  * Functions to abstract some of the differences between
@@ -110,11 +99,7 @@ int ui_text_font_width(GtkWidget *w);
  */
 void ui_text_adjust_text_size(GtkWidget *w, int dirn);
 
-#if GTK2
 typedef GtkTextTag ui_text_tag;
-#else
-typedef struct ui_text_tag_s ui_text_tag;
-#endif
 /* create a colour coding tag */
 ui_text_tag *ui_text_create_tag(GtkWidget *w, const char *name, GdkColor *fg);
 

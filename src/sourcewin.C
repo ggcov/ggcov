@@ -46,7 +46,6 @@ const char *sourcewin_t::column_names_[sourcewin_t::NUM_COLS] = {
 };
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-#if GTK2
 
 void
 sourcewin_t::on_vadjustment_value_changed(
@@ -394,7 +393,6 @@ sourcewin_t::wait_for_text_validation()
     }
 }
 
-#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 void
@@ -418,7 +416,6 @@ sourcewin_t::setup_text()
     text_tags_[cov::SUPPRESSED] =
 	ui_text_create_tag(text_, "suppressed", &prefs.suppressed_foreground);
 
-#if GTK2
     /*
      * Setup the left child to show function flows.
      */
@@ -442,7 +439,6 @@ sourcewin_t::setup_text()
 			   "mark-set",
 			   G_CALLBACK(on_buffer_mark_set),
 			   (gpointer)this);
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -487,7 +483,6 @@ sourcewin_t::sourcewin_t()
     right_pad_label_ = glade_xml_get_widget(xml, "source_right_pad_label");
     ui_register_windows_menu(ui_get_dummy_menu(xml, "source_windows_dummy"));
 
-#if GTK2
     /*
      * The View->Text Size->Increase menu item has an accelerator
      * which is nominally "Ctrl++", unfortunately what GTK sees on
@@ -502,7 +497,6 @@ sourcewin_t::sourcewin_t()
 			       GTK_ACCEL_GROUP(groups->data),
 			       GDK_equal, GDK_CONTROL_MASK,
 			       (GtkAccelFlags)0);
-#endif
 
     xml = ui_load_tree("source_saveas");
     saveas_dialog_ = glade_xml_get_widget(xml, "source_saveas");
@@ -513,9 +507,7 @@ sourcewin_t::sourcewin_t()
 
 sourcewin_t::~sourcewin_t()
 {
-#if GTK2
 //     delete_flows();
-#endif
     instances_.remove(this);
 }
 
@@ -784,15 +776,11 @@ sourcewin_t::update()
     ui_text_end(text_);
     /* scroll back to the line we were at before futzing with the text */
     ui_text_vscroll_restore(text_, scrollval);
-#if GTK2
     wait_for_text_validation();
-#endif
 
-#if GTK2
     delete_flows();
     update_flow_window();
     update_flows();
-#endif
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -878,7 +866,6 @@ sourcewin_t::grey_items()
     window_t::grey_items();
 }
 
-#if GTK2
 void
 sourcewin_t::on_buffer_mark_set(GtkTextBuffer *buffer, GtkTextIter *iter,
 				GtkTextMark *mark, gpointer closure)
@@ -889,7 +876,6 @@ sourcewin_t::on_buffer_mark_set(GtkTextBuffer *buffer, GtkTextIter *iter,
     if (nm && (!strcmp(nm, "insert") || !strcmp(nm, "selection_bound")))
 	sw->grey_items();
 }
-#endif
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
@@ -901,9 +887,7 @@ sourcewin_t::set_filename(const char *filename, const char *display_fname)
 
     if (shown_)
     {
-#if GTK2
 	delete_flows();
-#endif
 	populate_functions();
 	update();
     }
@@ -1220,7 +1204,6 @@ sourcewin_t::on_save_as_activate()
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
-#if GTK2
 
 void
 sourcewin_t::adjust_text_size(int dirn)
@@ -1253,6 +1236,5 @@ sourcewin_t::on_text_size_decrease_activate()
     adjust_text_size(-1);
 }
 
-#endif
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 /*END*/

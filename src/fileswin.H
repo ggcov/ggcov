@@ -35,11 +35,7 @@ private:
     void populate();
     void update();
     void grey_items();
-#if !GTK2
-    void add_node(file_rec_t*, file_rec_t*, gboolean, gboolean);
-#else
     void add_node(file_rec_t*, file_rec_t*, GtkTreeIter *parent_iter, gboolean, gboolean);
-#endif
     void load_state();
     void save_state();
     void apply_toggles();
@@ -66,9 +62,7 @@ private:
     GtkWidget *collapse_all_btn_;
     GtkWidget *expand_all_btn_;
     GtkWidget *ctree_;
-#if GTK2
     GtkTreeStore *store_;
-#endif
     gboolean populating_;
 };
 

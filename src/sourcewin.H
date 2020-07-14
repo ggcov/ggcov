@@ -55,7 +55,6 @@ private:
 	COL_SOURCE,
 	NUM_COLS
     };
-#if GTK2
     struct flow_t
     {
 	GtkWidget *canvas_;
@@ -64,7 +63,6 @@ private:
 	cov_function_t *function_;
 	unsigned int shown_;        /* generation number for showing flows */
     };
-#endif
 
     static sourcewin_t *instance();
     void setup_text();
@@ -74,7 +72,6 @@ private:
     void update();
     void update_title_buttons();
     void grey_items();
-#if GTK2
     void delete_flows();
     void update_flow_window();
     gboolean get_visible_lines(unsigned long*, unsigned long*);
@@ -83,17 +80,14 @@ private:
     gboolean do_update_flows();
     flow_t *create_flow(cov_function_t *, int y, int h);
     void wait_for_text_validation();
-#endif
     cov_function_t *selected_function() const;
     gboolean save_with_annotations(const char *filename);
     static int delayed_function_activate(gpointer userdata);
     static void on_source_filename_activate(GtkWidget *w, gpointer userdata);
     static void on_source_function_activate(GtkWidget *w, gpointer userdata);
-#if GTK2
     static void on_vadjustment_value_changed(GtkAdjustment *, gpointer);
     void adjust_text_size(int dirn);
     static void on_buffer_mark_set(GtkTextBuffer *, GtkTextIter *, GtkTextMark *, gpointer);
-#endif
     void apply_toggles();
     void load_state();
     void save_state();
@@ -144,13 +138,11 @@ private:
 
     GtkWidget *saveas_dialog_;
 
-#if GTK2
     list_t<flow_t> flows_;
     unsigned int flow_shown_;
     gboolean text_initialised_;
     unsigned int flow_width_;
     gboolean flow_width_dirty_;
-#endif
     unsigned int retries_remaining_;
 };
 
