@@ -111,7 +111,8 @@ ggcov_SOURCES=	$(gui_SOURCES) $(LIBCOV_STATIC_SOURCES) glade_callbacks.c
 AM_CPPFLAGS=	$(BASEINCLUDES) -DPKGDATADIR="\"$(pkgdatadir)\"" \
 		-DPREFIX="\"$(prefix)\"" -DDATADIR="\"$(datadir)\"" \
 		-DLIBDIR="\"$(libdir)\"" -DSYSCONFDIR="\"$(sysconfdir)\"" \
-		-DUI_DEBUG=$(UI_DEBUG)
+		-DUI_DEBUG=$(UI_DEBUG) -DGTK_DISABLE_SINGLE_INCLUDES \
+                -DGTK_DISABLE_DEPRECATED
 ggcov_LDADD=	libcov.a libcommon.a $(GGCOV_GUI_LIBS) $(BFD_LIBS)
 CLI_LIBS=	libcov.a libcommon.a $(GGCOV_CLI_LIBS) $(BFD_LIBS)
 
