@@ -312,7 +312,7 @@ ui_get_dummy_menu(GladeXML *xml, const char *name)
 
     dummy = glade_xml_get_widget(xml, name);
 
-    menu = dummy->parent;
+    menu = gtk_widget_get_parent(dummy);
 
     tearoff = gtk_tearoff_menu_item_new();
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), tearoff);
@@ -328,7 +328,7 @@ _ui_virtual_parent(GtkWidget *w)
 {
     if (GTK_IS_MENU(w))
 	return gtk_menu_get_attach_widget(GTK_MENU(w));
-    return GTK_WIDGET(w)->parent;
+    return gtk_widget_get_parent(GTK_WIDGET(w));
 }
 
 GtkWidget *

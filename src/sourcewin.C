@@ -804,7 +804,7 @@ sourcewin_t::update_title_buttons()
      * Set the left and right padding labels to just the right values
      * to align the title buttons with the main text window body.
      */
-    scrollw = text_->parent;
+    scrollw = gtk_widget_get_parent(text_);
     lpad = rpad = GTK_CONTAINER(scrollw)->border_width;
     sbwidth = GTK_SCROLLED_WINDOW(scrollw)->vscrollbar->allocation.width +
 	      GTK_SCROLLED_WINDOW_GET_CLASS(scrollw)->scrollbar_spacing;
