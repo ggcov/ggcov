@@ -367,10 +367,12 @@ ui_window_set_default_icon(GtkWidget *w)
     _log.debug2("ui_window_set_default_icon(w=0x%08lx)\n", (unsigned long)w);
 
     if (ui_default_icon.pm == 0)
-	ui_default_icon.pm = gdk_pixmap_create_from_xpm_d(w->window,
+	ui_default_icon.pm = gdk_pixmap_create_from_xpm_d(
+                                gtk_widget_get_window(w),
 				&ui_default_icon.mask, 0,
 				(char **)ui_default_icon.xpm);
-    gdk_window_set_icon(w->window, 0,
+    gdk_window_set_icon(
+        gtk_widget_get_window(w), 0,
 	ui_default_icon.pm, ui_default_icon.mask);
 }
 
@@ -402,8 +404,9 @@ ui_on_windows_menu_activate(GtkWidget *w, gpointer userdata)
 
     _log.debug("ui_on_windows_menu_activate: %s\n", GTK_WINDOW(win)->title);
 
-    gdk_window_show(win->window);
-    gdk_window_raise(win->window);
+    GdkWindow *window = gtk_widget_get_window(win);
+    gdk_window_show(window);
+    gdk_window_raise(window);
 }
 
 static void

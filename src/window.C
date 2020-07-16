@@ -304,7 +304,7 @@ window_t::show()
     }
     gtk_widget_show(window_);
     if (shown_)
-	gdk_window_raise(window_->window);
+	gdk_window_raise(gtk_widget_get_window(window_));
     shown_ = true;
 
     prefs.post_load(window_);
