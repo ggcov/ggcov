@@ -102,8 +102,8 @@ canvas_scenegen_t::handle_object(GnomeCanvasItem *item)
 	    gtk_widget_set(GTK_WIDGET(canvas),
 			   "has-tooltip", TRUE,
 			   (char *)0);
-	    gtk_signal_connect(GTK_OBJECT(canvas), "query-tooltip",
-		    GTK_SIGNAL_FUNC(on_query_tooltip), NULL);
+	    g_signal_connect(G_OBJECT(canvas), "query-tooltip",
+		    G_CALLBACK(on_query_tooltip), NULL);
 	    registered_tooltip_ = TRUE;
 	}
 	gtk_object_set_data(GTK_OBJECT(item), BLOCK_KEY, (gpointer)b);

@@ -109,8 +109,8 @@ callgraphwin_t::callgraphwin_t()
 
 
     hpaned_ = glade_xml_get_widget(xml, "callgraph_hpaned");
-    gtk_signal_connect(GTK_OBJECT(get_window()), "show",
-	GTK_SIGNAL_FUNC(on_callgraph_show), 0);
+    g_signal_connect(G_OBJECT(get_window()), "show",
+                     G_CALLBACK(on_callgraph_show), 0);
 
     callnode_ = cov_callgraph.default_node();
 }

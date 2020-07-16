@@ -189,12 +189,12 @@ dnd_setup(GtkWidget *w)
 		      GDK_ACTION_COPY);
 
 #if DEBUG_DND_TARGETS
-    gtk_signal_connect(GTK_OBJECT(w), "drag_motion",
-	    GTK_SIGNAL_FUNC(dnd_drag_motion), 0);
+    g_signal_connect(G_OBJECT(w), "drag_motion",
+	    G_CALLBACK(dnd_drag_motion), 0);
 #endif /* DEBUG_DND_TARGETS */
 
-    gtk_signal_connect(GTK_OBJECT(w), "drag-data-received",
-	    GTK_SIGNAL_FUNC(dnd_drag_data_received), 0);
+    g_signal_connect(G_OBJECT(w), "drag-data-received",
+	    G_CALLBACK(dnd_drag_data_received), 0);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
@@ -204,8 +204,8 @@ window_t::attach(GtkWidget *w)
 {
     gtk_object_set_data(GTK_OBJECT(w), window_key, this);
 
-    gtk_signal_connect(GTK_OBJECT(w), "configure-event",
-		       GTK_SIGNAL_FUNC(on_configure_event), this);
+    g_signal_connect(G_OBJECT(w), "configure-event",
+		     G_CALLBACK(on_configure_event), this);
 }
 
 void

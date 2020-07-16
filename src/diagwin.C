@@ -138,8 +138,8 @@ diagwin_t::populate()
 				   bounds.x2, bounds.y2);
 
     if (!GTK_WIDGET_REALIZED(canvas_))
-	gtk_signal_connect(GTK_OBJECT(canvas_), "realize",
-			   GTK_SIGNAL_FUNC(diagwin_realize_cb), 0);
+	g_signal_connect(G_OBJECT(canvas_), "realize",
+			 G_CALLBACK(diagwin_realize_cb), 0);
     else
 	zoom_all();
 #endif

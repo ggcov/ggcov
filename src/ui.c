@@ -358,8 +358,8 @@ ui_window_set_default_icon(GtkWidget *w)
 	_log.debug2("ui_window_set_default_icon(w=0x%08lx): "
 		    "delaying until realized\n", (unsigned long)w);
 	/* delay self until realized */
-	gtk_signal_connect(GTK_OBJECT(w), "realize",
-	    GTK_SIGNAL_FUNC(ui_window_set_default_icon), 0);
+	g_signal_connect(G_OBJECT(w), "realize",
+	    G_CALLBACK(ui_window_set_default_icon), 0);
 	/* don't bother disconnecting the signal, it will only ever fire once */
 	return;
     }
@@ -471,8 +471,8 @@ void
 ui_register_window(GtkWidget *w)
 {
     ui_windows = g_list_append(ui_windows, w);
-    gtk_signal_connect(GTK_OBJECT(w), "destroy",
-	GTK_SIGNAL_FUNC(ui_on_window_destroy), 0);
+    g_signal_connect(G_OBJECT(w), "destroy",
+	G_CALLBACK(ui_on_window_destroy), 0);
     ui_update_windows_menus();
 
     if (GTK_WINDOW(w)->type == GTK_WINDOW_TOPLEVEL &&
@@ -490,8 +490,8 @@ void
 ui_register_windows_menu(GtkWidget *menu)
 {
     ui_windows_menus = g_list_append(ui_windows_menus, menu);
-    gtk_signal_connect(GTK_OBJECT(menu), "destroy",
-	GTK_SIGNAL_FUNC(ui_on_windows_menu_destroy), 0);
+    g_signal_connect(G_OBJECT(menu), "destroy",
+	G_CALLBACK(ui_on_windows_menu_destroy), 0);
     ui_update_windows_menu(menu);
 }
 
@@ -579,9 +579,8 @@ ui_menu_add_simple_item(
 
     butt = gtk_menu_item_new_with_label(label);
     gtk_menu_append(GTK_MENU(menu), butt);
-    gtk_signal_connect(GTK_OBJECT(butt), "activate",
-		       GTK_SIGNAL_FUNC(callback),
-		       (gpointer)calldata);
+    g_signal_connect(G_OBJECT(butt), "activate",
+		     G_CALLBACK(callback), calldata);
     gtk_widget_show(butt);
 
     return butt;

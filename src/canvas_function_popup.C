@@ -42,10 +42,10 @@ canvas_function_popup_t::canvas_function_popup_t(
 		    100.0 * scope->get_stats()->blocks_fraction());
     delete scope;
 
-    gtk_signal_connect(GTK_OBJECT(item), "event",
-	GTK_SIGNAL_FUNC(on_item_event), this);
-    gtk_signal_connect(GTK_OBJECT(item), "destroy",
-	GTK_SIGNAL_FUNC(on_item_destroy), this);
+    g_signal_connect(G_OBJECT(item), "event",
+	G_CALLBACK(on_item_event), this);
+    g_signal_connect(G_OBJECT(item), "destroy",
+	G_CALLBACK(on_item_destroy), this);
     widgets_.refcount_++;
 }
 
@@ -235,10 +235,10 @@ canvas_function_popup_t::show(GdkEvent *event)
 	w->source_label_ = glade_xml_get_widget(xml, "canfn_source_label");
 	w->coverage_label_ = glade_xml_get_widget(xml, "canfn_coverage_label");
 
-	gtk_signal_connect(GTK_OBJECT(w->popup_), "leave_notify_event",
-	    GTK_SIGNAL_FUNC(on_leave_event), (gpointer)0);
-	gtk_signal_connect(GTK_OBJECT(w->background_), "button_press_event",
-	    GTK_SIGNAL_FUNC(on_button_press_event), (gpointer)0);
+	g_signal_connect(G_OBJECT(w->popup_), "leave_notify_event",
+	    G_CALLBACK(on_leave_event), (gpointer)0);
+	g_signal_connect(G_OBJECT(w->background_), "button_press_event",
+	    G_CALLBACK(on_button_press_event), (gpointer)0);
 
 	/* load the interface & connect signals */
 	xml = ui_load_tree("canvas_function_menu");
