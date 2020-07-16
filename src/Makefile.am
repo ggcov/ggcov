@@ -112,7 +112,7 @@ AM_CPPFLAGS=	$(BASEINCLUDES) -DPKGDATADIR="\"$(pkgdatadir)\"" \
 		-DPREFIX="\"$(prefix)\"" -DDATADIR="\"$(datadir)\"" \
 		-DLIBDIR="\"$(libdir)\"" -DSYSCONFDIR="\"$(sysconfdir)\"" \
 		-DUI_DEBUG=$(UI_DEBUG) -DGTK_DISABLE_SINGLE_INCLUDES \
-                -DGTK_DISABLE_DEPRECATED
+                -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE
 ggcov_LDADD=	libcov.a libcommon.a $(GGCOV_GUI_LIBS) $(BFD_LIBS)
 CLI_LIBS=	libcov.a libcommon.a $(GGCOV_CLI_LIBS) $(BFD_LIBS)
 

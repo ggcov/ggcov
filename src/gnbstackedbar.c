@@ -40,6 +40,7 @@
 #include <memory.h>
 #endif
 
+#undef GSEAL_ENABLE
 #include "uicommon.h"
 #include "gnbstackedbar.h"
 #include <gtk/gtkgc.h>
