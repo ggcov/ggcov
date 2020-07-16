@@ -325,7 +325,7 @@ sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
     double ppu = h / bounds.height();
     flow->width_ = (unsigned int)(bounds.width() * ppu + 0.5) + 2;
 
-    gtk_widget_set_usize(flow->canvas_, flow->width_, h);
+    gtk_widget_set_size_request(flow->canvas_, flow->width_, h);
     gnome_canvas_set_pixels_per_unit(GNOME_CANVAS(flow->canvas_), ppu);
     gnome_canvas_set_scroll_region(GNOME_CANVAS(flow->canvas_),
 				   bounds.x1, bounds.y1,
@@ -821,22 +821,22 @@ sourcewin_t::update_title_buttons()
 	break;
     }
 
-    gtk_widget_set_usize(left_pad_label_, lpad, /*height=whatever*/5);
-    gtk_widget_set_usize(right_pad_label_, rpad, /*height=whatever*/5);
+    gtk_widget_set_size_request(left_pad_label_, lpad, /*height=whatever*/5);
+    gtk_widget_set_size_request(right_pad_label_, rpad, /*height=whatever*/5);
 
     /*
      * Size each title button to match the size of each column in
      * the text window.  Note the Source column takes up all the slack.
      */
-    gtk_widget_set_usize(title_buttons_[COL_FLOW],
-			 flow_width_,
-			 /*height=whatever*/5);
+    gtk_widget_set_size_request(title_buttons_[COL_FLOW],
+                                flow_width_,
+                                /*height=whatever*/5);
     for (i = COL_LINE ; i < NUM_COLS ; i++)
     {
 	if (column_widths_[i] > 0)
-	    gtk_widget_set_usize(title_buttons_[i],
-				 column_widths_[i] * font_width_,
-				 /*height=whatever*/5);
+	    gtk_widget_set_size_request(title_buttons_[i],
+                                        column_widths_[i] * font_width_,
+                                        /*height=whatever*/5);
     }
 
     /*
