@@ -43,10 +43,10 @@ extern "C" {
 
 
 #define GNB_TYPE_STACKED_BAR            (gnb_stacked_bar_get_type ())
-#define GNB_STACKED_BAR(obj)            (GTK_CHECK_CAST ((obj), GNB_TYPE_STACKED_BAR, GnbStackedBar))
-#define GNB_STACKED_BAR_CLASS(klass)    (GTK_CHECK_CLASS_CAST ((klass), GNB_TYPE_STACKED_BAR, GnbStackedBarClass))
-#define GNB_IS_STACKED_BAR(obj)         (GTK_CHECK_TYPE ((obj), GNB_TYPE_STACKED_BAR))
-#define GNB_IS_STACKED_BAR_CLASS(klass) (GTK_CHECK_CLASS_TYPE ((klass), GNB_TYPE_STACKED_BAR))
+#define GNB_STACKED_BAR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GNB_TYPE_STACKED_BAR, GnbStackedBar))
+#define GNB_STACKED_BAR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), GNB_TYPE_STACKED_BAR, GnbStackedBarClass))
+#define GNB_IS_STACKED_BAR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GNB_TYPE_STACKED_BAR))
+#define GNB_IS_STACKED_BAR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), GNB_TYPE_STACKED_BAR))
 
 
 typedef struct _GnbStackedBar           GnbStackedBar;
@@ -80,7 +80,7 @@ struct _GnbStackedBarClass
 };
 
 
-GtkType    gnb_stacked_bar_get_type             (void);
+GType      gnb_stacked_bar_get_type             (void);
 GtkWidget* gnb_stacked_bar_new                  (void);
 
 

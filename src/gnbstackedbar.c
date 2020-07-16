@@ -60,26 +60,30 @@ static void gnb_stacked_bar_create_pixmap(GnbStackedBar *sbar);
 static GtkWidgetClass *parent_class = NULL;
 
 
-GtkType
+GType
 gnb_stacked_bar_get_type(void)
 {
-    static GtkType stacked_bar_type = 0;
+    static GType stacked_bar_type = 0;
 
     if (!stacked_bar_type)
     {
-	static const GtkTypeInfo stacked_bar_info =
+	static const GTypeInfo stacked_bar_info =
 	{
-	    (char *)"GnbStackedBar",
-	    sizeof (GnbStackedBar),
 	    sizeof (GnbStackedBarClass),
-	    (GtkClassInitFunc) gnb_stacked_bar_class_init,
-	    (GtkObjectInitFunc) gnb_stacked_bar_init,
-	    /* reserved_1 */ NULL,
-	    /* reserved_2 */ NULL,
-	    (GtkClassInitFunc) NULL
+            /*base_init*/NULL,
+            /*base_finalize*/NULL,
+	    (GClassInitFunc) gnb_stacked_bar_class_init,
+            /*class_finalize*/NULL,
+            (gconstpointer)NULL,
+	    sizeof (GnbStackedBar),
+            /*n_preallocs*/0,
+	    (GInstanceInitFunc) gnb_stacked_bar_init,
+            (const GTypeValueTable *)NULL
 	};
 
-	stacked_bar_type = gtk_type_unique(GTK_TYPE_WIDGET, &stacked_bar_info);
+	stacked_bar_type = g_type_register_static(
+            GTK_TYPE_WIDGET, "GnbStackedBar",
+            &stacked_bar_info, (GTypeFlags)0);
     }
 
     return stacked_bar_type;
@@ -91,7 +95,7 @@ gnb_stacked_bar_class_init(GnbStackedBarClass *klass)
     GObjectClass *object_class = (GObjectClass *)klass;
     GtkWidgetClass *widget_class = (GtkWidgetClass *)klass;
 
-    parent_class = (GtkWidgetClass *)gtk_type_class(GTK_TYPE_WIDGET);
+    parent_class = (GtkWidgetClass *)g_type_class_ref(GTK_TYPE_WIDGET);
 
     object_class->finalize = gnb_stacked_bar_finalize;
 
