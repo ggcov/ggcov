@@ -55,7 +55,7 @@ window_t::~window_t()
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
 
 static char *
-dnd_data_as_text(void *data, unsigned int length)
+dnd_data_as_text(const void *data, unsigned int length)
 {
     char *text;
 
@@ -73,7 +73,7 @@ extern gboolean ggcov_read_file(const char *filename);
  * into the global cov* data structures.
  */
 static void
-dnd_handle_uri_list(void *data, unsigned int length)
+dnd_handle_uri_list(const void *data, unsigned int length)
 {
     tok_t tok(dnd_data_as_text(data, length), "\n\r");
     int nfiles = 0;
@@ -122,21 +122,25 @@ dnd_drag_data_received(
 {
     if (_log.is_enabled(logging::DEBUG))
     {
-	string_var selection_str = gdk_atom_name(data->selection);
-	string_var target_str = gdk_atom_name(data->target);
-	string_var type_str = gdk_atom_name(data->type);
+	string_var selection_str = gdk_atom_name(gtk_selection_data_get_selection(data));
+	string_var target_str = gdk_atom_name(gtk_selection_data_get_target(data));
+	string_var type_str = gdk_atom_name(gtk_selection_data_get_data_type(data));
 	_log.debug("dnd_drag_data_received: info=%d, "
 		  "data={selection=%s target=%s type=%s "
 		  "data=0x%p length=%d format=%d}\n",
 		  info,
 		  selection_str.data(), target_str.data(), type_str.data(),
-		  data->data, data->length, data->format);
+		  gtk_selection_data_get_data(data),
+                  gtk_selection_data_get_length(data),
+                  gtk_selection_data_get_format(data));
     }
 
     switch (info)
     {
     case URI_LIST:
-	dnd_handle_uri_list(data->data, data->length);
+	dnd_handle_uri_list(
+          gtk_selection_data_get_data(data),
+          gtk_selection_data_get_length(data));
 	break;
     }
 }
