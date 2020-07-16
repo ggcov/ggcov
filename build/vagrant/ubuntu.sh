@@ -11,9 +11,12 @@ apt-get install -y \
     <% if @gcc_version %>gcc-<%= @gcc_version %><% else %>gcc<% end %> \
     <% if @gcc_version %>g++-<%= @gcc_version %><% else %>g++<% end %> \
     git autoconf automake libtool pkg-config \
-    libglade2-dev libgnomeui-dev libgconf2-dev libglib2.0-dev \
+    libglade2-dev libgconf2-dev libglib2.0-dev \
     libxml2-dev binutils-dev libgd-dev libdb-dev ruby-mustache \
     tasksel
+# We need either of these two packages for the GnomeCanvas widget
+apt-get install -y libgnomeui-dev
+apt-get install -y libgnomecanvas2-dev
 
 # Newer Ubuntu needs the libiberty-dev package installed to
 # build with BFD; it was split out from binutils some time ago

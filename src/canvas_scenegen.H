@@ -23,7 +23,11 @@
 #include "common.h"
 #include "uicommon.h"
 #include "scenegen.H"
+#if HAVE_LIBGNOMEUI
 #include <libgnomeui/libgnomeui.h>
+#elif HAVE_LIBGNOMECANVAS
+#include <libgnomecanvas/libgnomecanvas.h>
+#endif
 
 class canvas_scenegen_t : public scenegen_t
 {

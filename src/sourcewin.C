@@ -21,7 +21,7 @@
 #include "summarywin.H"
 #include "diagwin.H"
 #include "flow_diagram.H"
-#if HAVE_LIBGNOMEUI
+#if HAVE_GNOME_CANVAS
 #include "canvas_scenegen.H"
 #endif
 #include "cov.H"
@@ -144,14 +144,14 @@ sourcewin_t::update_flows_tramp(gpointer user_data)
 gboolean
 sourcewin_t::do_update_flows()
 {
-#if HAVE_LIBGNOMEUI
+#if HAVE_GNOME_CANVAS
     _log.debug("sourcewin_t::do_update_flows\n");
     GtkTextView *tv = GTK_TEXT_VIEW(text_);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(tv);
 
     if (!gtk_widget_get_realized(text_))
 	return G_SOURCE_REMOVE;	    // no worries, will get called on realize
-    if (!GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])->active)
+    if (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])))
 	return G_SOURCE_REMOVE;	    // nothing to do anyway
 
     cov_file_t *f;
@@ -237,7 +237,7 @@ sourcewin_t::do_update_flows()
     {
 	flow_t *flow = *fiter;
 	if (flow->shown_ < flow_shown_ &&
-	    GTK_WIDGET_VISIBLE(flow->canvas_))
+	    gtk_widget_get_visible(flow->canvas_))
 	{
 	    _log.debug("        %s\n", flow->function_->name());
 	    gtk_widget_hide(flow->canvas_);
@@ -252,7 +252,7 @@ sourcewin_t::do_update_flows()
 	for (list_iterator_t<flow_t> fiter = flows_.first() ; *fiter ; ++fiter)
 	{
 	    flow_t *flow = *fiter;
-	    if (GTK_WIDGET_VISIBLE(flow->canvas_) && flow->width_ > flow_width_)
+	    if (gtk_widget_get_visible(flow->canvas_) && flow->width_ > flow_width_)
 	    {
 		flow_width_ = flow->width_;
 		_log.debug("        %s -> %u\n",
@@ -286,7 +286,7 @@ set_diagram_colors(diagram_t *di)
 sourcewin_t::flow_t *
 sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
 {
-#if HAVE_LIBGNOMEUI
+#if HAVE_GNOME_CANVAS
     flow_t *flow = new flow_t;
     flow->function_ = fn;
     flow->bufy_ = y;
@@ -349,13 +349,13 @@ sourcewin_t::create_flow(cov_function_t *fn, int y, int h)
 void
 sourcewin_t::delete_flows()
 {
-#if HAVE_LIBGNOMEUI
+#if HAVE_GNOME_CANVAS
     flow_t *flow;
 
     while ((flow = flows_.remove_head()))
     {
 	gtk_widget_hide(flow->canvas_);
-	gtk_widget_unref(flow->canvas_);
+	g_object_unref(G_OBJECT(flow->canvas_));
 	delete flow;
     }
     flow_width_dirty_ = TRUE;

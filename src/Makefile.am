@@ -84,7 +84,7 @@ endif
 bin_PROGRAMS=	$(GUIPROG) tggcov ggcov-html $(WEBPROG)
 EXTRA_PROGRAMS= ggcov ggcov-webdb
 
-if LIBGNOMEUI
+if GNOME_CANVAS
 CANVAS_SOURCES=	canvas_scenegen.H canvas_scenegen.C \
 		canvas_function_popup.H canvas_function_popup.C
 endif

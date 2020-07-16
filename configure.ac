@@ -372,12 +372,16 @@ PKG_PROG_PKG_CONFIG
 #
 have_libglade=no
 have_libgnomeui=no
+have_libgnomecanvas=no
 have_gconf=no
 libpopt=
 if test x$gui = xyes ; then
     # gui enabled
     PKG_CHECK_MODULES(LIBGLADE, libglade-2.0 >= 2.0.0, have_libglade=yes, have_libglade=no)
     PKG_CHECK_MODULES(LIBGNOMEUI, libgnomeui-2.0 >= 2.0.0, have_libgnomeui=yes, have_libgnomeui=no)
+    if test x$have_libgnomeui = xno ; then
+        PKG_CHECK_MODULES(LIBGNOMECANVAS, libgnomecanvas-2.0 >= 2.0.0, have_libgnomecanvas=yes, have_libgnomecanvas=no)
+    fi
     if test x$have_libglade = xyes ; then
 	PKG_CHECK_MODULES(GCONF, gconf-2.0 >= 2.4.0,have_gconf=yes)
 	PKG_CHECK_MODULES(GGCOV_CLI, glib-2.0 >= 2.0.0 libxml-2.0 >= 2.0.0 gdlib >= 2.0.0)
@@ -386,14 +390,15 @@ if test x$gui = xyes ; then
 	dnl so the executable will be smaller
 	LIBGLADE_LIBS=`echo "$LIBGLADE_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
 	LIBGNOMEUI_LIBS=`echo "$LIBGNOMEUI_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
+	LIBGNOMECANVAS_LIBS=`echo "$LIBGNOMECANVAS_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
 	GCONF_LIBS=`echo "$GCONF_LIBS" | sed -e 's/-Wl,--export-dynamic//g'`
 
 	dnl some modern distros don't make X11 symbols visible
 	dnl by default when you link against GTK2 so for them
 	dnl we need to link against libX11 explicitly.
-	GGCOV_GUI_LIBS="$LIBGLADE_LIBS $LIBGNOMEUI_LIBS $GCONF_LIBS -lX11"
+	GGCOV_GUI_LIBS="$LIBGLADE_LIBS $LIBGNOMEUI_LIBS $LIBGNOMECANVAS_LIBS $GCONF_LIBS -lX11"
 
-	GGCOV_GUI_CFLAGS="$LIBGLADE_CFLAGS $LIBGNOMEUI_CFLAGS $GCONF_CFLAGS"
+	GGCOV_GUI_CFLAGS="$LIBGLADE_CFLAGS $LIBGNOMEUI_CFLAGS $LIBGNOMECANVAS_CFLAGS $GCONF_CFLAGS"
 
 	AC_CHECK_LIB(gtk-x11-2.0, gtk_text_buffer_select_range,
 		  AC_DEFINE(HAVE_GTK_TEXT_BUFFER_SELECT_RANGE,1,[
@@ -452,7 +457,15 @@ if test $have_libgnomeui = yes ; then
     AC_DEFINE(HAVE_LIBGNOMEUI,1,[
     	Whether the GnomeUI library is available.])
 fi
-AM_CONDITIONAL(LIBGNOMEUI, test $have_libgnomeui = yes)
+if test $have_libgnomecanvas = yes ; then
+    AC_DEFINE(HAVE_LIBGNOMECANVAS,1,[
+    	Whether the libGnomeCanvas library is available.])
+fi
+if test $have_libgnomeui = yes -o $have_libgnomecanvas = yes ; then
+    AC_DEFINE(HAVE_GNOME_CANVAS,1,[
+    	Whether the GnomeCanvas widget is available, from either library.])
+fi
+AM_CONDITIONAL(GNOME_CANVAS, test $have_libgnomeui = yes -o $have_libgnomecanvas = yes)
 
 if test $have_gconf = yes ; then
     GCONF=

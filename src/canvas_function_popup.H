@@ -22,7 +22,11 @@
 
 #include "common.h"
 #include "ui.h"
+#if HAVE_LIBGNOMEUI
 #include <libgnomeui/libgnomeui.h>
+#elif HAVE_LIBGNOMECANVAS
+#include <libgnomecanvas/libgnomecanvas.h>
+#endif
 
 class cov_function_t;
 
