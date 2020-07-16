@@ -228,7 +228,7 @@ const char *
 window_t::name() const
 {
     if (window_)
-	return GTK_WIDGET(window_)->name;
+	return gtk_widget_get_name(GTK_WIDGET(window_));
     return 0;
 }
 
@@ -369,7 +369,9 @@ void
 load(GtkCheckMenuItem *cmi)
 {
     confsection_t *cs = confsection_t::get("gtk-toggles");
-    boolean b = cs->get_bool(GTK_WIDGET(cmi)->name, cmi->active);
+    boolean b = cs->get_bool(
+        gtk_widget_get_name(GTK_WIDGET(cmi)),
+        gtk_check_menu_item_get_active(cmi));
     gtk_check_menu_item_set_active(cmi, b);
 }
 
@@ -378,7 +380,7 @@ save(GtkCheckMenuItem *cmi)
 {
     confsection_t *cs = confsection_t::get("gtk-toggles");
     boolean b = !!gtk_check_menu_item_get_active(cmi);
-    cs->set_bool(GTK_WIDGET(cmi)->name, b);
+    cs->set_bool(gtk_widget_get_name(GTK_WIDGET(cmi)), b);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
