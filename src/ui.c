@@ -402,7 +402,8 @@ ui_on_windows_menu_activate(GtkWidget *w, gpointer userdata)
 {
     GtkWidget *win = (GtkWidget *)userdata;
 
-    _log.debug("ui_on_windows_menu_activate: %s\n", GTK_WINDOW(win)->title);
+    _log.debug("ui_on_windows_menu_activate: %s\n",
+               gtk_window_get_title(GTK_WINDOW(win)));
 
     GdkWindow *window = gtk_widget_get_window(win);
     gdk_window_show(window);
@@ -437,14 +438,14 @@ ui_update_windows_menu(GtkWidget *menu)
 	GtkWidget *win = (GtkWidget *)iter->data;
 	const char *title;
 
-	if ((title = strchr(GTK_WINDOW(win)->title, ':')) != 0)
+	if ((title = strchr(gtk_window_get_title(GTK_WINDOW(win)), ':')) != 0)
 	{
 	    title++;    /* skip colon */
 	    while (*title && isspace(*title))
 		title++;            /* skip whitespace */
 	}
 	if (title == 0 || *title == '\0')
-	    title = GTK_WINDOW(win)->title;
+	    title = gtk_window_get_title(GTK_WINDOW(win));
 
 	ui_menu_add_simple_item(menu, title,
 		    ui_on_windows_menu_activate, win);
@@ -534,7 +535,7 @@ ui_window_set_title(GtkWidget *w, const char *filename)
     /* Grab the original title, derived from the glade file */
     if ((proto = (char *)g_object_get_data(G_OBJECT(w), ui_title_key)) == 0)
     {
-	proto = g_strdup(GTK_WINDOW(w)->title);
+	proto = g_strdup(gtk_window_get_title( GTK_WINDOW(w)));
 	g_object_set_data_full(G_OBJECT(w), ui_title_key, proto,
 			       ui_window_title_destroy);
     }
