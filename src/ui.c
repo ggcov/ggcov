@@ -315,7 +315,7 @@ ui_get_dummy_menu(GladeXML *xml, const char *name)
     menu = dummy->parent;
 
     tearoff = gtk_tearoff_menu_item_new();
-    gtk_menu_append(GTK_MENU(menu), tearoff);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), tearoff);
     gtk_widget_show(tearoff);
 
     return menu;
@@ -554,7 +554,7 @@ ui_delete_menu_items(GtkWidget *menu)
 {
     GList *list, *next;
 
-    for (list = gtk_container_children(GTK_CONTAINER(menu)) ;
+    for (list = gtk_container_get_children(GTK_CONTAINER(menu)) ;
 	 list != 0 ;
 	 list = next)
     {
@@ -578,7 +578,7 @@ ui_menu_add_simple_item(
     GtkWidget *butt;
 
     butt = gtk_menu_item_new_with_label(label);
-    gtk_menu_append(GTK_MENU(menu), butt);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), butt);
     g_signal_connect(G_OBJECT(butt), "activate",
 		     G_CALLBACK(callback), calldata);
     gtk_widget_show(butt);
@@ -592,7 +592,7 @@ ui_menu_add_seperator(GtkWidget *menu)
     GtkWidget *butt;
 
     butt = gtk_menu_item_new();
-    gtk_menu_append(GTK_MENU(menu), butt);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), butt);
     gtk_widget_show(butt);
 
     return butt;
