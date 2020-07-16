@@ -43,7 +43,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="open1">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_OPEN_ITEM</property>
+		      <property name="label">gtk-open</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_file_open_activate"/>
 		    </widget>
 		  </child>
@@ -51,7 +52,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="source_save_as">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_SAVE_AS_ITEM</property>
+		      <property name="label">gtk-save-as</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="sourcewin_t::on_save_as_activate"/>
 		    </widget>
 		  </child>
@@ -65,7 +67,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="source_close">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
+		      <property name="label">gtk-close</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
@@ -73,7 +76,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="source_exit">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
+		      <property name="label">gtk-quit</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
@@ -333,7 +337,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
+		      <property name="label">gtk-preferences</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
 		    </widget>
 		  </child>
@@ -375,7 +380,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
+		      <property name="label">gtk-about</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_about_activate"/>
 		    </widget>
 		  </child>
@@ -695,7 +701,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="open2">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_OPEN_ITEM</property>
+		      <property name="label">gtk-open</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_file_open_activate"/>
 		    </widget>
 		  </child>
@@ -703,7 +710,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="summary_close">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
+		      <property name="label">gtk-close</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
@@ -711,7 +719,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="summary_exit">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
+		      <property name="label">gtk-quit</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
@@ -732,7 +741,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
+		      <property name="label">gtk-preferences</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
 		    </widget>
 		  </child>
@@ -774,7 +784,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
+		      <property name="label">gtk-about</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_about_activate"/>
 		    </widget>
 		  </child>
@@ -1581,7 +1592,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="open3">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_OPEN_ITEM</property>
+		      <property name="label">gtk-open</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_file_open_activate"/>
 		    </widget>
 		  </child>
@@ -1589,7 +1601,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="functions_close">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
+		      <property name="label">gtk-close</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
@@ -1597,7 +1610,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="functions_exit">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
+		      <property name="label">gtk-quit</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
@@ -1681,7 +1695,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
+		      <property name="label">gtk-preferences</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
 		    </widget>
 		  </child>
@@ -1723,7 +1738,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
+		      <property name="label">gtk-about</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_about_activate"/>
 		    </widget>
 		  </child>
@@ -1809,7 +1825,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="open4">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_OPEN_ITEM</property>
+		      <property name="label">gtk-open</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_file_open_activate"/>
 		    </widget>
 		  </child>
@@ -1817,7 +1834,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="files_close">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
+		      <property name="label">gtk-close</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
@@ -1825,7 +1843,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="files_exit">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
+		      <property name="label">gtk-quit</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
@@ -1953,7 +1972,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
+		      <property name="label">gtk-preferences</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
 		    </widget>
 		  </child>
@@ -1995,7 +2015,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
+		      <property name="label">gtk-about</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_about_activate"/>
 		    </widget>
 		  </child>
@@ -2079,7 +2100,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="open5">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_OPEN_ITEM</property>
+		      <property name="label">gtk-open</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_file_open_activate"/>
 		    </widget>
 		  </child>
@@ -2087,7 +2109,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="calls_close">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
+		      <property name="label">gtk-close</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
@@ -2095,7 +2118,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="calls_exit">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
+		      <property name="label">gtk-quit</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
@@ -2169,7 +2193,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
+		      <property name="label">gtk-preferences</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
 		    </widget>
 		  </child>
@@ -2211,7 +2236,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
+		      <property name="label">gtk-about</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_about_activate"/>
 		    </widget>
 		  </child>
@@ -2430,7 +2456,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="open6">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_OPEN_ITEM</property>
+		      <property name="label">gtk-open</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_file_open_activate"/>
 		    </widget>
 		  </child>
@@ -2438,7 +2465,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="callgraph_close">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
+		      <property name="label">gtk-close</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
@@ -2446,7 +2474,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="callgraph_exit">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
+		      <property name="label">gtk-quit</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
@@ -2467,7 +2496,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
+		      <property name="label">gtk-preferences</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
 		    </widget>
 		  </child>
@@ -2509,7 +2539,8 @@
 		  <child>
 		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
+		      <property name="label">gtk-about</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_about_activate"/>
 		    </widget>
 		  </child>
@@ -2981,7 +3012,8 @@ C and C++ programs built with the GNU compiler.
 		      <child>
 			<widget class="GtkImageMenuItem" id="open7">
 			  <property name="visible">True</property>
-			  <property name="stock_item">GNOMEUIINFO_MENU_OPEN_ITEM</property>
+                          <property name="label">gtk-open</property>
+                          <property name="use_stock">True</property>
 			  <signal name="activate" handler="on_file_open_activate"/>
 			</widget>
 		      </child>
@@ -2989,7 +3021,8 @@ C and C++ programs built with the GNU compiler.
 		      <child>
 			<widget class="GtkImageMenuItem" id="close1">
 			  <property name="visible">True</property>
-			  <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
+                          <property name="label">gtk-close</property>
+                          <property name="use_stock">True</property>
 			  <signal name="activate" handler="window_t::on_close_activate"/>
 			</widget>
 		      </child>
@@ -2997,7 +3030,8 @@ C and C++ programs built with the GNU compiler.
 		      <child>
 			<widget class="GtkImageMenuItem" id="exit1">
 			  <property name="visible">True</property>
-			  <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
+                          <property name="label">gtk-quit</property>
+                          <property name="use_stock">True</property>
 			  <signal name="activate" handler="window_t::on_exit_activate"/>
 			</widget>
 		      </child>
@@ -3058,7 +3092,8 @@ C and C++ programs built with the GNU compiler.
 		      <child>
 			<widget class="GtkImageMenuItem" id="preferences_mitem">
 			  <property name="visible">True</property>
-			  <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
+                          <property name="label">gtk-preferences</property>
+                          <property name="use_stock">True</property>
 			  <signal name="activate" handler="on_preferences_activate"/>
 			</widget>
 		      </child>
@@ -3100,7 +3135,8 @@ C and C++ programs built with the GNU compiler.
 		      <child>
 			<widget class="GtkImageMenuItem" id="about1">
 			  <property name="visible">True</property>
-			  <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
+                          <property name="label">gtk-about</property>
+                          <property name="use_stock">True</property>
 			  <signal name="activate" handler="on_about_activate"/>
 			</widget>
 		      </child>
@@ -3898,7 +3934,8 @@ C and C++ programs built with the GNU compiler.
 		  <child>
 		    <widget class="GtkImageMenuItem" id="open2">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_OPEN_ITEM</property>
+		      <property name="label">gtk-open</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_file_open_activate"/>
 		    </widget>
 		  </child>
@@ -3906,7 +3943,8 @@ C and C++ programs built with the GNU compiler.
 		  <child>
 		    <widget class="GtkImageMenuItem" id="summary_close">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_CLOSE_ITEM</property>
+		      <property name="label">gtk-close</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_close_activate"/>
 		    </widget>
 		  </child>
@@ -3914,7 +3952,8 @@ C and C++ programs built with the GNU compiler.
 		  <child>
 		    <widget class="GtkImageMenuItem" id="summary_exit">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_EXIT_ITEM</property>
+		      <property name="label">gtk-quit</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="window_t::on_exit_activate"/>
 		    </widget>
 		  </child>
@@ -3935,7 +3974,8 @@ C and C++ programs built with the GNU compiler.
 		  <child>
 		    <widget class="GtkImageMenuItem" id="preferences_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_PREFERENCES_ITEM</property>
+		      <property name="label">gtk-preferences</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_preferences_activate"/>
 		    </widget>
 		  </child>
@@ -3977,7 +4017,8 @@ C and C++ programs built with the GNU compiler.
 		  <child>
 		    <widget class="GtkImageMenuItem" id="about_mitem">
 		      <property name="visible">True</property>
-		      <property name="stock_item">GNOMEUIINFO_MENU_ABOUT_ITEM</property>
+		      <property name="label">gtk-about</property>
+		      <property name="use_stock">True</property>
 		      <signal name="activate" handler="on_about_activate"/>
 		    </widget>
 		  </child>
