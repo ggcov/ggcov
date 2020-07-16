@@ -154,8 +154,8 @@ prefswin_t::apply()
 {
     _log.debug("prefswin_t::apply\n");
 
-    prefs.reuse_srcwin = GTK_TOGGLE_BUTTON(reuse_srcwin_check_)->active;
-    prefs.reuse_summwin = GTK_TOGGLE_BUTTON(reuse_summwin_check_)->active;
+    prefs.reuse_srcwin = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(reuse_srcwin_check_));
+    prefs.reuse_summwin = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(reuse_summwin_check_));
 
     apply_picker(0, &prefs.covered_foreground);
     apply_picker(1, &prefs.covered_background);
