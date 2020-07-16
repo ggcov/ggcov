@@ -702,7 +702,7 @@ ui_text_adjust_text_size(GtkWidget *w, int dirn)
 {
     static const char normal_size_key[] = "ui-text-normal-size";
 
-    PangoFontDescription *font_desc = w->style->font_desc;
+    PangoFontDescription *font_desc = gtk_widget_get_style(w)->font_desc;
     gint size = pango_font_description_get_size(font_desc);
 
     gint normal_size = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), normal_size_key));
