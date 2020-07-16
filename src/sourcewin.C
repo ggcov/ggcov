@@ -805,11 +805,13 @@ sourcewin_t::update_title_buttons()
      * to align the title buttons with the main text window body.
      */
     scrollw = gtk_widget_get_parent(text_);
-    lpad = rpad = GTK_CONTAINER(scrollw)->border_width;
-    sbwidth = GTK_SCROLLED_WINDOW(scrollw)->vscrollbar->allocation.width +
+    lpad = rpad = gtk_container_get_border_width(GTK_CONTAINER(scrollw));
+    GtkAllocation allocation;
+    gtk_widget_get_allocation(gtk_scrolled_window_get_vscrollbar(GTK_SCROLLED_WINDOW(scrollw)), &allocation);
+    sbwidth = allocation.width +
 	      GTK_SCROLLED_WINDOW_GET_CLASS(scrollw)->scrollbar_spacing;
 
-    switch (GTK_SCROLLED_WINDOW(scrollw)->window_placement)
+    switch (gtk_scrolled_window_get_placement(GTK_SCROLLED_WINDOW(scrollw)))
     {
     case GTK_CORNER_TOP_LEFT:
     case GTK_CORNER_BOTTOM_LEFT:
