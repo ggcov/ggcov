@@ -353,7 +353,7 @@ static struct
 static void
 ui_window_set_default_icon(GtkWidget *w)
 {
-    if (!GTK_WIDGET_REALIZED(w))
+    if (!gtk_widget_get_realized(w))
     {
 	_log.debug2("ui_window_set_default_icon(w=0x%08lx): "
 		    "delaying until realized\n", (unsigned long)w);

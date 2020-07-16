@@ -119,7 +119,7 @@ gnb_stacked_bar_realize(GtkWidget *widget)
     g_return_if_fail(GNB_IS_STACKED_BAR(widget));
 
     sbar = GNB_STACKED_BAR(widget);
-    GTK_WIDGET_SET_FLAGS(widget, GTK_REALIZED);
+    gtk_widget_set_realized(widget, TRUE);
 
     attr.window_type = GDK_WINDOW_CHILD;
     attr.x = widget->allocation.x;
@@ -176,7 +176,7 @@ gnb_stacked_bar_expose(GtkWidget *widget, GdkEventExpose *event)
     g_return_val_if_fail(GNB_IS_STACKED_BAR(widget), FALSE);
     g_return_val_if_fail(event != NULL, FALSE);
 
-    if (GTK_WIDGET_DRAWABLE(widget))
+    if (gtk_widget_is_drawable(widget))
 	gdk_draw_pixmap(widget->window,
 		     widget->style->black_gc,
 		     GNB_STACKED_BAR(widget)->offscreen_pixmap,
@@ -204,7 +204,7 @@ gnb_stacked_bar_size_allocate(GtkWidget *widget, GtkAllocation *allocation)
 
     widget->allocation = *allocation;
 
-    if (GTK_WIDGET_REALIZED(widget))
+    if (gtk_widget_get_realized(widget))
     {
 	gdk_window_move_resize(widget->window,
 			      allocation->x, allocation->y,
@@ -222,7 +222,7 @@ gnb_stacked_bar_create_pixmap(GnbStackedBar *sbar)
     g_return_if_fail(sbar != NULL);
     g_return_if_fail(GNB_IS_STACKED_BAR(sbar));
 
-    if (GTK_WIDGET_REALIZED(sbar))
+    if (gtk_widget_get_realized(GTK_WIDGET(sbar)))
     {
 	widget = GTK_WIDGET(sbar);
 
@@ -459,7 +459,7 @@ gnb_stacked_bar_set_metric_color(
 	    gtk_gc_release(metric->gc);
 	    metric->gc = NULL;
 	}
-	if (GTK_WIDGET_DRAWABLE(GTK_WIDGET(sbar)))
+	if (gtk_widget_is_drawable(GTK_WIDGET(sbar)))
 	    gtk_widget_queue_draw(GTK_WIDGET(sbar));
     }
 }
@@ -511,7 +511,7 @@ gnb_stacked_bar_set_metric_colors(
 	    colorp++;
     }
 
-    if (nchanged && GTK_WIDGET_DRAWABLE(GTK_WIDGET(sbar)))
+    if (nchanged && gtk_widget_is_drawable(GTK_WIDGET(sbar)))
 	gtk_widget_queue_draw(GTK_WIDGET(sbar));
 }
 
@@ -538,7 +538,7 @@ gnb_stacked_bar_set_metric_value(
 	metric->value = value;
     }
 
-    if (changed && GTK_WIDGET_DRAWABLE(GTK_WIDGET(sbar)))
+    if (changed && gtk_widget_is_drawable(GTK_WIDGET(sbar)))
 	gtk_widget_queue_draw(GTK_WIDGET(sbar));
 }
 
@@ -567,7 +567,7 @@ gnb_stacked_bar_set_metric_values(
 	}
     }
 
-    if (changed && GTK_WIDGET_DRAWABLE(GTK_WIDGET(sbar)))
+    if (changed && gtk_widget_is_drawable(GTK_WIDGET(sbar)))
 	gtk_widget_queue_draw(GTK_WIDGET(sbar));
 }
 

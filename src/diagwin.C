@@ -137,7 +137,7 @@ diagwin_t::populate()
 				   bounds.x1, bounds.y1,
 				   bounds.x2, bounds.y2);
 
-    if (!GTK_WIDGET_REALIZED(canvas_))
+    if (!gtk_widget_get_realized(canvas_))
 	g_signal_connect(G_OBJECT(canvas_), "realize",
 			 G_CALLBACK(diagwin_realize_cb), 0);
     else

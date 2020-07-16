@@ -74,7 +74,7 @@ sourcewin_t::update_flow_window()
     // make the left child visible
     gtk_text_view_set_border_window_size(tv, GTK_TEXT_WINDOW_LEFT, flow_width_);
 
-    if (GTK_WIDGET_REALIZED(text_))
+    if (gtk_widget_get_realized(text_))
     {
 	// copy the text window's background to the left child
 	GtkStyle *style = gtk_widget_get_style(text_);
@@ -149,7 +149,7 @@ sourcewin_t::do_update_flows()
     GtkTextView *tv = GTK_TEXT_VIEW(text_);
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(tv);
 
-    if (!GTK_WIDGET_REALIZED(text_))
+    if (!gtk_widget_get_realized(text_))
 	return G_SOURCE_REMOVE;	    // no worries, will get called on realize
     if (!GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])->active)
 	return G_SOURCE_REMOVE;	    // nothing to do anyway
@@ -797,7 +797,7 @@ sourcewin_t::update_title_buttons()
      * Need the window to be realized so that the scrollbar has
      * its final width for our calculations.
      */
-    if (!GTK_WIDGET_REALIZED(window_))
+    if (!gtk_widget_get_realized(window_))
 	gtk_widget_realize(window_);
 
     /*
