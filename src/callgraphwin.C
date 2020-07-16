@@ -287,9 +287,13 @@ callgraphwin_t::on_callgraph_show(GtkWidget *w, gpointer data)
 {
     callgraphwin_t *cw = callgraphwin_t::from_widget(w);
     GtkPaned *paned = GTK_PANED(cw->hpaned_);
-
-    gtk_paned_set_position(paned,
-			   (paned->max_position + paned->min_position) / 2);
+    gint min_position = 0;
+    gint max_position = 0;
+    g_object_get(G_OBJECT(paned),
+        "min-position", &min_position,
+        "max-position", &max_position,
+        (char *)0);
+    gtk_paned_set_position(paned, (max_position + min_position) / 2);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
