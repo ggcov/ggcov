@@ -292,7 +292,7 @@ canvas_scenegen_t::on_query_tooltip(GtkWidget *w, gint x, gint y,
 
     estring txt;
 
-    cov_block_t *b = (cov_block_t *)gtk_object_get_data(GTK_OBJECT(item), BLOCK_KEY);
+    cov_block_t *b = (cov_block_t *)g_object_get_data(G_OBJECT(item), BLOCK_KEY);
     if (b)
 	format_tooltip(txt, b);
 

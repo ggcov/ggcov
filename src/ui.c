@@ -42,7 +42,7 @@ init(ui_combo_t *cbox, const char *sep)
     GtkCellRenderer *rend;
     if (sep)
     {
-	gtk_object_set_data(GTK_OBJECT(cbox), ui_combo_sep_key, (gpointer)sep);
+	g_object_set_data(G_OBJECT(cbox), ui_combo_sep_key, (gpointer)sep);
 	GtkTreeStore *store = gtk_tree_store_new(COLUMN_TYPES);
 	gtk_combo_box_set_model(cbox, GTK_TREE_MODEL(store));
 
@@ -95,7 +95,7 @@ add(ui_combo_t *cbox, const char *label, gpointer data)
     if (GTK_IS_TREE_STORE(model))
     {
 	const char *sep = (const char *)
-		    gtk_object_get_data(GTK_OBJECT(cbox), ui_combo_sep_key);
+		    g_object_get_data(G_OBJECT(cbox), ui_combo_sep_key);
 	tok_t tok(label, sep);
 	GtkTreeIter itr;
 	gboolean itr_valid = gtk_tree_model_get_iter_first(model, &itr);
@@ -529,11 +529,11 @@ ui_window_set_title(GtkWidget *w, const char *filename)
     estring title;
 
     /* Grab the original title, derived from the glade file */
-    if ((proto = (char *)gtk_object_get_data(GTK_OBJECT(w), ui_title_key)) == 0)
+    if ((proto = (char *)g_object_get_data(G_OBJECT(w), ui_title_key)) == 0)
     {
 	proto = g_strdup(GTK_WINDOW(w)->title);
-	gtk_object_set_data_full(GTK_OBJECT(w), ui_title_key, proto,
-				 ui_window_title_destroy);
+	g_object_set_data_full(G_OBJECT(w), ui_title_key, proto,
+			       ui_window_title_destroy);
     }
 
     title.append_string(proto);
@@ -701,13 +701,12 @@ ui_text_adjust_text_size(GtkWidget *w, int dirn)
     PangoFontDescription *font_desc = w->style->font_desc;
     gint size = pango_font_description_get_size(font_desc);
 
-    gint normal_size = GPOINTER_TO_INT(gtk_object_get_data(GTK_OBJECT(w),
-							    normal_size_key));
+    gint normal_size = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(w), normal_size_key));
     if (normal_size == 0)
     {
 	normal_size = pango_font_description_get_size(ui_text_font_desc);
-	gtk_object_set_data(GTK_OBJECT(w), normal_size_key,
-			    GINT_TO_POINTER(normal_size));
+	g_object_set_data(G_OBJECT(w), normal_size_key,
+			  GINT_TO_POINTER(normal_size));
     }
 
     if (dirn < 0)

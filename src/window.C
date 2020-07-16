@@ -202,7 +202,7 @@ dnd_setup(GtkWidget *w)
 void
 window_t::attach(GtkWidget *w)
 {
-    gtk_object_set_data(GTK_OBJECT(w), window_key, this);
+    g_object_set_data(G_OBJECT(w), window_key, this);
 
     g_signal_connect(G_OBJECT(w), "configure-event",
 		     G_CALLBACK(on_configure_event), this);
@@ -238,7 +238,7 @@ window_t *
 window_t::from_widget(GtkWidget *w)
 {
     w = ui_get_window(w);
-    return (w == 0 ? 0 : (window_t *)gtk_object_get_data(GTK_OBJECT(w), window_key));
+    return (w == 0 ? 0 : (window_t *)g_object_get_data(G_OBJECT(w), window_key));
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
