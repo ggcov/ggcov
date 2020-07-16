@@ -1183,9 +1183,13 @@ sourcewin_t::save_with_annotations(const char *filename)
 GLADE_CALLBACK void
 sourcewin_t::on_saveas_ok_button_clicked()
 {
-    const char *filename = gtk_file_selection_get_filename(
-				GTK_FILE_SELECTION(saveas_dialog_));
-    save_with_annotations(filename);
+    char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(saveas_dialog_));
+    if (filename && *filename)
+    {
+        save_with_annotations(filename);
+    }
+    if (filename)
+        g_free(filename);
     gtk_widget_hide(saveas_dialog_);
 }
 
@@ -1199,7 +1203,7 @@ GLADE_CALLBACK void
 sourcewin_t::on_save_as_activate()
 {
     string_var filename = g_strconcat(filename_.data(), ".cov.txt", (char *)0);
-    gtk_file_selection_set_filename(GTK_FILE_SELECTION(saveas_dialog_), filename);
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(saveas_dialog_), filename);
     gtk_widget_show(saveas_dialog_);
 }
 

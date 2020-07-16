@@ -3739,7 +3739,8 @@ C and C++ programs built with the GNU compiler.
   </child>
 </widget>
 
-<widget class="GtkFileSelection" id="source_saveas">
+<widget class="GtkFileChooserDialog" id="source_saveas">
+  <property name="action">GTK_FILE_CHOOSER_ACTION_SAVE</property>
   <property name="border_width">10</property>
   <property name="title" translatable="yes">GGCov: Save Annotated Source</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
@@ -3752,32 +3753,55 @@ C and C++ programs built with the GNU compiler.
   <property name="skip_pager_hint">False</property>
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-  <property name="show_fileops">True</property>
 
-  <child internal-child="cancel_button">
-    <widget class="GtkButton" id="cancel_button1">
+  <child internal-child="action_area">
+    <widget class="GtkHBox" id="hbox6">
+      <property name="border_width">4</property>
       <property name="visible">True</property>
-      <property name="can_default">True</property>
-      <property name="can_focus">True</property>
-      <property name="relief">GTK_RELIEF_NORMAL</property>
-      <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="sourcewin_t::on_saveas_cancel_button_clicked"/>
-    </widget>
-  </child>
+      <property name="homogeneous">False</property>
+      <property name="spacing">4</property>
 
-  <child internal-child="ok_button">
-    <widget class="GtkButton" id="ok_button1">
-      <property name="visible">True</property>
-      <property name="can_default">True</property>
-      <property name="can_focus">True</property>
-      <property name="relief">GTK_RELIEF_NORMAL</property>
-      <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="sourcewin_t::on_saveas_ok_button_clicked"/>
+      <child>
+        <widget class="GtkButton" id="cancel_button1">
+          <property name="visible">True</property>
+          <property name="can_default">True</property>
+          <property name="can_focus">True</property>
+          <property name="label">gtk-cancel</property>
+          <property name="relief">GTK_RELIEF_NORMAL</property>
+          <property name="focus_on_click">True</property>
+          <property name="use_stock">True</property>
+          <signal name="clicked" handler="sourcewin_t::on_saveas_cancel_button_clicked"/>
+        </widget>
+        <packing>
+          <property name="padding">0</property>
+          <property name="expand">False</property>
+          <property name="fill">False</property>
+        </packing>
+      </child>
+
+      <child>
+        <widget class="GtkButton" id="ok_button1">
+          <property name="visible">True</property>
+          <property name="can_default">True</property>
+          <property name="can_focus">True</property>
+          <property name="label">gtk-ok</property>
+          <property name="relief">GTK_RELIEF_NORMAL</property>
+          <property name="focus_on_click">True</property>
+          <property name="use_stock">True</property>
+          <signal name="clicked" handler="sourcewin_t::on_saveas_ok_button_clicked"/>
+        </widget>
+        <packing>
+          <property name="padding">0</property>
+          <property name="expand">False</property>
+          <property name="fill">False</property>
+        </packing>
+      </child>
     </widget>
   </child>
 </widget>
 
-<widget class="GtkFileSelection" id="open">
+<widget class="GtkFileChooserDialog" id="open">
+  <property name="action">GTK_FILE_CHOOSER_ACTION_OPEN</property>
   <property name="border_width">10</property>
   <property name="visible">True</property>
   <property name="title" translatable="yes">GGCov: Select Source, Executable, or Directory</property>
@@ -3791,27 +3815,49 @@ C and C++ programs built with the GNU compiler.
   <property name="skip_pager_hint">False</property>
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-  <property name="show_fileops">True</property>
 
-  <child internal-child="cancel_button">
-    <widget class="GtkButton" id="cancel_button2">
+  <child internal-child="action_area">
+    <widget class="GtkHBox" id="hbox7">
+      <property name="border_width">4</property>
       <property name="visible">True</property>
-      <property name="can_default">True</property>
-      <property name="can_focus">True</property>
-      <property name="relief">GTK_RELIEF_NORMAL</property>
-      <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="on_open_cancel_button_clicked"/>
-    </widget>
-  </child>
+      <property name="homogeneous">False</property>
+      <property name="spacing">4</property>
 
-  <child internal-child="ok_button">
-    <widget class="GtkButton" id="ok_button2">
-      <property name="visible">True</property>
-      <property name="can_default">True</property>
-      <property name="can_focus">True</property>
-      <property name="relief">GTK_RELIEF_NORMAL</property>
-      <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="on_open_ok_button_clicked"/>
+      <child>
+        <widget class="GtkButton" id="cancel_button2">
+          <property name="visible">True</property>
+          <property name="can_default">True</property>
+          <property name="can_focus">True</property>
+          <property name="label">gtk-cancel</property>
+          <property name="relief">GTK_RELIEF_NORMAL</property>
+          <property name="focus_on_click">True</property>
+          <property name="use_stock">True</property>
+          <signal name="clicked" handler="on_open_cancel_button_clicked"/>
+        </widget>
+        <packing>
+          <property name="padding">0</property>
+          <property name="expand">False</property>
+          <property name="fill">False</property>
+        </packing>
+      </child>
+
+      <child>
+        <widget class="GtkButton" id="ok_button2">
+          <property name="visible">True</property>
+          <property name="can_default">True</property>
+          <property name="can_focus">True</property>
+          <property name="label">gtk-ok</property>
+          <property name="relief">GTK_RELIEF_NORMAL</property>
+          <property name="focus_on_click">True</property>
+          <property name="use_stock">True</property>
+          <signal name="clicked" handler="on_open_ok_button_clicked"/>
+        </widget>
+        <packing>
+          <property name="padding">0</property>
+          <property name="expand">False</property>
+          <property name="fill">False</property>
+        </packing>
+      </child>
     </widget>
   </child>
 </widget>
@@ -4052,7 +4098,8 @@ C and C++ programs built with the GNU compiler.
   </child>
 </widget>
 
-<widget class="GtkFileSelection" id="report_save_as">
+<widget class="GtkFileChooserDialog" id="report_save_as">
+  <property name="action">GTK_FILE_CHOOSER_ACTION_SAVE</property>
   <property name="border_width">10</property>
   <property name="visible">True</property>
   <property name="title" translatable="yes">GGCov: Select Report File</property>
@@ -4066,27 +4113,49 @@ C and C++ programs built with the GNU compiler.
   <property name="skip_pager_hint">False</property>
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-  <property name="show_fileops">True</property>
 
-  <child internal-child="cancel_button">
-    <widget class="GtkButton" id="cancel_button3">
+  <child internal-child="action_area">
+    <widget class="GtkHBox" id="hbox8">
+      <property name="border_width">4</property>
       <property name="visible">True</property>
-      <property name="can_default">True</property>
-      <property name="can_focus">True</property>
-      <property name="relief">GTK_RELIEF_NORMAL</property>
-      <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="reportwin_t::on_save_as_cancel_clicked"/>
-    </widget>
-  </child>
+      <property name="homogeneous">False</property>
+      <property name="spacing">4</property>
 
-  <child internal-child="ok_button">
-    <widget class="GtkButton" id="ok_button3">
-      <property name="visible">True</property>
-      <property name="can_default">True</property>
-      <property name="can_focus">True</property>
-      <property name="relief">GTK_RELIEF_NORMAL</property>
-      <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="reportwin_t::on_save_as_ok_clicked"/>
+      <child>
+        <widget class="GtkButton" id="cancel_button3">
+          <property name="visible">True</property>
+          <property name="can_default">True</property>
+          <property name="can_focus">True</property>
+          <property name="label">gtk-cancel</property>
+          <property name="relief">GTK_RELIEF_NORMAL</property>
+          <property name="focus_on_click">True</property>
+          <property name="use_stock">True</property>
+          <signal name="clicked" handler="reportwin_t::on_save_as_cancel_clicked"/>
+        </widget>
+        <packing>
+          <property name="padding">0</property>
+          <property name="expand">False</property>
+          <property name="fill">False</property>
+        </packing>
+      </child>
+
+      <child>
+        <widget class="GtkButton" id="ok_button3">
+          <property name="visible">True</property>
+          <property name="can_default">True</property>
+          <property name="can_focus">True</property>
+          <property name="label">gtk-ok</property>
+          <property name="relief">GTK_RELIEF_NORMAL</property>
+          <property name="focus_on_click">True</property>
+          <property name="use_stock">True</property>
+          <signal name="clicked" handler="reportwin_t::on_save_as_ok_clicked"/>
+        </widget>
+        <packing>
+          <property name="padding">0</property>
+          <property name="expand">False</property>
+          <property name="fill">False</property>
+        </packing>
+      </child>
     </widget>
   </child>
 </widget>

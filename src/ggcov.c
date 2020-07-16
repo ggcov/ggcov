@@ -191,14 +191,11 @@ static GtkWidget *open_window = 0;
 GLADE_CALLBACK void
 on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
 {
-    const char *filename;
-
     _log.debug("on_open_ok_button_clicked\n");
 
-    filename = gtk_file_selection_get_filename(
-		    GTK_FILE_SELECTION(open_window));
+    char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(open_window));
 
-    if (filename != 0 && *filename != '\0')
+    if (filename && *filename)
     {
 	cov_pre_read();
 	if (ggcov_read_file(filename))
@@ -213,6 +210,9 @@ on_open_ok_button_clicked(GtkWidget *w, gpointer userdata)
      */
     if (!*cov_file_t::first())
 	exit(1);
+
+    if (filename)
+        g_free(filename);
 }
 
 GLADE_CALLBACK void

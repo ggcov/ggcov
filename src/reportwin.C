@@ -186,10 +186,9 @@ reportwin_t::on_save_as_ok_clicked()
 {
     _log.debug("reportwin_t::on_save_as_ok_clicked\n");
 
-    const char *filename = gtk_file_selection_get_filename(
-		    GTK_FILE_SELECTION(save_dialog_));
+    char *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(save_dialog_));
 
-    if (filename != 0 && *filename != '\0')
+    if (filename && *filename)
     {
 	FILE *fp = fopen(filename, "w");
 	if (!fp)
@@ -203,6 +202,8 @@ reportwin_t::on_save_as_ok_clicked()
 	}
     }
 
+    if (filename)
+        g_free(filename);
     gtk_widget_hide(save_dialog_);
 }
 
@@ -227,8 +228,11 @@ reportwin_t::on_save_as_clicked()
     string_var filename = report_->filename;
     if (!filename.data())
 	filename = g_strconcat("report_", report_->name, ".txt", (char *)NULL);
-    gtk_file_selection_set_filename(
-	    GTK_FILE_SELECTION(save_dialog_),
+    gtk_file_chooser_set_action(
+            GTK_FILE_CHOOSER(save_dialog_),
+            GTK_FILE_CHOOSER_ACTION_SAVE);
+    gtk_file_chooser_set_current_name(
+	    GTK_FILE_CHOOSER(save_dialog_),
 	    filename);
 
     gtk_widget_show(save_dialog_);
