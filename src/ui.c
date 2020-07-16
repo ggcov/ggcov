@@ -51,7 +51,7 @@ init(ui_combo_t *cbox, const char *sep)
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cbox), rend, "stock-id", COL_ICON, (char *)0);
 
 	rend = gtk_cell_renderer_text_new();
-	gtk_object_set(GTK_OBJECT(rend), "xalign", 0.0, (char *)0);
+	g_object_set(G_OBJECT(rend), "xalign", 0.0, (char *)0);
 	gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(cbox), rend, TRUE);
 	gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(cbox), rend, "text", COL_LABEL, (char *)0);
     }

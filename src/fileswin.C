@@ -159,7 +159,7 @@ fileswin_t::fileswin_t()
 		"stock-id", COL_ICON,
 		(char *)0);
     GtkCellRenderer *textrend = gtk_cell_renderer_text_new();
-    gtk_object_set(GTK_OBJECT(textrend), "xalign", 0.0, (char *)0);
+    g_object_set(G_OBJECT(textrend), "xalign", 0.0, (char *)0);
     gtk_tree_view_column_pack_start(col, textrend, TRUE);
     gtk_tree_view_column_set_attributes(col, textrend,
 		"text", COL_FILE,
