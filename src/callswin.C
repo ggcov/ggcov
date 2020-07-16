@@ -310,13 +310,13 @@ void
 callswin_t::apply_toggles()
 {
     ui_list_set_column_visibility(clist_, COL_FROM,
-				  GTK_CHECK_MENU_ITEM(from_check_)->active);
+				  gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(from_check_)));
     ui_list_set_column_visibility(clist_, COL_TO,
-				  GTK_CHECK_MENU_ITEM(to_check_)->active);
+				  gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(to_check_)));
     ui_list_set_column_visibility(clist_, COL_LINE,
-				  GTK_CHECK_MENU_ITEM(line_check_)->active);
+				  gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(line_check_)));
     ui_list_set_column_visibility(clist_, COL_COUNT,
-				  GTK_CHECK_MENU_ITEM(count_check_)->active);
+				  gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(count_check_)));
 }
 
 void

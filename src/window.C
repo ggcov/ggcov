@@ -377,7 +377,7 @@ void
 save(GtkCheckMenuItem *cmi)
 {
     confsection_t *cs = confsection_t::get("gtk-toggles");
-    boolean b = !!cmi->active;
+    boolean b = !!gtk_check_menu_item_get_active(cmi);
     cs->set_bool(GTK_WIDGET(cmi)->name, b);
 }
 

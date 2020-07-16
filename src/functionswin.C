@@ -244,7 +244,7 @@ functionswin_t::update()
 
     _log.debug("functionswin_t::update\n");
 
-    percent_flag = GTK_CHECK_MENU_ITEM(percent_check_)->active;
+    percent_flag = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(percent_check_));
 
     gtk_list_store_clear(store_);
 
@@ -318,13 +318,13 @@ void
 functionswin_t::apply_toggles()
 {
     ui_list_set_column_visibility(clist_, COL_BLOCKS,
-		    GTK_CHECK_MENU_ITEM(blocks_check_)->active);
+		    gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(blocks_check_)));
     ui_list_set_column_visibility(clist_, COL_LINES,
-		    GTK_CHECK_MENU_ITEM(lines_check_)->active);
+		    gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(lines_check_)));
     ui_list_set_column_visibility(clist_, COL_CALLS,
-		    GTK_CHECK_MENU_ITEM(calls_check_)->active);
+		    gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(calls_check_)));
     ui_list_set_column_visibility(clist_, COL_BRANCHES,
-		    GTK_CHECK_MENU_ITEM(branches_check_)->active);
+		    gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(branches_check_)));
 }
 
 GLADE_CALLBACK void

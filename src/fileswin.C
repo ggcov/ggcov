@@ -325,8 +325,8 @@ fileswin_t::update()
 
     _log.debug("fileswin_t::update\n");
 
-    percent_flag = GTK_CHECK_MENU_ITEM(percent_check_)->active;
-    tree_flag = GTK_CHECK_MENU_ITEM(tree_check_)->active;
+    percent_flag = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(percent_check_));
+    tree_flag = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(tree_check_));
 
     gtk_tree_store_clear(store_);
 
@@ -340,7 +340,7 @@ fileswin_t::update()
 void
 fileswin_t::grey_items()
 {
-    gboolean tree_flag = GTK_CHECK_MENU_ITEM(tree_check_)->active;
+    gboolean tree_flag = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(tree_check_));
 
     gtk_widget_set_sensitive(collapse_all_btn_, tree_flag);
     gtk_widget_set_sensitive(expand_all_btn_, tree_flag);
@@ -353,15 +353,15 @@ void
 fileswin_t::apply_toggles()
 {
     ui_list_set_column_visibility(ctree_, COL_BLOCKS,
-		    GTK_CHECK_MENU_ITEM(blocks_check_)->active);
+		    gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(blocks_check_)));
     ui_list_set_column_visibility(ctree_, COL_LINES,
-		    GTK_CHECK_MENU_ITEM(lines_check_)->active);
+		    gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(lines_check_)));
     ui_list_set_column_visibility(ctree_, COL_FUNCTIONS,
-		    GTK_CHECK_MENU_ITEM(functions_check_)->active);
+		    gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(functions_check_)));
     ui_list_set_column_visibility(ctree_, COL_CALLS,
-		    GTK_CHECK_MENU_ITEM(calls_check_)->active);
+		    gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(calls_check_)));
     ui_list_set_column_visibility(ctree_, COL_BRANCHES,
-		    GTK_CHECK_MENU_ITEM(branches_check_)->active);
+		    gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(branches_check_)));
 }
 
 GLADE_CALLBACK void

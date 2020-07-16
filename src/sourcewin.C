@@ -64,7 +64,7 @@ sourcewin_t::update_flow_window()
 
     _log.debug("sourcewin_t::update_flow_window\n");
 
-    if (!GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])->active)
+    if (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(column_checks_[COL_FLOW])))
     {
 	gtk_text_view_set_border_window_size(tv, GTK_TEXT_WINDOW_LEFT, 0);
 	delete_flows();
@@ -720,27 +720,27 @@ sourcewin_t::update()
 
 	/* choose colours */
 	tag = 0;
-	if (GTK_CHECK_MENU_ITEM(colors_check_)->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(colors_check_)))
 	    tag = text_tags_[ln->status()];
 
 	/* generate strings */
 
 	nstrs = 0;
 
-	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_LINE])->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(column_checks_[COL_LINE])))
 	{
 	    snprintf(linenobuf, sizeof(linenobuf), "%*lu ",
 		      column_widths_[COL_LINE]-1, lineno);
 	    strs[nstrs++] = linenobuf;
 	}
 
-	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_BLOCK])->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(column_checks_[COL_BLOCK])))
 	{
 	    ln->format_blocks(blockbuf, column_widths_[COL_BLOCK]-1);
 	    strs[nstrs++] = pad(blockbuf, column_widths_[COL_BLOCK], ' ');
 	}
 
-	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_COUNT])->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(column_checks_[COL_COUNT])))
 	{
 	    switch (ln->status())
 	    {
@@ -762,7 +762,7 @@ sourcewin_t::update()
 	}
 
 
-	if (GTK_CHECK_MENU_ITEM(column_checks_[COL_SOURCE])->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(column_checks_[COL_SOURCE])))
 	    strs[nstrs++] = linebuf;
 	else
 	    strs[nstrs++] = "\n";
@@ -844,7 +844,7 @@ sourcewin_t::update_title_buttons()
      */
     for (i = 0 ; i < NUM_COLS ; i++)
     {
-	if (GTK_CHECK_MENU_ITEM(column_checks_[i])->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(column_checks_[i])))
 	    gtk_widget_show(title_buttons_[i]);
 	else
 	    gtk_widget_hide(title_buttons_[i]);
@@ -995,12 +995,12 @@ sourcewin_t::show_filename(const char *filename)
 void
 sourcewin_t::apply_toggles()
 {
-    if (GTK_CHECK_MENU_ITEM(toolbar_check_)->active)
+    if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(toolbar_check_)))
 	gtk_widget_show(toolbar_);
     else
 	gtk_widget_hide(toolbar_);
 
-    if (GTK_CHECK_MENU_ITEM(titles_check_)->active)
+    if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(titles_check_)))
     {
 	update_title_buttons();
 	gtk_widget_show(titles_hbox_);
@@ -1130,7 +1130,7 @@ sourcewin_t::save_with_annotations(const char *filename)
     /* Generate header line */
     for (i = COL_LINE ; i < NUM_COLS ; i++)
     {
-	if (GTK_CHECK_MENU_ITEM(column_checks_[i])->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(column_checks_[i])))
 	{
 	    if (column_widths_[i] > 0)
 		fprintf(fp, "%-*s ", column_widths_[i]-1, column_names_[i]);
@@ -1143,7 +1143,7 @@ sourcewin_t::save_with_annotations(const char *filename)
     /* Generate separator line */
     for (i = COL_LINE ; i < NUM_COLS ; i++)
     {
-	if (GTK_CHECK_MENU_ITEM(column_checks_[i])->active)
+	if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(column_checks_[i])))
 	{
 	    int j, n = column_widths_[i];
 	    if (n < 0)
