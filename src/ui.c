@@ -479,7 +479,7 @@ ui_register_window(GtkWidget *w)
 	G_CALLBACK(ui_on_window_destroy), 0);
     ui_update_windows_menus();
 
-    if (GTK_WINDOW(w)->type == GTK_WINDOW_TOPLEVEL &&
+    if (gtk_window_get_window_type(GTK_WINDOW(w)) == GTK_WINDOW_TOPLEVEL &&
 	ui_default_icon.xpm != 0)
 	ui_window_set_default_icon(w);
 }
