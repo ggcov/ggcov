@@ -77,13 +77,12 @@ on_about_activate(GtkWidget *w, gpointer data)
     {
 	GladeXML *xml = ui_load_tree("about");
 	GtkWidget *about_label;
-	char *blurb_proto = 0;
 
 	about_window = glade_xml_get_widget(xml, "about");
 	ui_window_set_title(about_window, "");
 
 	about_label = glade_xml_get_widget(xml, "about_label");
-	gtk_label_get(GTK_LABEL(about_label), &blurb_proto);
+	const char *blurb_proto = gtk_label_get_text(GTK_LABEL(about_label));
 
 	estring blurb;
 	blurb.append_string(blurb_proto);
