@@ -425,7 +425,7 @@ sourcewin_t::setup_text()
     text_initialised_ = FALSE;
     flow_width_ = column_widths_[COL_FLOW] * font_width_;
     flow_width_dirty_ = FALSE;
-    g_signal_connect_after(G_OBJECT(tv->vadjustment),
+    g_signal_connect_after(G_OBJECT(gtk_text_view_get_vadjustment(tv)),
 			   "value-changed",
 			   G_CALLBACK(on_vadjustment_value_changed),
 			   (gpointer)this);

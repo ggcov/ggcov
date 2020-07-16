@@ -746,19 +746,21 @@ ui_text_create_tag(GtkWidget *w, const char *name, GdkColor *fg)
 gfloat
 ui_text_vscroll_sample(GtkWidget *w)
 {
-    return GTK_TEXT_VIEW(w)->vadjustment->value;
+    return gtk_adjustment_get_value(
+        gtk_text_view_get_vadjustment(GTK_TEXT_VIEW(w)));
 }
 
 void
 ui_text_vscroll_restore(GtkWidget *w, gfloat vs)
 {
     GtkTextView *tv = GTK_TEXT_VIEW(w);
+    GtkAdjustment *vadj = gtk_text_view_get_vadjustment(tv);
 
     /* Work around rounding bug in gtk 2.0.2 */
-    if (vs + tv->vadjustment->page_size + 0.5 > tv->vadjustment->upper)
-	vs = tv->vadjustment->upper - tv->vadjustment->page_size - 0.5;
+    if (vs + gtk_adjustment_get_page_size(vadj) + 0.5 > gtk_adjustment_get_upper(vadj))
+	vs = gtk_adjustment_get_upper(vadj) - gtk_adjustment_get_page_size(vadj) - 0.5;
 
-    gtk_adjustment_set_value(tv->vadjustment, vs);
+    gtk_adjustment_set_value(vadj, vs);
 }
 
 /*-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-*/
